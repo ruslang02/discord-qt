@@ -1,0 +1,19 @@
+* {
+	font-family: "Montserrat", sans-serif;
+	font-size: 1rem;
+	font-weight: 400;
+	line-height: 1.5;
+
+	margin: 0;
+
+	text-align: left;
+
+	color: #444444;
+	background-color: #f3f3f3;
+}
+
+QLabel {
+	color: #1b1b1b;
+	background-color: #00000000;
+	font-size: 20px;
+}
