@@ -4,7 +4,8 @@ import path = require("path");
 import { QWidget, FlexLayout, QMainWindow, QIcon } from '@nodegui/nodegui';
 import { Window } from '../Window/Window';
 import { Application } from '../..';
-import { Client } from 'discord.js';
+import Eris, { Client } from 'eris';
+import { LoginWindow } from '../LoginWindow/LoginWindow';
 
 export class RootWindow extends Window {
   constructor() {
@@ -21,7 +22,12 @@ export class RootWindow extends Window {
   }
 
   protected loadClient() {
-    Application.Client = new Client();
-    Application.Client.login(Application.Config.token);
+    const client = Application.Client = new Client(Application.Config.token || '');
+    client.connect().then(() => {
+      this.setWindowTitle(`Discord-Qt (logged in as ${client.user.username})`);
+    }).catch(() => {
+      this.setWindowTitle(`Discord-Qt (failed to log in)`);
+      ((global as any).loginWindow = new LoginWindow()).show();
+    });
   }
 }

@@ -1,4 +1,15 @@
 #LoginWindow {
   height: 100%;
   background: #2C2F33;
+
+  #Root {
+    padding: 10px;
+  }
+  #InfoLabel {
+    margin-bottom: 5px;
+  }
+  #Footer {
+    flex-direction: row-reverse;
+    margin-top: 5px;
+  }
 }

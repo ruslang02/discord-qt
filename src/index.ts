@@ -1,6 +1,6 @@
 import { QMainWindow } from "@nodegui/nodegui";
 import { RootWindow } from "./windows/RootWindow/RootWindow";
-import { Client } from "discord.js";
+import { Client } from "eris";
 import path from 'path';
 
 type Config = {
@@ -9,11 +9,12 @@ type Config = {
 
 export class Application {
   public start(): void {
+    this.loadConfig();
+    
     let window = new RootWindow();
     window.show();
 
     this.GlobalWindow = window;
-    this.loadConfig();
   }
 
   protected async loadConfig() {
