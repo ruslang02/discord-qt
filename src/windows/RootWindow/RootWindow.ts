@@ -1,33 +1,73 @@
 import './RootWindow.scss';
-import fs from 'fs';
-import path = require("path");
-import { QWidget, FlexLayout, QMainWindow, QIcon } from '@nodegui/nodegui';
+import { QWidget, FlexLayout } from '@nodegui/nodegui';
 import { Window } from '../Window/Window';
 import { Application } from '../..';
-import Eris, { Client } from 'eris';
+import { Client } from 'eris';
 import { LoginWindow } from '../LoginWindow/LoginWindow';
+import { GuildsList } from '../../components/GuildsList/GuildsList';
 
 export class RootWindow extends Window {
+  private root: QWidget;
+
   constructor() {
     super();
+    this.root = new QWidget();
+
     this.initializeWindow();
-    this.loadClient()
+    this.loadClient().then(result => {
+      if (!result)
+        ((global as any).loginWindow = new LoginWindow()).show();
+    })
+    this.loadControls();
   }
 
   protected initializeWindow() {
     this.setWindowTitle("Discord-Qt");
-    this.setLayout(new FlexLayout());
+    this.root.setLayout(new FlexLayout());
+    this.root.setObjectName("Root");
     this.setObjectName("RootWindow");
     this.setMinimumSize(400, 400);
+    this.setCentralWidget(this.root);
   }
 
-  protected loadClient() {
-    const client = Application.Client = new Client(Application.Config.token || '');
-    client.connect().then(() => {
-      this.setWindowTitle(`Discord-Qt (logged in as ${client.user.username})`);
-    }).catch(() => {
-      this.setWindowTitle(`Discord-Qt (failed to log in)`);
-      ((global as any).loginWindow = new LoginWindow()).show();
-    });
+  protected loadControls() {
+    const guildsList = new GuildsList();
+    this.root.layout?.addWidget(guildsList);
+  }
+
+  public loadClient(): Promise<boolean> {
+    let client: Client = Application.Client = new Client(Application.Config.token || 's');
+    return new Promise((resolve) => {
+      try {
+        client.on('error', ex => {
+          console.error('[error]', ex.message);
+          if (ex.message.includes("Invalid token"))
+            resolve(false);
+          clearInterval(timer);
+        });
+        const timer = setInterval(() => {
+          if (!!client.user)
+            resolve(true);
+          clearInterval(timer);
+        }, 100);
+        client.on('warn', console.warn.bind(this, '[warn]'));
+        client.on('debug', (call) => {
+          try {
+            const { op } = JSON.parse(call);
+            if(op === 12)
+              resolve(true);
+          } catch {
+            console.debug.bind(this, '[debug]');
+          }
+        });
+        client.connect();
+      } catch {
+        resolve(false);
+      }
+    }).then(result => {
+      if (result)
+        this.setWindowTitle(`Discord-Qt • ${client.user.username}#${client.user.discriminator})`);
+      else this.setWindowTitle(`Discord-Qt • Not logged in`);
+    }) as Promise<boolean>;
   }
 }

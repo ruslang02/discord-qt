@@ -1,5 +1,4 @@
 import { QMainWindow, QIcon } from "@nodegui/nodegui";
-import {Client} from 'discord.js';
 import path from "path";
 import fs from "fs";
 

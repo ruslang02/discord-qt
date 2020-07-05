@@ -8,7 +8,7 @@ type Config = {
 }
 
 export class Application {
-  public start(): void {
+  public static start(): void {
     this.loadConfig();
     
     let window = new RootWindow();
@@ -17,7 +17,7 @@ export class Application {
     this.GlobalWindow = window;
   }
 
-  protected async loadConfig() {
+  protected static async loadConfig() {
     const configPath = path.join(process.env.HOME || '', '.config', 'discord-qt', 'config.json');
     try {
       const configFile = require(configPath);
@@ -30,10 +30,10 @@ export class Application {
     }
   }
 
-  public get GlobalWindow(): QMainWindow {
+  public static get GlobalWindow(): QMainWindow {
     return (global as any).win;
   }
-  public set GlobalWindow(v: QMainWindow) {
+  public static set GlobalWindow(v: QMainWindow) {
     (global as any).win = v;
   }
 
@@ -52,5 +52,4 @@ export class Application {
   }
 }
 
-const application = new Application();
-application.start();
+Application.start();

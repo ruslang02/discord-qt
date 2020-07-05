@@ -1,10 +1,8 @@
-import { QWidget, FlexLayout, QPixmap, QLabel, QPainter } from "@nodegui/nodegui";
-import { Guild } from "discord.js";
+import { QWidget, FlexLayout, QPixmap, QLabel } from "@nodegui/nodegui";
 import path from "path";
+import './GuildsList.scss';
 
 export class GuildsList extends QWidget {
-  private guilds: Guild[] = [];
-
   constructor() {
     super();
 
@@ -13,13 +11,8 @@ export class GuildsList extends QWidget {
   }
 
   initializeComponents() {
-    this.setInlineStyle(`
-      height: '100%';
-      align-items: 'center';
-      justify-content: 'center';
-      flex-direction: column;
-    `);
     this.setLayout(new FlexLayout());
+    this.setObjectName("GuildsList");
   }
 
   private loadVirtualGuilds() {

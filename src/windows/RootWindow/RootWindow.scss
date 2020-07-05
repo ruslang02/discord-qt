@@ -1,4 +1,9 @@
 #RootWindow {
   height: 100%;
   background: #23272A;
+
+  #Root {
+    flex-direction: row;
+    height: 100%;
+  }
 }
