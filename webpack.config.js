@@ -1,6 +1,7 @@
 const path = require("path");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { IgnorePlugin } = require("webpack");
 
 module.exports = {
   mode: process.NODE_ENV || "development",
@@ -49,5 +50,12 @@ module.exports = {
   resolve: {
     extensions: [".tsx", ".ts", ".js", ".jsx"],
   },
-  plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin()],
+  plugins: [
+    new CleanWebpackPlugin(), 
+    new MiniCssExtractPlugin(),
+    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)/g})
+  ],
+  stats: {
+    warnings: false
+  },
 };

@@ -1,39 +1,33 @@
-import './LoginWindow.scss';
+import './LoginView.scss';
 import { QWidget, FlexLayout, QLabel, QTextEdit, QPushButton } from '@nodegui/nodegui';
 import { Window } from '../Window/Window';
 import { Application } from '../..';
 import { RootWindow } from '../RootWindow/RootWindow';
 
-export class LoginWindow extends Window {
-  private root: QWidget;
-
+export class LoginView extends QWidget {
   constructor() {
     super();
-    this.root = new QWidget();
 
-    this.initializeWindow();
+    this.initializeView();
     this.loadControls();
   }
 
-  protected initializeWindow() {
-    this.setWindowTitle("Discord-Qt");
-    this.setObjectName("LoginWindow");
-    this.root.setLayout(new FlexLayout());
-    this.root.setObjectName("Root");
-    this.setCentralWidget(this.root);
+  protected initializeView() {
+    this.setObjectName("LoginView");
+    this.setLayout(new FlexLayout());
   }
 
   protected loadControls() {
     const infoLabel = new QLabel();
     infoLabel.setObjectName("InfoLabel")
     infoLabel.setText("Welcome to Discord-Qt!\r\n\r\nIn order to start using this Discord client you need to provide your user token in the field below.");
-    this.root.layout?.addWidget(infoLabel);
+    this.layout?.addWidget(infoLabel);
 
     const tokenField = new QTextEdit();
     tokenField.setPlaceholderText("Nvfsdfds...");
     tokenField.setInlineStyle(`height: 30px`);
     tokenField.setAcceptRichText(false);
-    this.root.layout?.addWidget(tokenField);
+    this.layout?.addWidget(tokenField);
 
     const footer = new QWidget();
     footer.setLayout(new FlexLayout());
@@ -56,6 +50,6 @@ export class LoginWindow extends Window {
 
     footer.layout?.addWidget(okButton);
     footer.layout?.addWidget(exitButton);
-    this.root.layout?.addWidget(footer);
+    this.layout?.addWidget(footer);
   }
 }

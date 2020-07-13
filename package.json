@@ -10,15 +10,22 @@
   "private": true,
   "scripts": {
     "build": "webpack -p",
-    "start": "webpack && qode ./dist/index.js",
-    "debug": "webpack && qode --inspect ./dist/index.js",
+    "start": "webpack --hide-modules && qode ./dist/index.js",
+    "start:test": "qode ./dist/index.js",
+    "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
     "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug"
   },
   "dependencies": {
-    "@nodegui/nodegui": "^0.19.0",
+    "@nodegui/nodegui": "^0.24.0",
+    "@nodegui/plugin-animation": "^1.1.0",
+    "@types/pngjs": "^3.4.2",
+    "discord.js": "^11.6.4",
     "eris": "^0.13.3",
     "extract-loader": "^5.1.0",
-    "mini-css-extract-plugin": "^0.9.0"
+    "ffmpeg-static": "^4.2.5",
+    "gm": "^1.23.1",
+    "mini-css-extract-plugin": "^0.9.0",
+    "pngjs": "^5.0.0"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.4.1",

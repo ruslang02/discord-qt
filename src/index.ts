@@ -1,7 +1,8 @@
 import { QMainWindow } from "@nodegui/nodegui";
 import { RootWindow } from "./windows/RootWindow/RootWindow";
-import { Client } from "eris";
+import { Client } from "discord.js";
 import path from 'path';
+import fs from 'fs';
 
 type Config = {
   token?: string;
@@ -19,13 +20,16 @@ export class Application {
 
   protected static async loadConfig() {
     const configPath = path.join(process.env.HOME || '', '.config', 'discord-qt', 'config.json');
+    console.log(configPath);
     try {
-      const configFile = require(configPath);
+      const configFile = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       const appConfig = {
         token: configFile.token || undefined
       };
+      console.log(appConfig);
       Application.Config = appConfig as Config;
-    } catch {
+    } catch(err) {
+      console.error(err);
       Application.Config = {};
     }
   }

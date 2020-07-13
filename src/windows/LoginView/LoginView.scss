@@ -1,10 +1,7 @@
-#LoginWindow {
-  height: 100%;
-  background: #2C2F33;
-
-  #Root {
-    padding: 10px;
-  }
+#LoginView {
+  height: '100%';
+  padding: 10px;
+  flex-direction: column;
   #InfoLabel {
     margin-bottom: 5px;
   }

@@ -3,14 +3,14 @@
     "incremental": true,
     "target": "es2016",
     "module": "commonjs",
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
-    "outDir": "./dist",
+    "rootDir": "src",
+    "outDir": "bin",
     "sourceMap": true,
     "strict": true,
     "alwaysStrict": true,
     "moduleResolution": "node",
     "esModuleInterop": true
-  },
-  "include": ["**/*/*"]
+  }
 }
