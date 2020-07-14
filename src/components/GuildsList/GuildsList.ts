@@ -1,4 +1,4 @@
-import { QWidget, FlexLayout, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, TextFormat, AlignmentFlag } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, TextFormat, AlignmentFlag, QCursor, CursorShape } from "@nodegui/nodegui";
 import path from "path";
 import './GuildsList.scss';
 import { Guild } from "discord.js";
@@ -31,6 +31,7 @@ export class GuildsList extends QScrollArea {
     mainLabelButton.setIcon(mainIcon);
     mainLabelButton.setIconSize(new QSize(28, 28));
     mainLabelButton.setFixedSize(48, 48 + 10);
+    mainLabelButton.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.container.layout?.addWidget(mainLabelButton);
 
     const hr = new QLabel();
@@ -90,6 +91,7 @@ export class GuildsList extends QScrollArea {
       const guildElem = new QLabel();
       guildElem.setObjectName("PageButton");
       guildElem.setFixedSize(48, 48 + 10);
+      guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
     });
 
   }

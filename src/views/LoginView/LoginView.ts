@@ -1,8 +1,7 @@
 import './LoginView.scss';
 import { QWidget, FlexLayout, QLabel, QTextEdit, QPushButton } from '@nodegui/nodegui';
-import { Window } from '../Window/Window';
 import { Application } from '../..';
-import { RootWindow } from '../RootWindow/RootWindow';
+import { RootWindow } from '../../windows/RootWindow/RootWindow';
 
 export class LoginView extends QWidget {
   constructor() {
