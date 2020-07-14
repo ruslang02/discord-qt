@@ -1,9 +1,7 @@
 import { QWidget, FlexLayout } from "@nodegui/nodegui";
-import { GuildPanel } from "../../components/GuildPanel/GuildPanel";
-import './GuildView.scss';
-import { LeftPanel } from "../../components/LeftPanel/LeftPanel";
 
-export class GuildView extends QWidget {
+export class DMView extends QWidget {
+  private guildPanel = new QWidget();
   private channelView = new QWidget();
   private membersPanel = new QWidget();
 
@@ -14,8 +12,8 @@ export class GuildView extends QWidget {
 
   initView() {
     this.setLayout(new FlexLayout());
-    this.setObjectName("GuildView");
-    [this.channelView, this.membersPanel]
+    this.setObjectName("DMView");
+    [this.guildPanel, this.channelView, this.membersPanel]
       .forEach(w => this.layout?.addWidget(w));
   }
 }

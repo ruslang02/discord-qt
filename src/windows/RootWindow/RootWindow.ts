@@ -2,10 +2,11 @@ import './RootWindow.scss';
 import { QWidget, FlexLayout, QStackedWidget, QMainWindow, QIcon } from "@nodegui/nodegui";
 import path from "path";
 import fs from "fs";
-import { Application } from '../..';
+import { app } from '../..';
 import { GuildsList } from '../../components/GuildsList/GuildsList';
 import { Client } from 'discord.js';
-import { LoginView } from '../../views/LoginView/LoginView';
+import { MainView } from '../../views/MainView/MainView';
+import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
 
 export class RootWindow extends QMainWindow {
   private root: QStackedWidget = new QStackedWidget();
@@ -14,7 +15,8 @@ export class RootWindow extends QMainWindow {
   private settingsView: QWidget = new QWidget();
 
   private guildsList: GuildsList = new GuildsList();
-  private container: QStackedWidget = new QStackedWidget();
+  private leftPanel = new LeftPanel();
+  private container = new MainView();
 
   constructor() {
     super();
@@ -48,20 +50,18 @@ export class RootWindow extends QMainWindow {
   }
 
   protected loadControls() {
-    this.container.addWidget(new LoginView());
-    this.mainView.layout?.addWidget(this.guildsList);
-    this.mainView.layout?.addWidget(this.container);
+    [this.guildsList, this.leftPanel, this.container]
+      .forEach(w => this.mainView.layout?.addWidget(w));
   }
 
   public async loadClient(): Promise<boolean> {
-    Application.Client = new Client();
-    Application.Client.on('error', console.error)
-    Application.Client.on('debug', console.debug)
-    Application.Client.on('warn', console.warn)
+    app.client = new Client();
+    app.client.on('error', console.error)
+    app.client.on('debug', console.debug)
+    app.client.on('warn', console.warn)
     try {
-      await Application.Client.login(Application.Config.token || 's');
-      this.setWindowTitle(`Discord-Qt • ${Application.Client.user?.username}#${Application.Client.user?.discriminator}`);
-      this.guildsList.loadVirtualGuilds();
+      await app.client.login(app.config.token || 's');
+      this.setWindowTitle(`Discord-Qt • ${app.client.user.username}#${app.client.user.discriminator}`);
       return true;
     } catch(e) {
       console.log(e);

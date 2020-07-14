@@ -1,0 +1,10 @@
+#LeftPanel {
+  flex-direction: column;
+  height: '100%';
+  width: 240px;
+  background: #292b2f;
+  #Container {
+    height: '100%';
+    flex-grow: 1;
+  }
+}

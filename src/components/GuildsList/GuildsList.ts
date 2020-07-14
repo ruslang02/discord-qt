@@ -1,10 +1,10 @@
 import { QWidget, FlexLayout, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, TextFormat, AlignmentFlag, QCursor, CursorShape } from "@nodegui/nodegui";
 import path from "path";
 import './GuildsList.scss';
-import { Guild } from "discord.js";
-import { Application } from "../..";
-import https from "https";
-import { PNG, Metadata } from 'pngjs';
+import { Guild, Client } from "discord.js";
+import { app } from "../..";
+import { roundifyPng } from "../../utilities/RoundifyPng";
+import { httpsGet } from "../../utilities/HttpsGet";
 
 export class GuildsList extends QScrollArea {
   guilds: Map<Guild, QWidget> = new Map();
@@ -15,6 +15,10 @@ export class GuildsList extends QScrollArea {
 
     this.initializeComponents();
     this.addMainPageButton();
+
+    app.on('clientNew', (client: Client) => {
+      client.on('ready', this.loadGuilds.bind(this));
+    })
   }
 
   initializeComponents() {
@@ -26,13 +30,13 @@ export class GuildsList extends QScrollArea {
 
   addMainPageButton() {
     const mainIcon = new QIcon(path.resolve(__dirname, "../assets/images/home.png"));
-    const mainLabelButton = new QPushButton();
-    mainLabelButton.setObjectName("PageButton");
-    mainLabelButton.setIcon(mainIcon);
-    mainLabelButton.setIconSize(new QSize(28, 28));
-    mainLabelButton.setFixedSize(48, 48 + 10);
-    mainLabelButton.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    this.container.layout?.addWidget(mainLabelButton);
+    const mpBtn = new QPushButton();
+    mpBtn.setObjectName("PageButton");
+    mpBtn.setIcon(mainIcon);
+    mpBtn.setIconSize(new QSize(28, 28));
+    mpBtn.setFixedSize(48, 48 + 10);
+    mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
+    this.container.layout?.addWidget(mpBtn);
 
     const hr = new QLabel();
     hr.setObjectName('Separator');
@@ -43,56 +47,43 @@ export class GuildsList extends QScrollArea {
   update() {
   }
 
-  private getImageBufferFromURL(url: string | null): Promise<Buffer | false> {
-    return new Promise((resolve) => {//
-      if(url === null) return resolve(false);
-      https.get(url.replace('.jpg', '.png'), (res) => {
-        const data: Uint8Array[] = []
-        res.on('data', chunk => data.push(chunk));
-        res.on('error', (err) => {console.error(err); resolve(false);});
-        res.on('end', () => {
-          const buf = Buffer.concat(data);
-          new PNG({filterType: 4}).parse(buf, (err, that) => {
-            if(err) return console.error(err);
-            for (var y = 0; y < that.height; y++) {
-              for (var x = 0; x < that.width; x++) {
-                var idx = (that.width * y + x) << 2;
-                var radius = that.height / 2;
-                if (y >= Math.sqrt(Math.pow(radius, 2) - Math.pow(x - radius, 2)) + radius || y <= -(Math.sqrt(Math.pow(radius, 2) - Math.pow(x - radius, 2))) + radius) {
-                  that.data[idx + 3] = 0;
-                }
-              }
-            }
-            resolve(PNG.sync.write(that));
-          }).on('error', (err) => {console.error(err);});
-        })
-      }).on('error', (err) => {console.error(err); resolve(false);})
-    })
+  private async getImageBufferFromURL(url: string | null): Promise<Buffer | false> {
+    const result = await httpsGet(url);
+    if(result === false) return false;
+    if (!app.config.roundifyAvatars) return result;
+    return roundifyPng(result);
   }
 
-  async loadVirtualGuilds() {
-    const { Client: client } = Application;
-    client.guilds.forEach(guild => {
-      this.getImageBufferFromURL(guild.iconURL)
-        .then(imageBuffer => {
-          if (!imageBuffer) {
-            const text = guild.name.split(' ').map(r => r[0].toUpperCase()).join('');
-            guildElem.setText(text);
-            guildElem.setFont(new QFont('sans-serif', 18));
-            guildElem.setAlignment(AlignmentFlag.AlignCenter);
-          }
-          else {
-            const guildImage = new QPixmap();
-            guildImage.loadFromData(imageBuffer, 'PNG');
-            guildElem.setPixmap(guildImage.scaled(48, 48));
-          }
-          this.container.layout?.addWidget(guildElem);
-        });
-      const guildElem = new QLabel();
-      guildElem.setObjectName("PageButton");
-      guildElem.setFixedSize(48, 48 + 10);
-      guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    });
+  async loadGuilds() {
+    const { client } = app;
+
+    this.guilds.forEach(g => this.container.layout?.removeWidget(g));
+    this.guilds.clear();
+
+    client.guilds
+      .sort((a, b) => a.position - b.position)
+      .forEach(guild => {
+        this.getImageBufferFromURL(guild.iconURL)
+          .then(imageBuffer => {
+            if (!imageBuffer) {
+              const text = guild.name.split(' ').map(r => r[0].toUpperCase()).join('');
+              guildElem.setText(text);
+              guildElem.setFont(new QFont('sans-serif', 18));
+              guildElem.setAlignment(AlignmentFlag.AlignCenter);
+            }
+            else {
+              const guildImage = new QPixmap();
+              guildImage.loadFromData(imageBuffer, 'PNG');
+              guildElem.setPixmap(guildImage.scaled(48, 48));
+            }
+          });
+        const guildElem = new QLabel();
+        guildElem.setObjectName("PageButton");
+        guildElem.setFixedSize(48, 48 + 10);
+        guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
+        this.container.layout?.addWidget(guildElem);
+        this.guilds.set(guild, guildElem);
+      });
 
   }
 }

@@ -1,0 +1,36 @@
+#DMPanel {
+  width: '100%';
+  background: #2f3136;
+  flex-direction: column;
+  height: '100%';
+  flex-grow: 1;
+  #TitleBar {
+    background-color: #2f3136;
+    width: '100%';
+    padding: 10px;
+  }
+  #UserFilterInput {
+    background-color: #202225;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    width: 220px;
+    flex: 1;
+    height: 28px;
+    padding-left: 5px;
+  }
+  #UsersContainer {
+    height: '100%';
+    flex-grow: 1;
+  }
+  #UsersList {
+    flex-direction: column;
+    padding: 8px;
+  }
+  #DMLabel {
+    font-weight: bold;
+    font-size: smaller;
+    margin-bottom: 8px;
+    color: #8e9297;
+  }
+}

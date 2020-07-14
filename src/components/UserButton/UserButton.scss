@@ -1,0 +1,21 @@
+#UserButton {
+  width: '100%';
+  padding: 5px 8px;
+  margin-bottom: 2px;
+  border-radius: 4px;
+  color: #8e9297;
+  &:hover {
+    background-color: rgba(79, 84, 92, 0.32);
+    color: white;
+  }
+  #InfoContainer {
+    flex-direction: column;
+  }
+  #UserNameLabel {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  #Avatar {
+    margin-right: 5px;
+  }
+}

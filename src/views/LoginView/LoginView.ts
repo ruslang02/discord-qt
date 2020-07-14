@@ -1,7 +1,6 @@
 import './LoginView.scss';
 import { QWidget, FlexLayout, QLabel, QTextEdit, QPushButton } from '@nodegui/nodegui';
-import { Application } from '../..';
-import { RootWindow } from '../../windows/RootWindow/RootWindow';
+import { app } from '../..';
 
 export class LoginView extends QWidget {
   constructor() {
@@ -36,8 +35,8 @@ export class LoginView extends QWidget {
     okButton.setText("Login");
     okButton.addEventListener('clicked', () => {
       console.log(tokenField.toPlainText());
-      Application.Config.token = tokenField.toPlainText();
-      (Application.GlobalWindow as RootWindow).loadClient();
+      app.config.token = tokenField.toPlainText();
+      app.window.loadClient();
     });
 
     const exitButton = new QPushButton();
