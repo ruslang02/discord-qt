@@ -7,6 +7,8 @@ type Options = {
   size?: number,
 };
 
+const log = console.log.bind(this, '[PictureWorker]');
+
 class PictureWorker {
   worker: Worker;
   id: number = 0;
@@ -26,6 +28,8 @@ class PictureWorker {
   }
 
   loadImage(url: string, options?: Options): Promise<Buffer | null> {
+    if(url === null)
+      return Promise.resolve(null);
     return new Promise(resolve => {
       const id = this.id;
       options = {...this.defaultOptions, ...(options || {}), roundify: true};
@@ -47,7 +51,10 @@ class PictureWorker {
       return callback(null);
 
     this.callbacks.delete(result.id);
-    const buffer = Buffer.from(result.buffer.buffer);
+    const buffer = Buffer.alloc(result.buffer.length);
+    for (let i = 0; i < result.buffer.length; i++)
+      buffer[i] = result.buffer[i];
+    //log('received', new Date().getTime(), path.basename(result.url), buffer.length, result.buffer.length);
     return callback(buffer);
   }
 }

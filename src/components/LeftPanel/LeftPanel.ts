@@ -1,4 +1,4 @@
-import { QWidget, FlexLayout, QStackedWidget, QLabel } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QStackedWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
 import { UserPanel } from "../UserPanel/UserPanel";
 import './LeftPanel.scss';
 import { GuildPanel } from "../GuildPanel/GuildPanel";
@@ -9,22 +9,23 @@ export class LeftPanel extends QWidget {
   private guildPanel = new GuildPanel();
   private dmPanel = new DMPanel();
   private userPanel = new UserPanel();
+  private controls = new QBoxLayout(Direction.TopToBottom);
 
   constructor() {
     super();
     this.initLeftPanel();
   }
   private initLeftPanel() {
-    const { guildPanel, dmPanel, userPanel, container } = this;
-    this.setLayout(new FlexLayout());
+    const { guildPanel, dmPanel, userPanel, container, controls } = this;
+    this.setLayout(controls);
     this.setObjectName('LeftPanel');
     container.addWidget(guildPanel);
     container.addWidget(dmPanel);
     container.setCurrentWidget(dmPanel);
     container.setObjectName('Container');
-    const label = new QLabel();
-    label.setText("heloo");
-    [container, userPanel]
-      .forEach(w => this.layout?.addWidget(w));
+    controls.setSpacing(0);
+    controls.setContentsMargins(0, 0, 0, 0);
+    controls.addWidget(container, 1);
+    controls.addWidget(userPanel, 0);
   }
 }

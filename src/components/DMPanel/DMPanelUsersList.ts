@@ -1,15 +1,15 @@
-import { QWidget, FlexLayout, QScrollArea, QLabel, QFont } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction } from "@nodegui/nodegui";
 import { app } from "../..";
 import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 
 export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
+  widgets = new QBoxLayout(Direction.TopToBottom);
 
   constructor() {
     super();
-    this.setLayout(new FlexLayout());
-    this.root.setLayout(new FlexLayout());
+    this.root.setLayout(this.widgets);
     this.root.setObjectName('UsersList');
     this.setWidget(this.root);
     this.setObjectName('UsersContainer');
@@ -17,9 +17,12 @@ export class DMPanelUsersList extends QScrollArea {
     const dmLabel = new QLabel();
     dmLabel.setText('Direct Messages'.toUpperCase());
     dmLabel.setObjectName('DMLabel');
-    this.root.layout?.addWidget(dmLabel);
+    this.widgets.addWidget(dmLabel);
+    this.widgets.addStretch(1);
+    this.widgets.setSpacing(2);
+    this.widgets.setContentsMargins(8, 8, 8, 8);
 
-    app.on('clientNew', (client: Client) => {
+    app.on('client', (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
     });
   }
@@ -37,11 +40,14 @@ export class DMPanelUsersList extends QScrollArea {
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID);
         return snB.date.getTime() - snA.date.getTime();
       });
+    if(app.config.fastLaunch)
+      channels.length = 5;
     channels.map(c => {
       const dm = c as DMChannel;
       const uButton = new UserButton();
       uButton.loadUser(dm.recipient);
+      uButton.setFixedSize(222, 42);
       return uButton;
-    }).forEach(w => this.root.layout?.addWidget(w));
+    }).forEach((w, i) => this.widgets.insertWidget(i+1, w));
   }
 }

@@ -20,6 +20,7 @@
     "@nodegui/nodegui": "^0.24.0",
     "@nodegui/plugin-animation": "^1.1.0",
     "@types/pngjs": "^3.4.2",
+    "axios": "^0.19.2",
     "discord.js": "^11.6.4",
     "eris": "^0.13.3",
     "extract-loader": "^5.1.0",

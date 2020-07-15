@@ -15,7 +15,7 @@ export class GuildsList extends QScrollArea {
     this.initializeComponents();
     this.addMainPageButton();
 
-    app.on('clientNew', (client: Client) => {
+    app.on('client', (client: Client) => {
       client.on('ready', this.loadGuilds.bind(this));
     })
   }
@@ -28,13 +28,14 @@ export class GuildsList extends QScrollArea {
   }
 
   addMainPageButton() {
-    const mainIcon = new QIcon(path.resolve(__dirname, "../assets/images/home.png"));
+    const mainIcon = new QIcon(path.resolve(__dirname, "../assets/icons/home.png"));
     const mpBtn = new QPushButton();
     mpBtn.setObjectName("PageButton");
     mpBtn.setIcon(mainIcon);
     mpBtn.setIconSize(new QSize(28, 28));
     mpBtn.setFixedSize(48, 48 + 10);
     mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
+    mpBtn.setProperty('toolTip', 'Direct Messages');
     this.container.layout?.addWidget(mpBtn);
 
     const hr = new QLabel();
@@ -48,11 +49,15 @@ export class GuildsList extends QScrollArea {
     this.guilds.forEach(g => this.container.layout?.removeWidget(g));
     this.guilds.clear();
 
-    client.guilds
+    const guilds = client.guilds
       .sort((a, b) => a.position - b.position)
-      .forEach(guild => {
+      .array();
+    if(app.config.fastLaunch)
+      guilds.length = 5;
+    guilds.forEach(guild => {
         pictureWorker.loadImage(guild.iconURL)
           .then(imageBuffer => {
+            //console.log(guild.name);
             if (!imageBuffer) {
               const text = guild.name.split(' ').map(r => r[0].toUpperCase()).join('');
               guildElem.setText(text);
@@ -69,9 +74,9 @@ export class GuildsList extends QScrollArea {
         guildElem.setObjectName("PageButton");
         guildElem.setFixedSize(48, 48 + 10);
         guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
+        guildElem.setProperty('toolTip', `<b>${guild.name}</b>`);
         this.container.layout?.addWidget(guildElem);
         this.guilds.set(guild, guildElem);
-      });
-
+      })
   }
 }

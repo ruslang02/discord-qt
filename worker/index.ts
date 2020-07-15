@@ -1,13 +1,21 @@
 import { isMainThread, parentPort } from 'worker_threads';
 import { httpsGet } from './HttpsGet';
 import { roundifyPng } from './RoundifyPng';
+import path from 'path';
+
+const log = console.log.bind(this, '[worker]');
+const send = (data: any) => {
+  // log(`sending`, new Date().getTime(), path.basename(data.url), data.buffer?.length || 'NULL')
+  parentPort?.postMessage(data);
+}
 if (!isMainThread) {
-  parentPort?.on('message', async (request) => {
+  parentPort?.on('message', (request) => {
     const { url, options } = request;
-    const buffer = await httpsGet(url, options);
-    if (!buffer || options.roundify === false)
-      return parentPort?.postMessage({url, buffer});
-    const roundBuffer = await roundifyPng(buffer);
-    parentPort?.postMessage({url, buffer: roundBuffer});
+    httpsGet(url, options).then(buffer => {
+      //log(`received`, new Date().getTime(), path.basename(request.url), buffer?.length || 'NULL');
+      if (buffer && options.roundify === true)
+        return roundifyPng(buffer).then(buffer => send({ url, buffer }));
+      send({ url, buffer });
+    });
   })
 }

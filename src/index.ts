@@ -1,4 +1,3 @@
-import { QMainWindow } from "@nodegui/nodegui";
 import { RootWindow } from "./windows/RootWindow/RootWindow";
 import { Client } from "discord.js";
 import path from 'path';
@@ -8,6 +7,7 @@ import { EventEmitter } from "events";
 type Config = {
   token?: string;
   roundifyAvatars: boolean;
+  fastLaunch: boolean;
 }
 
 class Application extends EventEmitter {
@@ -25,6 +25,7 @@ class Application extends EventEmitter {
       const appConfig = {
         token: configFile.token || undefined,
         roundifyAvatars: configFile.roundifyAvatars ?? true,
+        fastLaunch: configFile.fastLaunch ?? false,
       };
       console.log(appConfig);
       this.config = appConfig as Config;
@@ -32,6 +33,7 @@ class Application extends EventEmitter {
       console.error(err);
       this.config = {
         roundifyAvatars: true,
+        fastLaunch: false,
       };
     }
   }
@@ -48,7 +50,7 @@ class Application extends EventEmitter {
   }
   public set client(v: Client) {
     (global as any).client = v;
-    this.emit('clientNew', v);
+    this.emit('client', v);
   }
 
   public get config(): Config {

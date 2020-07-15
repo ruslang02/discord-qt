@@ -23,10 +23,10 @@ export class DMPanelTitleBar extends QWidget {
 
   initShadow() {
     const { shadow } = this;
-    shadow.setBlurRadius(6);
-    shadow.setColor(new QColor('rgb(6,6,6)'));
+    shadow.setBlurRadius(5);
+    shadow.setColor(new QColor(12, 12, 12, 255));
     shadow.setXOffset(-2);
-    shadow.setYOffset(-1);
+    shadow.setYOffset(0);
 
     this.setGraphicsEffect(shadow);
   }

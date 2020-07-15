@@ -1,11 +1,6 @@
 #DMPanel {
-  width: '100%';
-  flex-direction: column;
-  height: '100%';
-  flex-grow: 1;
   #TitleBar {
     background-color: #2f3136;
-    width: '100%';
     padding: 10px;
   }
   #UserFilterInput {
@@ -19,22 +14,17 @@
     padding-left: 5px;
   }
   #UsersContainer {
-    height: '100%';
-    flex-grow: 1;
+    background-color: #2f3136;
+    border: none;
   }
   #UsersList {
-    flex-direction: column;
-    padding: 8px;
-    width: '100%';
     background-color: #2f3136;
-    #UserButton {
-      width: 222px;
-    }
   }
   #DMLabel {
     font-weight: bold;
-    font-size: smaller;
+    font-size: 12px;
     margin-bottom: 4px;
+    margin-left: 5px;
     color: #8e9297;
   }
 }

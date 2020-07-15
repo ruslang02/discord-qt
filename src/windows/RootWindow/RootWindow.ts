@@ -1,22 +1,16 @@
-import './RootWindow.scss';
-import { QWidget, FlexLayout, QStackedWidget, QMainWindow, QIcon } from "@nodegui/nodegui";
+import { QWidget, QStackedWidget, QMainWindow, QIcon, WidgetAttribute } from "@nodegui/nodegui";
 import path from "path";
 import fs from "fs";
 import { app } from '../..';
-import { GuildsList } from '../../components/GuildsList/GuildsList';
 import { Client } from 'discord.js';
 import { MainView } from '../../views/MainView/MainView';
-import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
+import './RootWindow.scss';
 
 export class RootWindow extends QMainWindow {
-  private root: QStackedWidget = new QStackedWidget();
+  private root = new QStackedWidget();
 
-  private mainView: QWidget = new QWidget();
-  private settingsView: QWidget = new QWidget();
-
-  private guildsList: GuildsList = new GuildsList();
-  private leftPanel = new LeftPanel();
-  private container = new MainView();
+  private mainView = new MainView();
+  private settingsView = new QWidget();
 
   constructor() {
     super();
@@ -24,16 +18,14 @@ export class RootWindow extends QMainWindow {
     this.loadIcon();
     this.loadStyles();
     this.initializeWindow();
-    this.loadClient().then();
-    this.loadControls();
+    this.loadClient();
   }
 
   protected initializeWindow() {
     this.setWindowTitle("Discord-Qt");
-    this.mainView.setLayout(new FlexLayout());
-    this.mainView.setObjectName("Root");
     this.setObjectName("RootWindow");
     this.setMinimumSize(400, 400);
+    this.setAttribute(WidgetAttribute.WA_AlwaysShowToolTips, true);
     this.setCentralWidget(this.root);
     this.root.addWidget(this.mainView);
     this.root.addWidget(this.settingsView);
@@ -45,13 +37,8 @@ export class RootWindow extends QMainWindow {
     this.setStyleSheet(stylesheet);
   }
   protected loadIcon() {
-    const icon = new QIcon(path.resolve(__dirname, "../assets/images/logo.png"));
+    const icon = new QIcon(path.resolve(__dirname, "../assets/icons/logo.png"));
     this.setWindowIcon(icon);
-  }
-
-  protected loadControls() {
-    [this.guildsList, this.leftPanel, this.container]
-      .forEach(w => this.mainView.layout?.addWidget(w));
   }
 
   public async loadClient(): Promise<boolean> {

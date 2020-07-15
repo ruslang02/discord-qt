@@ -1,10 +1,12 @@
-import { QWidget, FlexLayout } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QBoxLayout, Direction } from "@nodegui/nodegui";
 import './GuildPanel.scss';
 
 export class GuildPanel extends QWidget {
   private titleBar = new QWidget();
   private actionsMenu = new QWidget();
   private channelsList = new QWidget();
+  private controls = new QBoxLayout(Direction.TopToBottom);
+
   constructor() {
     super();
 
@@ -12,11 +14,14 @@ export class GuildPanel extends QWidget {
   }
 
   private initComponent() {
-    this.setLayout(new FlexLayout());
+    const { titleBar, actionsMenu, channelsList, controls } = this;
+    this.setLayout(controls);
     this.setObjectName('GuildPanel');
+    controls.setSpacing(0);
+    controls.setContentsMargins(0, 0, 0, 0);
 
-    const { titleBar, actionsMenu, channelsList, layout } = this;
-    [titleBar, actionsMenu, channelsList]
-      .forEach(w => layout?.addWidget(w));
+    [titleBar, actionsMenu]
+      .forEach(w => controls.addWidget(w));
+    controls.addWidget(channelsList, 1);
   }
 }
