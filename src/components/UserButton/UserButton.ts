@@ -1,9 +1,7 @@
-import { QPushButton, QLabel, QWidget, QPixmap, FlexLayout, QCursor, CursorShape } from "@nodegui/nodegui";
+import { QLabel, QWidget, QPixmap, FlexLayout, QCursor, CursorShape } from "@nodegui/nodegui";
 import { User } from "discord.js";
-import { httpsGet } from "../../utilities/HttpsGet";
-import { app } from "../..";
-import { roundifyPng } from "../../utilities/RoundifyPng";
 import './UserButton.scss';
+import { pictureWorker } from "../../utilities/PictureWorker";
 
 export class UserButton extends QWidget {
   avatar = new QLabel();
@@ -21,7 +19,7 @@ export class UserButton extends QWidget {
 
   initComponent() {
     const { avatar, infoContainer, userNameLabel, statusLabel } = this;
-    avatar.setFixedSize(32 + 10, 32);
+    avatar.setFixedSize(36 + 10, 36);
     avatar.setObjectName('Avatar');
 
     infoContainer.setLayout(new FlexLayout());
@@ -34,25 +32,15 @@ export class UserButton extends QWidget {
     [avatar, infoContainer].forEach(w => this.layout?.addWidget(w));
   }
 
-  setAvatar(buf: Buffer) {
-    const avatarPixmap = new QPixmap();
-    avatarPixmap.loadFromData(buf, 'PNG');
-    this.avatar.setPixmap(avatarPixmap.scaled(32, 32));
-  }
-
   async loadUser(user: User) {
     const { userNameLabel, statusLabel } = this;
-    httpsGet(user.avatarURL || user.defaultAvatarURL)
-      .then(async (imageBuffer) => {
-        if (imageBuffer === false)
+    pictureWorker.loadImage(user.avatarURL || user.defaultAvatarURL)
+      .then(async (buffer) => {
+        if (buffer === null)
           return;
-        if (!app.config.roundifyAvatars)
-          return this.setAvatar(imageBuffer);
-
-        const avatarBuf = await roundifyPng(imageBuffer);
-        if (avatarBuf === false)
-          return;
-        this.setAvatar(avatarBuf);
+        const avatarPixmap = new QPixmap();
+        avatarPixmap.loadFromData(buffer, 'PNG');
+        this.avatar.setPixmap(avatarPixmap.scaled(36, 36));
       });
 
     userNameLabel.setText(user.username);

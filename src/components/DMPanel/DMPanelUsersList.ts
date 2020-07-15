@@ -1,6 +1,6 @@
 import { QWidget, FlexLayout, QScrollArea, QLabel, QFont } from "@nodegui/nodegui";
 import { app } from "../..";
-import { Client, DMChannel, Collection } from "discord.js";
+import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 
 export class DMPanelUsersList extends QScrollArea {
@@ -31,9 +31,12 @@ export class DMPanelUsersList extends QScrollArea {
     const channels = (client.channels
       .filter(c => c.type === 'dm')
       .array() as DMChannel[])
-      .sort((a, b) => +a.lastMessageID - +b.lastMessageID)
-    channels.length = 5;
-
+      .filter(a => a.lastMessageID !== null)
+      .sort((a, b) => {
+        const snA = SnowflakeUtil.deconstruct(a.lastMessageID);
+        const snB = SnowflakeUtil.deconstruct(b.lastMessageID);
+        return snB.date.getTime() - snA.date.getTime();
+      });
     channels.map(c => {
       const dm = c as DMChannel;
       const uButton = new UserButton();

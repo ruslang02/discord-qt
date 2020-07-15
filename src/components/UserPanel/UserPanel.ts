@@ -2,9 +2,8 @@ import { QWidget, FlexLayout, QLabel, QPushButton, QIcon, QSize, QCursor, Cursor
 import path from 'path';
 import './UserPanel.scss';
 import { app } from "../..";
-import { httpsGet } from "../../utilities/HttpsGet";
-import { roundifyPng } from "../../utilities/RoundifyPng";
 import { Client } from "discord.js";
+import { pictureWorker } from "../../utilities/PictureWorker";
 
 export class UserPanel extends QWidget {
 
@@ -68,13 +67,15 @@ export class UserPanel extends QWidget {
       return;
     }
 
-    let avatarBuf = await httpsGet(client.user.avatarURL || client.user.defaultAvatarURL);
-    if(app.config.roundifyAvatars && avatarBuf !== false)
-      avatarBuf = await roundifyPng(avatarBuf);
-    if(avatarBuf !== false) {
+    let avatarBuf = await pictureWorker.loadImage(
+      client.user.avatarURL || client.user.defaultAvatarURL,
+      { size: 32, roundify: true }
+    );
+
+    if(avatarBuf !== null) {
       const avatarPixmap = new QPixmap();
       avatarPixmap.loadFromData(avatarBuf, 'PNG');
-      avatar.setPixmap(avatarPixmap.scaled(32, 32));
+      avatar.setPixmap(avatarPixmap);
     }
 
     nameLabel.setText(client.user.username);

@@ -3,8 +3,7 @@ import path from "path";
 import './GuildsList.scss';
 import { Guild, Client } from "discord.js";
 import { app } from "../..";
-import { roundifyPng } from "../../utilities/RoundifyPng";
-import { httpsGet } from "../../utilities/HttpsGet";
+import { pictureWorker } from "../../utilities/PictureWorker";
 
 export class GuildsList extends QScrollArea {
   guilds: Map<Guild, QWidget> = new Map();
@@ -43,17 +42,6 @@ export class GuildsList extends QScrollArea {
     hr.setFixedSize(33, 9);
     this.container.layout?.addWidget(hr);
   }
-
-  update() {
-  }
-
-  private async getImageBufferFromURL(url: string | null): Promise<Buffer | false> {
-    const result = await httpsGet(url);
-    if(result === false) return false;
-    if (!app.config.roundifyAvatars) return result;
-    return roundifyPng(result);
-  }
-
   async loadGuilds() {
     const { client } = app;
 
@@ -63,7 +51,7 @@ export class GuildsList extends QScrollArea {
     client.guilds
       .sort((a, b) => a.position - b.position)
       .forEach(guild => {
-        this.getImageBufferFromURL(guild.iconURL)
+        pictureWorker.loadImage(guild.iconURL)
           .then(imageBuffer => {
             if (!imageBuffer) {
               const text = guild.name.split(' ').map(r => r[0].toUpperCase()).join('');

@@ -5,7 +5,10 @@ const { IgnorePlugin } = require("webpack");
 
 module.exports = {
   mode: process.NODE_ENV || "development",
-  entry: "./src",
+  entry: {
+    index: "./src",
+    worker: "./worker"
+  },
   target: "node",
   node: {
     __dirname: false,
@@ -13,15 +16,22 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, "dist"),
-    filename: "index.js",
+    filename: "[name].js",
   },
   module: {
     exprContextCritical: false,
     rules: [
       {
         test: /\.tsx?$/,
-        use: "ts-loader",
         exclude: /node_modules/,
+        use: [
+          {
+            loader: 'ts-loader',
+            options: {
+              transpileOnly: true
+            }
+          }
+        ]
       },
       {
         test: /\.(png|jpe?g|gif|svg)$/i,

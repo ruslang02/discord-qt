@@ -1,6 +1,5 @@
 #DMPanel {
   width: '100%';
-  background: #2f3136;
   flex-direction: column;
   height: '100%';
   flex-grow: 1;
@@ -26,11 +25,16 @@
   #UsersList {
     flex-direction: column;
     padding: 8px;
+    width: '100%';
+    background-color: #2f3136;
+    #UserButton {
+      width: 222px;
+    }
   }
   #DMLabel {
     font-weight: bold;
     font-size: smaller;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     color: #8e9297;
   }
 }

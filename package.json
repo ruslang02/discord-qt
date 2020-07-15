@@ -9,6 +9,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "worker:build": "webpack --config=./worker.config.js -p",
     "build": "webpack -p",
     "start": "webpack --hide-modules && qode ./dist/index.js",
     "start:test": "qode ./dist/index.js",

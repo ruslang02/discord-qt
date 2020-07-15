@@ -41,7 +41,7 @@ export class RootWindow extends QMainWindow {
   }
 
   protected async loadStyles() {
-    const stylesheet = await fs.promises.readFile(path.resolve(__dirname, "main.css"), "utf8");
+    const stylesheet = await fs.promises.readFile(path.resolve(__dirname, "index.css"), "utf8");
     this.setStyleSheet(stylesheet);
   }
   protected loadIcon() {

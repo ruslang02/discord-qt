@@ -11,9 +11,8 @@ type Config = {
 }
 
 class Application extends EventEmitter {
-  public start(): void {
-    this.loadConfig();
-    
+  public async start() {
+    await this.loadConfig();
     this.window = new RootWindow();
     this.window.show();
   }

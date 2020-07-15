@@ -1,11 +1,11 @@
 import { PNG } from "pngjs";
 
-export function roundifyPng(buf: Buffer): Promise<Buffer | false> {
+export function roundifyPng(buf: Buffer): Promise<Buffer | null> {
   return new Promise((resolve) => {
     new PNG({ filterType: 4 }).parse(buf, (err, that) => {
       if (err) {
         console.error(err);
-        resolve(false);
+        resolve(null);
       }
       for (var y = 0; y < that.height; y++) {
         for (var x = 0; x < that.width; x++) {
@@ -17,6 +17,6 @@ export function roundifyPng(buf: Buffer): Promise<Buffer | false> {
         }
       }
       resolve(PNG.sync.write(that));
-    }).on('error', () => resolve(false));
+    }).on('error', () => resolve(null));
   });
 }
