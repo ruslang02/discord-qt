@@ -1,16 +1,16 @@
-import { QWidget, FlexLayout, QLabel, QPushButton, QIcon, QSize, QCursor, CursorShape, QPixmap, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction } from "@nodegui/nodegui";
 import path from 'path';
 import './UserPanel.scss';
 import { app } from "../..";
 import { Client } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
+import { DIconButton } from "../DIconButton/DIconButton";
 
 export class UserPanel extends QWidget {
 
   private avatar = new QLabel();
   private nameLabel = new QLabel();
   private discLabel = new QLabel();
-  private settingsBtn = new QPushButton();
   private controls = new QBoxLayout(Direction.LeftToRight);
 
   constructor() {
@@ -26,7 +26,7 @@ export class UserPanel extends QWidget {
   }
 
   private initComponent() {
-    const { avatar, nameLabel, discLabel, settingsBtn, controls } = this; 
+    const { avatar, nameLabel, discLabel, controls } = this; 
     this.setLayout(controls);
     this.setObjectName('UserPanel');
 
@@ -52,18 +52,15 @@ export class UserPanel extends QWidget {
     [nameLabel, discLabel]
       .forEach(w => infoControls.addWidget(w))
 
-    const settingsIcon = new QIcon(path.resolve(__dirname, '../assets/icons/cog.png'));
-
-    settingsBtn.setFixedSize(32, 32);
-    settingsBtn.setObjectName('SettingsBtn');
-    settingsBtn.setIcon(settingsIcon);
-    settingsBtn.setIconSize(new QSize(20, 20));
-    settingsBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    settingsBtn.setProperty('toolTip', 'User Settings');
-    settingsBtn.setWindowOpacity(50);
+    const sBtn = new DIconButton({
+      iconPath: path.join(__dirname, '../assets/icons/cog.png'),
+      iconQSize: new QSize(20, 20),
+      tooltipText: 'User Settings'
+    });
+    sBtn.setFixedSize(32, 32);
     controls.addWidget(avatar, 0);
     controls.addWidget(infoContainer, 1);
-    controls.addWidget(settingsBtn, 0);
+    controls.addWidget(sBtn, 0);
   }
 
   async updateData(): Promise<void> {
@@ -77,13 +74,13 @@ export class UserPanel extends QWidget {
 
     let avatarBuf = await pictureWorker.loadImage(
       client.user.avatarURL || client.user.defaultAvatarURL,
-      { size: 32, roundify: true }
+      { size: 64 }
     );
 
     if(avatarBuf !== null) {
       const avatarPixmap = new QPixmap();
       avatarPixmap.loadFromData(avatarBuf, 'PNG');
-      avatar.setPixmap(avatarPixmap);
+      avatar.setPixmap(avatarPixmap.scaled(32, 32));
     }
 
     nameLabel.setText(client.user.username);

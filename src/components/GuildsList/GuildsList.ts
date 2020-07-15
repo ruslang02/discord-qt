@@ -1,4 +1,4 @@
-import { QWidget, FlexLayout, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, TextFormat, AlignmentFlag, QCursor, CursorShape } from "@nodegui/nodegui";
+import { QWidget, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, AlignmentFlag, QCursor, CursorShape, AspectRatioMode, TransformationMode, QBoxLayout, Direction } from "@nodegui/nodegui";
 import path from "path";
 import './GuildsList.scss';
 import { Guild, Client } from "discord.js";
@@ -6,8 +6,9 @@ import { app } from "../..";
 import { pictureWorker } from "../../utilities/PictureWorker";
 
 export class GuildsList extends QScrollArea {
-  guilds: Map<Guild, QWidget> = new Map();
-  container: QWidget = new QWidget();
+  layout = new QBoxLayout(Direction.TopToBottom);
+  guilds = new Map<Guild, QWidget>();
+  container = new QWidget();
 
   constructor() {
     super();
@@ -21,9 +22,10 @@ export class GuildsList extends QScrollArea {
   }
 
   initializeComponents() {
-    this.setLayout(new FlexLayout());
-    this.container.setLayout(new FlexLayout());
+    this.container.setLayout(this.layout);
     this.container.setObjectName("GuildsList");
+    this.layout.setContentsMargins(12, 12, 12, 12);
+    this.layout.setSpacing(0);
     this.setWidget(this.container);
   }
 
@@ -36,12 +38,16 @@ export class GuildsList extends QScrollArea {
     mpBtn.setFixedSize(48, 48 + 10);
     mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     mpBtn.setProperty('toolTip', 'Direct Messages');
+    mpBtn.setProperty('active', 'true');
+
     this.container.layout?.addWidget(mpBtn);
 
     const hr = new QLabel();
     hr.setObjectName('Separator');
     hr.setFixedSize(33, 9);
+
     this.container.layout?.addWidget(hr);
+    this.layout.addStretch(1);
   }
   async loadGuilds() {
     const { client } = app;
@@ -54,7 +60,7 @@ export class GuildsList extends QScrollArea {
       .array();
     if(app.config.fastLaunch)
       guilds.length = 5;
-    guilds.forEach(guild => {
+    guilds.forEach((guild, i) => {
         pictureWorker.loadImage(guild.iconURL)
           .then(imageBuffer => {
             //console.log(guild.name);
@@ -67,7 +73,7 @@ export class GuildsList extends QScrollArea {
             else {
               const guildImage = new QPixmap();
               guildImage.loadFromData(imageBuffer, 'PNG');
-              guildElem.setPixmap(guildImage.scaled(48, 48));
+              guildElem.setPixmap(guildImage.scaled(48, 48, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
             }
           });
         const guildElem = new QLabel();
@@ -75,7 +81,7 @@ export class GuildsList extends QScrollArea {
         guildElem.setFixedSize(48, 48 + 10);
         guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
         guildElem.setProperty('toolTip', `<b>${guild.name}</b>`);
-        this.container.layout?.addWidget(guildElem);
+        this.layout.insertWidget(i+2, guildElem);
         this.guilds.set(guild, guildElem);
       })
   }

@@ -26,11 +26,11 @@ export class MainView extends QWidget {
   }
 
   private initView() {
-    [this.guildsList, this.leftPanel]
-      .forEach(w => this.controls.addWidget(w));
-    this.controls.addWidget(this.container, 1);
     [this.guildView, this.dmView]
       .forEach(w => this.container.addWidget(w));
     this.container.setCurrentWidget(this.dmView);
+    [this.guildsList, this.leftPanel]
+      .forEach(w => this.controls.addWidget(w));
+    this.controls.addWidget(this.container, 1);
   }
 }

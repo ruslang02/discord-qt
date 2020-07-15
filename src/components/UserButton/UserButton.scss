@@ -7,7 +7,11 @@
   border-radius: 4px;
   color: rgb(142, 146, 151);
   &:hover {
+    background-color: rgba(79, 84, 92, 0.16);
+  }
+  &[active="true"] {
     background-color: rgba(79, 84, 92, 0.32);
+    #UserNameLabel { color: white; }
   }
   #UserNameLabel:hover, #StatusLabel:hover {
     color: white;
@@ -19,6 +23,7 @@
   #UserNameLabel {
     font-size: 16px;
     font-weight: 400;
+    height: 24px;
     color: rgb(142, 146, 151);
   }
   #StatusLabel {

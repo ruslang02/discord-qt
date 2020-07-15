@@ -14,8 +14,8 @@ if (!isMainThread) {
     httpsGet(url, options).then(buffer => {
       //log(`received`, new Date().getTime(), path.basename(request.url), buffer?.length || 'NULL');
       if (buffer && options.roundify === true)
-        return roundifyPng(buffer).then(buffer => send({ url, buffer }));
-      send({ url, buffer });
+        return roundifyPng(buffer).then(buffer => send({ url, buffer, options }));
+      send({ url, buffer, options });
     });
   })
 }

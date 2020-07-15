@@ -1,4 +1,4 @@
-import { QLabel, QWidget, QPixmap, FlexLayout, QCursor, CursorShape, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QLabel, QWidget, QPixmap, FlexLayout, QCursor, CursorShape, QBoxLayout, Direction, AspectRatioMode, TransformationMode } from "@nodegui/nodegui";
 import { User } from "discord.js";
 import './UserButton.scss';
 import { pictureWorker } from "../../utilities/PictureWorker";
@@ -23,11 +23,10 @@ export class UserButton extends QWidget {
     const { avatar, infoContainer, userNameLabel, statusLabel, controls, infoControls } = this;
     avatar.setFixedSize(32, 32);
     avatar.setObjectName('Avatar');
-    infoControls.setSpacing(1);
+    infoControls.setSpacing(0);
     infoControls.setContentsMargins(0,0,0,0);
     infoContainer.setLayout(infoControls);
     infoContainer.setObjectName('InfoContainer');
-
     userNameLabel.setObjectName('UserNameLabel');
     statusLabel.setObjectName('StatusLabel');
 
@@ -42,16 +41,19 @@ export class UserButton extends QWidget {
 
   async loadUser(user: User) {
     const { userNameLabel, statusLabel } = this;
-    pictureWorker.loadImage(user.avatarURL || user.defaultAvatarURL, {size: 32})
+    pictureWorker.loadImage(user.avatarURL || user.defaultAvatarURL, {size: 64})
       .then(async (buffer) => {
         if (buffer === null)
           return;
         const avatarPixmap = new QPixmap();
         avatarPixmap.loadFromData(buffer, 'PNG');
-        this.avatar.setPixmap(avatarPixmap);
+        this.avatar.setPixmap(avatarPixmap.scaled(32, 32, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
       });
 
     userNameLabel.setText(user.username);
+    userNameLabel.setMinimumSize(24, 0);
+    userNameLabel.setFlexNodeSizeControlled(false);
+    userNameLabel.adjustSize();
     statusLabel.setText(user.presence.status);
   }
 }

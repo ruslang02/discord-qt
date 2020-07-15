@@ -1,4 +1,4 @@
-import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction, QPushButton, WidgetEventTypes } from "@nodegui/nodegui";
 import { app } from "../..";
 import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
@@ -6,6 +6,7 @@ import { UserButton } from "../UserButton/UserButton";
 export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
   widgets = new QBoxLayout(Direction.TopToBottom);
+  channels = new Map<DMChannel, UserButton>();
 
   constructor() {
     super();
@@ -25,6 +26,10 @@ export class DMPanelUsersList extends QScrollArea {
     app.on('client', (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
     });
+
+    app.on('dmOpen', (channel: DMChannel) => {
+      this.channels.forEach((btn, dm) => btn.setInlineStyle(dm.id === channel.id ? 'background-color: rgba(79, 84, 92, 0.32)' : ''));
+    })
   }
 
   async loadDMs() {
@@ -47,6 +52,10 @@ export class DMPanelUsersList extends QScrollArea {
       const uButton = new UserButton();
       uButton.loadUser(dm.recipient);
       uButton.setFixedSize(222, 42);
+      uButton.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+        app.emit('dmOpen', dm);
+      });
+      this.channels.set(dm, uButton);
       return uButton;
     }).forEach((w, i) => this.widgets.insertWidget(i+1, w));
   }

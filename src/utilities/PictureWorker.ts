@@ -7,12 +7,14 @@ type Options = {
   size?: number,
 };
 
-const log = console.log.bind(this, '[PictureWorker]');
-
+/*
+ * This REALLY needs a cache system!
+ */
 class PictureWorker {
   worker: Worker;
-  id: number = 0;
+  //id: number = 0;
   defaultOptions: Options = {};
+  cache = new Map<string, Buffer>();
 
   callbacks = new Map<string, (buffer: Buffer | null) => void>();
 
@@ -28,23 +30,34 @@ class PictureWorker {
   }
 
   loadImage(url: string, options?: Options): Promise<Buffer | null> {
-    if(url === null)
+    const { callbacks, defaultOptions, cache, worker } = this;
+    if (url === null)
       return Promise.resolve(null);
+    options = { ...defaultOptions, ...(options || {}) };
+    const cached = cache.get(`${path.basename(url)}.${options.size}.${options.roundify ? 1 : 0}`);
+    if (cached !== undefined)
+      return Promise.resolve(cached);
     return new Promise(resolve => {
-      const id = this.id;
-      options = {...this.defaultOptions, ...(options || {}), roundify: true};
-      setTimeout(() => {
-        this.worker.postMessage({ url, options });
-      }, id * 10);
-      this.callbacks.set(url, resolve);
-      this.id += 1;
+      const cb = callbacks.get(url);
+      if (cb !== undefined) {
+        // this does not work :(
+        callbacks.set(url, (b) => {
+          cb(b);
+          resolve(b);
+        });
+        return;
+      }
+      worker.postMessage({ url, options });
+      callbacks.set(url, resolve);
     })
   }
 
   private resolveImage(result: any) {
     if (typeof result.url !== 'string')
       return;
-    const callback = (this.callbacks.get(result.url) || (() => { }));
+    const callback = this.callbacks.get(result.url);
+    if (!callback)
+      return;
     if (!(result.buffer instanceof Uint8Array) ||
       result.buffer === null ||
       result.buffer.buffer === null)
@@ -54,7 +67,7 @@ class PictureWorker {
     const buffer = Buffer.alloc(result.buffer.length);
     for (let i = 0; i < result.buffer.length; i++)
       buffer[i] = result.buffer[i];
-    //log('received', new Date().getTime(), path.basename(result.url), buffer.length, result.buffer.length);
+    this.cache.set(`${path.basename(result.url)}.${result.options.size}.${result.options.roundify ? 1 : 0}`, buffer);
     return callback(buffer);
   }
 }

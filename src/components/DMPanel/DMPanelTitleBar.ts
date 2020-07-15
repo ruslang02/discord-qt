@@ -1,33 +1,15 @@
-import { QWidget, QLineEdit, QGraphicsDropShadowEffect, QColor, FlexLayout } from "@nodegui/nodegui";
+import { DLineEdit } from "../DLineEdit/DLineEdit";
+import { DTitleBar } from "../DTitleBar/DTitleBar";
 
-export class DMPanelTitleBar extends QWidget {
-  filterInput = new QLineEdit();
-  shadow = new QGraphicsDropShadowEffect();
+export class DMPanelTitleBar extends DTitleBar {
+  filterInput = new DLineEdit();
 
   constructor() {
     super();
-    this.setLayout(new FlexLayout())
-    this.setObjectName('TitleBar');
 
-    this.initInput();
-    this.initShadow();
-  }
-
-  initInput() {
-    const { filterInput: input } = this;
-    input.setObjectName('UserFilterInput');
-    input.setPlaceholderText('Find or start a conversation');
-
-    this.layout?.addWidget(this.filterInput);
-  }
-
-  initShadow() {
-    const { shadow } = this;
-    shadow.setBlurRadius(5);
-    shadow.setColor(new QColor(12, 12, 12, 255));
-    shadow.setXOffset(-2);
-    shadow.setYOffset(0);
-
-    this.setGraphicsEffect(shadow);
+    this.setInlineStyle('background-color: #2f3136');
+    this.controls.setContentsMargins(10, 10, 10, 10);
+    this.filterInput.setPlaceholderText('Find or start a conversation');
+    this.controls.addWidget(this.filterInput);
   }
 }

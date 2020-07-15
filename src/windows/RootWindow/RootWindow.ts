@@ -24,7 +24,7 @@ export class RootWindow extends QMainWindow {
   protected initializeWindow() {
     this.setWindowTitle("Discord-Qt");
     this.setObjectName("RootWindow");
-    this.setMinimumSize(400, 400);
+    this.setMinimumSize(800, 400);
     this.setAttribute(WidgetAttribute.WA_AlwaysShowToolTips, true);
     this.setCentralWidget(this.root);
     this.root.addWidget(this.mainView);

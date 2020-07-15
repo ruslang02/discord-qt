@@ -1,31 +1,14 @@
 #UserPanel {
   width: '100%';
-  //padding: 8px 0 8px 8px;
-  /*#UserAvatar {
-    width: 32px;
-    height: 32px;
-    margin-right: 8px;
-  }
-  #InfoContainer {
-    flex-direction: column;
-    flex-grow: 1
-  }*/
   #NameLabel {
     color: white;
     font-weight: bold;
-    //width: 100%;
-    //margin-bottom: 1px;
   }
   #DiscLabel {
     color: #b9bbbe;
-    //width: 100%;
-    //margin-top: 1px;
   }
-  #SettingsBtn {
-    background: none;
-    border: none;
+  #DIconButton {
     border-radius: 5px;
-    //margin-right: 4px;
     &:hover {
       background: rgba(79, 84, 92, 0.32);
     } 

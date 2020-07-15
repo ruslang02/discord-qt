@@ -1,0 +1,23 @@
+#MessagesPanel, #MessagesContainer {
+  background-color: #36393f;
+  border: none;
+}
+#MessageItem {
+  background-color: #36393f;
+  &:hover {
+    background-color: rgba(4, 4, 5, 0.07);
+  }
+  #UserNameLabel {
+    font-size: 16px;
+    color: white;
+    font-weight: 500;
+  }
+  #DateLabel {
+    font-size: 12px;
+    color: #72767d;
+  }
+  #Content {
+    color: #dcddde;
+    font-size: 16px;
+  }
+}
