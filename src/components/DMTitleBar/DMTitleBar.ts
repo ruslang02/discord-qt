@@ -1,7 +1,7 @@
 import { QWidget, QLabel, QPixmap, QSize } from '@nodegui/nodegui';
 import path from 'path';
 import { app } from '../..';
-import {  DMChannel } from 'discord.js';
+import {  DMChannel, Client, Channel } from 'discord.js';
 import './DMTitleBar.scss';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
@@ -15,6 +15,7 @@ const PresenceStatusColor = new Map([
 ])
 
 export class DMTitleBar extends DTitleBar {
+  private channel?: DMChannel;
   private userNameLabel = new QLabel();
   private statusLabel = new QLabel();
   private nicknamesBar = new QWidget();
@@ -25,6 +26,13 @@ export class DMTitleBar extends DTitleBar {
     this.setInlineStyle('background-color: #36393f');
     this.initComponent();
     app.on('dmOpen', this.handleDMOpen.bind(this));
+    app.on('client', (client: Client) => {
+      client.on('userUpdate', (before, after) => {
+        console.log(after.username);
+        if(this.channel?.recipient.id === after.id) 
+          this.updateStatus();
+      })
+    })
   }
 
   private initComponent() {
@@ -64,12 +72,17 @@ export class DMTitleBar extends DTitleBar {
     layout.addWidget(helpBtn);
   }
 
+  private updateStatus() {
+    const { channel, statusLabel } = this;
+    console.log(channel?.recipient.presence.status)
+    statusLabel.setText(channel?.recipient.presence.status || "");
+    statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel?.recipient.presence.status || 'offline')}`);
+  }
 
   private handleDMOpen(channel: DMChannel) {
     const { userNameLabel, statusLabel } = this;
-
+    this.channel = channel;
     userNameLabel.setText(channel.recipient.username);
-    statusLabel.setText(channel.recipient.presence.status);
-    statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel.recipient.presence.status)}`);
+    this.updateStatus();
   }
 }

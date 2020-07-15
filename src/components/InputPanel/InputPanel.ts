@@ -1,4 +1,4 @@
-import { QWidget, QBoxLayout, Direction, QSize, QLineEdit, QLabel, WidgetEventTypes } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QSize, QLineEdit, QLabel } from "@nodegui/nodegui";
 import './InputPanel.scss';
 import { DIconButton } from "../DIconButton/DIconButton";
 import path from 'path';
@@ -19,7 +19,7 @@ export class InputPanel extends QWidget {
   }
 
   private setEvents() {
-    const { input, typingLabel, channel } = this;
+    const { input, typingLabel } = this;
     app.on('dmOpen', (dm: DMChannel) => {
       this.channel = dm;
       input.setPlaceholderText(`Message @${dm.recipient.username}`);
@@ -36,7 +36,11 @@ export class InputPanel extends QWidget {
         if(this.channel?.id !== typingChannel.id)
           return;
         typingLabel.setText(`<b>${user.username}</b> is typing...`);
-      })
+      });
+      client.on('typingStop', (typingChannel: TextChannel, user) => {
+        if(this.channel?.id === typingChannel.id)
+          typingLabel.setText('');
+      });
     })
   }
 

@@ -63,7 +63,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(), 
     new MiniCssExtractPlugin(),
-    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)/g})
+    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g})
   ],
   stats: {
     warnings: false
