@@ -1,4 +1,4 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AspectRatioMode, TransformationMode, AlignmentFlag, CursorShape, WidgetEventTypes } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AspectRatioMode, TransformationMode, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag } from "@nodegui/nodegui";
 import { Message } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import Axios from "axios";
@@ -66,23 +66,27 @@ export class MessageItem extends QWidget {
       contentLabel.hide();
 
     let content = message.content;
-    const emoIds = content.match(/<:\w+:[0-9]+>/g) || [];
+    const emoIds = content.match(/<a?:\w+:[0-9]+>/g) || [];
+    const size = content.replace(/<a?:\w+:[0-9]+>/g, '').trim() === '' ? 48 : 18;
     for (const emo of emoIds) {
-      const [name, id] = emo.replace('<:', '').replace('>', '').split(':');
-      const emoji = app.client.emojis.get(id.toString());
-      if (!emoji)
-        continue;
-      const buffer = await pictureWorker.loadImage(emoji.url, {size: 64, roundify: false});
+      const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
+      const format = type === 'a' ? 'gif' : 'png';
+      console.log(type, name, id)
+      const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
+      const buffer = await pictureWorker.loadImage(url, {size: 64, roundify: false, format});
       if(!buffer)
         return;
-      content = content.replace(emo, `<a title='${emoji.name}' href='${emoji.url}'><img width=48 title='${emoji.name}' src='data:image/png;base64,${buffer.toString('base64')}'></a>`);
+      content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
       contentLabel.addEventListener('linkHovered', (link: string) => {
-        if (link === emoji.url)
-          contentLabel.setProperty('toolTip', `:${emoji.name}:`);
+        if (link === url)
+          contentLabel.setProperty('toolTip', `:${name}:`);
       })
     }
     contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
     contentLabel.setText(content);
+    contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
+    contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
+    contentLabel.setWordWrap(true);
     for (const embed of message.attachments.values()) {
       const qimage = new QLabel();
       let pixmap = new QPixmap();

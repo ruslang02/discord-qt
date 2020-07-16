@@ -1,4 +1,4 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, AspectRatioMode, TransformationMode } from "@nodegui/nodegui";
 import path from 'path';
 import './UserPanel.scss';
 import { app } from "../..";
@@ -35,7 +35,6 @@ export class UserPanel extends QWidget {
 
     avatar.setObjectName('UserAvatar');
     avatar.setFixedSize(32, 32);
-    avatar.setPixmap(new QPixmap(path.join(__dirname, '../assets/icons/discord.png')).scaled(32, 32))
 
     const infoContainer = new QWidget();
     const infoControls = new QBoxLayout(Direction.TopToBottom);
@@ -80,7 +79,7 @@ export class UserPanel extends QWidget {
     if(avatarBuf !== null) {
       const avatarPixmap = new QPixmap();
       avatarPixmap.loadFromData(avatarBuf, 'PNG');
-      avatar.setPixmap(avatarPixmap.scaled(32, 32));
+      avatar.setPixmap(avatarPixmap.scaled(32, 32, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
     }
 
     nameLabel.setText(client.user.username);

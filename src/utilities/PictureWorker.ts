@@ -5,6 +5,7 @@ import path from 'path';
 type Options = {
   roundify?: boolean,
   size?: number,
+  format?: 'gif' | 'png' | 'webp' | 'jpg'
 };
 
 /*
@@ -13,7 +14,10 @@ type Options = {
 class PictureWorker {
   worker: Worker;
   //id: number = 0;
-  defaultOptions: Options = {};
+  defaultOptions: Options = {
+    size: 64,
+    format: 'png',
+  };
   cache = new Map<string, Buffer>();
 
   callbacks = new Map<string, (buffer: Buffer | null) => void>();
@@ -21,20 +25,14 @@ class PictureWorker {
   constructor() {
     this.worker = new Worker(path.join(__dirname, 'worker.js'));
     this.worker.on('message', this.resolveImage.bind(this));
-    this.worker.on('online', () =>
-      this.defaultOptions = {
-        roundify: app.config.roundifyAvatars,
-        size: 64,
-      }
-    )
   }
 
   loadImage(url: string, options?: Options): Promise<Buffer | null> {
     const { callbacks, defaultOptions, cache, worker } = this;
     if (url === null)
       return Promise.resolve(null);
-    options = { ...defaultOptions, ...(options || {}) };
-    const cached = cache.get(`${path.basename(url)}.${options.size}.${options.roundify ? 1 : 0}`);
+    options = { ...defaultOptions, roundify: app.config.roundifyAvatars, ...(options || {}) };
+    const cached = cache.get(`${path.basename(url)}.${options.size}.${options.roundify ? 1 : 0}.${options.format}`);
     if (cached !== undefined)
       return Promise.resolve(cached);
     return new Promise(resolve => {
@@ -53,9 +51,10 @@ class PictureWorker {
   }
 
   private resolveImage(result: any) {
-    if (typeof result.url !== 'string')
+    const { id, url, options } = result;
+    if (typeof url !== 'string')
       return;
-    const callback = this.callbacks.get(result.url);
+    const callback = this.callbacks.get(url);
     if (!callback)
       return;
     if (!(result.buffer instanceof Uint8Array) ||
@@ -63,11 +62,11 @@ class PictureWorker {
       result.buffer.buffer === null)
       return callback(null);
 
-    this.callbacks.delete(result.id);
+    this.callbacks.delete(id);
     const buffer = Buffer.alloc(result.buffer.length);
     for (let i = 0; i < result.buffer.length; i++)
       buffer[i] = result.buffer[i];
-    this.cache.set(`${path.basename(result.url)}.${result.options.size}.${result.options.roundify ? 1 : 0}`, buffer);
+    this.cache.set(`${path.basename(url)}.${options.size}.${options.roundify ? 1 : 0}.${options.format}`, buffer);
     return callback(buffer);
   }
 }

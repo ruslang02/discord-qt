@@ -1,10 +1,10 @@
 import https from "https";
 import axios from 'axios';
 
-export async function httpsGet(url: string | null, options: { size: number }): Promise<Buffer | null> {
+export async function httpsGet(url: string | null, options: { size: number, format: string }): Promise<Buffer | null> {
   if (url === null) return null;
   const pngURL = url
-    .replace(/(\.jpg)|(\.webp)|(\.gif)/g, '.png')
+    .replace(/(\.jpg)|(\.webp)|(\.gif)/g, '.' + options.format)
     .replace(/\?size=\d+/g, '') + `?size=${options.size}`;
     return (await axios.get(pngURL, {responseType: 'arraybuffer'})).data;
   /*return new Promise((resolve) => {
