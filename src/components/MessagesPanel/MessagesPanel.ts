@@ -1,5 +1,5 @@
 import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape } from "@nodegui/nodegui";
-import { app } from "../..";
+import { app, MAX_QSIZE } from "../..";
 import { DMChannel, Message, Channel, Client } from "discord.js";
 import { MessageItem } from "./MessageItem";
 import './MessagesPanel.scss';
@@ -25,14 +25,13 @@ export class MessagesPanel extends QScrollArea {
     app.on('dmOpen', this.handleDMOpen.bind(this));
 
     app.on('client', (client: Client) => {
-      client.on('message', (message: Message) => {
+      client.on('message', async (message: Message) => {
         if (message.channel.id === this.channel?.id) {
           const widget = new MessageItem(this.root);
-          widget.loadMessage(message);
           messages.set(message, widget);
-          console.log(message.content);
           (this.root.layout as QBoxLayout).insertWidget(0, widget);
-          setTimeout(() => this.ensureVisible(0, 100000), 100);
+          await widget.loadMessage(message);
+          this.scrollDown();
         }
       })
     })
@@ -51,7 +50,7 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private scrollDown() {
-    this.ensureVisible(0, 100000);
+    this.ensureVisible(0, MAX_QSIZE);
     this.lower();
     this.root.lower();
   }
@@ -64,6 +63,7 @@ export class MessagesPanel extends QScrollArea {
     const { messages, rootControls } = this;
     const fetched = await dm.fetchMessages({ limit: 20 });
     const promises: Promise<void>[] = [];
+    const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
     for (const message of fetched.array().reverse()) {
       const widget = new MessageItem(this.root);
       promises.push(widget.loadMessage(message));
@@ -71,7 +71,6 @@ export class MessagesPanel extends QScrollArea {
       rootControls.insertWidget(0, widget);
     }
     await Promise.all(promises);
-    this.scrollDown();
-    setTimeout(this.scrollDown.bind(this), 100);
+    setTimeout(() => clearInterval(scrollTimer), 100);
   }
 }

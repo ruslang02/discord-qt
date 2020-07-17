@@ -1,22 +1,23 @@
-import { QWidget, QStackedWidget, QMainWindow, QIcon, WidgetAttribute } from "@nodegui/nodegui";
+import { QWidget, QStackedWidget, QMainWindow, QIcon, WidgetAttribute, QApplication, QFont } from "@nodegui/nodegui";
 import path from "path";
 import fs from "fs";
-import { app } from '../..';
+import { app } from '..';
 import { Client } from 'discord.js';
-import { MainView } from '../../views/MainView/MainView';
+import { MainView } from '../views/MainView/MainView';
 import './RootWindow.scss';
+import { SettingsView } from "../views/SettingsView/SettingsView";
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
 
   private mainView = new MainView();
-  private settingsView = new QWidget();
+  private settingsView = new SettingsView();
 
   constructor() {
     super();
-
-    this.loadIcon();
+    this.setFont(new QFont('Whitney'));
     this.loadStyles();
+    this.loadIcon();
     this.initializeWindow();
     this.loadClient();
 

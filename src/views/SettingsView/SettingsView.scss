@@ -1,7 +1,12 @@
 @import '../../Colors.scss';
 
 #SettingsView {
+  width: '100%';
+  height: '100%';
   background-color: $background-primary;
+  #SettingsContainer {
+    background-color: $background-primary;
+  }
   #LeftSpacer, #SectionList {
     background-color: $background-secondary;
   }
@@ -15,5 +20,39 @@
   #CloseKeybind {
     font-weight: bold;
     color: $text-muted;
+  }
+  #Separator {
+    margin: 8px 10px;
+    height: 1px;
+    background-color: $background-modifier-accent;
+  }
+  #CategoryHeader {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 16px;
+    text-transform: uppercase;
+    color: $channels-default;
+    padding: 6px 10px;
+  }
+  #PageButton {
+    padding: 6px 10px;
+    margin-bottom: 2px;
+    border-radius: 3px;
+    text-align: left;
+    font-size: 16px;
+    line-height: 20px;
+    color: $interactive-normal;
+    &:hover {
+      background-color: $background-modifier-hover;
+      color: $interactive-hover;
+    }
+    &:active {
+      background-color: $background-modifier-active;
+      color: $interactive-active;
+    }
+    &[active=true] {
+      background-color: $background-modifier-selected;
+      color: $interactive-active;
+    }
   }
 }

@@ -1,0 +1,13 @@
+@import '../Colors.scss';
+
+#Page {
+  background-color: $background-primary;
+  #Header2 {
+    color: $header-primary;
+    margin-bottom: 20px;
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+}

@@ -15,7 +15,7 @@ class PictureWorker {
   worker: Worker;
   //id: number = 0;
   defaultOptions: Options = {
-    size: 128,
+    size: 64,
     format: 'png',
   };
   cache = new Map<string, Buffer>();
@@ -25,6 +25,7 @@ class PictureWorker {
   constructor() {
     this.worker = new Worker(path.join(__dirname, 'worker.js'));
     this.worker.on('message', this.resolveImage.bind(this));
+    console.log(this);
   }
 
   loadImage(url: string, options?: Options): Promise<Buffer | null> {

@@ -1,8 +1,11 @@
-import { RootWindow } from "./windows/RootWindow/RootWindow";
+import { RootWindow } from "./windows/RootWindow";
 import { Client } from "discord.js";
 import path from 'path';
 import fs from 'fs';
 import { EventEmitter } from "events";
+import {QFontDatabase} from '@nodegui/nodegui';
+
+const FONTS_PATH = path.join(__dirname, '../assets/fonts');
 
 type Config = {
   token?: string;
@@ -13,6 +16,7 @@ type Config = {
 class Application extends EventEmitter {
   public async start() {
     await this.loadConfig();
+    this.loadFonts();
     this.window = new RootWindow();
     this.window.show();
   }
@@ -38,6 +42,12 @@ class Application extends EventEmitter {
     }
   }
 
+  private loadFonts() {
+    if (!fs.existsSync(FONTS_PATH)) return;
+    for (const file of fs.readdirSync(FONTS_PATH))
+      QFontDatabase.addApplicationFont(path.join(FONTS_PATH, file))
+  }
+
   public get window(): RootWindow {
     return (global as any).win;
   }
@@ -61,4 +71,5 @@ class Application extends EventEmitter {
   }
 }
 export const app = new Application();
+export const MAX_QSIZE = 16777215;
 app.start();

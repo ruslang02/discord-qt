@@ -1,5 +1,5 @@
 import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction, QPushButton, WidgetEventTypes, Shape } from "@nodegui/nodegui";
-import { app } from "../..";
+import { app, MAX_QSIZE } from "../..";
 import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 
@@ -53,7 +53,7 @@ export class DMPanelUsersList extends QScrollArea {
       const uButton = new UserButton();
       uButton.loadUser(dm.recipient);
       uButton.setMinimumSize(0, 42);
-      uButton.setMaximumSize(16777215, 42);
+      uButton.setMaximumSize(MAX_QSIZE, 42);
       uButton.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
         app.emit('dmOpen', dm);
       });

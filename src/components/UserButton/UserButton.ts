@@ -31,11 +31,12 @@ export class UserButton extends QPushButton {
     infoContainer.setLayout(infoControls);
     infoContainer.setObjectName('InfoContainer');
     userNameLabel.setObjectName('UserNameLabel');
+    userNameLabel.setMinimumSize(0, 40);
     statusLabel.setObjectName('StatusLabel');
     const labels = [userNameLabel, statusLabel];
     labels.forEach(w => infoControls.addWidget(w));
     controls.setSpacing(10);
-    controls.setContentsMargins(8, 5, 8, 5);
+    controls.setContentsMargins(8, 4, 8, 4);
     controls.addWidget(avatar, 0);
     controls.addWidget(infoContainer, 1);
 
@@ -67,7 +68,7 @@ export class UserButton extends QPushButton {
 
   async loadUser(user: User) {
     const { userNameLabel, statusLabel } = this;
-    pictureWorker.loadImage(user.avatarURL || user.defaultAvatarURL, {size: 128})
+    pictureWorker.loadImage(user.avatarURL || user.defaultAvatarURL, {size: 64})
       .then(async (buffer) => {
         if (buffer === null)
           return;

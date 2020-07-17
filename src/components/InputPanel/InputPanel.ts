@@ -2,7 +2,7 @@ import { QWidget, QBoxLayout, Direction, QSize, QLineEdit, QLabel, QTextEdit, Wi
 import './InputPanel.scss';
 import { DIconButton } from "../DIconButton/DIconButton";
 import path from 'path';
-import { app } from "../..";
+import { app, MAX_QSIZE } from "../..";
 import { DMChannel, Client, Channel, TextChannel } from "discord.js";
 
 export class InputPanel extends QWidget {
@@ -67,7 +67,7 @@ export class InputPanel extends QWidget {
     });
     emojiBtn.setFixedSize(38, 44);
     input.setAcceptRichText(false);
-    input.setMaximumSize(10000, 40);
+    input.setMaximumSize(MAX_QSIZE, 40);
     input.setMinimumSize(0, 40);
     input.addEventListener(WidgetEventTypes.KeyPress, (native) => {
       if (!native) return;
@@ -84,7 +84,7 @@ export class InputPanel extends QWidget {
       } else 
       setTimeout(() => {
         const height = (input.toPlainText().split('\n').length || 1) * 22 + 18;
-        input.setMaximumSize(10000, height);
+        input.setMaximumSize(MAX_QSIZE, height);
         input.setMinimumSize(0, height);
       })
     });

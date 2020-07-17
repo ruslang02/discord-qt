@@ -27,7 +27,7 @@ export class MessageItem extends QWidget {
     html: false,
     linkify: true,
     breaks: true
-  }).disable(['hr', ]).enable('link');
+  }).disable(['hr', 'blockquote']).enable('link');
 
   constructor(parent: any) {
     super(parent);
@@ -81,7 +81,7 @@ export class MessageItem extends QWidget {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
-      const buffer = await pictureWorker.loadImage(url, {size: 128, roundify: false, format});
+      const buffer = await pictureWorker.loadImage(url, {roundify: false, format});
       if(!buffer) continue;
 
       content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
@@ -115,7 +115,7 @@ export class MessageItem extends QWidget {
     content = content
       .replace(/<\/?p>/g, '')
       .split('\n')
-      .map(line => line.startsWith("&gt; ") ? line.replace("&gt; ", "<span>▎</span>") : line)
+      .map(line => line.startsWith("> ") ? line.replace("> ", "<span>▎</span>") : line)
       .join('\n')
       .trim();
     return markdownProcessor.render(content);

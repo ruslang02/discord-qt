@@ -1,0 +1,11 @@
+@import '../Colors.scss';
+* {
+  font-family: Whitney;
+  font-weight: 400;
+}
+#RootWindow {
+  height: '100%';
+  width: '100%';
+  background-color: $black;
+  font-family: Whitney;
+}

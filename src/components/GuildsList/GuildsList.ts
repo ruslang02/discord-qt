@@ -27,6 +27,7 @@ export class GuildsList extends QScrollArea {
     this.layout.setContentsMargins(12, 12, 12, 12);
     this.layout.setSpacing(0);
     this.setFrameShape(Shape.NoFrame);
+    this.setMinimumSize(72, 0);
     this.setWidget(this.container);
   }
 

@@ -3,6 +3,7 @@ import { UserPanel } from "../UserPanel/UserPanel";
 import './LeftPanel.scss';
 import { GuildPanel } from "../GuildPanel/GuildPanel";
 import { DMPanel } from "../DMPanel/DMPanel";
+import { MAX_QSIZE } from "../..";
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();
@@ -19,7 +20,7 @@ export class LeftPanel extends QWidget {
     const { guildPanel, dmPanel, userPanel, container, controls } = this;
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
-    this.setMaximumSize(240, 10000);
+    this.setMaximumSize(240, MAX_QSIZE);
     container.addWidget(guildPanel);
     container.addWidget(dmPanel);
     container.setCurrentWidget(dmPanel);
