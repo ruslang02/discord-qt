@@ -17,8 +17,10 @@
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
+    "@types/markdown-it": "^10.0.1",
     "axios": "^0.19.2",
     "discord.js": "^11.6.4",
+    "markdown-it": "^11.0.0",
     "open": "git+https://github.com/sindresorhus/open.git",
     "pngjs": "^5.0.0"
   },

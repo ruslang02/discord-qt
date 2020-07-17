@@ -19,6 +19,17 @@ export class RootWindow extends QMainWindow {
     this.loadStyles();
     this.initializeWindow();
     this.loadClient();
+
+    app.on('switchView', (view: string) => {
+      switch(view) {
+        case 'main':
+          this.root.setCurrentWidget(this.mainView);
+          break;
+        case 'settings':
+          this.root.setCurrentWidget(this.settingsView);
+          break;
+      }
+    })
   }
 
   protected initializeWindow() {

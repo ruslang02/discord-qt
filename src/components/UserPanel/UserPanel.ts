@@ -57,6 +57,7 @@ export class UserPanel extends QWidget {
       tooltipText: 'User Settings'
     });
     sBtn.setFixedSize(32, 32);
+    sBtn.addEventListener('clicked', () => app.emit('switchView', 'settings'));
     controls.addWidget(avatar, 0);
     controls.addWidget(infoContainer, 1);
     controls.addWidget(sBtn, 0);

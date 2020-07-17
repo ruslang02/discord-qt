@@ -1,4 +1,6 @@
+@import '../../Colors.scss';
+
 #MainView {
   width: '100%';
-  background: #36393f;
+  background: $background-primary;
 }

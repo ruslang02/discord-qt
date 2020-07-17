@@ -1,0 +1,19 @@
+@import '../../Colors.scss';
+
+#SettingsView {
+  background-color: $background-primary;
+  #LeftSpacer, #SectionList {
+    background-color: $background-secondary;
+  }
+  #CloseButton {
+    border-radius: 18px;
+    border: 2px solid $text-muted;
+    &:hover {
+      background-color: rgba(114,118,125,.3);
+    }
+  }
+  #CloseKeybind {
+    font-weight: bold;
+    color: $text-muted;
+  }
+}

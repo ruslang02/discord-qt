@@ -1,10 +1,11 @@
 import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AspectRatioMode, TransformationMode, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag } from "@nodegui/nodegui";
-import { Message } from "discord.js";
+import { Message, Attachment, Collection, MessageAttachment } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import Axios from "axios";
 import { app } from "../..";
 import fs from "fs";
 import open from 'open';
+import markdownIt, {PresetName} from 'markdown-it';
 
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
@@ -18,6 +19,12 @@ export class MessageItem extends QWidget {
 
   private infoContainer = new QWidget();
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
+
+  private markdownProcessor = markdownIt({
+    html: false,
+    linkify: true,
+    breaks: true
+  }).disable(['hr', ]).enable('link');
 
   constructor(parent: any) {
     super(parent);
@@ -43,7 +50,12 @@ export class MessageItem extends QWidget {
 
     userNameLabel.setObjectName('UserNameLabel');
     dateLabel.setObjectName('DateLabel');
+
     contentLabel.setObjectName('Content');
+    contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
+    contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
+    contentLabel.setWordWrap(true);
+    contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
 
     infoContainer.setLayout(infoLayout);
     msgContainer.setLayout(msgLayout);
@@ -58,36 +70,27 @@ export class MessageItem extends QWidget {
     controls.addWidget(msgContainer, 1);
   }
 
-  async loadMessage(message: Message) {
-    const { avatar, userNameLabel, dateLabel, contentLabel } = this;
-    userNameLabel.setText(message.member?.nickname || message.author.username);
-    dateLabel.setText(message.createdAt.toLocaleString());
-    if (message.content.trim() == "")
-      contentLabel.hide();
-
-    let content = message.content;
+  private async processEmojis(content: string): Promise<string> {
+    const { contentLabel } = this;
     const emoIds = content.match(/<a?:\w+:[0-9]+>/g) || [];
     const size = content.replace(/<a?:\w+:[0-9]+>/g, '').trim() === '' ? 48 : 18;
     for (const emo of emoIds) {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
-      console.log(type, name, id)
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
       const buffer = await pictureWorker.loadImage(url, {size: 64, roundify: false, format});
-      if(!buffer)
-        return;
+      if(!buffer) continue;
+
       content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
       contentLabel.addEventListener('linkHovered', (link: string) => {
-        if (link === url)
-          contentLabel.setProperty('toolTip', `:${name}:`);
+        if (link === url) contentLabel.setProperty('toolTip', `:${name}:`);
       })
     }
-    contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
-    contentLabel.setText(content);
-    contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
-    contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    contentLabel.setWordWrap(true);
-    for (const embed of message.attachments.values()) {
+    return content;
+  }
+
+  private async processAttachments(attachments: Collection<string, MessageAttachment>) {
+    for (const embed of attachments.values()) {
       const qimage = new QLabel();
       let pixmap = new QPixmap();
       pixmap.loadFromData((await Axios.get(embed.url, { responseType: 'arraybuffer' })).data);
@@ -100,6 +103,32 @@ export class MessageItem extends QWidget {
       qimage.setPixmap(pixmap);
       this.msgLayout.addWidget(qimage);
     }
+  }
+
+  private async processMarkdown(content: string) {
+    const { markdownProcessor } = this;
+    content = content
+      .replace(/<\/?p>/g, '')
+      .split('\n')
+      .map(line => line.startsWith("&gt; ") ? line.replace("&gt; ", "<span>▎</span>") : line)
+      .join('\n')
+      .trim();
+    return markdownProcessor.render(content);
+  }
+
+  async loadMessage(message: Message) {
+    const { avatar, userNameLabel, dateLabel, contentLabel } = this;
+    userNameLabel.setText(message.member?.nickname || message.author.username);
+    dateLabel.setText(message.createdAt.toLocaleString());
+    if (message.content.trim() == "")
+      contentLabel.hide();
+    else {
+      let content = message.content;
+      content = await this.processMarkdown(content);
+      content = await this.processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
+      contentLabel.setText(content);
+    }
+    await this.processAttachments(message.attachments);
 
     const image = await pictureWorker.loadImage(message.author.avatarURL || message.author.defaultAvatarURL);
     if (image) {

@@ -1,16 +1,17 @@
+@import '../../Colors.scss';
+
 #UserPanel {
-  width: '100%';
   #NameLabel {
-    color: white;
+    color: $header-primary;
     font-weight: bold;
   }
   #DiscLabel {
-    color: #b9bbbe;
+    color: $header-secondary;
   }
   #DIconButton {
     border-radius: 5px;
     &:hover {
-      background: rgba(79, 84, 92, 0.32);
+      background: $background-modifier-selected;
     } 
   }
 }

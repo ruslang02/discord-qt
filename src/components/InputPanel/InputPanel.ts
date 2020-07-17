@@ -1,4 +1,4 @@
-import { QWidget, QBoxLayout, Direction, QSize, QLineEdit, QLabel } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QSize, QLineEdit, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, SizeConstraint } from "@nodegui/nodegui";
 import './InputPanel.scss';
 import { DIconButton } from "../DIconButton/DIconButton";
 import path from 'path';
@@ -6,10 +6,10 @@ import { app } from "../..";
 import { DMChannel, Client, Channel, TextChannel } from "discord.js";
 
 export class InputPanel extends QWidget {
-  channel?: Channel;
+  channel?: TextChannel | DMChannel;
   root = new QWidget();
   rootLayout = new QBoxLayout(Direction.LeftToRight);
-  private input = new QLineEdit();
+  private input = new QTextEdit();
   private typingLabel = new QLabel();
   constructor() {
     super();
@@ -33,12 +33,12 @@ export class InputPanel extends QWidget {
 
     app.on('client', (client: Client) => {
       client.on('typingStart', (typingChannel: TextChannel, user) => {
-        if(this.channel?.id !== typingChannel.id)
+        if (this.channel?.id !== typingChannel.id)
           return;
         typingLabel.setText(`<b>${user.username}</b> is typing...`);
       });
       client.on('typingStop', (typingChannel: TextChannel, user) => {
-        if(this.channel?.id === typingChannel.id)
+        if (this.channel?.id === typingChannel.id)
           typingLabel.setText('');
       });
     })
@@ -52,7 +52,7 @@ export class InputPanel extends QWidget {
     this.layout?.setContentsMargins(16, 0, 16, 0)
     rootLayout.setContentsMargins(0, 0, 12, 0);
     rootLayout.setSpacing(0);
-
+    
     const addBtn = new DIconButton({
       iconPath: path.join(__dirname, '../assets/icons/plus-circle.png'),
       iconQSize: new QSize(24, 24),
@@ -66,11 +66,28 @@ export class InputPanel extends QWidget {
       tooltipText: 'Emoji'
     });
     emojiBtn.setFixedSize(38, 44);
-    input.addEventListener('returnPressed', () => {
-      if(this.channel)
-        (this.channel as TextChannel).send(input.text());
-      input.clear();
-    })
+    input.setAcceptRichText(false);
+    input.setMaximumSize(10000, 40);
+    input.setMinimumSize(0, 40);
+    input.addEventListener(WidgetEventTypes.KeyPress, (native) => {
+      if (!native) return;
+      const event = new QKeyEvent(native);
+      const message = input.toPlainText();
+      if (
+        event.key() === Key.Key_Return &&
+        (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier &&
+        message.trim() !== ''
+      ) {
+        if (this.channel)
+          this.channel.send(message);
+          setTimeout(() => input.clear());
+      } else 
+      setTimeout(() => {
+        const height = (input.toPlainText().split('\n').length || 1) * 22 + 18;
+        input.setMaximumSize(10000, height);
+        input.setMinimumSize(0, height);
+      })
+    });
 
     rootLayout.addWidget(addBtn);
     rootLayout.addWidget(input, 1);
