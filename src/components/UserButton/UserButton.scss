@@ -1,39 +1,26 @@
+@import '../../Colors.scss';
+
 #UserButton {
-  //width: '100%';
-  //padding-left: 8px;
-  //padding-right: 8px;
-  //padding-top: 5px;
-  //padding-bottom: 5px;
   border-radius: 4px;
-  color: rgb(142, 146, 151);
-  &:hover {
-    background-color: rgba(79, 84, 92, 0.16);
+  &[hover=true] {
+    background-color: $background-modifier-hover;
+    #UserNameLabel, #StatusLabel {
+      color: $interactive-hover
+    }
   }
-  &[active="true"] {
-    background-color: rgba(79, 84, 92, 0.32);
-    #UserNameLabel { color: white; }
-  }
-  #UserNameLabel:hover, #StatusLabel:hover {
-    color: white;
-  }
-  #InfoContainer {
-    flex-direction: column;
-    color: inherit;
+  &[active=true] {
+    background-color: $background-modifier-selected;
+    #UserNameLabel, #StatusLabel {
+      color: $interactive-active;
+    }
   }
   #UserNameLabel {
     font-size: 16px;
-    font-weight: 400;
     height: 24px;
-    color: rgb(142, 146, 151);
+    color: $channels-default;
   }
   #StatusLabel {
     font-size: 12px;
-    color: rgb(142, 146, 151);
-  }
-  #Avatar {
-    //margin-top: 1px;
-    //margin-right: 10px;
-    width: 36px;
-    height: 36px;
+    color: $channels-default;
   }
 }

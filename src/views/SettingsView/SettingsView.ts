@@ -1,4 +1,4 @@
-import { QWidget, QStackedWidget, FlexLayout, QBoxLayout, Direction, QScrollArea, QPushButton, QIcon, QSize, QLabel } from "@nodegui/nodegui";
+import { QWidget, QStackedWidget, FlexLayout, QBoxLayout, Direction, QScrollArea, QPushButton, QIcon, QSize, QLabel, Shape } from "@nodegui/nodegui";
 import './SettingsView.scss';
 import { DIconButton } from "../../components/DIconButton/DIconButton";
 import { join } from "path";
@@ -16,7 +16,7 @@ export class SettingsView extends QWidget {
     super();
     this.initView();
   }
-  initView() {
+  private initView() {
     const { layout, leftSpacer, sectionList, pageContainer, closeContainer, rightSpacer } = this;
     this.setLayout(layout);
     this.setObjectName("SettingsView");
@@ -30,6 +30,8 @@ export class SettingsView extends QWidget {
     closeContainer.setLayout(closeLayout);
     closeLayout.setContentsMargins(0, 60, 0, 0);
     closeLayout.setSpacing(8);
+
+    pageContainer.setFrameShape(Shape.NoFrame);
 
     const closeBtn = new QPushButton();
     closeBtn.setObjectName('CloseButton');

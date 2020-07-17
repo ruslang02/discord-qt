@@ -1,4 +1,4 @@
-import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag } from "@nodegui/nodegui";
+import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape } from "@nodegui/nodegui";
 import { app } from "../..";
 import { DMChannel, Message, Channel, Client } from "discord.js";
 import { MessageItem } from "./MessageItem";
@@ -15,6 +15,7 @@ export class MessagesPanel extends QScrollArea {
     super();
     this.setObjectName('MessagesPanel');
     this.setAlignment(AlignmentFlag.AlignBottom + AlignmentFlag.AlignHCenter);
+    this.setFrameShape(Shape.NoFrame);
     this.initRoot();
     this.initEvents();
   }
@@ -49,6 +50,12 @@ export class MessagesPanel extends QScrollArea {
     this.setWidget(this.root);
   }
 
+  private scrollDown() {
+    this.ensureVisible(0, 100000);
+    this.lower();
+    this.root.lower();
+  }
+
   private async handleDMOpen(dm: DMChannel) {
     this.messages.clear();
     this.initRoot();
@@ -56,17 +63,15 @@ export class MessagesPanel extends QScrollArea {
 
     const { messages, rootControls } = this;
     const fetched = await dm.fetchMessages({ limit: 20 });
+    const promises: Promise<void>[] = [];
     for (const message of fetched.array().reverse()) {
       const widget = new MessageItem(this.root);
-      widget.loadMessage(message);
+      promises.push(widget.loadMessage(message));
       messages.set(message, widget);
       rootControls.insertWidget(0, widget);
     }
-    this.root.lower();
-    setTimeout(() => {
-      this.ensureVisible(0, 100000);
-      this.lower();
-      this.root.lower();
-    });
+    await Promise.all(promises);
+    this.scrollDown();
+    setTimeout(this.scrollDown.bind(this), 100);
   }
 }

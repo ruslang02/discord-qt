@@ -1,4 +1,4 @@
-import { QWidget, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, AlignmentFlag, QCursor, CursorShape, AspectRatioMode, TransformationMode, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QWidget, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, QFont, AlignmentFlag, QCursor, CursorShape, AspectRatioMode, TransformationMode, QBoxLayout, Direction, Shape } from "@nodegui/nodegui";
 import path from "path";
 import './GuildsList.scss';
 import { Guild, Client } from "discord.js";
@@ -26,6 +26,7 @@ export class GuildsList extends QScrollArea {
     this.container.setObjectName("GuildsList");
     this.layout.setContentsMargins(12, 12, 12, 12);
     this.layout.setSpacing(0);
+    this.setFrameShape(Shape.NoFrame);
     this.setWidget(this.container);
   }
 

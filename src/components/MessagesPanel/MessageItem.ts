@@ -6,6 +6,9 @@ import { app } from "../..";
 import fs from "fs";
 import open from 'open';
 import markdownIt, {PresetName} from 'markdown-it';
+import { extname } from "path";
+
+const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
@@ -72,13 +75,13 @@ export class MessageItem extends QWidget {
 
   private async processEmojis(content: string): Promise<string> {
     const { contentLabel } = this;
-    const emoIds = content.match(/<a?:\w+:[0-9]+>/g) || [];
-    const size = content.replace(/<a?:\w+:[0-9]+>/g, '').trim() === '' ? 48 : 18;
+    const emoIds = content.match(EMOJI_REGEX) || [];
+    const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 18;
     for (const emo of emoIds) {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
-      const buffer = await pictureWorker.loadImage(url, {size: 64, roundify: false, format});
+      const buffer = await pictureWorker.loadImage(url, {size: 128, roundify: false, format});
       if(!buffer) continue;
 
       content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
@@ -93,7 +96,9 @@ export class MessageItem extends QWidget {
     for (const embed of attachments.values()) {
       const qimage = new QLabel();
       let pixmap = new QPixmap();
-      pixmap.loadFromData((await Axios.get(embed.url, { responseType: 'arraybuffer' })).data);
+      const image = await pictureWorker.loadImage(embed.url, {roundify: false, format: extname(embed.filename).slice(1)});
+      if(!image) return;
+      pixmap.loadFromData(image);
       if (pixmap.width() > 400 || pixmap.height() > 300)
         pixmap = pixmap.scaled(400, 300, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation);
       qimage.setCursor(CursorShape.PointingHandCursor);

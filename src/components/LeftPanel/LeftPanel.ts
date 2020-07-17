@@ -19,6 +19,7 @@ export class LeftPanel extends QWidget {
     const { guildPanel, dmPanel, userPanel, container, controls } = this;
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
+    this.setMaximumSize(240, 10000);
     container.addWidget(guildPanel);
     container.addWidget(dmPanel);
     container.setCurrentWidget(dmPanel);

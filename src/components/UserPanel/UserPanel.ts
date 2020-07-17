@@ -73,8 +73,7 @@ export class UserPanel extends QWidget {
     }
 
     let avatarBuf = await pictureWorker.loadImage(
-      client.user.avatarURL || client.user.defaultAvatarURL,
-      { size: 64 }
+      client.user.avatarURL || client.user.defaultAvatarURL
     );
 
     if(avatarBuf !== null) {

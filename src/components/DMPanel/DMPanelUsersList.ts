@@ -1,4 +1,4 @@
-import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction, QPushButton, WidgetEventTypes } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction, QPushButton, WidgetEventTypes, Shape } from "@nodegui/nodegui";
 import { app } from "../..";
 import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
@@ -13,6 +13,7 @@ export class DMPanelUsersList extends QScrollArea {
     this.root.setLayout(this.widgets);
     this.root.setObjectName('UsersList');
     this.setWidget(this.root);
+    this.setFrameShape(Shape.NoFrame);
     this.setObjectName('UsersContainer');
 
     const dmLabel = new QLabel();
@@ -28,7 +29,7 @@ export class DMPanelUsersList extends QScrollArea {
     });
 
     app.on('dmOpen', (channel: DMChannel) => {
-      this.channels.forEach((btn, dm) => btn.setInlineStyle(dm.id === channel.id ? 'background-color: rgba(79, 84, 92, 0.32)' : ''));
+      this.channels.forEach((btn, dm) => btn.setActivated(dm.id === channel.id));
     })
   }
 
@@ -51,7 +52,8 @@ export class DMPanelUsersList extends QScrollArea {
       const dm = c as DMChannel;
       const uButton = new UserButton();
       uButton.loadUser(dm.recipient);
-      uButton.setFixedSize(222, 42);
+      uButton.setMinimumSize(0, 42);
+      uButton.setMaximumSize(16777215, 42);
       uButton.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
         app.emit('dmOpen', dm);
       });

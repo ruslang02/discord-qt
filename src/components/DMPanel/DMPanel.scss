@@ -1,16 +1,18 @@
+@import '../../Colors.scss';
+
 #DMPanel {
   #UsersContainer {
-    background-color: #2f3136;
+    background-color: $background-secondary;
     border: none;
   }
   #UsersList {
-    background-color: #2f3136;
+    background-color: $background-secondary;
   }
   #DMLabel {
     font-weight: bold;
     font-size: 12px;
     margin-bottom: 4px;
     margin-left: 5px;
-    color: #8e9297;
+    color: $channels-default;
   }
 }

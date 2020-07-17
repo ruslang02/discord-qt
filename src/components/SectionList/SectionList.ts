@@ -1,4 +1,4 @@
-import { QScrollArea, QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QScrollArea, QWidget, QBoxLayout, Direction, Shape } from "@nodegui/nodegui";
 
 export class SectionList extends QScrollArea {
   private root = new QWidget();
@@ -7,5 +7,6 @@ export class SectionList extends QScrollArea {
   constructor() {
     super();
     this.setObjectName('SectionList');
+    this.setFrameShape(Shape.NoFrame);
   }
 }

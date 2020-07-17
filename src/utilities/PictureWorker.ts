@@ -5,7 +5,7 @@ import path from 'path';
 type Options = {
   roundify?: boolean,
   size?: number,
-  format?: 'gif' | 'png' | 'webp' | 'jpg'
+  format?: string
 };
 
 /*
@@ -15,7 +15,7 @@ class PictureWorker {
   worker: Worker;
   //id: number = 0;
   defaultOptions: Options = {
-    size: 64,
+    size: 128,
     format: 'png',
   };
   cache = new Map<string, Buffer>();
@@ -32,7 +32,7 @@ class PictureWorker {
     if (url === null)
       return Promise.resolve(null);
     options = { ...defaultOptions, roundify: app.config.roundifyAvatars, ...(options || {}) };
-    const cached = cache.get(`${path.basename(url)}.${options.size}.${options.roundify ? 1 : 0}.${options.format}`);
+    const cached = cache.get(`${url}.${options.size}.${options.roundify ? 1 : 0}.${options.format}`);
     if (cached !== undefined)
       return Promise.resolve(cached);
     return new Promise(resolve => {
@@ -66,7 +66,7 @@ class PictureWorker {
     const buffer = Buffer.alloc(result.buffer.length);
     for (let i = 0; i < result.buffer.length; i++)
       buffer[i] = result.buffer[i];
-    this.cache.set(`${path.basename(url)}.${options.size}.${options.roundify ? 1 : 0}.${options.format}`, buffer);
+    this.cache.set(`${url}.${options.size}.${options.roundify ? 1 : 0}.${options.format}`, buffer);
     return callback(buffer);
   }
 }
