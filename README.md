@@ -17,7 +17,15 @@ npm start
 To be announced.
 
 ## Configuration
-In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs)
+In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
+You need to create a configuration file in `~/.config/discord-qt/config.json`, the file has the following schema:
+```js
+{
+  "token": "Nkj54hs...", // required, your user token
+  "roundifyAvatars": true, // optional, determines whether you want to roundify every user avatar
+  "fastLaunch": false // optional, if true loads only first 5 guilds and first 5 DM users to launch faster
+}
+```
 
 ## Fonts
 By default, the application doesn't use external fonts. However, if you want an even more seamless experience, you need to obtain a copy of Whitney OTF fonts (commercial fonts used by Discord) and put them into `/assets/fonts` folder.
