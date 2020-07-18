@@ -2,7 +2,7 @@ import { QWidget, QStackedWidget, FlexLayout, QBoxLayout, Direction, QScrollArea
 import { DIconButton } from "../../components/DIconButton/DIconButton";
 import { join } from "path";
 import { SectionList } from "./SectionList";
-import { MAX_QSIZE } from "../..";
+import { MAX_QSIZE, app } from "../..";
 import { Page } from "../../pages/Page";
 import { AccountsPage } from "../../pages/AccountsPage";
 import './SettingsView.scss';
@@ -15,7 +15,6 @@ export class CategoryHeader extends QLabel {
     super();
     this.setObjectName('CategoryHeader');
     this.setText(text);
-
   }
 }
 export class Separator extends QWidget {
@@ -39,8 +38,6 @@ export class SettingsView extends QWidget {
   private pageContainer = new QScrollArea();
   private closeContainer = new QWidget();
   private rightSpacer = new QWidget();
-
-  events = new EventEmitter();
   
   layout = new QBoxLayout(Direction.LeftToRight);
 
@@ -49,14 +46,16 @@ export class SettingsView extends QWidget {
     this.setLayout(this.layout);
     this.setObjectName("SettingsView");
     this.initView();
-    this.events.on('open', (pageTitle: string) => {
-      const page = this.elements
-        .find(page => page instanceof Page && page.title === pageTitle) as Page;
-      this.pageContainer.takeWidget();
-      this.pageContainer.setWidget(page);
-    });
+    this.setEvents();
   }
-  open(page: Page) {
+  private setEvents() {
+    app.on('openSettingsPage', (pageTitle: string) => {
+      const { pageContainer, elements } = this;
+      const page = elements.find(page => page instanceof Page && page.title === pageTitle) as Page;
+      
+      pageContainer.takeWidget();
+      pageContainer.setWidget(page);
+    });
   }
   private initView() {
     const { layout, leftSpacer, sectionList, pageContainer, closeContainer, rightSpacer } = this;
@@ -69,7 +68,7 @@ export class SettingsView extends QWidget {
     const closeLayout = new QBoxLayout(Direction.TopToBottom);
     closeContainer.setLayout(closeLayout);
     closeLayout.setContentsMargins(0, 60, 21, 0);
-    closeLayout.setSpacing(8);
+    closeLayout.setSpacing(0);
 
     pageContainer.setFrameShape(Shape.NoFrame);
     pageContainer.setMinimumSize(460, 0);
@@ -78,6 +77,7 @@ export class SettingsView extends QWidget {
 
     const closeBtn = new QPushButton();
     closeBtn.setObjectName('CloseButton');
+    closeBtn.addEventListener('clicked', () => app.emit('switchView', 'main'));
     closeBtn.setFixedSize(36, 36);
     closeBtn.setCursor(CursorShape.PointingHandCursor);
     closeBtn.setIcon(new QIcon(join(__dirname, './assets/icons/close.png')));

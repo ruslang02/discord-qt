@@ -3,7 +3,6 @@ import { Page } from "./Page";
 
 export class AccountsPage extends Page {
   title = "Accounts";
-  layout = new QBoxLayout(Direction.TopToBottom);
 
   constructor() {
     super();
@@ -11,9 +10,10 @@ export class AccountsPage extends Page {
   }
 
   private initPage() {
+    const { layout } = this;
     const header = new QLabel();
     header.setObjectName('Header2');
     header.setText('Accounts');
-    this.layout.addWidget(header);
+    layout.addWidget(header);
   }
 }

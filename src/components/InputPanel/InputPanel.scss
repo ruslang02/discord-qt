@@ -1,16 +1,20 @@
-#InputPanel {
-  background: #40444b;
-  border-radius: 8px;
-  #Input {
-    background: #40444b;
-    border: none;
-    color: #dcddde;
-    font-size: 16px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-  }
+@import '../../Colors.scss';
+
+#InputContainer {
   #TypingLabel {
-    color: #dcddde;
+    color: $text-normal;
     font-size: 12px;
+  }
+  #InputPanel {
+    background: $channeltextarea-background;
+    border-radius: 8px;
+    #Input {
+      background: $channeltextarea-background;
+      border: none;
+      color: $text-normal;
+      font-size: 16px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
   }
 }

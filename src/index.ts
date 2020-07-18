@@ -4,8 +4,10 @@ import path from 'path';
 import fs from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
+import envPaths from 'env-paths';
 
 const FONTS_PATH = path.join(__dirname, './assets/fonts');
+const paths = envPaths('discord', {suffix: 'qt'})
 
 type Config = {
   token?: string;
@@ -22,8 +24,8 @@ class Application extends EventEmitter {
   }
 
   protected async loadConfig() {
-    const configPath = path.join(process.env.HOME || '', '.config', 'discord-qt', 'config.json');
-    console.log(configPath);
+    fs.mkdirSync(paths.config, {recursive: true});
+    const configPath = path.join(paths.config, 'config.json');
     try {
       const configFile = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       const appConfig = {
@@ -34,7 +36,9 @@ class Application extends EventEmitter {
       console.log(appConfig);
       this.config = appConfig as Config;
     } catch(err) {
-      console.error(err);
+      if (!fs.existsSync(configPath))
+        fs.writeFileSync(configPath, '{}', 'utf8');
+      else console.error('Config file could not be used, returning to default values...');
       this.config = {
         roundifyAvatars: true,
         fastLaunch: false,

@@ -11,16 +11,15 @@
   "scripts": {
     "build": "webpack --hide-modules",
     "start": "webpack --hide-modules && qode ./dist/index.js",
-    "start:test": "qode ./dist/index.js",
+    "start:test": "qode .\\dist",
     "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
     "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
-    "@types/markdown-it": "^10.0.1",
     "axios": "^0.19.2",
-    "copy-webpack-plugin": "^6.0.3",
     "discord.js": "^11.6.4",
+    "env-paths": "^2.2.0",
     "markdown-it": "^11.0.0",
     "open": "git+https://github.com/sindresorhus/open.git",
     "pngjs": "^5.0.0"
@@ -29,7 +28,9 @@
     "@nodegui/packer": "^1.4.1",
     "@types/node": "^13.7.7",
     "@types/pngjs": "^3.4.2",
+    "@types/markdown-it": "^10.0.1",
     "clean-webpack-plugin": "^3.0.0",
+    "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.6.0",
     "file-loader": "^5.1.0",
     "extract-loader": "^5.1.0",

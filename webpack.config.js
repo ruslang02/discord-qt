@@ -62,9 +62,9 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
   },
   plugins: [
+    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g}),
     new CleanWebpackPlugin(), 
     new MiniCssExtractPlugin(),
-    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g}),
     new CopyPlugin({
       patterns: [
         {from: 'assets', to: 'assets'}

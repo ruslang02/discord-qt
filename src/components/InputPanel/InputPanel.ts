@@ -13,6 +13,7 @@ export class InputPanel extends QWidget {
   private typingLabel = new QLabel();
   constructor() {
     super();
+    this.setObjectName('InputContainer');
     this.root.setObjectName('InputPanel');
     this.initComponent();
     this.setEvents();

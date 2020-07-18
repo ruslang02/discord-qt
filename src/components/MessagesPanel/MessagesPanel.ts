@@ -28,10 +28,11 @@ export class MessagesPanel extends QScrollArea {
       client.on('message', async (message: Message) => {
         if (message.channel.id === this.channel?.id) {
           const widget = new MessageItem(this.root);
-          messages.set(message, widget);
           (this.root.layout as QBoxLayout).insertWidget(0, widget);
+          const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
+          messages.set(message, widget);
           await widget.loadMessage(message);
-          this.scrollDown();
+          setTimeout(() => clearInterval(scrollTimer), 100);
         }
       })
     })
