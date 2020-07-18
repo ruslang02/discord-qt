@@ -3,10 +3,14 @@
 #UserPanel {
   #NameLabel {
     color: $header-primary;
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 18px;
   }
   #DiscLabel {
     color: $header-secondary;
+    font-size: 14px;
+    line-height: 13px;
   }
   #DIconButton {
     border-radius: 5px;

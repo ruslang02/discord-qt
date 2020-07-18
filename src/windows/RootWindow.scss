@@ -1,11 +1,10 @@
 @import '../Colors.scss';
 * {
-  font-family: Whitney;
-  font-weight: 400;
+  font-family: 'Source Sans Pro'; // Default font
+//font-family: Whitney;           // Discord's font
 }
 #RootWindow {
   height: '100%';
   width: '100%';
   background-color: $black;
-  font-family: Whitney;
 }

@@ -15,7 +15,7 @@ export class RootWindow extends QMainWindow {
 
   constructor() {
     super();
-    this.setFont(new QFont('Whitney'));
+    // this.setFont(new QFont('Source Sans Pro'));
     this.loadStyles();
     this.loadIcon();
     this.initializeWindow();

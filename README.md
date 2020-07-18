@@ -28,4 +28,4 @@ You need to create a configuration file in `~/.config/discord-qt/config.json`, t
 ```
 
 ## Fonts
-By default, the application doesn't use external fonts. However, if you want an even more seamless experience, you need to obtain a copy of Whitney OTF fonts (commercial fonts used by Discord) and put them into `/assets/fonts` folder.
+By default, the application uses Source Sans Pro font. However, if you want an even more seamless experience, you need to obtain a copy of Whitney fonts (commercial fonts used by Discord) and put them into `/assets/fonts` folder. In order to activate them, uncomment line with Whitley font in `/src/windows/RootWindow.scss` and rebuild.

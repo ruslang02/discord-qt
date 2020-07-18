@@ -104,4 +104,4 @@ dist
 .tern-port
 deploy/*/build
 *.deb
-assets/fonts/*
+assets/fonts/whitney*

@@ -1,7 +1,7 @@
 import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, AspectRatioMode, TransformationMode } from "@nodegui/nodegui";
 import path from 'path';
 import './UserPanel.scss';
-import { app } from "../..";
+import { app, MAX_QSIZE } from "../..";
 import { Client } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DIconButton } from "../DIconButton/DIconButton";
@@ -29,6 +29,8 @@ export class UserPanel extends QWidget {
     const { avatar, nameLabel, discLabel, controls } = this; 
     this.setLayout(controls);
     this.setObjectName('UserPanel');
+    this.setMinimumSize(0, 52);
+    this.setMaximumSize(MAX_QSIZE, 52);
 
     controls.setContentsMargins(8, 8, 8, 8)
     controls.setSpacing(8);
@@ -40,6 +42,8 @@ export class UserPanel extends QWidget {
     const infoControls = new QBoxLayout(Direction.TopToBottom);
     infoContainer.setLayout(infoControls);
     infoContainer.setObjectName('InfoContainer');
+    infoContainer.setMinimumSize(0, 32);
+    infoContainer.setMaximumSize(MAX_QSIZE, 32);
     infoControls.setSpacing(0);
     infoControls.setContentsMargins(0, 0, 0, 0);
     nameLabel.setText('No account');
