@@ -5,7 +5,7 @@ import fs from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
 
-const FONTS_PATH = path.join(__dirname, '../assets/fonts');
+const FONTS_PATH = path.join(__dirname, './assets/fonts');
 
 type Config = {
   token?: string;

@@ -32,7 +32,7 @@ export class GuildsList extends QScrollArea {
   }
 
   addMainPageButton() {
-    const mainIcon = new QIcon(path.resolve(__dirname, "../assets/icons/home.png"));
+    const mainIcon = new QIcon(path.resolve(__dirname, "./assets/icons/home.png"));
     const mpBtn = new QPushButton();
     mpBtn.setObjectName("PageButton");
     mpBtn.setIcon(mainIcon);

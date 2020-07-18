@@ -52,7 +52,7 @@ export class UserPanel extends QWidget {
       .forEach(w => infoControls.addWidget(w))
 
     const sBtn = new DIconButton({
-      iconPath: path.join(__dirname, '../assets/icons/cog.png'),
+      iconPath: path.join(__dirname, './assets/icons/cog.png'),
       iconQSize: new QSize(20, 20),
       tooltipText: 'User Settings'
     });

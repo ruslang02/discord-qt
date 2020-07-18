@@ -49,7 +49,7 @@ export class RootWindow extends QMainWindow {
     this.setStyleSheet(stylesheet);
   }
   protected loadIcon() {
-    const icon = new QIcon(path.resolve(__dirname, "../assets/icons/logo.png"));
+    const icon = new QIcon(path.resolve(__dirname, "./assets/icons/logo.png"));
     this.setWindowIcon(icon);
   }
 

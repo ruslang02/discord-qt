@@ -41,7 +41,7 @@ export class DMTitleBar extends DTitleBar {
     layout.setSpacing(6);
     layout.setContentsMargins(16, 12, 16, 12)
     const atLabel = new QLabel();
-    atLabel.setPixmap(new QPixmap(path.join(__dirname, '../assets/icons/at.png')));
+    atLabel.setPixmap(new QPixmap(path.join(__dirname, './assets/icons/at.png')));
 
     userNameLabel.setObjectName('UserNameLabel');
     statusLabel.setObjectName('StatusLabel');
@@ -52,13 +52,13 @@ export class DMTitleBar extends DTitleBar {
     searchEdit.setPlaceholderText('Search');
 
     const pinBtn = new DIconButton({
-      iconPath: path.join(__dirname, '../assets/icons/pin.png'),
+      iconPath: path.join(__dirname, './assets/icons/pin.png'),
       iconQSize: new QSize(24, 24),
       tooltipText: 'Pinned Messages'
     });
 
     const helpBtn = new DIconButton({
-      iconPath: path.join(__dirname, '../assets/icons/help-circle.png'),
+      iconPath: path.join(__dirname, './assets/icons/help-circle.png'),
       iconQSize: new QSize(24, 24),
       tooltipText: 'Help'
     });

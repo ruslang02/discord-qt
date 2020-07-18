@@ -9,7 +9,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack --hide-modules",
     "start": "webpack --hide-modules && qode ./dist/index.js",
     "start:test": "qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
@@ -19,6 +19,7 @@
     "@nodegui/nodegui": "^0.24.0",
     "@types/markdown-it": "^10.0.1",
     "axios": "^0.19.2",
+    "copy-webpack-plugin": "^6.0.3",
     "discord.js": "^11.6.4",
     "markdown-it": "^11.0.0",
     "open": "git+https://github.com/sindresorhus/open.git",

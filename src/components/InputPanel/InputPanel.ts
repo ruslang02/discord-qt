@@ -54,14 +54,14 @@ export class InputPanel extends QWidget {
     rootLayout.setSpacing(0);
     
     const addBtn = new DIconButton({
-      iconPath: path.join(__dirname, '../assets/icons/plus-circle.png'),
+      iconPath: path.join(__dirname, './assets/icons/plus-circle.png'),
       iconQSize: new QSize(24, 24),
       tooltipText: 'Embed files'
     });
     addBtn.setFixedSize(56, 44);
     input.setObjectName('Input');
     const emojiBtn = new DIconButton({
-      iconPath: path.join(__dirname, '../assets/icons/emoticon.png'),
+      iconPath: path.join(__dirname, './assets/icons/emoticon.png'),
       iconQSize: new QSize(24, 24),
       tooltipText: 'Emoji'
     });

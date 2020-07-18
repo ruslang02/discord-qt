@@ -2,6 +2,7 @@ const path = require("path");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { IgnorePlugin } = require("webpack");
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: process.NODE_ENV || "development",
@@ -58,12 +59,17 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js", ".jsx"],
+    extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
   },
   plugins: [
     new CleanWebpackPlugin(), 
     new MiniCssExtractPlugin(),
-    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g})
+    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g}),
+    new CopyPlugin({
+      patterns: [
+        {from: 'assets', to: 'assets'}
+      ]
+    })
   ],
   stats: {
     warnings: false

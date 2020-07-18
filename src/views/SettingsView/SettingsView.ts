@@ -80,7 +80,7 @@ export class SettingsView extends QWidget {
     closeBtn.setObjectName('CloseButton');
     closeBtn.setFixedSize(36, 36);
     closeBtn.setCursor(CursorShape.PointingHandCursor);
-    closeBtn.setIcon(new QIcon(join(__dirname, '../assets/icons/close.png')));
+    closeBtn.setIcon(new QIcon(join(__dirname, './assets/icons/close.png')));
     closeBtn.setIconSize(new QSize(18, 18));
 
     const closeKeybind = new QLabel();

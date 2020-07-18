@@ -102,5 +102,5 @@ dist
 
 # TernJS port file
 .tern-port
-
+deploy/*/build
 assets/fonts/*

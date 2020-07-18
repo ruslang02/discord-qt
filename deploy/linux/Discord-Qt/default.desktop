@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=DiscordQt
+Exec=AppRun %F
+Icon=default
+Comment=Discord running on Qt and Node.JS
+Terminal=false
+Categories=Chat;Network;InstantMessaging;Qt;
+StartupWMClass=DiscordQt
+Version=1.0
