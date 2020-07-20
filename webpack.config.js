@@ -3,12 +3,21 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { IgnorePlugin } = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = {
   mode: process.NODE_ENV || "development",
   entry: {
     index: "./src",
     worker: "./worker"
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin({
+      terserOptions: {
+        keep_classnames: true
+      }
+    })],
   },
   target: "node",
   node: {
@@ -29,7 +38,7 @@ module.exports = {
           {
             loader: 'ts-loader',
             options: {
-              transpileOnly: true
+              //transpileOnly: true
             }
           }
         ]
@@ -62,12 +71,12 @@ module.exports = {
     extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
   },
   plugins: [
-    new IgnorePlugin({resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g}),
-    new CleanWebpackPlugin(), 
+    new IgnorePlugin({ resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g }),
+    new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
     new CopyPlugin({
       patterns: [
-        {from: 'assets', to: 'assets'}
+        { from: 'assets', to: 'assets' }
       ]
     })
   ],
