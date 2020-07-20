@@ -1,4 +1,4 @@
-# Discord on Qt
+# DiscordQt
 A Discord desktop client powered by Node.JS and [NodeGUI/Qt](https://github.com/nodegui).
 It offers a significantly less resource-consuming experience comparing to the official Electron-based desktop client thanks to native UI rendering instead of a Chromium rendering engine.
 
@@ -14,7 +14,7 @@ npm start
 ```
 
 ## Running binary release
-To be announced.
+Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows and Linux (AppImage).
 
 ## Configuration
 In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
