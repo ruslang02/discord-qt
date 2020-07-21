@@ -1,0 +1,34 @@
+@import '../../Colors.scss';
+
+#DColorButton {
+  color: #fff;
+  background: none;
+  border: none;
+  border-radius: 3px;
+  font-size: 14px;
+  // font-weight: 500;
+  line-height: 16px;
+  padding: 2px 16px;
+
+  &[color="0"] {
+    background-color: $blurple;
+    &:hover {
+      background-color: darken($blurple, 3%);
+    }
+    &:disabled {
+      background-color: darken($blurple, 9%);
+      color: $text-normal;
+    }
+  }
+
+  &[color="1"] {
+    background-color: $red;
+    &:hover {
+      background-color: darken($red, 3%);
+    }
+    &:disabled {
+      background-color: darken($red, 9%);
+      color: $text-muted;
+    }
+  }
+}

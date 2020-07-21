@@ -1,5 +1,5 @@
 import { QLabel, QWidget, QPixmap, FlexLayout, QCursor, CursorShape, QBoxLayout, Direction, AspectRatioMode, TransformationMode, WidgetEventTypes, WidgetAttribute, QPushButton } from "@nodegui/nodegui";
-import { User } from "discord.js";
+import { User, GuildMember } from "discord.js";
 import './UserButton.scss';
 import { pictureWorker } from "../../utilities/PictureWorker";
 
@@ -14,8 +14,8 @@ export class UserButton extends QPushButton {
   private _hovered = false;
   private _activated = false;
 
-  constructor() {
-    super();
+  constructor(parent: any) {
+    super(parent);
     this.setObjectName('UserButton');
     this.setLayout(this.controls);
     this.initComponent();
@@ -42,7 +42,6 @@ export class UserButton extends QPushButton {
 
     this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setHovered(true));
     this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setHovered(false));
-
     [avatar, infoContainer].forEach(w => this.layout?.addWidget(w));
   }
 
@@ -66,18 +65,21 @@ export class UserButton extends QPushButton {
     this.statusLabel.repolish();
   }
 
-  async loadUser(user: User) {
+  async loadUser(someone: User | GuildMember) {
     const { userNameLabel, statusLabel } = this;
-    pictureWorker.loadImage(user.avatarURL || user.defaultAvatarURL, {size: 64})
+    let user = someone instanceof GuildMember ? someone.user : someone;
+    let member = someone instanceof GuildMember ? someone : null;
+    pictureWorker.loadImage(
+      user.avatarURL || user.defaultAvatarURL, {size: 32})
       .then(async (buffer) => {
         if (buffer === null)
           return;
         const avatarPixmap = new QPixmap();
         avatarPixmap.loadFromData(buffer, 'PNG');
-        this.avatar.setPixmap(avatarPixmap.scaled(32, 32, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
+        this.avatar.setPixmap(avatarPixmap/*.scaled(32, 32, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation)*/);
       });
 
-    userNameLabel.setText(user.username);
+    userNameLabel.setText(member?.nickname ?? user.username);
     userNameLabel.setMinimumSize(24, 0);
     userNameLabel.setFlexNodeSizeControlled(false);
     userNameLabel.adjustSize();

@@ -1,14 +1,45 @@
-import { QWidget, QStackedWidget, FlexLayout, QBoxLayout, Direction, QScrollArea, QPushButton, QIcon, QSize, QLabel, Shape, CursorShape, AlignmentFlag } from "@nodegui/nodegui";
-import { DIconButton } from "../../components/DIconButton/DIconButton";
+import { QWidget, QBoxLayout, Direction, QScrollArea, QPushButton, QIcon, QSize, QLabel, Shape, CursorShape, AlignmentFlag, TextInteractionFlag } from "@nodegui/nodegui";
 import { join } from "path";
 import { SectionList } from "./SectionList";
 import { MAX_QSIZE, app } from "../..";
-import { Page } from "../../pages/Page";
-import { AccountsPage } from "../../pages/AccountsPage";
+import { Page } from "./pages/Page";
+import { AccountsPage } from "./pages/AccountsPage";
 import './SettingsView.scss';
-import { EventEmitter } from "events";
+import { MyAccountPage } from './pages/MyAccountPage';
+import { DIconButton } from '../../components/DIconButton/DIconButton';
+import open from 'open';
 
-export type Element = Page | Separator | CategoryHeader;
+export type Element = Page | Divider | CategoryHeader | Footer;
+
+export class Footer extends QWidget {
+  layout = new QBoxLayout(Direction.TopToBottom);
+  constructor() {
+    super();
+
+    this.setLayout(this.layout);
+    this.initComponent();
+  }
+
+  private async initComponent() {
+    const github = new DIconButton({
+      iconPath: join(__dirname, './assets/icons/github.png'),
+      iconQSize: new QSize(24, 24),
+      tooltipText: 'GitHub'
+    });
+    github.setFixedSize(24, 24);
+    const label = new QLabel();
+    const me = await import('../../../package.json') as { version: string, repository: {url: string} };
+    github.addEventListener('clicked', () => open(me.repository.url));
+    // @ts-ignore
+    label.setText(`DiscordQt ${me.version} (build ${__BUILDNUM__})<br>node ${process.versions.node}<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`);
+    label.setOpenExternalLinks(true);
+    label.setObjectName('Footer');
+    label.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
+    label.setCursor(CursorShape.IBeamCursor);
+    this.layout.addWidget(github);
+    this.layout.addWidget(label, 1);
+  }
+}
 
 export class CategoryHeader extends QLabel {
   constructor(text: string) {
@@ -17,20 +48,23 @@ export class CategoryHeader extends QLabel {
     this.setText(text);
   }
 }
-export class Separator extends QWidget {
+export class Divider extends QWidget {
   constructor() {
     super();
     this.setMinimumSize(20, 17);
     this.setMaximumSize(MAX_QSIZE, 17);
-    this.setObjectName('Separator');
+    this.setObjectName('Divider');
   }
 }
 
 export class SettingsView extends QWidget {
   private elements: Element[] = [
     new AccountsPage(),
-    new Separator(),
+    new Divider(),
     new CategoryHeader('User Settings'),
+    new MyAccountPage(),
+    new Divider(),
+    new Footer(),
   ];
 
   private leftSpacer = new QWidget();
@@ -74,6 +108,7 @@ export class SettingsView extends QWidget {
     pageContainer.setMinimumSize(460, 0);
     pageContainer.setMaximumSize(740, MAX_QSIZE)
     pageContainer.setObjectName("SettingsContainer");
+    pageContainer.setWidget(this.elements[0] as Page);
 
     const closeBtn = new QPushButton();
     closeBtn.setObjectName('CloseButton');

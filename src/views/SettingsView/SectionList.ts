@@ -1,7 +1,7 @@
 import { QScrollArea, QWidget, QBoxLayout, Direction, Shape, QPushButton, CursorShape } from "@nodegui/nodegui";
 import { MAX_QSIZE, app } from "../..";
-import { Element, Separator, SettingsView } from "./SettingsView";
-import { Page } from "../../pages/Page";
+import { Element, Divider, SettingsView } from "./SettingsView";
+import { Page } from "./pages/Page";
 
 
 export class SectionList extends QScrollArea {
@@ -39,15 +39,18 @@ export class SectionList extends QScrollArea {
 
   private initPages() {
     const { root, layout, pageButtons } = this;
+    let first = true;
     for (const elem of this.elements) {
       if(elem instanceof Page) {
         const btn = new QPushButton();
         btn.setText(elem.title);
+        btn.setProperty('active', first);
         btn.setObjectName('PageButton');
         btn.setCursor(CursorShape.PointingHandCursor);
         btn.addEventListener('clicked', () => app.emit('openSettingsPage', elem.title));
         layout.addWidget(btn);
         pageButtons.set(elem, btn);
+        first = false;
       } else layout.addWidget(elem)
     }
     layout.addStretch(1);

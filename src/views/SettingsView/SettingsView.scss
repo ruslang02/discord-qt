@@ -10,6 +10,11 @@
   }
   #LeftSpacer, #SectionList {
     background-color: $background-secondary;
+    #Divider {
+      margin: 8px 10px;
+      height: 1px;
+      background-color: $background-modifier-accent;
+    }
   }
   #CloseButton {
     border-radius: 18px;
@@ -19,16 +24,11 @@
     }
   }
   #CloseKeybind {
-    margin-top: 4px;
+    margin-top: 2px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     text-align: center;
     color: $text-muted;
-  }
-  #Separator {
-    margin: 8px 10px;
-    height: 1px;
-    background-color: $background-modifier-accent;
   }
   #CategoryHeader {
     font-size: 12px;
@@ -37,6 +37,12 @@
     text-transform: uppercase;
     color: $channels-default;
     padding: 6px 10px;
+  }
+  #Footer {
+    color: $text-muted;
+    font-size: 12px;
+    line-height: 16px;
+    padding-top: 5px;
   }
   #PageButton {
     padding: 6px 10px;

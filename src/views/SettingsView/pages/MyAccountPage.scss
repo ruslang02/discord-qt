@@ -1,0 +1,22 @@
+@import '../../../Colors.scss';
+
+#MyAccountCard {
+  border-width: 1px;
+  border-style: solid;
+  border-color: $background-tertiary;
+  border-radius: 5px;
+  background-color: $deprecated-card-bg;
+  #Bold {
+    margin-bottom: 2px;
+    color: $channels-default;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 16px;
+    text-transform: uppercase;
+  }
+  #Normal {
+    margin-top: 2px;
+    font-size: 14px;
+    line-height: 18px;
+  }
+}

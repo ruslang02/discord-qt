@@ -10,5 +10,6 @@
     "alwaysStrict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "resolveJsonModule": true
   }
 }

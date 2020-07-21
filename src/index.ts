@@ -1,18 +1,28 @@
 import { RootWindow } from "./windows/RootWindow";
 import { Client } from "discord.js";
-import path from 'path';
+import path, { join } from 'path';
 import fs from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
 import envPaths from 'env-paths';
+import { writeFile } from 'fs/promises';
 
 const FONTS_PATH = path.join(__dirname, './assets/fonts');
 const paths = envPaths('discord', {suffix: 'qt'})
 
-type Config = {
-  token?: string;
+export type Account = {
+  username: string,
+  discriminator: string,
+  token: string,
+  avatar: string,
+  autoLogin: boolean;
+};
+
+export type Config = {
+  accounts: Account[],
   roundifyAvatars: boolean;
   fastLaunch: boolean;
+  debug: boolean;
 }
 
 class Application extends EventEmitter {
@@ -29,19 +39,22 @@ class Application extends EventEmitter {
     try {
       const configFile = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       const appConfig = {
-        token: configFile.token || undefined,
+        accounts: configFile.accounts || [],
         roundifyAvatars: configFile.roundifyAvatars ?? true,
         fastLaunch: configFile.fastLaunch ?? false,
+        debug: configFile.debug ?? false,
       };
-      console.log(appConfig);
+      console.log('Loaded config:', appConfig);
       this.config = appConfig as Config;
     } catch(err) {
       if (!fs.existsSync(configPath))
         fs.writeFileSync(configPath, '{}', 'utf8');
       else console.error('Config file could not be used, returning to default values...');
       this.config = {
+        accounts: [],
         roundifyAvatars: true,
         fastLaunch: false,
+        debug: false,
       };
     }
   }
@@ -72,6 +85,13 @@ class Application extends EventEmitter {
   }
   public set config(v: Config) {
     (global as any).config = v;
+  }
+  async saveConfig() {
+    try {
+      await writeFile(join(paths.config, 'config.json'), JSON.stringify(this.config))
+    } catch(e) {
+      console.error(e);
+    }
   }
 }
 export const app = new Application();

@@ -1,4 +1,4 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AspectRatioMode, TransformationMode, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AspectRatioMode, TransformationMode, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QMouseEvent, QSize } from "@nodegui/nodegui";
 import { Message, Attachment, Collection, MessageAttachment } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import Axios from "axios";
@@ -57,6 +57,7 @@ export class MessageItem extends QWidget {
     contentLabel.setObjectName('Content');
     contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
+    contentLabel.setOpenExternalLinks(true);
     contentLabel.setWordWrap(true);
     contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
 
@@ -76,12 +77,12 @@ export class MessageItem extends QWidget {
   private async processEmojis(content: string): Promise<string> {
     const { contentLabel } = this;
     const emoIds = content.match(EMOJI_REGEX) || [];
-    const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 18;
+    const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 32 : 32;
     for (const emo of emoIds) {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
-      const buffer = await pictureWorker.loadImage(url, {roundify: false, format});
+      const buffer = await pictureWorker.loadImage(url, {roundify: false, format, size: 32});
       if(!buffer) continue;
 
       content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
@@ -93,17 +94,32 @@ export class MessageItem extends QWidget {
   }
 
   private async processAttachments(attachments: Collection<string, MessageAttachment>) {
-    for (const embed of attachments.values()) {
+    for (const attach of attachments.values()) {
       const qimage = new QLabel();
-      let pixmap = new QPixmap();
-      const image = await pictureWorker.loadImage(embed.url, {roundify: false, format: extname(embed.filename).slice(1)});
+      const pixmap = new QPixmap();
+
+      let url = attach.proxyURL;
+      let width = attach.width;
+      let height = attach.height;
+      const ratio = width / height;
+
+      if(width > 400) {
+        width = 400;
+        height = width / ratio;
+      }
+      if(height > 300) {
+        width = 300;
+        height = width / ratio;
+      }
+      width = Math.ceil(width);
+      height = Math.ceil(height);
+      url += `?width=${width}&height=${height}`;
+      const image = await pictureWorker.loadImage(url);
       if(!image) return;
       pixmap.loadFromData(image);
-      if (pixmap.width() > 400 || pixmap.height() > 300)
-        pixmap = pixmap.scaled(400, 300, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation);
       qimage.setCursor(CursorShape.PointingHandCursor);
-      qimage.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-        open(embed.url);
+      qimage.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
+        open(attach.url);
       })
       qimage.setPixmap(pixmap);
       this.msgLayout.addWidget(qimage);
@@ -125,17 +141,17 @@ export class MessageItem extends QWidget {
     const { avatar, userNameLabel, dateLabel, contentLabel } = this;
     userNameLabel.setText(message.member?.nickname || message.author.username);
     dateLabel.setText(message.createdAt.toLocaleString());
+    contentLabel.setCursor(CursorShape.IBeamCursor);
     if (message.content.trim() == "")
       contentLabel.hide();
     else {
       let content = message.content;
       content = await this.processMarkdown(content);
       content = await this.processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
-      contentLabel.setText(content);
+      contentLabel.setText('<style>* {vertical-align: middle;}</style>' + content);
     }
     await this.processAttachments(message.attachments);
-
-    const image = await pictureWorker.loadImage(message.author.avatarURL || message.author.defaultAvatarURL);
+    const image = await pictureWorker.loadImage(message.author.avatarURL || message.author.defaultAvatarURL, {size: 128});
     if (image) {
       const pixmap = new QPixmap();
       pixmap.loadFromData(image);

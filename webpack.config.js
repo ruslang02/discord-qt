@@ -1,7 +1,8 @@
 const path = require("path");
+const childProcess = require('child_process');
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { IgnorePlugin } = require("webpack");
+const { IgnorePlugin, DefinePlugin } = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
@@ -72,6 +73,9 @@ module.exports = {
   },
   plugins: [
     new IgnorePlugin({ resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g }),
+    new DefinePlugin({
+      __BUILDNUM__: childProcess.execSync('git rev-list HEAD --count').toString()
+    }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
     new CopyPlugin({

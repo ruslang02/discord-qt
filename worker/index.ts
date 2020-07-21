@@ -2,6 +2,8 @@ import { isMainThread, parentPort } from 'worker_threads';
 import { httpsGet } from './HttpsGet';
 import { roundifyPng } from './RoundifyPng';
 import path from 'path';
+import { readFile, promises } from 'fs';
+import { fileURLToPath } from 'url';
 
 const log = console.log.bind(this, '[worker]');
 const send = (data: any) => {
@@ -11,7 +13,12 @@ const send = (data: any) => {
 if (!isMainThread) {
   parentPort?.on('message', (request) => {
     const { url, options } = request;
-    httpsGet(url, options).then(buffer => {
+    const uri = new URL(url);
+    ((
+      uri.protocol === 'file:' ?
+      promises.readFile(fileURLToPath(url)) :
+      httpsGet(url, options)
+    ) as Promise<Buffer | null>).then(buffer => {
       //log(`received`, new Date().getTime(), path.basename(request.url), buffer?.length || 'NULL');
       if (buffer && options.roundify === true)
         return roundifyPng(buffer).then(buffer => send({ url, buffer, options }));

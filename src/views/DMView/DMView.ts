@@ -1,11 +1,11 @@
 import { QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
 import './DMView.scss';
 import { DMTitleBar } from "../../components/DMTitleBar/DMTitleBar";
-import { ChannelPanel } from "../../components/ChannelPanel/ChannelPanel";
+import { MainPanel } from "../../components/MainPanel/MainPanel";
 
 export class DMView extends QWidget {
   private titleBar = new DMTitleBar();
-  private channelPanel = new ChannelPanel();
+  private channelPanel = new MainPanel();
 
   private controls = new QBoxLayout(Direction.TopToBottom);
 

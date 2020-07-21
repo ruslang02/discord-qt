@@ -10,19 +10,8 @@ export class DMPanelUsersList extends QScrollArea {
 
   constructor() {
     super();
-    this.root.setLayout(this.widgets);
-    this.root.setObjectName('UsersList');
-    this.setWidget(this.root);
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('UsersContainer');
-
-    const dmLabel = new QLabel();
-    dmLabel.setText('Direct Messages'.toUpperCase());
-    dmLabel.setObjectName('DMLabel');
-    this.widgets.addWidget(dmLabel);
-    this.widgets.addStretch(1);
-    this.widgets.setSpacing(2);
-    this.widgets.setContentsMargins(8, 8, 8, 8);
 
     app.on('client', (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
@@ -30,12 +19,29 @@ export class DMPanelUsersList extends QScrollArea {
 
     app.on('dmOpen', (channel: DMChannel) => {
       this.channels.forEach((btn, dm) => btn.setActivated(dm.id === channel.id));
-    })
+    });
+    this.initRoot();
+  }
+
+  private initRoot() {
+    this.takeWidget();
+    this.root = new QWidget();
+    this.widgets = new QBoxLayout(Direction.TopToBottom);
+    this.root.setLayout(this.widgets);
+    this.root.setObjectName('UsersList');
+    const dmLabel = new QLabel();
+    dmLabel.setText('Direct Messages'.toUpperCase());
+    dmLabel.setObjectName('DMLabel');
+    this.widgets.addWidget(dmLabel);
+    this.widgets.addStretch(1);
+    this.widgets.setSpacing(2);
+    this.widgets.setContentsMargins(8, 8, 8, 8);
+    this.setWidget(this.root);
   }
 
   async loadDMs() {
     const { client } = app;
-
+    this.initRoot();
 
     const channels = (client.channels
       .filter(c => c.type === 'dm')
@@ -50,7 +56,7 @@ export class DMPanelUsersList extends QScrollArea {
       channels.length = 5;
     channels.map(c => {
       const dm = c as DMChannel;
-      const uButton = new UserButton();
+      const uButton = new UserButton(this.root);
       uButton.loadUser(dm.recipient);
       uButton.setMinimumSize(0, 42);
       uButton.setMaximumSize(MAX_QSIZE, 42);

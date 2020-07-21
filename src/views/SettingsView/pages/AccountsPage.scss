@@ -1,0 +1,42 @@
+@import '../../../Colors.scss';
+
+#ErrorMessage {
+  background-color: rgba(240,71,71,.3);
+  border-radius: 3px;
+  border: 1px solid #f04747;
+  margin-bottom: 12px;
+  font-size: 14px;
+  padding: 12px;
+  color: white;
+}
+#Account {
+  border-radius: 5px;
+  background-color: $background-mobile-secondary;
+  border: 1px solid rgba(0,0,0,.15);
+  #Info {
+    background-color: $deprecated-text-input-bg;
+    border-bottom: 1px solid rgba(0,0,0,.15);
+  }
+  #UserName {
+    font-size: 18px;
+    font-weight: 500;
+    margin-left: 5px;
+  }
+  #Discriminator {
+    font-size: 18px;
+    color: $text-muted;
+  }
+  #AutoLoginPanel {
+    margin:1px;
+    border-radius: 0px 0px 5px 5px;
+    &:hover {
+      background-color: lighten($background-mobile-secondary, 1%);
+    }
+    QLabel {
+      font-size: 16px;
+    }
+    #CheckBox {
+      border: none;
+    }
+  }
+}

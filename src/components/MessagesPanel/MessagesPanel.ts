@@ -1,15 +1,20 @@
 import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape } from "@nodegui/nodegui";
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Message, Channel, Client } from "discord.js";
+import { DMChannel, Message, Channel, Client, Snowflake, TextChannel } from "discord.js";
 import { MessageItem } from "./MessageItem";
 import './MessagesPanel.scss';
+
+class CancelToken {
+  cancelled = false;
+  cancel() { this.cancelled = true; }
+}
 
 export class MessagesPanel extends QScrollArea {
   channel?: Channel;
   rootControls = new QBoxLayout(Direction.BottomToTop);
   root = new QWidget();
-  messages = new Map<Message, QWidget>();
-  avatarCache = new Map<string, Buffer>();
+  cache = new Map<Channel, Message[]>();
+  cancelToken?: CancelToken;
 
   constructor() {
     super();
@@ -21,18 +26,27 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initEvents() {
-    const { channel, messages, rootControls } = this;
-    app.on('dmOpen', this.handleDMOpen.bind(this));
+    app.on('dmOpen', (dm: DMChannel) => {
+      if(this.cancelToken) this.cancelToken.cancel();
+      const token = new CancelToken();
+      this.handleChannelOpen(dm, token);
+      this.cancelToken = token;
+    });
 
     app.on('client', (client: Client) => {
       client.on('message', async (message: Message) => {
+        const cache = this.cache.get(message.channel)
+        if(cache !== undefined) {
+          cache.shift();
+          cache.push(message);
+          this.cache.set(message.channel, cache);
+        }
         if (message.channel.id === this.channel?.id) {
           const widget = new MessageItem(this.root);
           (this.root.layout as QBoxLayout).insertWidget(0, widget);
           const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
-          messages.set(message, widget);
           await widget.loadMessage(message);
-          setTimeout(() => clearInterval(scrollTimer), 100);
+          setTimeout(() => clearInterval(scrollTimer), 50);
         }
       })
     })
@@ -56,21 +70,29 @@ export class MessagesPanel extends QScrollArea {
     this.root.lower();
   }
 
-  private async handleDMOpen(dm: DMChannel) {
-    this.messages.clear();
+  private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
+    const { cache } = this;
     this.initRoot();
-    this.channel = dm;
-
-    const { messages, rootControls } = this;
-    const fetched = await dm.fetchMessages({ limit: 20 });
+    this.channel = channel;
+    if (token.cancelled) return;
+    const cached = cache.get(channel);
+    let messages: Message[];
+    if (cached) messages = cached;
+    else {
+      const fetched = await channel.fetchMessages({ limit: 50 });
+      messages = fetched.array().reverse();
+      cache.set(channel, messages);
+    }
     const promises: Promise<void>[] = [];
     const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
-    for (const message of fetched.array().reverse()) {
+    messages.forEach(msg => {
+      if(token.cancelled) return clearInterval(scrollTimer);
       const widget = new MessageItem(this.root);
-      promises.push(widget.loadMessage(message));
-      messages.set(message, widget);
-      rootControls.insertWidget(0, widget);
-    }
+      promises.push(widget.loadMessage(msg));
+      (this.root.layout as QBoxLayout).insertWidget(0, widget);
+    });
+
+    if(token.cancelled) return clearInterval(scrollTimer);
     await Promise.all(promises);
     setTimeout(() => clearInterval(scrollTimer), 100);
   }

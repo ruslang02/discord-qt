@@ -1,7 +1,7 @@
 import { QWidget, QStackedWidget, QMainWindow, QIcon, WidgetAttribute, QApplication, QFont } from "@nodegui/nodegui";
 import path from "path";
 import fs from "fs";
-import { app } from '..';
+import { app, Account } from '..';
 import { Client } from 'discord.js';
 import { MainView } from '../views/MainView/MainView';
 import './RootWindow.scss';
@@ -19,7 +19,6 @@ export class RootWindow extends QMainWindow {
     this.loadStyles();
     this.loadIcon();
     this.initializeWindow();
-    this.loadClient();
 
     app.on('switchView', (view: string) => {
       switch(view) {
@@ -30,7 +29,10 @@ export class RootWindow extends QMainWindow {
           this.root.setCurrentWidget(this.settingsView);
           break;
       }
-    })
+    });
+
+    const autoAccount = app.config.accounts.find(a => a.autoLogin);
+    if(autoAccount) this.loadClient(autoAccount);
   }
 
   protected initializeWindow() {
@@ -53,13 +55,14 @@ export class RootWindow extends QMainWindow {
     this.setWindowIcon(icon);
   }
 
-  public async loadClient(): Promise<boolean> {
-    app.client = new Client();
+  public async loadClient(account: Account): Promise<boolean> {
+    if(app.client) await app.client.destroy();
+    app.client = new Client({ sync: true, });
     app.client.on('error', console.error)
-    app.client.on('debug', console.debug)
+    // app.client.on('debug', console.debug)
     app.client.on('warn', console.warn)
     try {
-      await app.client.login(app.config.token || 's');
+      await app.client.login(account.token || 's');
       this.setWindowTitle(`Discord-Qt • ${app.client.user.username}#${app.client.user.discriminator}`);
       return true;
     } catch(e) {
