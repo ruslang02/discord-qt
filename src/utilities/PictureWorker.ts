@@ -12,11 +12,10 @@ type Options = {
 const logger = createLogger('[PW]');
 
 /*
- * This REALLY needs a cache system!
+ * This REALLY needs a cache system! (i mean the hdd one)
  */
 class PictureWorker {
   worker: Worker;
-  //id: number = 0;
   defaultOptions: Options = {
     size: 64,
     format: 'png',

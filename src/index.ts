@@ -1,14 +1,15 @@
 import { RootWindow } from "./windows/RootWindow";
 import { Client } from "discord.js";
 import path, { join } from 'path';
-import fs from 'fs';
+import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
 import envPaths from 'env-paths';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir, readFile } from 'fs/promises';
 
 const FONTS_PATH = path.join(__dirname, './assets/fonts');
 const paths = envPaths('discord', {suffix: 'qt'})
+const CONFIG_PATH = path.join(paths.config, 'config.json');
 
 export type Account = {
   username: string,
@@ -23,9 +24,15 @@ export type Config = {
   roundifyAvatars: boolean;
   fastLaunch: boolean;
   debug: boolean;
+  processMarkDown: boolean;
+  enableAvatars: boolean;
 }
 
 class Application extends EventEmitter {
+  constructor() {
+    super();
+    this.setMaxListeners(128);
+  }
   public async start() {
     await this.loadConfig();
     this.loadFonts();
@@ -34,29 +41,34 @@ class Application extends EventEmitter {
   }
 
   protected async loadConfig() {
-    fs.mkdirSync(paths.config, {recursive: true});
-    const configPath = path.join(paths.config, 'config.json');
+    await mkdir(paths.config, {recursive: true});
     try {
-      const configFile = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      const {accounts, roundifyAvatars, fastLaunch, debug, enableAvatars, processMarkDown} = 
+        JSON.parse(await readFile(CONFIG_PATH, 'utf8'));
       const appConfig = {
-        accounts: configFile.accounts || [],
-        roundifyAvatars: configFile.roundifyAvatars ?? true,
-        fastLaunch: configFile.fastLaunch ?? false,
-        debug: configFile.debug ?? false,
+        accounts: accounts || [],
+        roundifyAvatars: roundifyAvatars ?? true,
+        fastLaunch: fastLaunch ?? false,
+        debug: debug ?? false,
+        enableAvatars: enableAvatars ?? true,
+        processMarkDown: processMarkDown ?? true
       };
       console.log('Loaded config:', appConfig);
       this.config = appConfig as Config;
     } catch(err) {
-      if (!fs.existsSync(configPath))
-        fs.writeFileSync(configPath, '{}', 'utf8');
+      if (!existsSync(CONFIG_PATH))
+        await writeFile(CONFIG_PATH, '{}', 'utf8');
       else console.error('Config file could not be used, returning to default values...');
       this.config = {
         accounts: [],
         roundifyAvatars: true,
         fastLaunch: false,
         debug: false,
+        enableAvatars: true,
+        processMarkDown: true,
       };
     }
+    this.emit('config', this.config);
   }
 
   private loadFonts() {

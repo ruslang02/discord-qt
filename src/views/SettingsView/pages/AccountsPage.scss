@@ -26,17 +26,11 @@
     font-size: 18px;
     color: $text-muted;
   }
-  #AutoLoginPanel {
+  #SCheckBox {
     margin:1px;
     border-radius: 0px 0px 5px 5px;
     &:hover {
       background-color: lighten($background-mobile-secondary, 1%);
-    }
-    QLabel {
-      font-size: 16px;
-    }
-    #CheckBox {
-      border: none;
     }
   }
 }

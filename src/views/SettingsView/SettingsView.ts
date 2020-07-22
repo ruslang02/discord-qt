@@ -8,6 +8,7 @@ import './SettingsView.scss';
 import { MyAccountPage } from './pages/MyAccountPage';
 import { DIconButton } from '../../components/DIconButton/DIconButton';
 import open from 'open';
+import { AppearancePage } from './pages/AppearancePage';
 
 export type Element = Page | Divider | CategoryHeader | Footer;
 
@@ -63,6 +64,9 @@ export class SettingsView extends QWidget {
     new Divider(),
     new CategoryHeader('User Settings'),
     new MyAccountPage(),
+    new Divider(),
+    new CategoryHeader('App Settings'),
+    new AppearancePage(),
     new Divider(),
     new Footer(),
   ];

@@ -65,4 +65,14 @@
       color: $interactive-active;
     }
   }
+  #SCheckBox {
+    border: none;
+    background: none;
+    QLabel {
+      font-size: 16px;
+    }
+    #CheckBox {
+      border: none;
+    }
+  }
 }

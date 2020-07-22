@@ -10,6 +10,7 @@ export class ChannelsList extends QScrollArea {
   root = new QWidget();
   widgets = new QBoxLayout(Direction.TopToBottom);
   channels = new Map<Channel, ChannelButton | QLabel>();
+  active?: ChannelButton;
 
   constructor() {
     super();
@@ -31,12 +32,10 @@ export class ChannelsList extends QScrollArea {
         await this.loadChannels();
       }
       if (options.channel) {
-        const chan = options.channel
-        this.channels.forEach((v, channel) => 
-          v instanceof ChannelButton && 
-          v.isVisible() &&
-          v.setActivated(channel.id === chan.id)
-        );
+        const chan = (this.channels.get(options.channel) as ChannelButton);
+        this.active?.setActivated(false);
+        chan.setActivated(true);
+        this.active = chan;
       }
     })
     this.initRoot();

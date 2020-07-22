@@ -7,6 +7,7 @@ import { Page } from "./pages/Page";
 export class SectionList extends QScrollArea {
   private root = new QWidget();
   private pageButtons = new Map<Page, QPushButton>();
+  private active?: QPushButton;
   layout = new QBoxLayout(Direction.TopToBottom);
 
   constructor(
@@ -23,12 +24,15 @@ export class SectionList extends QScrollArea {
     this.initPages();
 
     app.on('openSettingsPage', (pageTitle: string) => {
-      this.pageButtons.forEach((button, page) => {
-        const prev = button.property('active').toBool();
-        button.setProperty('active', page.title === pageTitle);
-        if(prev != (page.title === pageTitle)) button.repolish();
-      });
+      this.active?.setProperty('active', false);
+      this.active?.repolish();
+      const page = [...this.pageButtons.keys()].find(page => page.title === pageTitle);
+      if (!page) return;
+      this.active = this.pageButtons.get(page);
+      this.active?.setProperty('active', true);
+      this.active?.repolish();
     });
+    app.emit('openSettingsPage', 'Accounts');
   }
 
   private initComponent() {
@@ -39,18 +43,15 @@ export class SectionList extends QScrollArea {
 
   private initPages() {
     const { root, layout, pageButtons } = this;
-    let first = true;
     for (const elem of this.elements) {
       if(elem instanceof Page) {
         const btn = new QPushButton();
         btn.setText(elem.title);
-        btn.setProperty('active', first);
         btn.setObjectName('PageButton');
         btn.setCursor(CursorShape.PointingHandCursor);
         btn.addEventListener('clicked', () => app.emit('openSettingsPage', elem.title));
         layout.addWidget(btn);
         pageButtons.set(elem, btn);
-        first = false;
       } else layout.addWidget(elem)
     }
     layout.addStretch(1);

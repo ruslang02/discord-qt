@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
-    "axios": "^0.19.2",
     "discord.js": "^11.6.4",
     "env-paths": "^2.2.0",
     "markdown-it": "^11.0.0",

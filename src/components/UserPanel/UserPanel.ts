@@ -1,4 +1,4 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, AspectRatioMode, TransformationMode } from "@nodegui/nodegui";
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction } from "@nodegui/nodegui";
 import path from 'path';
 import './UserPanel.scss';
 import { app, MAX_QSIZE } from "../..";
@@ -37,6 +37,7 @@ export class UserPanel extends QWidget {
 
     avatar.setObjectName('UserAvatar');
     avatar.setFixedSize(32, 32);
+    if (!app.config.enableAvatars) avatar.hide();
 
     const infoContainer = new QWidget();
     const infoControls = new QBoxLayout(Direction.TopToBottom);
@@ -55,6 +56,15 @@ export class UserPanel extends QWidget {
     [nameLabel, discLabel]
       .forEach(w => infoControls.addWidget(w))
 
+    /*
+    const iBtn = new DIconButton({
+      iconPath: path.join(__dirname, './assets/icons/invite.png'),
+      iconQSize: new QSize(20, 20),
+      tooltipText: 'Accept Invite Code'
+    });
+    iBtn.setFixedSize(32, 32);
+    iBtn.addEventListener('clicked', () => app.emit('switchView', 'invite'));
+    */
     const sBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/cog.png'),
       iconQSize: new QSize(20, 20),
@@ -83,7 +93,7 @@ export class UserPanel extends QWidget {
     if(avatarBuf !== null) {
       const avatarPixmap = new QPixmap();
       avatarPixmap.loadFromData(avatarBuf, 'PNG');
-      avatar.setPixmap(avatarPixmap.scaled(32, 32, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
+      avatar.setPixmap(avatarPixmap.scaled(32, 32, 1, 1));
     }
 
     nameLabel.setText(client.user.username);

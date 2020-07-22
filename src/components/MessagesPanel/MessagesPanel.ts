@@ -4,18 +4,15 @@ import { DMChannel, Message, Channel, Client, Snowflake, TextChannel, Guild } fr
 import { MessageItem } from "./MessageItem";
 import './MessagesPanel.scss';
 import { ViewOptions } from '../../views/ViewOptions';
+import { CancelToken } from '../../utilities/CancelToken';
 
-class CancelToken {
-  cancelled = false;
-  cancel() { this.cancelled = true; }
-}
 
 export class MessagesPanel extends QScrollArea {
-  channel?: Channel;
-  rootControls = new QBoxLayout(Direction.BottomToTop);
-  root = new QWidget();
-  cache = new Map<Channel, Message[]>();
-  cancelToken?: CancelToken;
+  private channel?: Channel;
+  private rootControls = new QBoxLayout(Direction.BottomToTop);
+  private root = new QWidget();
+  private cache = new Map<Channel, Message[]>();
+  private cancelToken?: CancelToken;
 
   constructor() {
     super();
@@ -89,12 +86,12 @@ export class MessagesPanel extends QScrollArea {
     }
     const promises: Promise<void>[] = [];
     const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
-    messages.forEach(msg => {
+    for (const message of messages) {
       if(token.cancelled) return clearInterval(scrollTimer);
       const widget = new MessageItem(this.root);
-      promises.push(widget.loadMessage(msg));
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
-    });
+      promises.push(widget.loadMessage(message, token));
+    }
 
     if(token.cancelled) return clearInterval(scrollTimer);
     await Promise.all(promises);

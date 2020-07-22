@@ -8,6 +8,7 @@ export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
   widgets = new QBoxLayout(Direction.TopToBottom);
   channels = new Map<DMChannel, UserButton>();
+  active?: UserButton;
 
   constructor() {
     super();
@@ -20,14 +21,15 @@ export class DMPanelUsersList extends QScrollArea {
 
     app.on('switchView', (view: string, options?: ViewOptions) => {
       if(view !== 'dm' || !options || !options.dm) return;
-      const channel = options.dm;
-      this.channels.forEach((btn, dm) => btn.setActivated(dm.id === channel.id));
+      const button = this.channels.get(options.dm);
+      this.active?.setActivated(false);
+      button?.setActivated(true);
+      this.active = button;
     });
-    this.initRoot();
   }
 
   private initRoot() {
-    this.takeWidget();
+    if(this.contentWidget) this.takeWidget();
     this.root = new QWidget();
     this.widgets = new QBoxLayout(Direction.TopToBottom);
     this.root.setLayout(this.widgets);

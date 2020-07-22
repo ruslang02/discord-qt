@@ -1,12 +1,10 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AspectRatioMode, TransformationMode, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QMouseEvent, QSize } from "@nodegui/nodegui";
-import { Message, Attachment, Collection, MessageAttachment } from "discord.js";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag } from "@nodegui/nodegui";
+import { Message, Collection, MessageAttachment } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
-import Axios from "axios";
-import { app } from "../..";
-import fs from "fs";
 import open from 'open';
-import markdownIt, {PresetName} from 'markdown-it';
-import { extname } from "path";
+import markdownIt from 'markdown-it';
+import { CancelToken } from '../../utilities/CancelToken';
+import { app } from '../..';
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 
@@ -44,6 +42,7 @@ export class MessageItem extends QWidget {
 
     avatar.setObjectName('Avatar');
     avatar.setAlignment(AlignmentFlag.AlignTop);
+    if (!app.config.enableAvatars) avatar.hide();
 
     infoLayout.setSpacing(8);
     infoLayout.setContentsMargins(0, 0, 0, 0);
@@ -127,6 +126,7 @@ export class MessageItem extends QWidget {
   }
 
   private async processMarkdown(content: string) {
+    if (!app.config.processMarkDown) return content.replace(/\n/g, '<br/>');
     const { markdownProcessor } = this;
     content = content
       .replace(/<\/?p>/g, '')
@@ -137,25 +137,32 @@ export class MessageItem extends QWidget {
     return markdownProcessor.render(content);
   }
 
-  async loadMessage(message: Message) {
+  async loadMessage(message: Message, token?: CancelToken) {
     const { avatar, userNameLabel, dateLabel, contentLabel } = this;
     userNameLabel.setText(message.member?.nickname || message.author.username);
+    if(token?.cancelled) return;
     dateLabel.setText(message.createdAt.toLocaleString());
     contentLabel.setCursor(CursorShape.IBeamCursor);
     if (message.content.trim() == "")
       contentLabel.hide();
     else {
       let content = message.content;
+      if(token?.cancelled) return;
       content = await this.processMarkdown(content);
+      if(token?.cancelled) return;
       content = await this.processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
       contentLabel.setText('<style>* {vertical-align: middle;}</style>' + content);
     }
+    if(token?.cancelled) return;
     await this.processAttachments(message.attachments);
+    if(token?.cancelled) return;
+    if (!app.config.enableAvatars) return;
     const image = await pictureWorker.loadImage(message.author.avatarURL || message.author.defaultAvatarURL, {size: 128});
     if (image) {
       const pixmap = new QPixmap();
+      if(token?.cancelled) return;
       pixmap.loadFromData(image);
-      avatar.setPixmap(pixmap.scaled(40, 40, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
+      avatar.setPixmap(pixmap.scaled(40, 40, 1, 1));
     }
   }
 }

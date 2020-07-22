@@ -1,4 +1,4 @@
-import { QWidget, FlexLayout, QBoxLayout, Direction, QLabel, QPushButton, QIcon, QSize, WidgetEventTypes, AlignmentFlag } from "@nodegui/nodegui";
+import { QWidget, FlexLayout, QBoxLayout, Direction, QLabel, QPushButton, QIcon, QSize, WidgetEventTypes, AlignmentFlag, CursorShape } from "@nodegui/nodegui";
 import './GuildPanel.scss';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { app } from '../..';
@@ -6,10 +6,11 @@ import { Guild, TextChannel } from 'discord.js';
 import { join } from 'path';
 import { ChannelsList } from './ChannelsList';
 import { ViewOptions } from '../../views/ViewOptions';
+import { GuildActionsMenu } from './GuildActionsMenu';
 
 export class GuildPanel extends QWidget {
   private titleBar = new DTitleBar();
-  private actionsMenu = new QWidget();
+  private actionsMenu = new GuildActionsMenu();
   private guildel = new QLabel();
   private channelsList = new ChannelsList();
   private controls = new QBoxLayout(Direction.TopToBottom);
@@ -49,6 +50,7 @@ export class GuildPanel extends QWidget {
     titleBar.layout?.setContentsMargins(16, 0, 16, 0);
     titleBar.layout?.addWidget(guildel, 1);
     titleBar.layout?.addWidget(guildow);
+    titleBar.setCursor(CursorShape.PointingHandCursor);
     titleBar.setMinimumSize(0, 48);
     
     controls.setSpacing(0);

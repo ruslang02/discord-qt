@@ -1,13 +1,14 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPushButton, QScrollArea, QPixmap, AspectRatioMode, TransformationMode, ToolButtonStyle, QCheckBox, QIcon, QSize, AlignmentFlag, QGraphicsDropShadowEffect, QColor, SizeConstraint, WidgetEventTypes, CursorShape } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPushButton, QPixmap, QIcon, QSize, AlignmentFlag, QGraphicsDropShadowEffect, QColor, WidgetEventTypes, CursorShape } from "@nodegui/nodegui";
 import { Page } from "./Page";
 import { DColorButton, DColorButtonColor } from '../../../components/DColorButton/DColorButton';
 import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
-import { Divider, SettingsView } from '../SettingsView';
+import { Divider } from '../SettingsView';
 import { app, Account } from '../../..';
 import './AccountsPage.scss';
 import { join } from 'path';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client } from 'discord.js';
+import { SettingsCheckBox } from '../SettingsCheckBox';
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -50,7 +51,7 @@ export class AccountsPage extends Page {
     this.checkEmpty();
     app.config.accounts.forEach(this.processAccount.bind(this));
   }
-  checkboxes: QPushButton[] = [];
+  checkboxes: SettingsCheckBox[] = [];
   private processAccount(account: Account, i = 0) {
     const accWidget = new QWidget(this.accountsSection);
     const layout = new QBoxLayout(Direction.TopToBottom)
@@ -71,7 +72,7 @@ export class AccountsPage extends Page {
         if (!buffer) return;
         const pm = new QPixmap();
         pm.loadFromData(buffer);
-        avatar.setPixmap(pm.scaled(32, 32, AspectRatioMode.KeepAspectRatio, TransformationMode.SmoothTransformation));
+        avatar.setPixmap(pm.scaled(32, 32, 1, 1));
       });
     const uname = new QLabel(accWidget);
     uname.setObjectName('UserName');
@@ -107,31 +108,18 @@ export class AccountsPage extends Page {
     infoLayout.addWidget(disc, 1);
     infoLayout.addWidget(deleteBtn);
     infoLayout.addWidget(loginBtn);
-    const alPanel = new QWidget(accWidget);
-    alPanel.setObjectName('AutoLoginPanel');
-    const alLayout = new QBoxLayout(Direction.LeftToRight);
-    alPanel.setLayout(alLayout);
-    const alLabel = new QLabel(accWidget);
-    alLabel.setText('Login automatically');
-    alLayout.setContentsMargins(20, 15, 20, 15);
-    alLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    const checkbox = new QPushButton(accWidget);
-    const unch = new QIcon(join(__dirname, './assets/icons/checkbox-blank-outline.png'));
-    const ch = new QIcon(join(__dirname, './assets/icons/checkbox-marked.png'));
-    checkbox.setObjectName('CheckBox');
-    checkbox.setIcon(account.autoLogin ? ch : unch);
-    alPanel.setCursor(CursorShape.PointingHandCursor)
-    checkbox.setIconSize(new QSize(24, 24));
+    const checkbox = new SettingsCheckBox(accWidget);
+    checkbox.setText('Login automatically');
+    checkbox.setChecked(account.autoLogin);
+    checkbox.layout.setContentsMargins(20, 15, 20, 15);
     this.checkboxes.push(checkbox);
-    alPanel.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+    checkbox.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       const isAutoLogin = app.config.accounts[i].autoLogin;
-      this.checkboxes.forEach((c, j) => c.setIcon(i == j ? (!app.config.accounts[i].autoLogin ? ch : unch) : unch));
+      this.checkboxes.forEach((c, j) => c.setChecked(i == j ? !app.config.accounts[i].autoLogin : false));
       app.config.accounts = app.config.accounts
         .map((acc, j) => ({ ...acc, autoLogin: i == j ? !isAutoLogin : false }));
       app.saveConfig();
     });
-    alLayout.addWidget(alLabel, 1);
-    alLayout.addWidget(checkbox);
 
     const shadow = new QGraphicsDropShadowEffect();
     shadow.setBlurRadius(5);
@@ -141,7 +129,7 @@ export class AccountsPage extends Page {
     accWidget.setGraphicsEffect(shadow);
 
     layout.addWidget(info);
-    layout.addWidget(alPanel, 1);
+    layout.addWidget(checkbox, 1);
     this.accountsLayout.insertWidget(0, accWidget, 0);
   }
 

@@ -1,14 +1,15 @@
 import { QWidget, QScrollArea, QBoxLayout, Direction, Shape } from '@nodegui/nodegui';
 import { MAX_QSIZE, app } from '../..';
-import { Guild, TextChannel } from 'discord.js';
+import { Guild, TextChannel, Channel } from 'discord.js';
 import './MembersList.scss';
 import { UserButton } from '../UserButton/UserButton';
 import { ViewOptions } from '../../views/ViewOptions';
+import { CancelToken } from '../../utilities/CancelToken';
 
 export class MembersList extends QScrollArea {
-  channel?: TextChannel;
   layout = new QBoxLayout(Direction.TopToBottom);
   root = new QWidget();
+  cancelToken?: CancelToken;
 
   constructor() {
     super();
@@ -19,8 +20,10 @@ export class MembersList extends QScrollArea {
 
     app.on('switchView', (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options?.channel) return;
-      this.channel = options.channel;
-      this.loadList();
+      if (this.cancelToken) this.cancelToken.cancel();
+      const cancel = new CancelToken();
+      this.loadList(options.channel, cancel);
+      this.cancelToken = cancel;
     })
   }
 
@@ -29,8 +32,8 @@ export class MembersList extends QScrollArea {
     this.setMaximumSize(240, MAX_QSIZE);
   }
 
-  private async loadList() {
-    if (!this.channel) return;
+  private async loadList(channel: TextChannel, token: CancelToken) {
+    if (token.cancelled) return;
     this.takeWidget();
     this.layout = new QBoxLayout(Direction.TopToBottom);
     this.root = new QWidget();
@@ -39,18 +42,19 @@ export class MembersList extends QScrollArea {
     this.layout.setSpacing(0);
     this.root.setLayout(this.layout);
     this.setWidget(this.root);
-    this.channel.guild.members
-      .filter(m => m.permissionsIn(this.channel as TextChannel).has('VIEW_CHANNEL'))
-      .forEach(member => {
-        const btn = new UserButton(this.root);
-        btn.loadUser(member);
-        btn.setMinimumSize(0, 42);
-        btn.setMaximumSize(MAX_QSIZE, 42);
-        btn.addEventListener('clicked', async () => {
-          app.emit('switchView', 'dm', { dm: await member.createDM() });
-        });
-        this.layout.addWidget(btn);
+    if (token.cancelled) return;
+    const members = channel.members.array();
+    for (const member of members) {
+      if (token.cancelled) return;
+      const btn = new UserButton(this.root);
+      btn.loadUser(member, token);
+      btn.setMinimumSize(224, 42);
+      btn.setMaximumSize(224, 42);
+      btn.addEventListener('clicked', async () => {
+        app.emit('switchView', 'dm', { dm: await member.createDM() });
       });
+      this.layout.addWidget(btn);
+    }
     this.layout.addStretch(1);
   }
 }
