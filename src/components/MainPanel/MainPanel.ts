@@ -2,6 +2,8 @@ import { QBoxLayout, Direction, QWidget, QScrollArea, QLabel } from "@nodegui/no
 import { MessagesPanel } from "../MessagesPanel/MessagesPanel";
 import { InputPanel } from "../InputPanel/InputPanel";
 import { MembersList } from '../MembersList/MembersList';
+import { app } from '../..';
+import { ViewOptions } from '../../views/ViewOptions';
 
 export class MainPanel extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);
@@ -16,6 +18,12 @@ export class MainPanel extends QWidget {
 
     this.setLayout(this.layout);
     this.initComponent();
+    app.on('switchView', (view: string, options?: ViewOptions) => {
+      if(!['dm', 'guild'].includes(view)) return;
+      if(!options) return this.membersList.hide();
+      if(!options.channel) return this.membersList.hide();
+      this.membersList.show();
+    })
   }
 
   private initComponent() {

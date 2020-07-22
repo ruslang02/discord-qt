@@ -1,21 +1,21 @@
-import { QStackedWidget, QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
-import { GuildView } from "../GuildView/GuildView";
-import { DMView } from "../DMView/DMView";
+import {  QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
 import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
 import { GuildsList } from '../../components/GuildsList/GuildsList';
+import { MainTitleBar } from '../../components/DMTitleBar/DMTitleBar';
+import { MainPanel } from '../../components/MainPanel/MainPanel';
 import './MainView.scss';
-import { app } from '../..';
-import { Guild } from 'discord.js';
 
 export class MainView extends QWidget {
   private controls = new QBoxLayout(Direction.LeftToRight);
 
   private guildsList = new GuildsList();
   private leftPanel = new LeftPanel();
-  private container = new QStackedWidget();
 
-  private guildView = new GuildView();
-  private dmView = new DMView();
+  private main = new QWidget();
+  private mainLayout = new QBoxLayout(Direction.TopToBottom);
+
+  private titlebar = new MainTitleBar();
+  private mainPanel = new MainPanel();
 
   constructor() {
     super();
@@ -23,26 +23,18 @@ export class MainView extends QWidget {
     this.setLayout(this.controls);
     this.controls.setSpacing(0);
     this.controls.setContentsMargins(0, 0, 0, 0);
+    this.mainLayout.setSpacing(0);
+    this.mainLayout.setContentsMargins(0, 0, 0, 0);
+    this.main.setLayout(this.mainLayout);
 
     this.initView();
-    app.on('switchView', (view: string, guild: Guild) => {
-      switch(view) {
-        case 'dm':
-          this.container.setCurrentWidget(this.dmView);
-          break;
-        case 'guild':
-          this.container.setCurrentWidget(this.guildView);
-          break;
-      }
-    })
   }
 
   private initView() {
-    [this.guildView, this.dmView]
-      .forEach(w => this.container.addWidget(w));
-      this.container.setCurrentWidget(this.dmView);
+    this.mainLayout.addWidget(this.titlebar);
+    this.mainLayout.addWidget(this.mainPanel, 1);
     [this.guildsList, this.leftPanel]
       .forEach(w => this.controls.addWidget(w));
-    this.controls.addWidget(this.container, 1);
+    this.controls.addWidget(this.main, 1);
   }
 }

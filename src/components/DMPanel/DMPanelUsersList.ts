@@ -2,6 +2,7 @@ import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction,
 import { app, MAX_QSIZE } from "../..";
 import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
+import { ViewOptions } from '../../views/ViewOptions';
 
 export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
@@ -17,7 +18,9 @@ export class DMPanelUsersList extends QScrollArea {
       client.on('ready', this.loadDMs.bind(this))
     });
 
-    app.on('dmOpen', (channel: DMChannel) => {
+    app.on('switchView', (view: string, options?: ViewOptions) => {
+      if(view !== 'dm' || !options || !options.dm) return;
+      const channel = options.dm;
       this.channels.forEach((btn, dm) => btn.setActivated(dm.id === channel.id));
     });
     this.initRoot();
@@ -56,15 +59,15 @@ export class DMPanelUsersList extends QScrollArea {
       channels.length = 5;
     channels.map(c => {
       const dm = c as DMChannel;
-      const uButton = new UserButton(this.root);
-      uButton.loadUser(dm.recipient);
-      uButton.setMinimumSize(0, 42);
-      uButton.setMaximumSize(MAX_QSIZE, 42);
-      uButton.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-        app.emit('dmOpen', dm);
+      const btn = new UserButton(this.root);
+      btn.loadUser(dm.recipient);
+      btn.setMinimumSize(0, 42);
+      btn.setMaximumSize(MAX_QSIZE, 42);
+      btn.addEventListener('clicked', () => {
+        app.emit('switchView', 'dm', { dm });
       });
-      this.channels.set(dm, uButton);
-      return uButton;
+      this.channels.set(dm, btn);
+      return btn;
     }).forEach((w, i) => this.widgets.insertWidget(i+1, w));
   }
 }

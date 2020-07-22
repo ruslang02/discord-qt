@@ -1,8 +1,9 @@
 import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape } from "@nodegui/nodegui";
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Message, Channel, Client, Snowflake, TextChannel } from "discord.js";
+import { DMChannel, Message, Channel, Client, Snowflake, TextChannel, Guild } from "discord.js";
 import { MessageItem } from "./MessageItem";
 import './MessagesPanel.scss';
+import { ViewOptions } from '../../views/ViewOptions';
 
 class CancelToken {
   cancelled = false;
@@ -26,10 +27,13 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initEvents() {
-    app.on('dmOpen', (dm: DMChannel) => {
-      if(this.cancelToken) this.cancelToken.cancel();
+    app.on('switchView', (view: string, options?: ViewOptions) => {
+      if (!['dm', 'guild'].includes(view) || !options) return;
+      const channel = options.dm || options.channel || null;
+      if (!channel) return;
+      if (this.cancelToken) this.cancelToken.cancel();
       const token = new CancelToken();
-      this.handleChannelOpen(dm, token);
+      this.handleChannelOpen(channel, token);
       this.cancelToken = token;
     });
 
@@ -57,7 +61,7 @@ export class MessagesPanel extends QScrollArea {
     this.root = new QWidget();
     this.root.setObjectName('MessagesContainer');
     this.rootControls = new QBoxLayout(Direction.BottomToTop);
-    this.rootControls.setContentsMargins(0, 0, 0, 25);
+    this.rootControls.setContentsMargins(0, 25, 0, 25);
     this.rootControls.setSpacing(17);
     this.rootControls.addStretch(1);
     this.root.setLayout(this.rootControls);

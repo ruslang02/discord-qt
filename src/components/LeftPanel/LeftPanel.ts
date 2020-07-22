@@ -3,7 +3,8 @@ import { UserPanel } from "../UserPanel/UserPanel";
 import './LeftPanel.scss';
 import { GuildPanel } from "../GuildPanel/GuildPanel";
 import { DMPanel } from "../DMPanel/DMPanel";
-import { MAX_QSIZE } from "../..";
+import { MAX_QSIZE, app } from "../..";
+import { DMChannel } from 'discord.js';
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();
@@ -15,6 +16,16 @@ export class LeftPanel extends QWidget {
   constructor() {
     super();
     this.initLeftPanel();
+    app.on('switchView', (view: string) => {
+      switch(view) {
+        case 'dm':
+          this.container.setCurrentWidget(this.dmPanel);
+          break;
+        case 'guild':
+          this.container.setCurrentWidget(this.guildPanel);
+          break;
+      }
+    })
   }
   private initLeftPanel() {
     const { guildPanel, dmPanel, userPanel, container, controls } = this;

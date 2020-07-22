@@ -1,0 +1,20 @@
+@import '../../Colors.scss';
+
+#DChannelButton {
+  border-radius: 4px;
+  *, QLabel {
+    color: $channels-default;
+  }
+  &[hover=true] {
+    background-color: $background-modifier-hover;
+    *, QLabel {
+      color: $interactive-hover
+    }
+  }
+  &[active=true] {
+    background-color: $background-modifier-selected;
+    *, QLabel {
+      color: $interactive-active;
+    }
+  }
+}

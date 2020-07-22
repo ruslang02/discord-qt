@@ -4,10 +4,13 @@ import './GuildsList.scss';
 import { Guild, Client } from "discord.js";
 import { app } from "../..";
 import { pictureWorker } from "../../utilities/PictureWorker";
+import { ViewOptions } from '../../views/ViewOptions';
 
 export class GuildsList extends QScrollArea {
   layout = new QBoxLayout(Direction.TopToBottom);
-  container = new QWidget();
+  private container = new QWidget();
+  private mpBtn = new QPushButton();
+  private guilds = new Map<Guild, QLabel>();
 
   constructor() {
     super();
@@ -18,22 +21,38 @@ export class GuildsList extends QScrollArea {
 
     app.on('client', (client: Client) => {
       client.on('ready', this.loadGuilds.bind(this));
+    });
+
+    app.on('switchView', (view: string, options?: ViewOptions) => {
+      if(!['dm', 'guild'].includes(view)) return;
+      this.mpBtn.setProperty('active', false)
+      if(view === 'dm')
+        this.mpBtn.setProperty('active', true)
+      else if(view === 'guild' && options) {
+        const guild = options.guild || options.channel?.guild || null;
+        if(!guild) return;
+        this.guilds.forEach((w, g) => {
+          w.setProperty('active', g.id === guild.id ? 'true' : 'false');
+          w.repolish();
+        });
+      }
+      this.mpBtn.repolish();
     })
   }
 
   private addMainPageButton() {
     const mainIcon = new QIcon(path.resolve(__dirname, "./assets/icons/home.png"));
-    const mpBtn = new QPushButton();
-    mpBtn.setObjectName("PageButton");
-    mpBtn.setIcon(mainIcon);
-    mpBtn.setIconSize(new QSize(28, 28));
-    mpBtn.setFixedSize(48, 48 + 10);
-    mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    mpBtn.setProperty('toolTip', 'Direct Messages');
-    mpBtn.setProperty('active', 'true');
-    mpBtn.addEventListener('clicked', () => app.emit('switchView', 'dm'));
+    this.mpBtn = new QPushButton();
+    this.mpBtn.setObjectName("PageButton");
+    this.mpBtn.setIcon(mainIcon);
+    this.mpBtn.setIconSize(new QSize(28, 28));
+    this.mpBtn.setFixedSize(48, 48 + 10);
+    this. mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
+    this.mpBtn.setProperty('toolTip', 'Direct Messages');
+    this.mpBtn.setProperty('active', 'true');
+    this.mpBtn.addEventListener('clicked', () => app.emit('switchView', 'dm'));
 
-    this.container.layout?.addWidget(mpBtn);
+    this.container.layout?.addWidget(this.mpBtn);
 
     const hr = new QLabel();
     hr.setObjectName('Separator');
@@ -55,7 +74,7 @@ export class GuildsList extends QScrollArea {
   }
   async loadGuilds() {
     const { client } = app;
-
+    this.guilds.clear();
     this.initContainer();
 
     const guilds = client.guilds
@@ -68,9 +87,7 @@ export class GuildsList extends QScrollArea {
           .then(imageBuffer => {
             //console.log(guild.name);
             if (!imageBuffer) {
-              const text = guild.name.split(' ').map(r => r[0].toUpperCase()).join('');
-              guildElem.setText(text);
-              guildElem.setFont(new QFont('sans-serif', 18));
+              guildElem.setText(guild.nameAcronym);
               guildElem.setAlignment(AlignmentFlag.AlignCenter);
             }
             else {
@@ -85,8 +102,9 @@ export class GuildsList extends QScrollArea {
         guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
         guildElem.setProperty('toolTip', guild.name);
         guildElem.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-          app.emit('switchView', 'guild', guild);
+          app.emit('switchView', 'guild', { guild });
         });
+        this.guilds.set(guild, guildElem);
         this.layout.insertWidget(i+2, guildElem);
       })
   }

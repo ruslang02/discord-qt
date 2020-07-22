@@ -3,7 +3,8 @@ import './InputPanel.scss';
 import { DIconButton } from "../DIconButton/DIconButton";
 import path from 'path';
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Client, Channel, TextChannel } from "discord.js";
+import { DMChannel, Client, Channel, TextChannel, Guild } from "discord.js";
+import { ViewOptions } from '../../views/ViewOptions';
 
 export class InputPanel extends QWidget {
   channel?: TextChannel | DMChannel;
@@ -21,9 +22,16 @@ export class InputPanel extends QWidget {
 
   private setEvents() {
     const { input, typingLabel } = this;
-    app.on('dmOpen', (dm: DMChannel) => {
-      this.channel = dm;
-      input.setPlaceholderText(`Message @${dm.recipient.username}`);
+    app.on('switchView', (view: string, options?: ViewOptions) => {
+      if (!['dm', 'guild'].includes(view) || !options) return;
+      const channel = options.dm || options.channel || null;
+      if (!channel) return;
+      this.channel = channel;
+      input.setPlaceholderText(`Message ${channel.type === 'dm' ? 
+        `@${(<DMChannel>channel).recipient.username}` : 
+        `#${(<TextChannel>channel).name}`
+      }`);
+      // TODO: How do you make the input focus programmatically???
       setTimeout(() => {
         input.setProperty('focus', 'true');
         input.activateWindow();
@@ -33,12 +41,12 @@ export class InputPanel extends QWidget {
     });
 
     app.on('client', (client: Client) => {
-      client.on('typingStart', (typingChannel: TextChannel, user) => {
+      client.on('typingStart', (typingChannel: DMChannel | TextChannel, user) => {
         if (this.channel?.id !== typingChannel.id)
           return;
         typingLabel.setText(`<b>${user.username}</b> is typing...`);
       });
-      client.on('typingStop', (typingChannel: TextChannel, user) => {
+      client.on('typingStop', (typingChannel: DMChannel | TextChannel, user) => {
         if (this.channel?.id === typingChannel.id)
           typingLabel.setText('');
       });
@@ -81,7 +89,7 @@ export class InputPanel extends QWidget {
       ) {
         if (this.channel)
           this.channel.send(message);
-          setTimeout(() => input.clear());
+        setTimeout(() => input.clear());
       } else 
       setTimeout(() => {
         const height = (input.toPlainText().split('\n').length || 1) * 22 + 18;

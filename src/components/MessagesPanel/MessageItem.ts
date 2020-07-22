@@ -27,7 +27,7 @@ export class MessageItem extends QWidget {
     html: false,
     linkify: true,
     breaks: true
-  }).disable(['hr', 'blockquote']).enable('link');
+  }).disable(['hr', 'blockquote', 'lheading']).enable('link');
 
   constructor(parent: any) {
     super(parent);
@@ -108,8 +108,8 @@ export class MessageItem extends QWidget {
         height = width / ratio;
       }
       if(height > 300) {
-        width = 300;
-        height = width / ratio;
+        height = 300;
+        width = height * ratio;
       }
       width = Math.ceil(width);
       height = Math.ceil(height);

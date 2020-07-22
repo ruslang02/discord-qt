@@ -1,9 +1,10 @@
 import { Page } from './Page';
-import { app } from '../../..';
-import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
+import { app, MAX_QSIZE } from '../../..';
+import { QLabel, QWidget, QBoxLayout, Direction, QPixmap, SizeConstraint } from '@nodegui/nodegui';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client } from 'discord.js';
 import './MyAccountPage.scss';
+import { DColorButton } from '../../../components/DColorButton/DColorButton';
 
 export class MyAccountPage extends Page {
   title = "My Account";
@@ -60,11 +61,20 @@ export class MyAccountPage extends Page {
     emabel.setObjectName('Normal');
     infout.addWidget(unbold);
     infout.addWidget(unabel);
-    infout.addStretch(1);
+    infout.addStretch(20);
     infout.addWidget(embold);
     infout.addWidget(emabel);
+    const editet = new QWidget();
+    editet.setLayout(new QBoxLayout(Direction.TopToBottom));
+    const editbn = new DColorButton();
+    editbn.setText('Edit');
+    editbn.setMinimumSize(60, 32)
+    editbn.setMinimumSize(MAX_QSIZE, 32);
+    (editet.layout as QBoxLayout).addWidget(editbn);
+    (editet.layout as QBoxLayout).addStretch(1);
     cardLayout.addWidget(avatar);
     cardLayout.addWidget(info, 1);
+    cardLayout.addWidget(editet);
 
     const twoFAHeader = new QLabel();
     twoFAHeader.setObjectName('Header2');

@@ -8,6 +8,7 @@ QScrollBar {height:0px;}
     height: 48px;
     width: 48px;
     border-radius: 24px;
+    font-size: 18px;
     background-color: $background-primary; // darken($dark, 0.5);
     border: none;
     &:hover, &[active='true'] {

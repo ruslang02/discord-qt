@@ -1,11 +1,7 @@
 @import '../../Colors.scss';
 
 #DMPanel {
-  #UsersContainer {
-    background-color: $background-secondary;
-    border: none;
-  }
-  #UsersList {
+  #DTitleBar, #UsersContainer, #UsersList {
     background-color: $background-secondary;
   }
   #DMLabel {
