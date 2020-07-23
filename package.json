@@ -1,20 +1,24 @@
 {
   "name": "discord-qt",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "dist/index.js",
   "author": "Ruslan Garifullin",
   "repository": {
     "url": "https://github.com/ruslang02/discord-qt"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "private": true,
+  "bin": {
+    "discord-qt": "./index.js"
+  },
   "scripts": {
     "build": "webpack -p",
-    "start": "webpack --hide-modules && qode ./dist/index.js",
+    "start": "qode ./dist/index.js",
     "start:opti": "webpack -p && qode ./dist/index.js",
-    "start:test": "qode ./dist",
+    "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
-    "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug"
+    "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
