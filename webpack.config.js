@@ -5,7 +5,13 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { IgnorePlugin, DefinePlugin } = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-
+let __BUILDNUM__;
+try {
+  __BUILDNUM__ = childProcess.execSync('git rev-list HEAD --count').toString()
+} catch(e) {
+  __BUILDNUM__ = 0;
+}
+console.log(__dirname, process.cwd());
 module.exports = {
   mode: process.NODE_ENV || "development",
   entry: {
@@ -24,6 +30,7 @@ module.exports = {
   node: {
     __dirname: false,
     __filename: false,
+    fs: "empty",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -34,12 +41,12 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        exclude: /node_modules/,
+        exclude: /discord-qt\/node_modules/g,
         use: [
           {
             loader: 'ts-loader',
             options: {
-              transpileOnly: true
+              // transpileOnly: true
             }
           }
         ]
@@ -73,9 +80,7 @@ module.exports = {
   },
   plugins: [
     new IgnorePlugin({ resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g }),
-    new DefinePlugin({
-      __BUILDNUM__: childProcess.execSync('git rev-list HEAD --count').toString()
-    }),
+    new DefinePlugin({ __BUILDNUM__ }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
     new CopyPlugin({

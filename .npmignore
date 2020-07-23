@@ -105,4 +105,4 @@ dist
 deploy/*/build
 *.deb
 assets/fonts/whitney*
-dist/
+dist/*

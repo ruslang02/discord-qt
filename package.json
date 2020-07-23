@@ -7,7 +7,6 @@
     "url": "https://github.com/ruslang02/discord-qt"
   },
   "license": "GPL-3.0",
-  "private": true,
   "bin": {
     "discord-qt": "./index.js"
   },
@@ -18,28 +17,25 @@
     "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
     "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug",
-    "postinstall": "npm run build"
+    "postinstall": "webpack"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
-    "discord.js": "^11.6.4",
-    "env-paths": "^2.2.0",
-    "markdown-it": "^11.0.0",
-    "open": "git+https://github.com/sindresorhus/open.git",
-    "pngjs": "^5.0.0"
-  },
-  "devDependencies": {
-    "@nodegui/packer": "^1.4.1",
     "@types/markdown-it": "^10.0.1",
     "@types/node": "^14.0.23",
     "@types/pngjs": "^3.4.2",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.6.0",
+    "discord.js": "^11.6.4",
+    "env-paths": "^2.2.0",
     "extract-loader": "^5.1.0",
     "file-loader": "^5.1.0",
+    "markdown-it": "^11.0.0",
     "mini-css-extract-plugin": "^0.9.0",
     "native-addon-loader": "^2.0.1",
+    "open": "git+https://github.com/sindresorhus/open.git",
+    "pngjs": "^5.0.0",
     "sass": "^1.26.10",
     "sass-loader": "^8.0.2",
     "terser-webpack-plugin": "^3.0.7",
@@ -47,5 +43,8 @@
     "typescript": "^3.9.7",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.12"
+  },
+  "devDependencies": {
+    "@nodegui/packer": "^1.4.1"
   }
 }
