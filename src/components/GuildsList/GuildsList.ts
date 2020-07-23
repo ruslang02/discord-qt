@@ -10,7 +10,7 @@ export class GuildsList extends QScrollArea {
   layout = new QBoxLayout(Direction.TopToBottom);
   private container = new QWidget();
   private mpBtn = new QPushButton();
-  private guilds = new Map<Guild, QLabel>();
+  private guilds = new WeakMap<Guild, QLabel>();
   private active?: QPushButton | QLabel;
 
   constructor() {
@@ -64,7 +64,6 @@ export class GuildsList extends QScrollArea {
     this.mpBtn.setFixedSize(48, 48 + 10);
     this.mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.mpBtn.setProperty('toolTip', 'Direct Messages');
-    this.mpBtn.setProperty('active', 'true');
     this.mpBtn.addEventListener('clicked', () => app.emit('switchView', 'dm'));
 
     this.container.layout?.addWidget(this.mpBtn);
@@ -114,7 +113,6 @@ export class GuildsList extends QScrollArea {
   }
   async loadGuilds() {
     const { client } = app;
-    this.guilds.clear();
     this.initContainer();
 
     const guilds = client.guilds

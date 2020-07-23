@@ -9,7 +9,7 @@ export class ChannelsList extends QScrollArea {
   guild?: Guild;
   root = new QWidget();
   widgets = new QBoxLayout(Direction.TopToBottom);
-  channels = new Map<Channel, ChannelButton | QLabel>();
+  channels = new WeakMap<Channel, ChannelButton/* | QLabel*/>();
   active?: ChannelButton;
 
   constructor() {
@@ -63,17 +63,18 @@ export class ChannelsList extends QScrollArea {
       .filter(c => ['text'/*, 'category'*/].includes(c.type))
       .filter(c => (c.permissionsFor(client.user) as Permissions).has('VIEW_CHANNEL'))
       .sort((a, b) => a.position - b.position)
-      .array() as (TextChannel | CategoryChannel)[])
-    if(channels.every(c => this.channels.has(c))) {
+      .array() as (TextChannel/* | CategoryChannel*/)[])
+    /* if(channels.every(c => this.channels.has(c))) {
       channels.forEach((channel, i) => {
         const widget = this.channels.get(channel) as QWidget;
+        console.log('cache', channel, widget)
         this.widgets.insertWidget(i, widget)
       });
       return;
-    }
+    } */
     channels.forEach((channel, i) => {
-      if(channel.type === 'text') {
-        const btn = new ChannelButton(this);
+      // if(channel.type === 'text') {
+        const btn = new ChannelButton();
         btn.loadChannel(channel as TextChannel);
         btn.setMinimumSize(0, 32);
         btn.setMaximumSize(MAX_QSIZE, 32);
@@ -83,14 +84,14 @@ export class ChannelsList extends QScrollArea {
         this.channels.set(channel, btn);
         this.widgets.insertWidget(i, btn);
         return btn;
-      } else {
+      /* } else {
         const label = new QLabel(this);
         label.setText(channel.name);
         label.setObjectName('CategoryHeader');
         this.channels.set(channel, label);
         this.widgets.insertWidget(i, label);
         return label;
-      }
+      }*/
     });
   }
 }

@@ -8,7 +8,7 @@ export class ChannelButton extends DChannelButton {
   private chlabel = new QLabel();
   private pound = new QPixmap(join(__dirname, './assets/icons/pound.png'));
 
-  constructor(parent: any) {
+  constructor(parent?: any) {
     super(parent);
     this.initComponent();
     this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setHovered(true));

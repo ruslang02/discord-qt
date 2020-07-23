@@ -7,7 +7,7 @@ import { ViewOptions } from '../../views/ViewOptions';
 export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
   widgets = new QBoxLayout(Direction.TopToBottom);
-  channels = new Map<DMChannel, UserButton>();
+  channels = new WeakMap<DMChannel, UserButton>();
   active?: UserButton;
 
   constructor() {

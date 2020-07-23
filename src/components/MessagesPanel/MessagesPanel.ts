@@ -11,7 +11,7 @@ export class MessagesPanel extends QScrollArea {
   private channel?: Channel;
   private rootControls = new QBoxLayout(Direction.BottomToTop);
   private root = new QWidget();
-  private cache = new Map<Channel, Message[]>();
+  private cache = new WeakMap<Channel, Message[]>();
   private cancelToken?: CancelToken;
 
   constructor() {

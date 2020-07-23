@@ -52,7 +52,7 @@ export class RootWindow extends QMainWindow {
     this.setStyleSheet(stylesheet);
   }
   protected loadIcon() {
-    const icon = new QIcon(path.resolve(__dirname, "./assets/icons/logo.png"));
+    const icon = new QIcon(path.resolve(__dirname, "./assets/icon.png"));
     this.setWindowIcon(icon);
   }
 
@@ -65,6 +65,7 @@ export class RootWindow extends QMainWindow {
     try {
       await app.client.login(account.token || 's');
       this.setWindowTitle(`Discord-Qt • ${app.client.user.username}#${app.client.user.discriminator}`);
+      app.emit('switchView', 'dm');
       return true;
     } catch(e) {
       console.log(e);
