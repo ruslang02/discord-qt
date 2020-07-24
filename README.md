@@ -4,8 +4,22 @@ It offers a significantly less resource-consuming experience comparing to the of
 
 ![Screenshot](screenshot.png)
 
-## Running from sources
 Node.JS v12 or newer is required.
+
+## Installing from npm
+Windows (macOS should work as well, however not tested):
+```bash
+npm i -g discord-qt
+```
+
+Linux:
+```bash
+sudo npm i -g discord-qt --unsafe-perm=true --allow-root
+```
+
+**Note** Due to some minor difficulties version 0.2.0 is versioned as 0.1.99 on the NPM registry. Otherwise, this is the same 0.2.0 release.
+
+## Installing from sources
 ```bash
 git clone https://github.com/ruslang02/discord-qt
 cd discord-qt/
@@ -13,8 +27,8 @@ npm install
 npm start
 ```
 
-## Running binary release
-Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows and Linux (AppImage).
+## Running the binary release
+Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows and Linux (AppImage, Debian package).
 
 ## Configuration
 In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
@@ -45,6 +59,9 @@ By default, the application uses Source Sans Pro font. However, if you want an e
 GPL 3.0
 
 ## Third-party
- - [Source Sans Pro fonts](https://github.com/adobe-fonts/source-sans-pro)
- - [Material Design Icons](https://github.com/Templarian/MaterialDesign)
  - [NodeGui](https://github.com/nodegui/nodegui)
+ - [discord.js](https://github.com/discordjs/discord.js)
+ - [Qt](https://www.qt.io/)
+ - [Material Design Icons](https://github.com/Templarian/MaterialDesign)
+ - [markdown-it](https://github.com/markdown-it/markdown-it)
+ - [Source Sans Pro fonts](https://github.com/adobe-fonts/source-sans-pro)

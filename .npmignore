@@ -106,3 +106,4 @@ deploy/*/build
 *.deb
 assets/fonts/whitney*
 dist/*
+deb-struct/
