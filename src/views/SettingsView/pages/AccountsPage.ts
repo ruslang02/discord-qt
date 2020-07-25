@@ -160,16 +160,23 @@ export class AccountsPage extends Page {
       const token = addTokenField.text();
       addButton.setEnabled(false);
       try {
-        const client = new Client();
+        const client = new Client({
+          // @ts-ignore 
+          _tokenType: '',
+          partials: ["GUILD_MEMBER"],
+          ws: {
+              large_threshold: 50
+          }
+      });
         await client.login(token);
-        if (client.user.bot) {
+        if (client.user?.bot) {
           await client.destroy();
           throw new Error('Bot accounts are currently not supported.');
         }
         const account = {
-          username: client.user.username,
-          discriminator: client.user.discriminator,
-          avatar: client.user.avatarURL,
+          username: client.user?.username || 'Unknown User',
+          discriminator: client.user?.discriminator || '0000',
+          avatar: client.user?.avatarURL({format: 'png', size: 64}) || '',
           token,
           autoLogin: false,
         };

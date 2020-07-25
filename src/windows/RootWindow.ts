@@ -58,13 +58,20 @@ export class RootWindow extends QMainWindow {
 
   public async loadClient(account: Account): Promise<boolean> {
     if(app.client) await app.client.destroy();
-    app.client = new Client({ sync: true, });
+    app.client = new Client({
+      // @ts-ignore 
+      _tokenType: '',
+      partials: ["GUILD_MEMBER"],
+      ws: {
+          large_threshold: 50
+      }
+  });
     app.client.on('error', console.error)
     // app.client.on('debug', console.debug)
     app.client.on('warn', console.warn)
     try {
       await app.client.login(account.token || 's');
-      this.setWindowTitle(`Discord-Qt • ${app.client.user.username}#${app.client.user.discriminator}`);
+      this.setWindowTitle(`Discord-Qt • ${app.client.user?.username}#${app.client.user?.discriminator}`);
       app.emit('switchView', 'dm');
       return true;
     } catch(e) {

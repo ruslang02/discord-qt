@@ -87,7 +87,7 @@ export class GuildsList extends QScrollArea {
     this.addMainPageButton();
   }
   private loadGuild(guild: Guild, i: number) {
-    pictureWorker.loadImage(guild.iconURL)
+    pictureWorker.loadImage(guild.iconURL({size: 64, format: 'png'}) || '')
       .then(imageBuffer => {
         //console.log(guild.name);
         if (!imageBuffer) {
@@ -115,8 +115,8 @@ export class GuildsList extends QScrollArea {
     const { client } = app;
     this.initContainer();
 
-    const guilds = client.guilds
-      .sort((a, b) => a.position - b.position)
+    const guilds = client.guilds.cache
+     // .sort((a, b) => a.position - b.position)
       .array();
     if (app.config.fastLaunch)
       guilds.length = 5;

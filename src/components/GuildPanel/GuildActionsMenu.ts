@@ -13,7 +13,7 @@ export class GuildActionsMenu extends QWidget {
     this.setObjectName('ActionsMenu');
     this.initComponent();
     this.setLayout(this.layout);
-    app.on('switchView', (view:string, options?: ViewOptions) => {
+    app.on('switchView', (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options) return;
       if (options.guild) this.guild = options.guild
       else if (options.channel) this.guild = options.channel.guild;

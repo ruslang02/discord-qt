@@ -51,7 +51,7 @@ export class UserButton extends DChannelButton {
     if (token?.cancelled) return;
     if (app.config.enableAvatars)
       pictureWorker.loadImage(
-        user.avatarURL || user.defaultAvatarURL, { size: 32 })
+        user.avatarURL({format: "png", size: 32}) || user.defaultAvatarURL, { size: 32 })
         .then(async (buffer) => {
           if (buffer === null || token?.cancelled)
             return;

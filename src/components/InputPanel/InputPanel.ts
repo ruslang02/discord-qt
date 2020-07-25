@@ -3,7 +3,7 @@ import './InputPanel.scss';
 import { DIconButton } from "../DIconButton/DIconButton";
 import path from 'path';
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Client, Channel, TextChannel, Guild } from "discord.js";
+import { DMChannel, Client, Channel, TextChannel, Guild, PartialChannel } from "discord.js";
 import { ViewOptions } from '../../views/ViewOptions';
 
 export class InputPanel extends QWidget {
@@ -41,15 +41,16 @@ export class InputPanel extends QWidget {
     });
 
     app.on('client', (client: Client) => {
-      client.on('typingStart', (typingChannel: DMChannel | TextChannel, user) => {
+      client.on('typingStart', (typingChannel: DMChannel | Channel, user) => {
         if (this.channel?.id !== typingChannel.id)
           return;
         typingLabel.setText(`<b>${user.username}</b> is typing...`);
       });
+      /*
       client.on('typingStop', (typingChannel: DMChannel | TextChannel, user) => {
         if (this.channel?.id === typingChannel.id)
           typingLabel.setText('');
-      });
+      });*/
     })
   }
 

@@ -27,13 +27,14 @@
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.6.0",
-    "discord.js": "^11.6.4",
+    "discord.js": "^12.0.2",
     "env-paths": "^2.2.0",
     "extract-loader": "^5.1.0",
     "file-loader": "^5.1.0",
     "markdown-it": "^11.0.0",
     "mini-css-extract-plugin": "^0.9.0",
     "native-addon-loader": "^2.0.1",
+    "node-fetch": "^2.6.0",
     "open": "git+https://github.com/sindresorhus/open.git",
     "pngjs": "^5.0.0",
     "sass": "^1.26.10",
@@ -42,7 +43,8 @@
     "ts-loader": "^6.2.1",
     "typescript": "^3.9.7",
     "webpack": "^4.42.0",
-    "webpack-cli": "^3.3.12"
+    "webpack-cli": "^3.3.12",
+    "whatwg-fetch": "^3.2.0"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.4.1"

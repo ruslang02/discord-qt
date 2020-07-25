@@ -80,7 +80,7 @@ export class MessagesPanel extends QScrollArea {
     let messages: Message[];
     if (cached) messages = cached;
     else {
-      const fetched = await channel.fetchMessages({ limit: 50 });
+      const fetched = await channel.messages.fetch({ limit: 50 });
       messages = fetched.array().reverse();
       cache.set(channel, messages);
     }

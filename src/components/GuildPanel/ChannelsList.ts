@@ -1,6 +1,6 @@
 import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, Shape } from "@nodegui/nodegui";
 import { app, MAX_QSIZE } from "../..";
-import { Guild, TextChannel, CategoryChannel, Channel, Permissions } from "discord.js";
+import { Guild, TextChannel, CategoryChannel, Channel, Permissions, User } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 import { ChannelButton } from './ChannelButton';
 import { ViewOptions } from '../../views/ViewOptions';
@@ -59,9 +59,9 @@ export class ChannelsList extends QScrollArea {
     if (!guild) return;
     this.initRoot();
 
-    const channels = (guild.channels
+    const channels = (guild.channels.cache
       .filter(c => ['text'/*, 'category'*/].includes(c.type))
-      .filter(c => (c.permissionsFor(client.user) as Permissions).has('VIEW_CHANNEL'))
+      .filter(c => (c.permissionsFor(client.user as User) as Permissions).has('VIEW_CHANNEL'))
       .sort((a, b) => a.position - b.position)
       .array() as (TextChannel/* | CategoryChannel*/)[])
     /* if(channels.every(c => this.channels.has(c))) {

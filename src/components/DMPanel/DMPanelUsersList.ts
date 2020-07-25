@@ -48,13 +48,13 @@ export class DMPanelUsersList extends QScrollArea {
     const { client } = app;
     this.initRoot();
 
-    const channels = (client.channels
+    const channels = (client.channels.cache
       .filter(c => c.type === 'dm')
       .array() as DMChannel[])
       .filter(a => a.lastMessageID !== null)
       .sort((a, b) => {
-        const snA = SnowflakeUtil.deconstruct(a.lastMessageID);
-        const snB = SnowflakeUtil.deconstruct(b.lastMessageID);
+        const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
+        const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
         return snB.date.getTime() - snA.date.getTime();
       });
     if(app.config.fastLaunch)
@@ -62,7 +62,9 @@ export class DMPanelUsersList extends QScrollArea {
     channels.map(c => {
       const dm = c as DMChannel;
       const btn = new UserButton(this.root);
-      btn.loadUser(dm.recipient);
+      dm.fetch().then(dmf => {
+        btn.loadUser(dm.recipient);
+      })
       btn.setMinimumSize(0, 42);
       btn.setMaximumSize(MAX_QSIZE, 42);
       btn.addEventListener('clicked', () => {
