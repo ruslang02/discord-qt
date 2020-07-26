@@ -38,6 +38,7 @@ export class GuildsList extends QScrollArea {
     });
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+      this.layout.update();
       if (!['dm', 'guild'].includes(view)) return;
       this.mpBtn.setProperty('active', false)
       if (view === 'dm') {
