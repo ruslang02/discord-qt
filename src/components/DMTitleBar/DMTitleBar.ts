@@ -7,6 +7,7 @@ import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { ViewOptions } from '../../views/ViewOptions';
+import { Events } from '../../structures/Events';
 
 const PresenceStatusColor = new Map([
   ['online', '#43b581'],
@@ -29,12 +30,12 @@ export class MainTitleBar extends DTitleBar {
 
     this.setInlineStyle('background-color: #36393f');
     this.initComponent();
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if(!['dm', 'guild'].includes(view) || !options) return;
       if(options.dm) this.handleDMOpen(options.dm);
       else if (options.channel) this.handleGuildOpen(options.channel)
     });
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       /*
       client.on('userUpdate', (before, after) => {
         console.log(after.username);

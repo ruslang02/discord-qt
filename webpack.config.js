@@ -2,7 +2,7 @@ const path = require("path");
 const childProcess = require('child_process');
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { IgnorePlugin, DefinePlugin } = require("webpack");
+const { IgnorePlugin, DefinePlugin, ProvidePlugin } = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 let __BUILDNUM__;
@@ -77,10 +77,17 @@ module.exports = {
   },
   resolve: {
     extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
+    mainFields: ["main"],
+    alias: {
+        'fetch': path.join(__dirname, '../node_modules', 'whatwg-fetch', 'fetch.js'),
+    }
   },
   plugins: [
-    new IgnorePlugin({ resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript)/g }),
+    new IgnorePlugin({ resourceRegExp: /(node-opus)|(@discordjs\/opus)|(opusscript|ffmpeg-static)/g }),
     new DefinePlugin({ __BUILDNUM__ }),
+    new ProvidePlugin({
+        'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+    }),
     new CleanWebpackPlugin(),
     new MiniCssExtractPlugin(),
     new CopyPlugin({

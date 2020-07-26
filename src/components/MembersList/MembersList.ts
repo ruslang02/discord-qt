@@ -5,6 +5,7 @@ import './MembersList.scss';
 import { UserButton } from '../UserButton/UserButton';
 import { ViewOptions } from '../../views/ViewOptions';
 import { CancelToken } from '../../utilities/CancelToken';
+import { Events } from '../../structures/Events';
 
 export class MembersList extends QScrollArea {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -18,7 +19,7 @@ export class MembersList extends QScrollArea {
     this.setFrameShape(Shape.NoFrame);
     this.initComponent();
 
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options?.channel) return;
       if (this.cancelToken) this.cancelToken.cancel();
       const cancel = new CancelToken();
@@ -51,7 +52,7 @@ export class MembersList extends QScrollArea {
       btn.setMinimumSize(224, 42);
       btn.setMaximumSize(224, 42);
       btn.addEventListener('clicked', async () => {
-        app.emit('switchView', 'dm', { dm: await member.createDM() });
+        app.emit(Events.SWITCH_VIEW, 'dm', { dm: await member.createDM() });
       });
       this.layout.addWidget(btn);
     }

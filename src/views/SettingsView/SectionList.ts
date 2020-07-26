@@ -2,6 +2,7 @@ import { QScrollArea, QWidget, QBoxLayout, Direction, Shape, QPushButton, Cursor
 import { MAX_QSIZE, app } from "../..";
 import { Element, Divider, SettingsView } from "./SettingsView";
 import { Page } from "./pages/Page";
+import { Events } from "../../structures/Events";
 
 
 export class SectionList extends QScrollArea {
@@ -23,7 +24,7 @@ export class SectionList extends QScrollArea {
     this.initComponent();
     this.initPages();
 
-    app.on('openSettingsPage', (pageTitle: string) => {
+    app.on(Events.OPEN_SETTINGS_PAGE, (pageTitle: string) => {
       this.active?.setProperty('active', false);
       this.active?.repolish();
       const page = [...this.pageButtons.keys()].find(page => page.title === pageTitle);
@@ -32,7 +33,7 @@ export class SectionList extends QScrollArea {
       this.active?.setProperty('active', true);
       this.active?.repolish();
     });
-    app.emit('openSettingsPage', 'Accounts');
+    app.emit(Events.OPEN_SETTINGS_PAGE, 'Accounts');
   }
 
   private initComponent() {

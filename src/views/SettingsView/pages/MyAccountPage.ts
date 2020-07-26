@@ -1,10 +1,11 @@
 import { Page } from './Page';
 import { app, MAX_QSIZE } from '../../..';
-import { QLabel, QWidget, QBoxLayout, Direction, QPixmap, SizeConstraint } from '@nodegui/nodegui';
+import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client } from 'discord.js';
 import './MyAccountPage.scss';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
+import { Events } from '../../../structures/Events';
 
 export class MyAccountPage extends Page {
   title = "My Account";
@@ -12,15 +13,15 @@ export class MyAccountPage extends Page {
   constructor() {
     super();
     this.initPage();
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadUser.bind(this));
     });
   }
 
   private loadUser() {
-    this.unabel.setText(`${app.client.user.username}#${app.client.user.discriminator}`);
-    this.emabel.setText(app.client.user.email);
-    pictureWorker.loadImage(app.client.user.avatarURL || app.client.user.defaultAvatarURL, {size: 128})
+    this.unabel.setText(`${app.client.user?.username}#${app.client.user?.discriminator}`);
+    this.emabel.setText(app.client.user?.email || "");
+    pictureWorker.loadImage(app.client.user?.avatarURL({size: 128, format: 'png'}) || app.client.user?.defaultAvatarURL || '', {size: 128})
       .then(buffer => {
         if(!buffer) return;
         const avamap = new QPixmap();

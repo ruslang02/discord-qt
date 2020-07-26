@@ -100,6 +100,7 @@ export class MessageItem extends QWidget {
       let url = attach.proxyURL;
       let width = attach.width;
       let height = attach.height;
+      if(width === null || height === null) continue;
       const ratio = width / height;
 
       if(width > 400) {
@@ -157,7 +158,7 @@ export class MessageItem extends QWidget {
     await this.processAttachments(message.attachments);
     if(token?.cancelled) return;
     if (!app.config.enableAvatars) return;
-    const image = await pictureWorker.loadImage(message.author.avatarURL || message.author.defaultAvatarURL, {size: 128});
+    const image = await pictureWorker.loadImage(message.author.avatarURL({format: 'png', size: 64}) || message.author.defaultAvatarURL, {size: 64});
     if (image) {
       const pixmap = new QPixmap();
       if(token?.cancelled) return;

@@ -7,6 +7,7 @@ import { join } from 'path';
 import { ChannelsList } from './ChannelsList';
 import { ViewOptions } from '../../views/ViewOptions';
 import { GuildActionsMenu } from './GuildActionsMenu';
+import { Events } from "../../structures/Events";
 
 export class GuildPanel extends QWidget {
   private titleBar = new DTitleBar();
@@ -19,7 +20,7 @@ export class GuildPanel extends QWidget {
     super();
 
     this.initComponent();
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options) return;
       if (options.guild)
         this.guildel.setText(options.guild.name);

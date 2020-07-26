@@ -5,6 +5,7 @@ import { MessageItem } from "./MessageItem";
 import './MessagesPanel.scss';
 import { ViewOptions } from '../../views/ViewOptions';
 import { CancelToken } from '../../utilities/CancelToken';
+import { Events } from "../../structures/Events";
 
 
 export class MessagesPanel extends QScrollArea {
@@ -24,7 +25,7 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initEvents() {
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view) || !options) return;
       const channel = options.dm || options.channel || null;
       if (!channel) return;
@@ -34,7 +35,7 @@ export class MessagesPanel extends QScrollArea {
       this.cancelToken = token;
     });
 
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('message', async (message: Message) => {
         const cache = this.cache.get(message.channel)
         if(cache !== undefined) {
@@ -80,7 +81,7 @@ export class MessagesPanel extends QScrollArea {
     let messages: Message[];
     if (cached) messages = cached;
     else {
-      const fetched = await channel.fetchMessages({ limit: 50 });
+      const fetched = await channel.messages.fetch({ limit: 50 });
       messages = fetched.array().reverse();
       cache.set(channel, messages);
     }
