@@ -3,12 +3,14 @@ import { Page } from "./Page";
 import { DColorButton, DColorButtonColor } from '../../../components/DColorButton/DColorButton';
 import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
 import { Divider } from '../SettingsView';
-import { app, Account } from '../../..';
+import { app } from '../../..';
 import './AccountsPage.scss';
 import { join } from 'path';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client } from 'discord.js';
 import { SettingsCheckBox } from '../SettingsCheckBox';
+import { Account } from "../../../structures/Account";
+import { Events } from "../../../structures/Events";
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -18,11 +20,11 @@ export class AccountsPage extends Page {
   constructor() {
     super();
     this.initPage();
-    this.loadAccounts();
+    app.on(Events.READY, this.loadAccounts.bind(this));
   }
   private checkEmpty() {
     const {noAcLbl} = this;
-    if (!app.config.accounts.length) {
+    if (!app.config.accounts?.length) {
       this.accountsLayout.insertWidget(0, noAcLbl, 0);
       noAcLbl.show();
     } else {
@@ -49,7 +51,7 @@ export class AccountsPage extends Page {
     noAcLbl.setInlineStyle('font-size: 16px; color: #72767d;');
     noAcLbl.setText('No accounts configured. Wumpus is awaiting your instructions.');
     this.checkEmpty();
-    app.config.accounts.forEach(this.processAccount.bind(this));
+    app.config.accounts?.forEach(this.processAccount.bind(this));
   }
   checkboxes: SettingsCheckBox[] = [];
   private processAccount(account: Account, i = 0) {
@@ -85,10 +87,10 @@ export class AccountsPage extends Page {
     deleteBtn.setInlineStyle('margin-right: 10px;');
     deleteBtn.setMinimumSize(0, 32);
     deleteBtn.addEventListener('clicked', () => {
-      app.config.accounts = app.config.accounts.filter((v) => v !== account);
+      app.config.accounts = app.config.accounts?.filter((v) => v !== account);
       accWidget.hide();
       this.accountsLayout.removeWidget(accWidget);
-      app.saveConfig();
+      app.config.save();
       this.checkEmpty();
     })
     const loginBtn = new DColorButton();
@@ -114,11 +116,12 @@ export class AccountsPage extends Page {
     checkbox.layout.setContentsMargins(20, 15, 20, 15);
     this.checkboxes.push(checkbox);
     checkbox.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+      if (!app.config.accounts) return;
       const isAutoLogin = app.config.accounts[i].autoLogin;
-      this.checkboxes.forEach((c, j) => c.setChecked(i == j ? !app.config.accounts[i].autoLogin : false));
+      this.checkboxes.forEach((c, j) => c.setChecked(i == j ? !isAutoLogin : false));
       app.config.accounts = app.config.accounts
         .map((acc, j) => ({ ...acc, autoLogin: i == j ? !isAutoLogin : false }));
-      app.saveConfig();
+      app.config.save();
     });
 
     const shadow = new QGraphicsDropShadowEffect();
@@ -155,19 +158,14 @@ export class AccountsPage extends Page {
     addButton.setMinimumSize(0, 32);
     let isLoggingIn = false;
     addButton.addEventListener('clicked', async () => {
-      if (isLoggingIn) return;
+      if (isLoggingIn || !app.config.accounts) return;
       isLoggingIn = true;
       const token = addTokenField.text();
       addButton.setEnabled(false);
       try {
         const client = new Client({
-          // @ts-ignore 
-          _tokenType: '',
-          partials: ["GUILD_MEMBER"],
-          ws: {
-              large_threshold: 50
-          }
-      });
+          waitForGuildsTimeout: 0
+        });
         await client.login(token);
         if (client.user?.bot) {
           await client.destroy();
@@ -179,11 +177,11 @@ export class AccountsPage extends Page {
           avatar: client.user?.avatarURL({format: 'png', size: 64}) || '',
           token,
           autoLogin: false,
-        };
+        } as Account;
         this.processAccount(account, app.config.accounts.length);
         app.config.accounts.push(account);
         await client.destroy();
-        app.saveConfig();
+        app.config.save();
       } catch (e) {
         errorMsg.setText(e.message);
         errorMsg.show();

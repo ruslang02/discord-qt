@@ -1,10 +1,11 @@
 import { Page } from './Page';
 import { app, MAX_QSIZE } from '../../..';
-import { QLabel, QWidget, QBoxLayout, Direction, QPixmap, SizeConstraint } from '@nodegui/nodegui';
+import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client } from 'discord.js';
 import './MyAccountPage.scss';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
+import { Events } from '../../../structures/Events';
 
 export class MyAccountPage extends Page {
   title = "My Account";
@@ -12,7 +13,7 @@ export class MyAccountPage extends Page {
   constructor() {
     super();
     this.initPage();
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadUser.bind(this));
     });
   }

@@ -4,6 +4,7 @@ import { Guild, TextChannel, CategoryChannel, Channel, Permissions, User } from 
 import { UserButton } from "../UserButton/UserButton";
 import { ChannelButton } from './ChannelButton';
 import { ViewOptions } from '../../views/ViewOptions';
+import { Events } from "../../structures/Events";
 
 export class ChannelsList extends QScrollArea {
   guild?: Guild;
@@ -17,11 +18,11 @@ export class ChannelsList extends QScrollArea {
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('ChannelsContainer');
     /*
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
     });
     */
-    app.on('switchView', async (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, async (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options) return;
       let newGuild;
       if (options.guild) newGuild = options.guild;
@@ -79,7 +80,7 @@ export class ChannelsList extends QScrollArea {
         btn.setMinimumSize(0, 32);
         btn.setMaximumSize(MAX_QSIZE, 32);
         btn.addEventListener('clicked', () => {
-          app.emit('switchView', 'guild', { channel })
+          app.emit(Events.SWITCH_VIEW, 'guild', { channel })
         });
         this.channels.set(channel, btn);
         this.widgets.insertWidget(i, btn);

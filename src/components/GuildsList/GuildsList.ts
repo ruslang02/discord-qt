@@ -5,6 +5,7 @@ import { Guild, Client } from "discord.js";
 import { app } from "../..";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { ViewOptions } from '../../views/ViewOptions';
+import { Events } from "../../structures/Events";
 
 export class GuildsList extends QScrollArea {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -23,7 +24,7 @@ export class GuildsList extends QScrollArea {
     this.initContainer();
     this.addMainPageButton();
 
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadGuilds.bind(this));
       client.on('guildDelete', (guild: Guild) => {
         const entry = this.guilds.get(guild);
@@ -36,7 +37,7 @@ export class GuildsList extends QScrollArea {
       });
     });
 
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
       this.mpBtn.setProperty('active', false)
       if (view === 'dm') {
@@ -65,7 +66,7 @@ export class GuildsList extends QScrollArea {
     this.mpBtn.setFixedSize(48, 48 + 10);
     this.mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.mpBtn.setProperty('toolTip', 'Direct Messages');
-    this.mpBtn.addEventListener('clicked', () => app.emit('switchView', 'dm'));
+    this.mpBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm'));
     this.hr.setObjectName('Separator');
     this.hr.setFixedSize(33, 9);
   }
@@ -100,7 +101,7 @@ export class GuildsList extends QScrollArea {
     guildElem.setText(guild.nameAcronym);
     guildElem.setAlignment(AlignmentFlag.AlignCenter);
     guildElem.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      app.emit('switchView', 'guild', { guild });
+      app.emit(Events.SWITCH_VIEW, 'guild', { guild });
     });
     this.guilds.set(guild, guildElem);
     this.layout.insertWidget(i + 2, guildElem);

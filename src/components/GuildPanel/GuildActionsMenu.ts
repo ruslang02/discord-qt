@@ -3,6 +3,7 @@ import { DColorButton, DColorButtonColor } from '../DColorButton/DColorButton';
 import { app } from '../..';
 import { ViewOptions } from '../../views/ViewOptions';
 import { Guild } from 'discord.js';
+import { Events } from '../../structures/Events';
 
 export class GuildActionsMenu extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -13,7 +14,7 @@ export class GuildActionsMenu extends QWidget {
     this.setObjectName('ActionsMenu');
     this.initComponent();
     this.setLayout(this.layout);
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options) return;
       if (options.guild) this.guild = options.guild
       else if (options.channel) this.guild = options.channel.guild;

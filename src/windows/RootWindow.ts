@@ -1,11 +1,13 @@
 import { QStackedWidget, QMainWindow, QIcon, WidgetAttribute } from "@nodegui/nodegui";
 import path from "path";
 import fs from "fs";
-import { app, Account } from '..';
+import { app } from '..';
 import { Client, Constants } from 'discord.js';
 import { MainView } from '../views/MainView/MainView';
 import './RootWindow.scss';
 import { SettingsView } from "../views/SettingsView/SettingsView";
+import { Account } from "../structures/Account";
+import { Events } from "../structures/Events";
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
@@ -19,7 +21,7 @@ export class RootWindow extends QMainWindow {
     this.loadIcon();
     this.initializeWindow();
 
-    app.on('switchView', (view: string) => {
+    app.on(Events.SWITCH_VIEW, (view: string) => {
       switch (view) {
         case 'main':
           this.root.setCurrentWidget(this.mainView);
@@ -30,8 +32,10 @@ export class RootWindow extends QMainWindow {
       }
     });
 
-    const autoAccount = app.config.accounts.find(a => a.autoLogin);
-    if (autoAccount) this.loadClient(autoAccount);
+    app.on(Events.READY, () => {
+      const autoAccount = app.config.accounts?.find(a => a.autoLogin);
+      if (autoAccount) this.loadClient(autoAccount);
+    })
   }
 
   protected initializeWindow() {
@@ -56,19 +60,19 @@ export class RootWindow extends QMainWindow {
   }
 
   public async loadClient(account: Account): Promise<boolean> {
-    const { Events } = Constants;
+    const { Events: DiscordEvents } = Constants;
     if (app.client) await app.client.destroy();
     app.client = new Client({
       useUserGateway: true,
       waitForGuildsTimeout: 0,
     });
-    app.client.on(Events.ERROR, console.error)
-    if (app.config.debug) app.client.on(Events.DEBUG, console.debug)
-    app.client.on(Events.WARN, console.warn)
+    app.client.on(DiscordEvents.ERROR, console.error)
+    if (app.config.debug) app.client.on(DiscordEvents.DEBUG, console.debug)
+    app.client.on(DiscordEvents.WARN, console.warn)
     try {
       await app.client.login(account.token);
       this.setWindowTitle(`Discord-Qt • ${app.client.user?.username}#${app.client.user?.discriminator}`);
-      app.emit('switchView', 'dm');
+      app.emit(Events.SWITCH_VIEW, 'dm');
       return true;
     } catch (e) {
       console.log(e);

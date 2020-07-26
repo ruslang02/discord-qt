@@ -3,6 +3,7 @@ import { app, MAX_QSIZE } from "../..";
 import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 import { ViewOptions } from '../../views/ViewOptions';
+import { Events } from "../../structures/Events";
 
 export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
@@ -15,11 +16,11 @@ export class DMPanelUsersList extends QScrollArea {
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('UsersContainer');
 
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
     });
 
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if(view !== 'dm' || !options || !options.dm) return;
       const button = this.channels.get(options.dm);
       this.active?.setActivated(false);
@@ -68,7 +69,7 @@ export class DMPanelUsersList extends QScrollArea {
       btn.setMinimumSize(0, 42);
       btn.setMaximumSize(MAX_QSIZE, 42);
       btn.addEventListener('clicked', () => {
-        app.emit('switchView', 'dm', { dm });
+        app.emit(Events.SWITCH_VIEW, 'dm', { dm });
       });
       this.channels.set(dm, btn);
       return btn;

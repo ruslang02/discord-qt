@@ -5,6 +5,7 @@ import path from 'path';
 import { app, MAX_QSIZE } from "../..";
 import { DMChannel, Client, Channel, TextChannel, Guild } from "discord.js";
 import { ViewOptions } from '../../views/ViewOptions';
+import { Events } from "../../structures/Events";
 
 export class InputPanel extends QWidget {
   channel?: TextChannel | DMChannel;
@@ -22,7 +23,7 @@ export class InputPanel extends QWidget {
 
   private setEvents() {
     const { input, typingLabel } = this;
-    app.on('switchView', (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view) || !options) return;
       const channel = options.dm || options.channel || null;
       if (!channel) return;
@@ -40,7 +41,7 @@ export class InputPanel extends QWidget {
       }, 100)
     });
 
-    app.on('client', (client: Client) => {
+    app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('typingStart', (typingChannel: DMChannel | Channel, user) => {
         if (this.channel?.id !== typingChannel.id)
           return;

@@ -9,6 +9,7 @@ import { MyAccountPage } from './pages/MyAccountPage';
 import { DIconButton } from '../../components/DIconButton/DIconButton';
 import open from 'open';
 import { AppearancePage } from './pages/AppearancePage';
+import { Events } from "../../structures/Events";
 
 export type Element = Page | Divider | CategoryHeader | Footer;
 
@@ -87,7 +88,7 @@ export class SettingsView extends QWidget {
     this.setEvents();
   }
   private setEvents() {
-    app.on('openSettingsPage', (pageTitle: string) => {
+    app.on(Events.OPEN_SETTINGS_PAGE, (pageTitle: string) => {
       const { pageContainer, elements } = this;
       const page = elements.find(page => page instanceof Page && page.title === pageTitle) as Page;
       
@@ -116,7 +117,7 @@ export class SettingsView extends QWidget {
 
     const closeBtn = new QPushButton();
     closeBtn.setObjectName('CloseButton');
-    closeBtn.addEventListener('clicked', () => app.emit('switchView', 'main'));
+    closeBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'main'));
     closeBtn.setFixedSize(36, 36);
     closeBtn.setCursor(CursorShape.PointingHandCursor);
     closeBtn.setIcon(new QIcon(join(__dirname, './assets/icons/close.png')));
