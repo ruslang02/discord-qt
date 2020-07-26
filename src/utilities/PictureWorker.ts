@@ -32,7 +32,7 @@ class PictureWorker {
 
   loadImage(url: string, options?: Options): Promise<Buffer | null> {
     const { callbacks, defaultOptions, cache, worker } = this;
-    if (url === null) return Promise.resolve(null);
+    if (!url || (url || '').toString().trim() === '') return Promise.resolve(null);
 
     options = { ...defaultOptions, roundify: app.config.roundifyAvatars, ...(options || {}) };
 

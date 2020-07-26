@@ -21,8 +21,10 @@ export class UserPanel extends QWidget {
   }
 
   bindEvents(client: Client) {
+    this.nameLabel.setText('Connecting...');
+    this.discLabel.setText('#0000');
     client.on('ready', this.updateData.bind(this));
-    client.on('userUpdate', this.updateData.bind(this));
+    // client.on('userUpdate', this.updateData.bind(this));
   }
 
   private initComponent() {

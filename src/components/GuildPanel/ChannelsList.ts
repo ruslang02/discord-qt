@@ -62,7 +62,7 @@ export class ChannelsList extends QScrollArea {
     const channels = (guild.channels.cache
       .filter(c => ['text'/*, 'category'*/].includes(c.type))
       .filter(c => (c.permissionsFor(client.user as User) as Permissions).has('VIEW_CHANNEL'))
-      .sort((a, b) => a.position - b.position)
+      .sort((a, b) => a.rawPosition - b.rawPosition)
       .array() as (TextChannel/* | CategoryChannel*/)[])
     /* if(channels.every(c => this.channels.has(c))) {
       channels.forEach((channel, i) => {
