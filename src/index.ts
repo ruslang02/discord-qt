@@ -5,10 +5,10 @@ import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
 import envPaths from 'env-paths';
-import { writeFile, mkdir, readFile, readdir } from 'fs/promises';
 import { Config } from "./structures/Config";
 import { Events } from "./structures/Events";
 
+const { writeFile, mkdir, readFile, readdir } = fs.promises;
 const FONTS_PATH = path.join(__dirname, './assets/fonts');
 const paths = envPaths('discord', {suffix: 'qt'})
 const CONFIG_PATH = path.join(paths.config, 'config.json');

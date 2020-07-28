@@ -1,8 +1,8 @@
 import { IConfig } from './IConfig';
-import { mkdir, readFile, writeFile } from 'fs/promises';
 import { dirname, join } from 'path';
-import { existsSync } from 'fs';
+import fs, { existsSync } from 'fs';
 
+const { mkdir, readFile, writeFile } = fs.promises;
 export class Config extends IConfig {
   constructor(
     private file: string,
