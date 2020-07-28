@@ -48,7 +48,7 @@ export class MembersList extends QScrollArea {
     for (const member of members) {
       if (token.cancelled) return;
       const btn = new UserButton(this.root);
-      btn.loadUser(member, token);
+      btn.loadUser(member);
       btn.setMinimumSize(224, 42);
       btn.setMaximumSize(224, 42);
       btn.addEventListener('clicked', async () => {

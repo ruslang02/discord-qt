@@ -1,4 +1,4 @@
-import { QWidget, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, AlignmentFlag, QCursor, CursorShape, QBoxLayout, Direction, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { QWidget, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, AlignmentFlag, QCursor, CursorShape, QBoxLayout, Direction, Shape, WidgetEventTypes, QPoint } from "@nodegui/nodegui";
 import path from "path";
 import './GuildsList.scss';
 import { Guild, Client } from "discord.js";
@@ -6,6 +6,7 @@ import { app } from "../..";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
+import { GuildButton } from './GuildButton';
 
 export class GuildsList extends QScrollArea {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -13,8 +14,8 @@ export class GuildsList extends QScrollArea {
   private mpBtn = new QPushButton();
   private hr = new QLabel();
   private mainIcon = new QIcon(path.resolve(__dirname, "./assets/icons/home.png"));
-  private guilds = new WeakMap<Guild, QLabel>();
-  private active?: QPushButton | QLabel;
+  private guilds = new Map<Guild, GuildButton>();
+  private active?: QPushButton | GuildButton;
 
   constructor() {
     super();
@@ -33,7 +34,10 @@ export class GuildsList extends QScrollArea {
         this.layout.removeWidget(entry);
       });
       client.on('guildCreate', (guild: Guild) => {
-        this.loadGuild(guild, 0);
+        const btn = new GuildButton(guild, this.container); 
+        this.guilds.set(guild, btn);
+        this.layout.insertWidget(2, btn);
+        btn.loadAvatar();
       });
     });
 
@@ -73,7 +77,8 @@ export class GuildsList extends QScrollArea {
   }
   private initContainer() {
     this.layout = new QBoxLayout(Direction.TopToBottom);
-    this.container = new QWidget();
+    this.container = new QWidget(this);
+    this.container.addEventListener(WidgetEventTypes.Wheel, this.loadAvatars.bind(this));
     this.takeWidget();
     this.container.setLayout(this.layout);
     this.container.setObjectName(this.constructor.name);
@@ -84,37 +89,31 @@ export class GuildsList extends QScrollArea {
     this.container.layout?.addWidget(this.hr);
     this.layout.addStretch(1);
   }
-  private loadGuild(guild: Guild, i: number) {
-    pictureWorker.loadImage(guild.iconURL({size: 64, format: 'png'}) || '')
-      .then(imageBuffer => {
-        //console.log(guild.name);
-        if (imageBuffer) {
-          const guildImage = new QPixmap();
-          guildImage.loadFromData(imageBuffer, 'PNG');
-          guildElem.setPixmap(guildImage.scaled(48, 48, 1, 1));
-        }
-      });
-    const guildElem = new QLabel(this.container);
-    guildElem.setObjectName("PageButton");
-    guildElem.setFixedSize(48, 48 + 10);
-    guildElem.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    guildElem.setProperty('toolTip', guild.name);
-    guildElem.setText(guild.nameAcronym);
-    guildElem.setAlignment(AlignmentFlag.AlignCenter);
-    guildElem.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      app.emit(Events.SWITCH_VIEW, 'guild', { guild });
-    });
-    this.guilds.set(guild, guildElem);
-    this.layout.insertWidget(i + 2, guildElem);
-  }
   async loadGuilds() {
     const { client } = app;
+
+    this.guilds.clear();
     this.initContainer();
 
     const guilds = client.guilds.cache
       .sort((a, b) => (a.position || 0) - (b.position || 0))
       .array();
     if (app.config.fastLaunch) guilds.length = 5;
-    guilds.forEach(this.loadGuild.bind(this));
+    guilds.forEach((guild, i) => {
+      const btn = new GuildButton(guild, this.container); 
+      this.guilds.set(guild, btn);
+      this.layout.insertWidget(i + 2, btn);
+    });
+    this.loadAvatars();
+  }
+  private p0 = new QPoint(0, 0);
+  async loadAvatars() {
+    const y = -this.container.mapToParent(this.p0).y();
+    const skip = Math.ceil(y / 60);
+    const height = this.size().height();
+    const amount = Math.ceil(height / 60);
+    console.log({y, skip, height, amount});
+    const buttons = [...this.guilds.values()];
+    for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
   }
 }

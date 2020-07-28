@@ -7,11 +7,12 @@ import { CancelToken } from '../../utilities/CancelToken';
 import { app } from '../..';
 
 export class UserButton extends DChannelButton {
-  private avatar = new QLabel();
-  private infoContainer = new QWidget();
-  private userNameLabel = new QLabel();
-  private statusLabel = new QLabel();
+  private avatar = new QLabel(this);
+  private infoContainer = new QWidget(this);
+  private userNameLabel = new QLabel(this);
+  private statusLabel = new QLabel(this);
   private infoControls = new QBoxLayout(Direction.TopToBottom);
+  private user?: User;
 
   constructor(parent: any) {
     super(parent);
@@ -24,13 +25,14 @@ export class UserButton extends DChannelButton {
     const { avatar, infoContainer, userNameLabel, statusLabel, layout, infoControls } = this;
 
     if (!app.config.enableAvatars) avatar.hide();
-    avatar.setFixedSize(32, 32);      
+    avatar.setFixedSize(32, 32);
     avatar.setObjectName('Avatar');
     infoControls.setSpacing(0);
     infoControls.setContentsMargins(0, 0, 0, 0);
     infoContainer.setLayout(infoControls);
     userNameLabel.setObjectName('UserNameLabel');
-    userNameLabel.setMinimumSize(0, 40);
+    userNameLabel.setMinimumSize(24, 0);
+    userNameLabel.setFlexNodeSizeControlled(false);
     statusLabel.setObjectName('StatusLabel');
     const labels = [userNameLabel, statusLabel];
     labels.forEach(w => infoControls.addWidget(w));
@@ -43,26 +45,27 @@ export class UserButton extends DChannelButton {
     this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setHovered(false));
     [avatar, infoContainer].forEach(w => this.layout?.addWidget(w));
   }
+  private hasPixmap = false;
+  async loadAvatar() {
+    if (!app.config.enableAvatars || !this.user || this.hasPixmap) return;
+    this.hasPixmap = true;
+    pictureWorker.loadImage(
+      this.user.avatarURL({ format: "png", size: 32 }) || this.user.defaultAvatarURL, { size: 32 })
+      .then(async (buffer) => {
+        if (buffer === null) return;
+        const avatarPixmap = new QPixmap();
+        avatarPixmap.loadFromData(buffer, 'PNG');
+        this.avatar.setPixmap(avatarPixmap.scaled(32, 32, 1, 1));
+      });
+  }
 
-  async loadUser(someone: User | GuildMember, token?: CancelToken) {
-    const { userNameLabel, statusLabel } = this;
-    let user = someone instanceof GuildMember ? someone.user : someone;
-    let member = someone instanceof GuildMember ? someone : null;
-    if (token?.cancelled) return;
-    if (app.config.enableAvatars)
-      pictureWorker.loadImage(
-        user.avatarURL({format: "png", size: 32}) || user.defaultAvatarURL, { size: 32 })
-        .then(async (buffer) => {
-          if (buffer === null || token?.cancelled)
-            return;
-          const avatarPixmap = new QPixmap();
-          avatarPixmap.loadFromData(buffer, 'PNG');
-          this.avatar.setPixmap(avatarPixmap/*.scaled(32, 32, 1, 1)*/);
-        });
+  async loadUser(someone: User | GuildMember) {
+    const user = someone instanceof GuildMember ? someone.user : someone;
+    const member = someone instanceof GuildMember ? someone : null;
 
-    userNameLabel.setText(member?.nickname ?? user.username);
-    userNameLabel.setMinimumSize(24, 0);
-    userNameLabel.setFlexNodeSizeControlled(false);
-    statusLabel.setText(user.presence.status);
+    this.userNameLabel.setText(member?.nickname ?? user.username);
+    this.statusLabel.setText(user.presence.status);
+
+    this.user = user;
   }
 }
