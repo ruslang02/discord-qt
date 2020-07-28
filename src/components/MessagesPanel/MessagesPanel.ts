@@ -1,4 +1,4 @@
-import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape } from "@nodegui/nodegui";
+import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape, WidgetEventTypes, QPoint } from "@nodegui/nodegui";
 import { app, MAX_QSIZE } from "../..";
 import { DMChannel, Message, Channel, Client, Snowflake, TextChannel, Guild } from "discord.js";
 import { MessageItem } from "./MessageItem";
@@ -38,7 +38,7 @@ export class MessagesPanel extends QScrollArea {
     app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('message', async (message: Message) => {
         const cache = this.cache.get(message.channel)
-        if(cache !== undefined) {
+        if (cache !== undefined) {
           cache.shift();
           cache.push(message);
           this.cache.set(message.channel, cache);
@@ -60,9 +60,9 @@ export class MessagesPanel extends QScrollArea {
     this.root.setObjectName('MessagesContainer');
     this.rootControls = new QBoxLayout(Direction.BottomToTop);
     this.rootControls.setContentsMargins(0, 25, 0, 25);
-    this.rootControls.setSpacing(17);
     this.rootControls.addStretch(1);
     this.root.setLayout(this.rootControls);
+    this.root.addEventListener(WidgetEventTypes.Wheel, this.handleWheel.bind(this))
     this.setWidget(this.root);
   }
 
@@ -70,6 +70,18 @@ export class MessagesPanel extends QScrollArea {
     this.ensureVisible(0, MAX_QSIZE);
     this.lower();
     this.root.lower();
+  }
+
+  private p0 = new QPoint(0, 0);
+  private handleWheel() {
+    const y = -this.root.mapToParent(this.p0).y();
+    const height = this.size().height();
+    let i = 0;
+    for (const item of (this.rootControls.nodeChildren as Set<MessageItem>)) {
+      if (i > y && i < y + height) item.renderAttachments();
+      i += item.size().height();
+      if (i > y + height) return;
+    }
   }
 
   private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
@@ -88,13 +100,13 @@ export class MessagesPanel extends QScrollArea {
     const promises: Promise<void>[] = [];
     const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
     for (const message of messages) {
-      if(token.cancelled) return clearInterval(scrollTimer);
+      if (token.cancelled) return clearInterval(scrollTimer);
       const widget = new MessageItem(this.root);
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
       promises.push(widget.loadMessage(message, token));
     }
 
-    if(token.cancelled) return clearInterval(scrollTimer);
+    if (token.cancelled) return clearInterval(scrollTimer);
     await Promise.all(promises);
     setTimeout(() => clearInterval(scrollTimer), 100);
   }

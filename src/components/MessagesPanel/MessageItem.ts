@@ -8,24 +8,24 @@ import { app } from '../..';
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 
+const MD = markdownIt({
+  html: false,
+  linkify: true,
+  breaks: true
+}).disable(['hr', 'blockquote', 'lheading']).enable('link');
+
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
-  private avatar = new QLabel();
-  private userNameLabel = new QLabel();
-  private dateLabel = new QLabel();
-  private contentLabel = new QLabel();
+  private avatar = new QLabel(this);
+  private userNameLabel = new QLabel(this);
+  private dateLabel = new QLabel(this);
+  private contentLabel = new QLabel(this);
 
-  private msgContainer = new QWidget();
+  private msgContainer = new QWidget(this);
   private msgLayout = new QBoxLayout(Direction.TopToBottom);
 
-  private infoContainer = new QWidget();
+  private infoContainer = new QWidget(this);
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
-
-  private markdownProcessor = markdownIt({
-    html: false,
-    linkify: true,
-    breaks: true
-  }).disable(['hr', 'blockquote', 'lheading']).enable('link');
 
   constructor(parent: any) {
     super(parent);
@@ -81,8 +81,8 @@ export class MessageItem extends QWidget {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
-      const buffer = await pictureWorker.loadImage(url, {roundify: false, format, size: 32});
-      if(!buffer) continue;
+      const buffer = await pictureWorker.loadImage(url, { roundify: false, format, size: 32 });
+      if (!buffer) continue;
 
       content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
       contentLabel.addEventListener('linkHovered', (link: string) => {
@@ -91,77 +91,85 @@ export class MessageItem extends QWidget {
     }
     return content;
   }
-
+  private attachs = new Map<QLabel, string>();
   private async processAttachments(attachments: Collection<string, MessageAttachment>) {
     for (const attach of attachments.values()) {
-      const qimage = new QLabel();
-      const pixmap = new QPixmap();
-
       let url = attach.proxyURL;
       let width = attach.width;
       let height = attach.height;
-      if(width === null || height === null) continue;
+      if (width === null || height === null) continue;
       const ratio = width / height;
 
-      if(width > 400) {
+      if (width > 400) {
         width = 400;
         height = width / ratio;
       }
-      if(height > 300) {
+      if (height > 300) {
         height = 300;
         width = height * ratio;
       }
       width = Math.ceil(width);
       height = Math.ceil(height);
       url += `?width=${width}&height=${height}`;
-      const image = await pictureWorker.loadImage(url);
-      if(!image) return;
-      pixmap.loadFromData(image);
+
+      const qimage = new QLabel(this);
+      qimage.setFixedSize(width, height);
+      qimage.setInlineStyle('background-color: #2f3136');
       qimage.setCursor(CursorShape.PointingHandCursor);
       qimage.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
         open(attach.url);
       })
-      qimage.setPixmap(pixmap);
+      this.attachs.set(qimage, url);
       this.msgLayout.addWidget(qimage);
     }
   }
 
+  async renderAttachments() {
+    this.attachs.forEach(async (url, label) => {
+      this.attachs.delete(label);
+      const pixmap = new QPixmap();
+      const image = await pictureWorker.loadImage(url);
+      if (!image) return;
+      pixmap.loadFromData(image);
+      label.setPixmap(pixmap);
+    })
+  }
+
   private async processMarkdown(content: string) {
     if (!app.config.processMarkDown) return content.replace(/\n/g, '<br/>');
-    const { markdownProcessor } = this;
     content = content
       .replace(/<\/?p>/g, '')
       .split('\n')
       .map(line => line.startsWith("> ") ? line.replace("> ", "<span>▎</span>") : line)
       .join('\n')
       .trim();
-    return markdownProcessor.render(content);
+    return MD.render(content);
   }
 
   async loadMessage(message: Message, token?: CancelToken) {
     const { avatar, userNameLabel, dateLabel, contentLabel } = this;
     userNameLabel.setText(message.member?.nickname || message.author.username);
-    if(token?.cancelled) return;
+    if (token?.cancelled) return;
     dateLabel.setText(message.createdAt.toLocaleString());
     contentLabel.setCursor(CursorShape.IBeamCursor);
     if (message.content.trim() == "")
       contentLabel.hide();
     else {
       let content = message.content;
-      if(token?.cancelled) return;
+      if (token?.cancelled) return;
       content = await this.processMarkdown(content);
-      if(token?.cancelled) return;
+      if (token?.cancelled) return;
       content = await this.processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
       contentLabel.setText('<style>* {vertical-align: middle;}</style>' + content);
     }
-    if(token?.cancelled) return;
+    if (token?.cancelled) return;
     await this.processAttachments(message.attachments);
-    if(token?.cancelled) return;
+    if (token?.cancelled) return;
     if (!app.config.enableAvatars) return;
-    const image = await pictureWorker.loadImage(message.author.avatarURL({format: 'png', size: 64}) || message.author.defaultAvatarURL, {size: 64});
+    const image = await pictureWorker.loadImage(message.author.avatarURL({ format: 'png', size: 64 }) || message.author.defaultAvatarURL, { size: 64 });
     if (image) {
       const pixmap = new QPixmap();
-      if(token?.cancelled) return;
+      if (token?.cancelled) return;
       pixmap.loadFromData(image);
       avatar.setPixmap(pixmap.scaled(40, 40, 1, 1));
     }
