@@ -13,11 +13,11 @@
   "scripts": {
     "build": "webpack -p",
     "start": "qode ./dist/index.js",
-    "start:opti": "webpack -p && qode ./dist/index.js",
     "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
     "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug",
-    "postinstall": "node ./downloadNodeGui.js; webpack -p"
+    "postinstall": "node ./downloadNodeGui.js; webpack -p",
+    "package": "nodegui-packer --pack ./dist"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
