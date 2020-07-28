@@ -1,12 +1,12 @@
-import { QPushButton, QBoxLayout, Direction, QLabel, AlignmentFlag, QIcon, CursorShape, QSize, QWidget } from '@nodegui/nodegui';
+import { QBoxLayout, Direction, QLabel, AlignmentFlag, CursorShape, QSize, QWidget, QPixmap } from '@nodegui/nodegui';
 import { join } from 'path';
 
 export class SettingsCheckBox extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);
   label = new QLabel(this);
-  checkbox = new QPushButton(this);
-  unch = new QIcon(join(__dirname, './assets/icons/checkbox-blank-outline.png'));
-  ch = new QIcon(join(__dirname, './assets/icons/checkbox-marked.png'));
+  checkbox = new QLabel(this);
+  unch = new QPixmap(join(__dirname, './assets/icons/checkbox-blank-outline.png'));
+  ch = new QPixmap(join(__dirname, './assets/icons/checkbox-marked.png'));
 
   constructor(parent: any) {
     super(parent);
@@ -24,7 +24,7 @@ export class SettingsCheckBox extends QWidget {
   isChecked() { return this._checked; }
 
   setChecked(checked: boolean) {
-    this.checkbox.setIcon(checked ? this.ch : this.unch);
+    this.checkbox.setPixmap(checked ? this.ch : this.unch);
     this._checked = checked
   }
 
@@ -36,7 +36,6 @@ export class SettingsCheckBox extends QWidget {
     layout.setContentsMargins(2, 10, 2, 10);
     label.setAlignment(AlignmentFlag.AlignVCenter);
     checkbox.setObjectName('CheckBox');
-    checkbox.setIconSize(new QSize(24, 24));
     layout.addWidget(label, 1);
     layout.addWidget(checkbox);
   }
