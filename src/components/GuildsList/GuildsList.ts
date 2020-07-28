@@ -61,6 +61,10 @@ export class GuildsList extends QScrollArea {
         this.active = active;
         this.active?.repolish();
       }
+    });
+
+    app.on(Events.READY, () => {
+      app.window.addEventListener(WidgetEventTypes.Resize, this.loadAvatars.bind(this));
     })
   }
 

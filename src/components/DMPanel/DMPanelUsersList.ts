@@ -1,10 +1,9 @@
-import { QWidget, FlexLayout, QScrollArea, QLabel, QFont, QBoxLayout, Direction, QPushButton, WidgetEventTypes, Shape, QWheelEvent, QPoint } from "@nodegui/nodegui";
-import { app, MAX_QSIZE } from "../..";
-import { Client, DMChannel, Collection, SnowflakeUtil } from "discord.js";
+import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint } from "@nodegui/nodegui";
+import { app } from "../..";
+import { Client, DMChannel, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
-import { NativeRawPointer, NativeElement } from '@nodegui/nodegui/dist/lib/core/Component';
 
 export class DMPanelUsersList extends QScrollArea {
   root = new QWidget();
@@ -28,10 +27,10 @@ export class DMPanelUsersList extends QScrollArea {
       button?.setActivated(true);
       this.active = button;
     });
-  }
 
-  private handleWheel() {
-    this.loadAvatars();
+    app.on(Events.READY, () => {
+      app.window.addEventListener(WidgetEventTypes.Resize, this.loadAvatars.bind(this));
+    });
   }
 
   private initRoot() {
@@ -57,7 +56,7 @@ export class DMPanelUsersList extends QScrollArea {
     const skip = Math.ceil(y / 42);
     const height = this.size().height();
     const amount = Math.ceil(height / 42);
-    console.log({y, skip, height, amount});
+    console.log({ y, skip, height, amount });
     const buttons = [...this.channels.values()];
     for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
   }
@@ -66,26 +65,25 @@ export class DMPanelUsersList extends QScrollArea {
     this.channels.clear();
     this.initRoot();
 
-    const channels = (app.client.channels.cache
-      .filter(c => c.type === 'dm')
-      .array() as DMChannel[])
-      .filter(a => a.lastMessageID !== null)
+    const promises: Promise<void>[] = [];
+
+    (app.client.channels.cache.array() as DMChannel[])
+      .filter(c => c.type === 'dm' && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
         return snB.date.getTime() - snA.date.getTime();
+      })
+      .forEach((dm, i) => {
+        const btn = new UserButton(this.root);
+        promises.push(btn.loadUser(dm.recipient));
+        btn.addEventListener('clicked', () => {
+          app.emit(Events.SWITCH_VIEW, 'dm', { dm });
+        });
+        this.channels.set(dm, btn);
+        this.widgets.insertWidget(i + 1, btn)
       });
-    if (app.config.fastLaunch)
-      channels.length = 5;
-    channels.map(dm => {
-      const btn = new UserButton(this.root);
-      dm.fetch().then(() => btn.loadUser(dm.recipient));
-      btn.addEventListener('clicked', () => {
-        app.emit(Events.SWITCH_VIEW, 'dm', { dm });
-      });
-      this.channels.set(dm, btn);
-      return btn;
-    }).forEach((w, i) => this.widgets.insertWidget(i + 1, w));
-    setTimeout(() => this.loadAvatars(), 100);
+    await Promise.all(promises);
+    this.loadAvatars();
   }
 }
