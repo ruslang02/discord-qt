@@ -1,10 +1,10 @@
-# DiscordQt
-A Discord desktop client powered by Node.JS and [NodeGUI/Qt](https://github.com/nodegui).
+# DiscordQt ![npm](https://img.shields.io/npm/v/discord-qt) ![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg) ![David](https://img.shields.io/david/ruslang02/discord-qt)
+A Discord desktop client powered by Node.JS and [NodeGui](https://github.com/nodegui).
 It offers a significantly less resource-consuming experience comparing to the official Electron-based desktop client thanks to native UI rendering instead of a Chromium rendering engine.
 
 ![Screenshot](screenshot.png)
 
-Node.JS v12 or newer is required.
+Node.JS v12+ is required to build.
 
 ## Installing from npm
 Windows (macOS should work as well, however not tested):
@@ -13,8 +13,8 @@ npm i -g discord-qt
 ```
 
 Linux:
-```bash
-sudo npm i -g discord-qt --unsafe-perm=true --allow-root
+```
+# npm i -g discord-qt --unsafe-perm --allow-root
 ```
 
 **Note** Due to some minor difficulties version 0.2.0 is versioned as 0.1.99 on the NPM registry. Otherwise, this is the same 0.2.0 release.

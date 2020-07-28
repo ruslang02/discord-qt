@@ -33,7 +33,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v2
         with:
-          name: DiscordQt-master-${{ matrix.os }}-x64
+          name: ${{ runner.os }} build
           path: ${{ github.workspace }}/dist
       - name: Pack binaries
         run: npm run package
@@ -41,11 +41,20 @@ jobs:
         uses: actions/upload-artifact@v2
         if: ${{ runner.os == 'Linux' }}
         with:
-          name: DiscordQt-master-${{ matrix.os }}-x64.AppImage
+          name: Linux AppImage
           path: ${{ github.workspace }}/deploy/linux/build/Discord-Qt/DiscordQt-x86_64.AppImage
+      - name: Pack Debian package
+        run: npm run package:deb
+        if: ${{ runner.os == 'Linux' }}
+      - name: Upload Debian package
+        uses: actions/upload-artifact@v2
+        if: ${{ runner.os == 'Linux' }}
+        with:
+          name: Linux Debian package
+          path: ${{ github.workspace }}/discord-qt.deb
       - name: Upload Windows build
         uses: actions/upload-artifact@v2
         if: ${{ runner.os == 'Windows' }}
         with:
-          name: DiscordQt-master-${{ matrix.os }}-x64.AppImage
+          name: Windows package
           path: ${{ github.workspace }}/deploy/win32/build/Discord-Qt/
