@@ -28,9 +28,7 @@ jobs:
       uses: actions/setup-node@v2.1.1
       with:
         node-version: ${{ matrix.node-version }}
-    - name: Fast install dependencies
-      run: npm ci
-    - name: Run webpack production build
-      run: npm run build
+    - name: Fast install dependencies and build
+      run: SKIP_BUILD=1 npm ci
     - name: Check if app runs
       run: npm start

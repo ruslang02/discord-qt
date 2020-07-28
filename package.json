@@ -17,12 +17,12 @@
     "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect ./dist/index.js",
     "start:watch": "nodemon -e js,ts,css,scss --ignore dist/ --ignore node_modules/ --exec npm run debug",
-    "postinstall": "webpack -p"
+    "postinstall": "node ./downloadNodeGui.js; webpack -p"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
     "@types/markdown-it": "^10.0.1",
-    "@types/node": "^14.0.23",
+    "@types/node": "^14.0.26",
     "@types/pngjs": "^3.4.2",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.3",
@@ -31,6 +31,7 @@
     "env-paths": "^2.2.0",
     "extract-loader": "^5.1.0",
     "file-loader": "^5.1.0",
+    "follow-redirects": "^1.12.1",
     "markdown-it": "^11.0.0",
     "mini-css-extract-plugin": "^0.9.0",
     "native-addon-loader": "^2.0.1",
@@ -39,10 +40,10 @@
     "pngjs": "^5.0.0",
     "sass": "^1.26.10",
     "sass-loader": "^8.0.2",
-    "terser-webpack-plugin": "^3.0.7",
+    "terser-webpack-plugin": "^3.0.8",
     "ts-loader": "^6.2.1",
     "typescript": "^3.9.7",
-    "webpack": "^4.42.0",
+    "webpack": "^4.44.0",
     "webpack-cli": "^3.3.12",
     "whatwg-fetch": "^3.2.0"
   },

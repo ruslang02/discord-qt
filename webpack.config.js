@@ -11,7 +11,6 @@ try {
 } catch(e) {
   __BUILDNUM__ = 0;
 }
-console.log(__dirname, process.cwd());
 module.exports = {
   mode: process.NODE_ENV || "development",
   entry: {
