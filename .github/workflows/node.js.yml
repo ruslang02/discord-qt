@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, ubuntu-latest]
+        os: [windows-latest, ubuntu-latest, macos-latest]
         node-version: [14]
     steps:
       - uses: actions/checkout@v2.3.1
@@ -43,6 +43,18 @@ jobs:
         with:
           name: Linux AppImage
           path: ${{ github.workspace }}/deploy/linux/build/Discord-Qt/DiscordQt-x86_64.AppImage
+      - name: Upload Windows build
+        uses: actions/upload-artifact@v2
+        if: ${{ runner.os == 'Windows' }}
+        with:
+          name: Windows package
+          path: ${{ github.workspace }}/deploy/win32/build/Discord-Qt/
+      - name: Upload Mac application
+        uses: actions/upload-artifact@v2
+        if: ${{ runner.os == 'macOS' }}
+        with:
+          name: macOS application
+          path: ${{ github.workspace }}/deploy/darwin/build/Discord-Qt.app
       - name: Pack Debian package
         run: npm run package:deb
         if: ${{ runner.os == 'Linux' }}
@@ -52,9 +64,3 @@ jobs:
         with:
           name: Linux Debian package
           path: ${{ github.workspace }}/discord-qt.deb
-      - name: Upload Windows build
-        uses: actions/upload-artifact@v2
-        if: ${{ runner.os == 'Windows' }}
-        with:
-          name: Windows package
-          path: ${{ github.workspace }}/deploy/win32/build/Discord-Qt/
