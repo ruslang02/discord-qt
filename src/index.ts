@@ -3,7 +3,7 @@ import { Client } from "discord.js";
 import path, { join } from 'path';
 import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
-import {QFontDatabase} from '@nodegui/nodegui';
+import {QFontDatabase, WidgetAttribute, WidgetEventTypes} from '@nodegui/nodegui';
 import envPaths from 'env-paths';
 import { Config } from "./structures/Config";
 import { Events } from "./structures/Events";
@@ -52,3 +52,7 @@ class Application extends EventEmitter {
 export const app = new Application();
 export const MAX_QSIZE = 16777215;
 app.start();
+
+process.on('beforeExit', () => {
+  if(app.client) app.client.destroy();
+});
