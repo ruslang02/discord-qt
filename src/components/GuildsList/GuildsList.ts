@@ -42,7 +42,7 @@ export class GuildsList extends QScrollArea {
     });
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      this.layout.update();
+      setTimeout(() => this.layout.update());
       if (!['dm', 'guild'].includes(view)) return;
       this.mpBtn.setProperty('active', false)
       if (view === 'dm') {
@@ -116,7 +116,6 @@ export class GuildsList extends QScrollArea {
     const skip = Math.ceil(y / 60);
     const height = this.size().height();
     const amount = Math.ceil(height / 60);
-    console.log({y, skip, height, amount});
     const buttons = [...this.guilds.values()];
     for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
   }

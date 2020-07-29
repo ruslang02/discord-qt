@@ -21,6 +21,7 @@ export class DMPanelUsersList extends QScrollArea {
     });
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+      setTimeout(() => this.widgets.update());
       if (view !== 'dm' || !options || !options.dm) return;
       const button = this.channels.get(options.dm);
       this.active?.setActivated(false);
@@ -53,13 +54,20 @@ export class DMPanelUsersList extends QScrollArea {
 
   private p0 = new QPoint(0, 0);
   async loadAvatars() {
+    const y = -this.root.mapToParent(this.p0).y() - 10;
+    const skip = Math.ceil(y / 42);
+    const height = this.size().height();
+    const amount = Math.ceil(height / 42);
+    const buttons = [...this.channels.values()];
+    for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
+    /* This is more accurate but requires a working layout.
     const y = -this.root.mapToParent(this.p0).y();
     const height = this.size().height();
     for (const btn of [...this.channels.values()]) {
       const iy = btn.mapToParent(this.p0).y();
       if (iy >= y - 100 && iy <= y + height + 100) btn.loadAvatar();
       if (iy > y + height) return;
-    }
+    }*/
   }
 
   async loadDMs() {
@@ -82,6 +90,7 @@ export class DMPanelUsersList extends QScrollArea {
           return btn.loadUser(dm.recipient)
         });
     await Promise.all(promises);
+    this.widgets.update();
     setTimeout(() => this.loadAvatars(), 1000);
   }
 }
