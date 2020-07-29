@@ -77,12 +77,15 @@ export class MessagesPanel extends QScrollArea {
     }
   }
   private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
+    if(this.channel === channel) return;
     this.initRoot();
     this.channel = channel;
     if (token.cancelled) return;
     if (channel.messages.cache.size < 50) await channel.messages.fetch({ limit: 50 });
+    if (token.cancelled) return;
     const messages = channel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    if (token.cancelled) return;
     messages.length = Math.min(messages.length, 50);
     const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
     const promises = messages.map(message => {

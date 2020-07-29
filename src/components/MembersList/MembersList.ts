@@ -11,6 +11,7 @@ export class MembersList extends QScrollArea {
   layout = new QBoxLayout(Direction.TopToBottom);
   root = new QWidget();
   cancelToken?: CancelToken;
+  private channel?: TextChannel;
 
   constructor() {
     super();
@@ -20,11 +21,14 @@ export class MembersList extends QScrollArea {
     this.initComponent();
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+      if (view === 'dm') return this.hide();
       if (view !== 'guild' || !options?.channel) return;
       if (this.cancelToken) this.cancelToken.cancel();
       const cancel = new CancelToken();
-      this.loadList(options.channel, cancel);
+      if(options.channel !== this.channel)
+        this.loadList(options.channel, cancel);
       this.cancelToken = cancel;
+      this.show()
     })
   }
 
@@ -35,7 +39,7 @@ export class MembersList extends QScrollArea {
 
   private async loadList(channel: TextChannel, token: CancelToken) {
     if (token.cancelled) return;
-    this.takeWidget();
+    this.channel = channel;
     this.layout = new QBoxLayout(Direction.TopToBottom);
     this.root = new QWidget();
     this.root.setObjectName('MembersList');
@@ -49,11 +53,10 @@ export class MembersList extends QScrollArea {
       if (token.cancelled) return;
       const btn = new UserButton(this.root);
       btn.loadUser(member);
-      btn.setMinimumSize(224, 42);
-      btn.setMaximumSize(224, 42);
       btn.addEventListener('clicked', async () => {
         app.emit(Events.SWITCH_VIEW, 'dm', { dm: await member.createDM() });
       });
+      btn.loadAvatar();
       this.layout.addWidget(btn);
     }
     this.layout.addStretch(1);
