@@ -39,7 +39,8 @@ export class DMPanelUsersList extends QScrollArea {
     this.widgets = new QBoxLayout(Direction.TopToBottom);
     this.root.setLayout(this.widgets);
     this.root.setObjectName('UsersList');
-    this.root.addEventListener(WidgetEventTypes.Wheel, this.loadAvatars.bind(this))
+    this.root.addEventListener(WidgetEventTypes.Scroll, this.loadAvatars.bind(this));
+    this.root.addEventListener(WidgetEventTypes.Wheel, this.loadAvatars.bind(this));
     const dmLabel = new QLabel(this.root);
     dmLabel.setText('Direct Messages');
     dmLabel.setObjectName('DMLabel');
@@ -53,37 +54,34 @@ export class DMPanelUsersList extends QScrollArea {
   private p0 = new QPoint(0, 0);
   async loadAvatars() {
     const y = -this.root.mapToParent(this.p0).y();
-    const skip = Math.ceil(y / 42);
     const height = this.size().height();
-    const amount = Math.ceil(height / 42);
-    console.log({ y, skip, height, amount });
-    const buttons = [...this.channels.values()];
-    for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
+    for (const btn of [...this.channels.values()]) {
+      const iy = btn.mapToParent(this.p0).y();
+      if (iy >= y - 100 && iy <= y + height + 100) btn.loadAvatar();
+      if (iy > y + height) return;
+    }
   }
 
   async loadDMs() {
     this.channels.clear();
     this.initRoot();
 
-    const promises: Promise<void>[] = [];
-
-    (app.client.channels.cache.array() as DMChannel[])
-      .filter(c => c.type === 'dm' && c.lastMessageID !== null)
-      .sort((a, b) => {
-        const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
-        const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
-        return snB.date.getTime() - snA.date.getTime();
-      })
-      .forEach((dm, i) => {
-        const btn = new UserButton(this.root);
-        promises.push(btn.loadUser(dm.recipient));
-        btn.addEventListener('clicked', () => {
-          app.emit(Events.SWITCH_VIEW, 'dm', { dm });
+    const promises: Promise<void>[] =
+      (app.client.channels.cache.array() as DMChannel[])
+        .filter(c => c.type === 'dm' && c.lastMessageID !== null)
+        .sort((a, b) => {
+          const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
+          const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
+          return snB.date.getTime() - snA.date.getTime();
+        })
+        .map((dm, i) => {
+          const btn = new UserButton(this.root);
+          btn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm', { dm }));
+          this.channels.set(dm, btn);
+          this.widgets.insertWidget(i + 1, btn);
+          return btn.loadUser(dm.recipient)
         });
-        this.channels.set(dm, btn);
-        this.widgets.insertWidget(i + 1, btn)
-      });
     await Promise.all(promises);
-    this.loadAvatars();
+    setTimeout(() => this.loadAvatars(), 1000);
   }
 }

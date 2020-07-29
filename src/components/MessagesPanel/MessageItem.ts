@@ -1,5 +1,5 @@
 import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag } from "@nodegui/nodegui";
-import { Message, Collection, MessageAttachment } from "discord.js";
+import { Message, Collection, MessageAttachment, Snowflake } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import open from 'open';
 import markdownIt from 'markdown-it';
@@ -7,7 +7,7 @@ import { CancelToken } from '../../utilities/CancelToken';
 import { app } from '../..';
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
-
+const avatarCache = new Map<Snowflake, QPixmap>();
 const MD = markdownIt({
   html: false,
   linkify: true,
@@ -27,7 +27,9 @@ export class MessageItem extends QWidget {
   private infoContainer = new QWidget(this);
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
 
-  constructor(parent: any) {
+  private message?: Message;
+
+  constructor(parent?: any) {
     super(parent);
 
     this.setObjectName('MessageItem');
@@ -41,6 +43,7 @@ export class MessageItem extends QWidget {
     controls.setSpacing(16);
 
     avatar.setObjectName('Avatar');
+    avatar.setMinimumSize(48, 0);
     avatar.setAlignment(AlignmentFlag.AlignTop);
     if (!app.config.enableAvatars) avatar.hide();
 
@@ -124,7 +127,25 @@ export class MessageItem extends QWidget {
     }
   }
 
-  async renderAttachments() {
+  async renderImages() {
+    const {message, avatar} = this;
+    if (!message) return;
+    (async () => {
+      const cachePixmap = avatarCache.get(message.author.id);
+      if (cachePixmap) return avatar.setPixmap(cachePixmap);
+      const image = await pictureWorker.loadImage(
+        message.author.avatarURL({ format: 'png', size: 64 }) || 
+        message.author.defaultAvatarURL, 
+        { size: 64 }
+      );
+      if (image) {
+        let pixmap = new QPixmap();
+        pixmap.loadFromData(image);
+        pixmap = pixmap.scaled(40, 40, 1, 1);
+        avatar.setPixmap(pixmap);
+        avatarCache.set(message.author.id, pixmap);
+      }
+    })();
     this.attachs.forEach(async (url, label) => {
       this.attachs.delete(label);
       const pixmap = new QPixmap();
@@ -148,6 +169,7 @@ export class MessageItem extends QWidget {
 
   async loadMessage(message: Message, token?: CancelToken) {
     const { avatar, userNameLabel, dateLabel, contentLabel } = this;
+    this.message = message;
     userNameLabel.setText(message.member?.nickname || message.author.username);
     if (token?.cancelled) return;
     dateLabel.setText(message.createdAt.toLocaleString());
@@ -164,14 +186,5 @@ export class MessageItem extends QWidget {
     }
     if (token?.cancelled) return;
     await this.processAttachments(message.attachments);
-    if (token?.cancelled) return;
-    if (!app.config.enableAvatars) return;
-    const image = await pictureWorker.loadImage(message.author.avatarURL({ format: 'png', size: 64 }) || message.author.defaultAvatarURL, { size: 64 });
-    if (image) {
-      const pixmap = new QPixmap();
-      if (token?.cancelled) return;
-      pixmap.loadFromData(image);
-      avatar.setPixmap(pixmap.scaled(40, 40, 1, 1));
-    }
   }
 }

@@ -17,8 +17,9 @@ export class UserButton extends DChannelButton {
   constructor(parent: any) {
     super(parent);
     this.setProperty('type', 'user');
-    this.initComponent();
     this.setFixedSize(224, 42);
+    this.setFlexNodeSizeControlled(false);
+    this.initComponent();
   }
 
   initComponent() {

@@ -1,9 +1,11 @@
+@import '../../Colors.scss';
+
 #MessagesPanel, #MessagesContainer {
-  background-color: #36393f;
+  background-color: $background-primary;
   border: none;
 }
 #MessageItem {
-  background-color: #36393f;
+  background-color: $background-primary;
   &:hover {
     background-color: rgba(4, 4, 5, 0.07);
   }
@@ -14,13 +16,13 @@
   }
   #DateLabel {
     font-size: 12px;
-    color: #72767d;
+    color: $text-muted;
   }
   #Content {
-    color: #dcddde;
+    color: $text-normal;
     font-size: 16px;
     blockquote {
-      background-color: #dcddde;
+      background-color: $text-normal;
     }
   }
   #Avatar {
