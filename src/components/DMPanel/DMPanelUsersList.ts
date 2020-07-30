@@ -16,6 +16,7 @@ export class DMPanelUsersList extends QScrollArea {
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('UsersContainer');
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
+    this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
@@ -41,7 +42,6 @@ export class DMPanelUsersList extends QScrollArea {
     this.widgets = new QBoxLayout(Direction.TopToBottom);
     this.root.setLayout(this.widgets);
     this.root.setObjectName('UsersList');
-    this.root.addEventListener(WidgetEventTypes.Scroll, this.loadAvatars.bind(this));
     this.root.addEventListener(WidgetEventTypes.Wheel, this.loadAvatars.bind(this));
     const dmLabel = new QLabel(this.root);
     dmLabel.setText('Direct Messages');
@@ -54,13 +54,17 @@ export class DMPanelUsersList extends QScrollArea {
   }
 
   private p0 = new QPoint(0, 0);
+  private isLoading = false;
   async loadAvatars() {
+    if (this.isLoading) return;
+    this.isLoading = true;
     const y = -this.root.mapToParent(this.p0).y() - 10;
     const skip = Math.ceil(y / 44);
     const height = this.size().height();
     const amount = Math.ceil(height / 44);
     const buttons = [...this.channels.values()];
     for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
+    this.isLoading = false;
     /* This is more accurate but requires a working layout.
     const y = -this.root.mapToParent(this.p0).y();
     const height = this.size().height();

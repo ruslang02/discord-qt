@@ -22,6 +22,7 @@ export class MessagesPanel extends QScrollArea {
     this.setFrameShape(Shape.NoFrame);
     this.initRoot();
     this.initEvents();
+    this.addEventListener(WidgetEventTypes.Paint, () => this.handleWheel());
   }
 
   private initEvents() {
@@ -32,7 +33,6 @@ export class MessagesPanel extends QScrollArea {
       if (this.cancelToken) this.cancelToken.cancel();
       this.cancelToken = new CancelToken();
       await this.handleChannelOpen(channel, this.cancelToken);
-      this.handleWheel(true);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -57,7 +57,7 @@ export class MessagesPanel extends QScrollArea {
     this.rootControls.setSpacing(10);
     this.rootControls.addStretch(1);
     this.root.setLayout(this.rootControls);
-    this.root.addEventListener(WidgetEventTypes.Wheel, this.handleWheel.bind(this, false));
+    //this.root.addEventListener(WidgetEventTypes.Wheel, this.handleWheel.bind(this, false));
     this.setWidget(this.root);
   }
 
@@ -69,28 +69,27 @@ export class MessagesPanel extends QScrollArea {
 
   private p0 = new QPoint(0, 0);
   private isLoading = false;
-  private handleWheel(onlyLoadImages = false) {
+  private async handleWheel(onlyLoadImages = false) {
+    if (this.isLoading) return;
+    this.isLoading = true;
     const y = -this.root.mapToParent(this.p0).y() - 20;
     const height = this.size().height();
     const children = [...this.rootControls.nodeChildren.values()] as MessageItem[];
-    if (!onlyLoadImages && y <= 50) {
-      if (!this.isLoading) {
-        this.isLoading = true;
-        const oldest = children.pop() as MessageItem;
-        if(oldest.message?.id) {
-          const scrollTo = () => this.ensureVisible(0, oldest.mapToParent(this.p0).y() + height - oldest.size().height());
-          const scrollTimer = setInterval(scrollTo, 1);
-          this.loadMessages(oldest.message.id).then(() => {
-            this.isLoading = false;
-            setTimeout(() => clearInterval(scrollTimer), 200);
-          });
-        }
-      }
-    }
+    if (children.length === 0) return this.isLoading = false;
     for (const item of children) {
       const iy = item.mapToParent(this.p0).y();
       if (iy >= y - 100 && iy <= y + height + 100) item.renderImages();
     }
+    if (!onlyLoadImages && y <= 50) {
+      const oldest = children.pop() as MessageItem;
+      if (oldest.message?.id) {
+        const scrollTo = () => this.ensureVisible(0, oldest.mapToParent(this.p0).y() + height - oldest.size().height());
+        const scrollTimer = setInterval(scrollTo, 1);
+        await this.loadMessages(oldest.message.id);
+        setTimeout(() => clearInterval(scrollTimer), 200);
+      }
+    }
+    this.isLoading = false;
   }
   private async loadMessages(before: Snowflake) {
     const { channel } = this;
@@ -106,26 +105,30 @@ export class MessagesPanel extends QScrollArea {
   }
   private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
     if (this.channel === channel) return;
+    if (this.isLoading) return;
+    this.isLoading = true;
     this.initRoot();
     this.channel = channel;
-    if (token.cancelled) return;
+    if (token.cancelled) return this.isLoading = false;
     if (channel.messages.cache.size < 30) await channel.messages.fetch({ limit: 30 });
-    if (token.cancelled) return;
+    if (token.cancelled) return this.isLoading = false;
     const messages = channel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
-    if (token.cancelled) return;
+    if (token.cancelled) return this.isLoading = false;
     messages.length = Math.min(messages.length, 30);
     const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
     const promises = messages.map(message => {
-      if (token.cancelled) return clearInterval(scrollTimer);
       const widget = new MessageItem();
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
       return widget.loadMessage(message, token);
     });
 
-    if (token.cancelled) return clearInterval(scrollTimer);
     await Promise.all(promises);
-    setTimeout(() => clearInterval(scrollTimer), 300);
+    setTimeout(() => {
+      this.isLoading = false;
+      clearInterval(scrollTimer);
+      this.handleWheel(true);
+    }, 300);
   }
 }
