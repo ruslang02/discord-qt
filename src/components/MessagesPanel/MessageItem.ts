@@ -27,7 +27,7 @@ export class MessageItem extends QWidget {
   private infoContainer = new QWidget(this);
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
 
-  private message?: Message;
+  message?: Message;
 
   constructor(parent?: any) {
     super(parent);
@@ -40,7 +40,7 @@ export class MessageItem extends QWidget {
   private initComponent() {
     const { controls, avatar, userNameLabel, dateLabel, contentLabel, msgContainer, msgLayout, infoContainer, infoLayout } = this;
     controls.setContentsMargins(16, 4, 16, 4);
-    controls.setSpacing(16);
+    controls.setSpacing(10);
 
     avatar.setObjectName('Avatar');
     avatar.setMinimumSize(48, 0);
@@ -126,10 +126,10 @@ export class MessageItem extends QWidget {
       this.msgLayout.addWidget(qimage);
     }
   }
-
+  private alreadyRendered = false;
   async renderImages() {
     const {message, avatar} = this;
-    if (!message) return;
+    if (!message || this.alreadyRendered) return;
     (async () => {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) return avatar.setPixmap(cachePixmap);
@@ -153,7 +153,8 @@ export class MessageItem extends QWidget {
       if (!image) return;
       pixmap.loadFromData(image);
       label.setPixmap(pixmap);
-    })
+    });
+    this.alreadyRendered = true;
   }
 
   private async processMarkdown(content: string) {
