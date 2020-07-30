@@ -2,7 +2,7 @@ import { QWidget, QLabel, QPixmap, QSize } from '@nodegui/nodegui';
 import path from 'path';
 import { app } from '../..';
 import {  DMChannel, Client, Channel, TextChannel } from 'discord.js';
-import './DMTitleBar.scss';
+import './MainTitleBar.scss';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
 import { DIconButton } from '../DIconButton/DIconButton';

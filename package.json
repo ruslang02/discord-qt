@@ -36,7 +36,6 @@
     "markdown-it": "^11.0.0",
     "mini-css-extract-plugin": "^0.9.0",
     "native-addon-loader": "^2.0.1",
-    "node-fetch": "^2.6.0",
     "open": "git+https://github.com/sindresorhus/open.git",
     "pngjs": "^5.0.0",
     "sass": "^1.26.10",
