@@ -1,7 +1,7 @@
 import {  QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
 import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
 import { GuildsList } from '../../components/GuildsList/GuildsList';
-import { MainTitleBar } from '../../components/DMTitleBar/DMTitleBar';
+import { MainTitleBar } from '../../components/MainTitleBar/MainTitleBar';
 import { MainPanel } from '../../components/MainPanel/MainPanel';
 import './MainView.scss';
 
