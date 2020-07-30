@@ -1,6 +1,6 @@
 @import '../../Colors.scss';
-QScrollBar {height:0px;}
 #GuildsList {
+  QScrollBar {height:0px;}
   background: $background-tertiary;
 
   #PageButton {

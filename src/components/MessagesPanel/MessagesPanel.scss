@@ -3,6 +3,23 @@
 #MessagesPanel, #MessagesContainer {
   background-color: $background-primary;
   border: none;
+  QScrollBar {
+    height: 16px;
+    width: 16px;
+    background-color: $background-secondary;
+    border: 4px solid $background-primary;
+    border-radius: 8px;
+    &::handle {
+      background-color: $background-tertiary;
+      border-radius: 4px;
+    }
+    &::add-line {
+      height: 0px;
+    }
+    &::sub-line {
+      height: 0px;
+    }
+  }
 }
 #MessageItem {
   background-color: $background-primary;

@@ -1,4 +1,4 @@
-import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint } from "@nodegui/nodegui";
+import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint, ScrollBarPolicy } from "@nodegui/nodegui";
 import { app } from "../..";
 import { Client, DMChannel, SnowflakeUtil } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
@@ -15,6 +15,7 @@ export class DMPanelUsersList extends QScrollArea {
     super();
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('UsersContainer');
+    this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('ready', this.loadDMs.bind(this))
@@ -55,9 +56,9 @@ export class DMPanelUsersList extends QScrollArea {
   private p0 = new QPoint(0, 0);
   async loadAvatars() {
     const y = -this.root.mapToParent(this.p0).y() - 10;
-    const skip = Math.ceil(y / 42);
+    const skip = Math.ceil(y / 44);
     const height = this.size().height();
-    const amount = Math.ceil(height / 42);
+    const amount = Math.ceil(height / 44);
     const buttons = [...this.channels.values()];
     for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
     /* This is more accurate but requires a working layout.

@@ -22,6 +22,7 @@ export class GuildsList extends QScrollArea {
 
     this.setFrameShape(Shape.NoFrame);
     this.setMinimumSize(72, 0);
+    this.setObjectName('GuildsList');
     this.initContainer();
     this.addMainPageButton();
 

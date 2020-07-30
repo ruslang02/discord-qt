@@ -18,6 +18,7 @@ export class MessagesPanel extends QScrollArea {
     super();
     this.setObjectName('MessagesPanel');
     this.setAlignment(AlignmentFlag.AlignBottom + AlignmentFlag.AlignHCenter);
+    this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     this.setFrameShape(Shape.NoFrame);
     this.initRoot();
     this.initEvents();

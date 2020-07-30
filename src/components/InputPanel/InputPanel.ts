@@ -74,8 +74,8 @@ export class InputPanel extends QWidget {
     });
     emojiBtn.setFixedSize(38, 44);
     input.setAcceptRichText(false);
-    input.setMaximumSize(MAX_QSIZE, 40);
-    input.setMinimumSize(0, 40);
+    input.setMaximumSize(MAX_QSIZE, 42);
+    input.setMinimumSize(0, 42);
     input.addEventListener(WidgetEventTypes.KeyPress, (native) => {
       if (!native) return;
       const event = new QKeyEvent(native);
@@ -90,7 +90,9 @@ export class InputPanel extends QWidget {
         setTimeout(() => input.clear());
       } else 
       setTimeout(() => {
-        const height = (input.toPlainText().split('\n').length || 1) * 22 + 18;
+        const textHeight = (input.toPlainText().split('\n').length || 1) * 24 + 18;
+        const maxHeight = app.window.size().height() / 2;
+        const height = Math.min(textHeight, maxHeight);
         input.setMaximumSize(MAX_QSIZE, height);
         input.setMinimumSize(0, height);
       })
