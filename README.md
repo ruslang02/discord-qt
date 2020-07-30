@@ -6,6 +6,9 @@ It offers a significantly less resource-consuming experience comparing to the of
 
 Node.JS v12+ is required to build.
 
+## Running the binary release
+Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows and Linux (AppImage, Debian package).
+
 ## Installing from npm
 Windows (macOS should work as well, however not tested):
 ```bash
@@ -27,8 +30,6 @@ npm install
 npm start
 ```
 
-## Running the binary release
-Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows and Linux (AppImage, Debian package).
 
 ## Configuration
 In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
