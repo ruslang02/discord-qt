@@ -20,8 +20,6 @@ Linux:
 # npm i -g discord-qt --unsafe-perm --allow-root
 ```
 
-**Note** Due to some minor difficulties version 0.2.0 is versioned as 0.1.99 on the NPM registry. Otherwise, this is the same 0.2.0 release.
-
 ## Installing from sources
 ```bash
 git clone https://github.com/ruslang02/discord-qt
@@ -29,7 +27,6 @@ cd discord-qt/
 npm install
 npm start
 ```
-
 
 ## Configuration
 In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
@@ -65,4 +62,5 @@ GPL 3.0
  - [Qt](https://www.qt.io/)
  - [Material Design Icons](https://github.com/Templarian/MaterialDesign)
  - [markdown-it](https://github.com/markdown-it/markdown-it)
+ - [Packer](https://github.com/nodegui/packer)
  - [Source Sans Pro fonts](https://github.com/adobe-fonts/source-sans-pro)
