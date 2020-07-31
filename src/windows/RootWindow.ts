@@ -9,6 +9,8 @@ import { SettingsView } from "../views/SettingsView/SettingsView";
 import { Account } from "../structures/Account";
 import { Events } from "../structures/Events";
 
+const { version, name } = require('../../package.json');
+
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
 
@@ -65,6 +67,7 @@ export class RootWindow extends QMainWindow {
     app.client = new Client({
       useUserGateway: true,
       waitForGuildsTimeout: 0,
+      userAgent: `Discord-Qt/${version} Node.js/${process.version}`,
     });
     app.client.on(DiscordEvents.ERROR, console.error)
     if (app.config.debug) app.client.on(DiscordEvents.DEBUG, console.debug)
