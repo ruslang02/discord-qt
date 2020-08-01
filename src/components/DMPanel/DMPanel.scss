@@ -1,8 +1,15 @@
 @import '../../Colors.scss';
 
 #DMPanel {
-  #DTitleBar, #UsersContainer, #UsersList {
+  #DTitleBar, #UsersContainer {
     background-color: $background-secondary;
+  }
+  #UsersContainer {
+    &::item {
+      background-color: $background-secondary;
+      border: none;
+      padding: 8px;
+    }
   }
   #DMLabel {
     font-weight: bold;

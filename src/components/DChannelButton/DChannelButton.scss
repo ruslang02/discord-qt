@@ -4,6 +4,7 @@
   border-radius: 4px;
   *, QLabel {
     color: $channels-default;
+    background: none;
   }
   &[hover=true] {
     background-color: $background-modifier-hover;
