@@ -13,7 +13,6 @@ try {
 }
 module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
-  console.log(isDev);
   return {
     mode: isDev ? "development" : "production",
     entry: {
@@ -107,7 +106,8 @@ module.exports = (_env, argv) => {
       })
     ],
     stats: {
-      warnings: false
+      warnings: false,
+      children: false
     },
   }
 };
