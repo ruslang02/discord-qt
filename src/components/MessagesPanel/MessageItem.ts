@@ -183,7 +183,7 @@ export class MessageItem extends QWidget {
       content = await this.processMarkdown(content);
       if (token?.cancelled) return;
       content = await this.processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
-      contentLabel.setText('<style>* {vertical-align: middle;}</style>' + content);
+      contentLabel.setText('<style>* {vertical-align: middle;} img {max-height: 24px; max-width: 24px;}</style>' + content);
     }
     if (token?.cancelled) return;
     await this.processAttachments(message.attachments);

@@ -1,4 +1,4 @@
-import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape, WidgetEventTypes, QPoint } from "@nodegui/nodegui";
+import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape, WidgetEventTypes, QPoint, QDropEvent, NativeElement } from "@nodegui/nodegui";
 import { app, MAX_QSIZE } from "../..";
 import { DMChannel, Message, Channel, Client, Snowflake, TextChannel, Guild } from "discord.js";
 import { MessageItem } from "./MessageItem";
@@ -6,6 +6,7 @@ import './MessagesPanel.scss';
 import { ViewOptions } from '../../views/ViewOptions';
 import { CancelToken } from '../../utilities/CancelToken';
 import { Events } from "../../structures/Events";
+import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
 
 
 export class MessagesPanel extends QScrollArea {
@@ -49,7 +50,6 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initRoot() {
-    //this.takeWidget();
     this.root = new QWidget(this);
     this.root.setObjectName('MessagesContainer');
     this.rootControls = new QBoxLayout(Direction.TopToBottom);
@@ -57,7 +57,6 @@ export class MessagesPanel extends QScrollArea {
     this.rootControls.setSpacing(10);
     this.rootControls.addStretch(1);
     this.root.setLayout(this.rootControls);
-    //this.root.addEventListener(WidgetEventTypes.Wheel, this.handleWheel.bind(this, false));
     this.setWidget(this.root);
   }
 
@@ -71,7 +70,8 @@ export class MessagesPanel extends QScrollArea {
   private isLoading = false;
   private async handleWheel(onlyLoadImages = false) {
     if (this.isLoading) return;
-    this.isLoading = true;
+    this.isLoading = true
+
     const y = -this.root.mapToParent(this.p0).y() - 20;
     const height = this.size().height();
     const children = [...this.rootControls.nodeChildren.values()] as MessageItem[];
@@ -103,10 +103,15 @@ export class MessagesPanel extends QScrollArea {
       await widget.loadMessage(message);
     }
   }
+  private ratelimit = false;
+  private rateTimer?: NodeJS.Timer;
   private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
-    if (this.channel === channel) return;
-    if (this.isLoading) return;
-    this.isLoading = true;
+    if (this.ratelimit || this.isLoading || this.channel === channel) return;
+
+    this.isLoading = this.ratelimit = true;
+    if (this.rateTimer) clearTimeout(this.rateTimer);
+    this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
+
     this.initRoot();
     this.channel = channel;
     if (token.cancelled) return this.isLoading = false;
