@@ -1,24 +1,24 @@
-import { QWidget, QScrollArea, QBoxLayout, Direction, Shape } from '@nodegui/nodegui';
+import { Shape, QListWidget, QListWidgetItem, QSize, ScrollBarPolicy } from '@nodegui/nodegui';
+import { TextChannel } from 'discord.js';
 import { MAX_QSIZE, app } from '../..';
-import { Guild, TextChannel, Channel } from 'discord.js';
-import './MembersList.scss';
 import { UserButton } from '../UserButton/UserButton';
 import { ViewOptions } from '../../views/ViewOptions';
 import { CancelToken } from '../../utilities/CancelToken';
 import { Events } from '../../structures/Events';
+import './MembersList.scss';
 
-export class MembersList extends QScrollArea {
-  layout = new QBoxLayout(Direction.TopToBottom);
-  root = new QWidget();
-  cancelToken?: CancelToken;
+export class MembersList extends QListWidget {
+  private cancelToken?: CancelToken;
   private channel?: TextChannel;
 
   constructor() {
     super();
-
     this.setObjectName('MembersList');
     this.setFrameShape(Shape.NoFrame);
-    this.initComponent();
+    this.setSelectionRectVisible(false);
+    this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
+    this.setMinimumSize(240, 0);
+    this.setMaximumSize(240, MAX_QSIZE);
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view === 'dm') return this.hide();
@@ -32,33 +32,22 @@ export class MembersList extends QScrollArea {
     })
   }
 
-  private initComponent() {
-    this.setMinimumSize(240, 0);
-    this.setMaximumSize(240, MAX_QSIZE);
-  }
-
   private async loadList(channel: TextChannel, token: CancelToken) {
-    if (token.cancelled) return;
     this.channel = channel;
-    this.layout = new QBoxLayout(Direction.TopToBottom);
-    this.root = new QWidget();
-    this.root.setObjectName('MembersList');
-    this.layout.setContentsMargins(8, 8, 0, 8);
-    this.layout.setSpacing(0);
-    this.root.setLayout(this.layout);
-    this.setWidget(this.root);
+    this.clear();
     if (token.cancelled) return;
-    const members = channel.members.array();
-    for (const member of members) {
+    for (const member of channel.members.values()) {
       if (token.cancelled) return;
-      const btn = new UserButton(this.root);
+      const btn = new UserButton();
+      const item = new QListWidgetItem();
+      item.setSizeHint(new QSize(224, 44));
       btn.loadUser(member);
       btn.addEventListener('clicked', async () => {
         app.emit(Events.SWITCH_VIEW, 'dm', { dm: await member.createDM() });
       });
       btn.loadAvatar();
-      this.layout.addWidget(btn);
+      this.addItem(item);
+      this.setItemWidget(item, btn);
     }
-    this.layout.addStretch(1);
   }
 }

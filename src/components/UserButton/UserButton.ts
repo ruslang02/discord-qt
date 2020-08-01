@@ -14,7 +14,7 @@ export class UserButton extends DChannelButton {
   private infoControls = new QBoxLayout(Direction.TopToBottom);
   private user?: User;
 
-  constructor(parent: any) {
+  constructor(parent?: any) {
     super(parent);
     this.setProperty('type', 'user');
     this.setFixedSize(224, 42);

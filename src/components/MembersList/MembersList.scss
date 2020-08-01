@@ -2,4 +2,9 @@
 
 #MembersList {
   background-color: $background-secondary;
+  &::item, &::item:selected, &::item:hover {
+    background-color: transparent;
+    border: none;
+    padding: 8px;
+  }
 }
