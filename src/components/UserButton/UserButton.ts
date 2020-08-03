@@ -1,5 +1,6 @@
 import { QLabel, QPixmap, QBoxLayout, Direction, WidgetEventTypes, AlignmentFlag } from "@nodegui/nodegui";
 import { User, GuildMember, Presence, Client, Constants } from "discord.js";
+import TWEmoji from 'twemoji';
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 import './UserButton.scss';
@@ -109,12 +110,6 @@ export class UserButton extends DChannelButton {
           break;
         case 'CUSTOM_STATUS':
           status = activity.state || '';
-          if (!activity.emoji) break;
-          if (activity.emoji.name && !activity.emoji.id) {
-            this.statusIcon.setText(activity.emoji.name);
-            this.statusIcon.show();
-            break;
-          }
       }
       this.statusLabel.setText(status);
     } else {
@@ -125,15 +120,30 @@ export class UserButton extends DChannelButton {
   async loadStatusEmoji(presence: Presence) {
     this.statusIcon.hide();
     const activity = presence.activities.find(a => !!a.emoji);
-    if (!activity) return;
+    if (!activity || !activity.emoji) return;
+    if (activity.emoji.name && !activity.emoji.id) {
+      TWEmoji.parse(activity.emoji.name, {
+        // @ts-ignore
+        callback: async (icon, {base, size, ext}) => {
+          const url = `${base}${size}/${icon}${ext}`;
+          console.log(url);
+          return this.dlStatusEmoji(url);
+        }
+      })
+      return;
+    }
     // @ts-ignore
     const emojiUrl = app.client.rest.cdn.Emoji(activity.emoji.id, 'png');
+    return this.dlStatusEmoji(emojiUrl);
+  }
+
+  private async dlStatusEmoji(emojiUrl?: string) {
     if (!emojiUrl) return;
     const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
     if (!buf) return;
     const pix = new QPixmap();
     pix.loadFromData(buf, 'PNG');
-    this.statusIcon.setPixmap(pix);
+    this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();
   }
 
