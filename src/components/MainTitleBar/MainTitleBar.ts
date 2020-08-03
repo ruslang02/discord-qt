@@ -1,20 +1,14 @@
-import { QWidget, QLabel, QPixmap, QSize } from '@nodegui/nodegui';
 import path from 'path';
+import { QWidget, QLabel, QPixmap, QSize } from '@nodegui/nodegui';
+import { DMChannel, Client, TextChannel } from 'discord.js';
 import { app } from '../..';
-import {  DMChannel, Client, Channel, TextChannel } from 'discord.js';
-import './MainTitleBar.scss';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from '../../structures/Events';
-
-const PresenceStatusColor = new Map([
-  ['online', '#43b581'],
-  ['dnd', '#f04747'],
-  ['idle', '#faa61a'],
-  ['offline', 'rgb(116, 127, 141)']
-])
+import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import './MainTitleBar.scss';
 
 export class MainTitleBar extends DTitleBar {
   private channel?: TextChannel | DMChannel;
@@ -31,8 +25,8 @@ export class MainTitleBar extends DTitleBar {
     this.setInlineStyle('background-color: #36393f');
     this.initComponent();
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if(!['dm', 'guild'].includes(view) || !options) return;
-      if(options.dm) this.handleDMOpen(options.dm);
+      if (!['dm', 'guild'].includes(view) || !options) return;
+      if (options.dm) this.handleDMOpen(options.dm);
       else if (options.channel) this.handleGuildOpen(options.channel)
     });
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -84,7 +78,7 @@ export class MainTitleBar extends DTitleBar {
 
   private updateStatus() {
     const { channel, statusLabel } = this;
-    if(channel instanceof TextChannel) return;
+    if (channel instanceof TextChannel) return;
     statusLabel.setText(channel?.recipient.presence.status || "");
     statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel?.recipient.presence.status || 'offline')}`);
   }
