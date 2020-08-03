@@ -58,14 +58,14 @@ export class UserPanel extends QWidget {
     this.setMaximumSize(MAX_QSIZE, 52);
 
     controls.setContentsMargins(8, 8, 8, 8)
-    controls.setSpacing(8);
+    controls.setSpacing(0);
 
     avatar.setObjectName('UserAvatar');
     avatar.setFixedSize(32, 32);
 
     const layInfo = new QBoxLayout(Direction.TopToBottom);
     layInfo.setSpacing(0);
-    layInfo.setContentsMargins(0, 0, 0, 0);
+    layInfo.setContentsMargins(8, 0, 0, 0);
     nameLabel.setText('No account');
     nameLabel.setObjectName('NameLabel');
 
@@ -113,7 +113,6 @@ export class UserPanel extends QWidget {
     statusBtn.addEventListener('clicked', () => statusBtn.showMenu());
     statusBtn.setMenu(statusMenu);
 
-    /*
     const iBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/invite.png'),
       iconQSize: new QSize(20, 20),
@@ -121,7 +120,7 @@ export class UserPanel extends QWidget {
     });
     iBtn.setFixedSize(32, 32);
     iBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'invite'));
-    */
+
     const setBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/cog.png'),
       iconQSize: new QSize(20, 20),
@@ -132,6 +131,7 @@ export class UserPanel extends QWidget {
     controls.addWidget(avatar, 0);
     controls.addLayout(layInfo, 1);
     controls.addWidget(statusBtn, 0);
+    controls.addWidget(iBtn, 0);
     controls.addWidget(setBtn, 0);
   }
 
