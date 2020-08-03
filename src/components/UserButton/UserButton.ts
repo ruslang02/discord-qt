@@ -126,7 +126,6 @@ export class UserButton extends DChannelButton {
         // @ts-ignore
         callback: async (icon, {base, size, ext}) => {
           const url = `${base}${size}/${icon}${ext}`;
-          console.log(url);
           return this.dlStatusEmoji(url);
         }
       })

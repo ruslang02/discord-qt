@@ -6,7 +6,7 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { ScrollMode, SelectionMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
 
-export class DMPanelUsersList extends QListWidget {
+export class DMUsersList extends QListWidget {
   channels = new Map<DMChannel, UserButton>();
   active?: UserButton;
   prevUpdate = (new Date()).getTime();

@@ -1,7 +1,7 @@
 import { DLineEdit } from "../DLineEdit/DLineEdit";
 import { DTitleBar } from "../DTitleBar/DTitleBar";
 
-export class DMPanelTitleBar extends DTitleBar {
+export class DMTitleBar extends DTitleBar {
   filterInput = new DLineEdit();
 
   constructor() {

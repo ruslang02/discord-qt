@@ -1,6 +1,6 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton } from "@nodegui/nodegui";
-import { Client, Constants, Presence, Activity, CustomStatus } from "discord.js";
-import path from 'path';
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon } from "@nodegui/nodegui";
+import { Client, Constants, Presence, Activity, CustomStatus, PresenceData } from "discord.js";
+import path, { join } from 'path';
 import TWEmoji from 'twemoji';
 import { app, MAX_QSIZE } from "../..";
 import { pictureWorker } from "../../utilities/PictureWorker";
@@ -75,6 +75,7 @@ export class UserPanel extends QWidget {
 
     discLabel.setText('#0000');
     discLabel.setObjectName('DiscLabel');
+    statusText.setObjectName('DiscLabel');
 
     layStat.addWidget(discLabel, 1);
     layStat.addWidget(statusIcon);
@@ -86,11 +87,32 @@ export class UserPanel extends QWidget {
     layInfo.addWidget(nameLabel);
     layInfo.addLayout(layStat);
 
+    const statusMenu = new QMenu();
+
+    ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach(text => {
+      const action = new QAction();
+      action.addEventListener('triggered', async () => {
+        const status = text === 'Do Not Disturb' ? 'dnd': text?.toLowerCase();
+        if (status === 'custom status...') return; //TODO: custom status dialog
+        // @ts-ignore
+        await app.client.user?.setPresence({ status });
+        this.updatePresence();
+      })
+      if (text === null) action.setSeparator(true);
+      else {
+        action.setText(text);
+        action.setIcon(new QIcon(join(__dirname, 'assets', 'icons', `status-${text.toLowerCase().replace(/ /g, '-')}.png`)));
+      }
+      statusMenu.addAction(action);
+    });
     statusBtn.setText('●');
     statusBtn.setObjectName('DIconButton');
     statusBtn.setProperty('tooltip', 'Offline');
     statusBtn.setFixedSize(32, 32);
-    // statusBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'settings'));
+    statusBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
+    statusBtn.addEventListener('clicked', () => statusBtn.showMenu());
+    statusBtn.setMenu(statusMenu);
+
     /*
     const iBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/invite.png'),
@@ -148,7 +170,6 @@ export class UserPanel extends QWidget {
         // @ts-ignore
         callback: async (icon, { base, size, ext }) => {
           const url = `${base}${size}/${icon}${ext}`;
-          console.log(url);
           return this.dlStatusEmoji(url);
         }
       })
@@ -181,7 +202,6 @@ export class UserPanel extends QWidget {
       discLabel.show();
       return;
     }
-
     statusBtn.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)};`);
     statusBtn.setProperty('toolTip', presence.status);
     this.loadStatusEmoji(customStatus);

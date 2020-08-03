@@ -9,17 +9,23 @@
   }
   #DiscLabel {
     color: $header-secondary;
-    font-size: 14px;
+    font-size: 12px;
     line-height: 13px;
   }
   #DIconButton {
     background: none;
     border: none;
     border-radius: 5px;
-    font-size: 18px;
+    font-size: 24px;
     color: rgb(116, 127, 141);
     &:hover {
       background: $background-modifier-selected;
-    } 
+    }
+    &::menu-indicator{ width:0px; }
+  }
+}
+QMenu::item {
+  &:selected {
+    background-color: #43b581;
   }
 }

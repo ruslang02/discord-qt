@@ -1,12 +1,12 @@
 import { QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
-import { DMPanelTitleBar } from "./DMPanelTitleBar";
+import { DMTitleBar } from "./DMTitleBar";
 import './DMPanel.scss';
-import { DMPanelUsersList } from "./DMPanelUsersList";
+import { DMUsersList } from "./DMUsersList";
 
 export class DMPanel extends QWidget {
-  private titleBar = new DMPanelTitleBar();
+  private titleBar = new DMTitleBar();
   private actionsMenu = new QWidget();
-  private usersList = new DMPanelUsersList();
+  private usersList = new DMUsersList();
   private controls = new QBoxLayout(Direction.TopToBottom);
 
   constructor() {
