@@ -1,6 +1,6 @@
 import path from 'path';
 import { QWidget, QLabel, QPixmap, QSize } from '@nodegui/nodegui';
-import { DMChannel, Client, TextChannel } from 'discord.js';
+import { DMChannel, Client, TextChannel, Constants } from 'discord.js';
 import { app } from '../..';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
@@ -30,13 +30,12 @@ export class MainTitleBar extends DTitleBar {
       else if (options.channel) this.handleGuildOpen(options.channel)
     });
     app.on(Events.NEW_CLIENT, (client: Client) => {
-      /*
-      client.on('userUpdate', (before, after) => {
-        console.log(after.username);
-        if(this.channel?.recipient.id === after.id) 
+      const { Events: DiscordEvents } = Constants;
+      client.on(DiscordEvents.PRESENCE_UPDATE, (_o, presence) => {
+        if(this.channel?.type === 'dm' && this.channel.recipient.id === presence.userID) {
           this.updateStatus();
+        }
       })
-      */
     })
     setInterval(() => this.raise(), 100);
   }

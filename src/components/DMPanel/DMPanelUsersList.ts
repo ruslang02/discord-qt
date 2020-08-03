@@ -1,6 +1,6 @@
-import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint, ScrollBarPolicy, QListWidget, QListWidgetItem, QSize, ItemFlag, QScrollBar } from "@nodegui/nodegui";
+import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint, ScrollBarPolicy, QListWidget, QListWidgetItem, QSize, ItemFlag, QScrollBar, QVariant, MatchFlag } from "@nodegui/nodegui";
 import { app } from "../..";
-import { Client, DMChannel, SnowflakeUtil } from "discord.js";
+import { Client, DMChannel, SnowflakeUtil, Constants } from "discord.js";
 import { UserButton } from "../UserButton/UserButton";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
@@ -19,7 +19,23 @@ export class DMPanelUsersList extends QListWidget {
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
-      client.on('ready', this.loadDMs.bind(this))
+      const { Events: DiscordEvents } = Constants;
+      client.on(DiscordEvents.CLIENT_READY, this.loadDMs.bind(this));
+      client.on(DiscordEvents.MESSAGE_CREATE, (message) => {
+        const dm = message.channel;
+        if (dm.type !== 'dm') return;
+        const btn = this.channels.get(dm);
+        if (!btn) return;
+        const items = this.findItems(dm.id, MatchFlag.MatchExactly);
+        const newItem = new QListWidgetItem();
+        newItem.setSizeHint(new QSize(224, 44));
+        newItem.setFlags(~ItemFlag.ItemIsEnabled);
+        newItem.setText(dm.id);
+        const row = this.row(items[0])
+        this.insertItem(0, newItem);
+        this.setItemWidget(newItem, btn);
+        this.takeItem(row + 1);
+      })
     });
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
@@ -75,7 +91,8 @@ export class DMPanelUsersList extends QListWidget {
           const btn = new UserButton(this);
           const item = new QListWidgetItem();
           item.setSizeHint(new QSize(224, 44));
-          item.setFlags(~ItemFlag.ItemIsEnabled)
+          item.setFlags(~ItemFlag.ItemIsEnabled);
+          item.setText(dm.id);
           btn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm', { dm }));
           this.channels.set(dm, btn);
           this.addItem(item);
