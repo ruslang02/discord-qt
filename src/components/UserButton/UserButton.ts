@@ -1,11 +1,23 @@
-import { QLabel, QWidget, QPixmap, QBoxLayout, Direction, WidgetEventTypes, AlignmentFlag } from "@nodegui/nodegui";
-import { User, GuildMember } from "discord.js";
+import { QLabel, QPixmap, QBoxLayout, Direction, WidgetEventTypes, AlignmentFlag } from "@nodegui/nodegui";
+import { User, GuildMember, Presence, Client, Constants } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 import './UserButton.scss';
-import { CancelToken } from '../../utilities/CancelToken';
 import { app, MAX_QSIZE } from '../..';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { Events } from '../../structures/Events';
+
+const buttons = new WeakMap<User, UserButton>();
+setTimeout(() => {
+  app.on(Events.NEW_CLIENT, (client: Client) => {
+    const { Events: DiscordEvents } = Constants;
+    client.on(DiscordEvents.PRESENCE_UPDATE, (_old, presence) => {
+      if (!presence.user) return;
+      const btn = buttons.get(presence.user);
+      btn?.loadPresence(presence);
+    });
+  });
+});
 
 export class UserButton extends DChannelButton {
   private avatar = new QLabel(this);
@@ -73,22 +85,28 @@ export class UserButton extends DChannelButton {
       });
   }
 
-  async loadUser(someone: User | GuildMember) {
-    const user = someone instanceof GuildMember ? someone.user : someone;
-    const member = someone instanceof GuildMember ? someone : null;
-    if (!user) return;
-    this.user = user;
-    const { presence } = user;
-
-    this.nameLabel.setText(member?.nickname ?? user.username);
+  async loadPresence(presence: Presence) {
     this.statusInd.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)}`);
-    this.statusIcon.hide();
+    this.loadStatusEmoji(presence);
 
     if (presence.activities.length) {
       const activity = presence.activities[0];
       [this.statusLabel, this.statusIcon].forEach(w => w.setMaximumSize(MAX_QSIZE, MAX_QSIZE));
-      let status = "";
+      let status = '';
+
       switch (activity.type) {
+        case 'LISTENING':
+          status = `Listening to <b>${activity.name}</b>`;
+          break;
+        case 'PLAYING':
+          status = `Playing <b>${activity.name}</b>`;
+          break;
+        case 'STREAMING':
+          status = `Streaming <b>${activity.name}</b>`;
+          break;
+        case 'WATCHING':
+          status = `Watching <b>${activity.name}</b>`;
+          break;
         case 'CUSTOM_STATUS':
           status = activity.state || '';
           if (!activity.emoji) break;
@@ -97,19 +115,37 @@ export class UserButton extends DChannelButton {
             this.statusIcon.show();
             break;
           }
-          // @ts-ignore
-          const emojiUrl = app.client.rest.cdn.Emoji(activity.emoji.id, 'png');
-          if (!emojiUrl) break;
-          const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
-          if (!buf) break;
-          const pix = new QPixmap();
-          pix.loadFromData(buf, 'PNG');
-          this.statusIcon.setPixmap(pix);
-          this.statusIcon.show();
       }
       this.statusLabel.setText(status);
     } else {
       [this.statusLabel, this.statusIcon].forEach(w => w.setMaximumSize(MAX_QSIZE, 0));
     }
+  }
+
+  async loadStatusEmoji(presence: Presence) {
+    this.statusIcon.hide();
+    const activity = presence.activities.find(a => !!a.emoji);
+    if (!activity) return;
+    // @ts-ignore
+    const emojiUrl = app.client.rest.cdn.Emoji(activity.emoji.id, 'png');
+    if (!emojiUrl) return;
+    const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
+    if (!buf) return;
+    const pix = new QPixmap();
+    pix.loadFromData(buf, 'PNG');
+    this.statusIcon.setPixmap(pix);
+    this.statusIcon.show();
+  }
+
+  async loadUser(someone: User | GuildMember) {
+    const user = someone instanceof GuildMember ? someone.user : someone;
+    const member = someone instanceof GuildMember ? someone : null;
+    if (!user) return;
+    this.user = user;
+    const { presence } = user;
+
+    this.nameLabel.setText(member?.nickname ?? user.username);
+    this.loadPresence(presence);
+    buttons.set(user, this);
   }
 }

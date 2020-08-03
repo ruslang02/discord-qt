@@ -1,17 +1,18 @@
-import { RootWindow } from "./windows/RootWindow";
 import { Client } from "discord.js";
-import path, { join } from 'path';
+import { join } from 'path';
 import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
-import {QFontDatabase, WidgetAttribute, WidgetEventTypes} from '@nodegui/nodegui';
+import {QFontDatabase} from '@nodegui/nodegui';
 import envPaths from 'env-paths';
+
+import { RootWindow } from "./windows/RootWindow";
 import { Config } from "./structures/Config";
 import { Events } from "./structures/Events";
+const { readdir } = fs.promises;
 
-const { writeFile, mkdir, readFile, readdir } = fs.promises;
-const FONTS_PATH = path.join(__dirname, './assets/fonts');
+const FONTS_PATH = join(__dirname, './assets/fonts');
 const paths = envPaths('discord', {suffix: 'qt'})
-const CONFIG_PATH = path.join(paths.config, 'config.json');
+const CONFIG_PATH = join(paths.config, 'config.json');
 
 class Application extends EventEmitter {
   config = new Config(CONFIG_PATH);
@@ -31,7 +32,7 @@ class Application extends EventEmitter {
   private async loadFonts() {
     if (!existsSync(FONTS_PATH)) return;
     for (const file of await readdir(FONTS_PATH))
-      QFontDatabase.addApplicationFont(path.join(FONTS_PATH, file))
+      QFontDatabase.addApplicationFont(join(FONTS_PATH, file))
   }
 
   public get window(): RootWindow {
