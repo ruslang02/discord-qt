@@ -13,7 +13,11 @@
     line-height: 13px;
   }
   #DIconButton {
+    background: none;
+    border: none;
     border-radius: 5px;
+    font-size: 18px;
+    color: rgb(116, 127, 141);
     &:hover {
       background: $background-modifier-selected;
     } 

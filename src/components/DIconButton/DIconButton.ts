@@ -2,10 +2,8 @@ import { QPushButton, QSize, QIcon, WidgetEventTypes, QCursor, CursorShape } fro
 import './DIconButton.scss';
 
 export class DIconButton extends QPushButton {
-  iconPath: string = '';
-  iconPathInactive: string = '';
-  tooltipText: string = '';
-  iconQSize = new QSize(24, 24);
+  qiconOn = new QIcon();
+  qiconOff = new QIcon();
 
   constructor(options: {
     iconPath: string,
@@ -13,22 +11,25 @@ export class DIconButton extends QPushButton {
     iconQSize: QSize
   }) {
     super();
-    Object.assign(this, options);
-    this.iconPathInactive = this.iconPath.replace('.png', '-outline.png');
+    const { iconPath, tooltipText, iconQSize } = options;
 
     this.setObjectName('DIconButton');
-    this.initComponent();
-  }
-
-  initComponent() {
-    const { iconPath, iconPathInactive, tooltipText, iconQSize } = this;
-    this.setProperty('toolTip', tooltipText);
-    const activeIcon = new QIcon(iconPath);
-    const inactiveIcon = new QIcon(iconPathInactive);
-    this.setIcon(inactiveIcon);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.setIconSize(iconQSize);
-    this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setIcon(activeIcon));
-    this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setIcon(inactiveIcon));
+    this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setIcon(this.qiconOn));
+    this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setIcon(this.qiconOff));
+
+    this.setIconPath(iconPath);
+    this.setToolTip(tooltipText);
+  }
+
+  setIconPath(path: string) {
+    this.qiconOn = new QIcon(path);
+    this.qiconOff = new QIcon(path.replace('.png', '-outline.png'));
+    this.setIcon(this.qiconOff);
+  }
+
+  setToolTip(text: string) {
+    this.setProperty('toolTip', text);
   }
 }
