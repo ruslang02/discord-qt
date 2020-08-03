@@ -68,6 +68,19 @@ export class RootWindow extends QMainWindow {
       useUserGateway: true,
       waitForGuildsTimeout: 0,
       userAgent: `Discord-Qt/${version} Node.js/${process.version}`,
+      ws: {
+        compress: false,
+        // @ts-ignore
+        properties: {
+          os: process.platform,
+          browser: "DiscordQt",
+          release_channel: "stable",
+          client_version: version,
+          os_arch: process.arch,
+          // @ts-ignore
+          client_build_number: __BUILDNUM__ || 0,
+        }
+      }
     });
     app.client.on(DiscordEvents.ERROR, console.error)
     if (app.config.debug) app.client.on(DiscordEvents.DEBUG, console.debug)
