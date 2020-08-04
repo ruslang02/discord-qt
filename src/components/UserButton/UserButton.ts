@@ -8,15 +8,31 @@ import { app, MAX_QSIZE } from '../..';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { Events } from '../../structures/Events';
 
-const buttons = new WeakMap<User, UserButton>();
+const buttons = new WeakMap<User | GuildMember, UserButton>();
 setTimeout(() => {
   app.on(Events.NEW_CLIENT, (client: Client) => {
-    const { Events: DiscordEvents } = Constants;
-    client.on(DiscordEvents.PRESENCE_UPDATE, (_old, presence) => {
+    const { Events: DEvents } = Constants;
+    client.on(DEvents.PRESENCE_UPDATE, (_o, presence) => {
       if (!presence.user) return;
       const btn = buttons.get(presence.user);
       btn?.loadPresence(presence);
     });
+    client.on(DEvents.GUILD_MEMBER_UPDATE, (o, m) => {
+      const oldMember = o as GuildMember;
+      const member = m as GuildMember;
+      const btn = buttons.get(member);
+      if (!btn) return;
+      if (btn.isGuildMember) btn.loadUser(member); else btn.loadUser(member.user);
+      if (oldMember.user.avatar !== member.user.avatar) btn.loadAvatar();
+    });
+    client.on(DEvents.USER_UPDATE, (o, u) => {
+      const oldUser = o as User;
+      const user = u as User;
+      const btn = buttons.get(user);
+      if (!btn || btn.isGuildMember) return;
+      btn.loadUser(user);
+      if (oldUser.avatar !== user.avatar) btn.loadAvatar();
+    })
   });
 });
 
@@ -30,6 +46,7 @@ export class UserButton extends DChannelButton {
   private statusLayout = new QBoxLayout(Direction.LeftToRight);
   private infoControls = new QBoxLayout(Direction.TopToBottom);
   private user?: User;
+  isGuildMember = false;
 
   constructor(parent?: any) {
     super(parent);
@@ -91,25 +108,25 @@ export class UserButton extends DChannelButton {
     this.loadStatusEmoji(presence);
 
     if (presence.activities.length) {
-      const activity = presence.activities[0];
+      const { type, name, state} = presence.activities[0];
       [this.statusLabel, this.statusIcon].forEach(w => w.setMaximumSize(MAX_QSIZE, MAX_QSIZE));
       let status = '';
 
-      switch (activity.type) {
+      switch (type) {
         case 'LISTENING':
-          status = `Listening to <b>${activity.name}</b>`;
+          status = `Listening to <b>${name}</b>`;
           break;
         case 'PLAYING':
-          status = `Playing <b>${activity.name}</b>`;
+          status = `Playing <b>${name}</b>`;
           break;
         case 'STREAMING':
-          status = `Streaming <b>${activity.name}</b>`;
+          status = `Streaming <b>${name}</b>`;
           break;
         case 'WATCHING':
-          status = `Watching <b>${activity.name}</b>`;
+          status = `Watching <b>${name}</b>`;
           break;
         case 'CUSTOM_STATUS':
-          status = activity.state || '';
+          status = state || '';
       }
       this.statusLabel.setText(status);
     } else {
@@ -124,7 +141,7 @@ export class UserButton extends DChannelButton {
     if (activity.emoji.name && !activity.emoji.id) {
       TWEmoji.parse(activity.emoji.name, {
         // @ts-ignore
-        callback: async (icon, {base, size, ext}) => {
+        callback: async (icon, { base, size, ext }) => {
           const url = `${base}${size}/${icon}${ext}`;
           return this.dlStatusEmoji(url);
         }
@@ -150,11 +167,12 @@ export class UserButton extends DChannelButton {
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;
     if (!user) return;
+    this.isGuildMember = !!member;
     this.user = user;
-    const { presence } = user;
 
     this.nameLabel.setText(member?.nickname ?? user.username);
-    this.loadPresence(presence);
+    this.loadPresence(user.presence);
     buttons.set(user, this);
+    if (member) buttons.set(member, this);
   }
 }
