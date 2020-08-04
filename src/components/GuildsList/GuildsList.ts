@@ -1,18 +1,14 @@
-import { QWidget, QPixmap, QLabel, QIcon, QSize, QPushButton, QScrollArea, AlignmentFlag, QCursor, CursorShape, QBoxLayout, Direction, Shape, WidgetEventTypes, QPoint } from "@nodegui/nodegui";
+import { QWidget, QIcon, QSize, QPushButton, QCursor, CursorShape, Shape, WidgetEventTypes, QPoint, QListWidget, QListWidgetItem, ItemFlag } from "@nodegui/nodegui";
 import path from "path";
-import './GuildsList.scss';
-import { Guild, Client } from "discord.js";
-import { app } from "../..";
-import { pictureWorker } from "../../utilities/PictureWorker";
+import { Guild, Client, Constants } from "discord.js";
+import { app, MAX_QSIZE } from "../..";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { GuildButton } from './GuildButton';
+import './GuildsList.scss';
 
-export class GuildsList extends QScrollArea {
-  layout = new QBoxLayout(Direction.TopToBottom);
-  private container = new QWidget();
+export class GuildsList extends QListWidget {
   private mpBtn = new QPushButton();
-  private hr = new QLabel();
   private mainIcon = new QIcon(path.resolve(__dirname, "./assets/icons/home.png"));
   private guilds = new Map<Guild, GuildButton>();
   private active?: QPushButton | GuildButton;
@@ -21,29 +17,30 @@ export class GuildsList extends QScrollArea {
     super();
 
     this.setFrameShape(Shape.NoFrame);
-    this.setMinimumSize(72, 0);
+    this.setMaximumSize(72, MAX_QSIZE);
     this.setObjectName('GuildsList');
-    this.initContainer();
-    this.addMainPageButton();
+    this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
-      client.on('ready', this.loadGuilds.bind(this));
-      client.on('guildDelete', (guild: Guild) => {
+      const { Events: DEvents } = Constants;
+      client.on(DEvents.CLIENT_READY, this.loadGuilds.bind(this));
+      client.on(DEvents.GUILD_DELETE, (guild: Guild) => {
         const entry = this.guilds.get(guild);
         if (!entry) return;
         entry.hide();
-        this.layout.removeWidget(entry);
       });
-      client.on('guildCreate', (guild: Guild) => {
-        const btn = new GuildButton(guild, this.container); 
+      client.on(DEvents.GUILD_CREATE, (guild: Guild) => {
+        const btn = new GuildButton(guild, this);
+        const item = new QListWidgetItem();
+        item.setFlags(~ItemFlag.ItemIsEnabled);
+        this.insertItem(2, item);
+        this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
-        this.layout.insertWidget(2, btn);
         btn.loadAvatar();
       });
     });
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      setTimeout(() => this.layout.update());
       if (!['dm', 'guild'].includes(view)) return;
       this.mpBtn.setProperty('active', false)
       if (view === 'dm') {
@@ -63,61 +60,65 @@ export class GuildsList extends QScrollArea {
         this.active?.repolish();
       }
     });
-
-    app.on(Events.READY, () => {
-      app.window.addEventListener(WidgetEventTypes.Resize, this.loadAvatars.bind(this));
-    })
   }
 
   private addMainPageButton() {
-    this.mpBtn.setObjectName("PageButton");
-    this.mpBtn.setIcon(this.mainIcon);
-    this.mpBtn.setIconSize(new QSize(28, 28));
-    this.mpBtn.setFixedSize(48, 48 + 10);
-    this.mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    this.mpBtn.setProperty('toolTip', 'Direct Messages');
-    this.mpBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm'));
-    this.hr.setObjectName('Separator');
-    this.hr.setFixedSize(33, 9);
-  }
-  private initContainer() {
-    this.layout = new QBoxLayout(Direction.TopToBottom);
-    this.container = new QWidget(this);
-    this.container.addEventListener(WidgetEventTypes.Wheel, this.loadAvatars.bind(this));
-    this.takeWidget();
-    this.container.setLayout(this.layout);
-    this.container.setObjectName(this.constructor.name);
-    this.layout.setContentsMargins(12, 12, 12, 12);
-    this.layout.setSpacing(0);
-    this.setWidget(this.container);
-    this.container.layout?.addWidget(this.mpBtn);
-    this.container.layout?.addWidget(this.hr);
-    this.layout.addStretch(1);
+    const mpBtn = new QPushButton(this);
+    const mpBtnItem = new QListWidgetItem();
+    mpBtn.setObjectName("PageButton");
+    mpBtn.setIcon(this.mainIcon);
+    mpBtn.setIconSize(new QSize(28, 28));
+    mpBtn.setFixedSize(72, 68);
+    mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
+    mpBtn.setProperty('toolTip', 'Direct Messages');
+    mpBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm'));
+    mpBtn.setInlineStyle('margin-top: 12px;');
+    mpBtnItem.setSizeHint(mpBtn.size());
+    const hrItem = new QListWidgetItem();
+    const hr = new QWidget(this);
+    hr.setObjectName('Separator');
+    hr.setMaximumSize(MAX_QSIZE, 10);
+    hrItem.setSizeHint(new QSize(1, 10));
+    [mpBtnItem, hrItem].forEach(i => i.setFlags(~ItemFlag.ItemIsEnabled));
+    this.addItem(mpBtnItem);
+    this.addItem(hrItem);
+    this.setItemWidget(mpBtnItem, mpBtn);
+    this.setItemWidget(hrItem, hr);
   }
   async loadGuilds() {
     const { client } = app;
 
     this.guilds.clear();
-    this.initContainer();
+    this.clear();
+    this.addMainPageButton();
 
-    const guilds = client.guilds.cache
+    client.guilds.cache
+      .array()
       .sort((a, b) => (a.position || 0) - (b.position || 0))
-      .array();
-    if (app.config.fastLaunch) guilds.length = 5;
-    guilds.forEach((guild, i) => {
-      const btn = new GuildButton(guild, this.container); 
-      this.guilds.set(guild, btn);
-      this.layout.insertWidget(i + 2, btn);
-    });
+      .forEach((guild, i) => {
+        const btn = new GuildButton(guild, this);
+        const item = new QListWidgetItem();
+        item.setFlags(~ItemFlag.ItemIsEnabled);
+        item.setSizeHint(btn.size());
+        this.addItem(item);
+        this.setItemWidget(item, btn);
+        this.guilds.set(guild, btn);
+      });
     this.loadAvatars();
   }
   private p0 = new QPoint(0, 0);
+  private ratelimited = false;
+  private ratetimer?: NodeJS.Timer;
   async loadAvatars() {
-    const y = -this.container.mapToParent(this.p0).y();
-    const skip = Math.ceil(y / 60);
-    const height = this.size().height();
-    const amount = Math.ceil(height / 60);
-    const buttons = [...this.guilds.values()];
-    for (let i = skip; i < skip + amount && i < buttons.length; i++) buttons[i].loadAvatar();
+    if (this.ratelimited) return;
+    this.ratelimited = true;
+    if (this.ratetimer) clearTimeout(this.ratetimer);
+    this.ratetimer = setTimeout(() => this.ratelimited = false, 100);
+    const height = app.window.size().height();
+    for (const btn of this.guilds.values()) {
+      if (!btn.loadAvatar || btn.hasPixmap) continue;
+      const iy = btn.mapToParent(this.p0).y();
+      if (iy > 0 && iy < height) btn.loadAvatar();
+    }
   }
 }

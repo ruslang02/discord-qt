@@ -8,7 +8,7 @@ export class GuildButton extends QLabel {
   constructor(private guild: Guild, parent?: any) {
     super();
     this.setObjectName("PageButton");
-    this.setFixedSize(48, 48 + 10);
+    this.setFixedSize(72, 56);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.setProperty('toolTip', guild.name);
     this.setText(guild.nameAcronym);
@@ -17,7 +17,7 @@ export class GuildButton extends QLabel {
       app.emit(Events.SWITCH_VIEW, 'guild', { guild });
     });
   }
-  private hasPixmap = false;
+  hasPixmap = false;
   async loadAvatar() {
     if (this.hasPixmap) return;
     this.hasPixmap = true;

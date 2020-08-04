@@ -5,7 +5,6 @@ import { MembersList } from '../MembersList/MembersList';
 
 export class MainPanel extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);
-  channelPanel = new QWidget();
   channelLayout = new QBoxLayout(Direction.TopToBottom);
   messages = new MessagesPanel();
   inputPanel = new InputPanel();
@@ -26,15 +25,14 @@ export class MainPanel extends QWidget {
   }
 
   private initComponent() {
-    const { channelLayout, channelPanel, layout, messages, inputPanel, membersList } = this;
+    const { channelLayout, layout, messages, inputPanel, membersList } = this;
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     channelLayout.setContentsMargins(0, 0, 0, 0);
     channelLayout.setSpacing(0);
     channelLayout.addWidget(messages, 1);
     channelLayout.addWidget(inputPanel);
-    channelPanel.setLayout(channelLayout);
-    layout.addWidget(channelPanel, 1);
+    layout.addLayout(channelLayout, 1);
     layout.addWidget(membersList);
     membersList.hide();
   }

@@ -1,12 +1,5 @@
+@import '../../Colors.scss';
+
 #LeftPanel {
-  flex-direction: column;
-  height: '100%';
-  width: 240px;
-  background: #292b2f;
-  padding: 0;
-  
-  #Container {
-    height: '100%';
-    flex-grow: 1;
-  }
+  background: $background-secondary-alt;
 }

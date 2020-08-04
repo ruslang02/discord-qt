@@ -4,12 +4,10 @@
   background: $background-tertiary;
 
   #PageButton {
-    margin-bottom: 10px;
-    height: 48px;
-    width: 48px;
     border-radius: 24px;
     font-size: 18px;
-    background-color: $background-primary; // darken($dark, 0.5);
+    margin: 0 12px 8px;
+    background-color: $background-primary;
     border: none;
     &:hover, &[active='true'] {
       background-color: $blurple;
@@ -18,10 +16,9 @@
   }
 
   #Separator {
-    height: 4px;
-    background-color: $background-primary;
-    margin-bottom: 5px;
-    border-radius: 2px;
-    margin-left: 15px;
+    height: 2px;
+    background-color: $background-modifier-accent;
+    border-radius: 1px;
+    margin: 0 20px 8px;
   }
 }
