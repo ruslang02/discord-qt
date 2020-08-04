@@ -8,6 +8,7 @@ import { DIconButton } from "../DIconButton/DIconButton";
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import './UserPanel.scss';
+import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog/CustomStatusDialog';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -92,8 +93,14 @@ export class UserPanel extends QWidget {
     ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach(text => {
       const action = new QAction();
       action.addEventListener('triggered', async () => {
+        // if (!app.client) return;
         const status = text === 'Do Not Disturb' ? 'dnd': text?.toLowerCase();
-        if (status === 'custom status...') return; //TODO: custom status dialog
+        if (text === 'Custom Status...') {
+          const dialog = new CustomStatusDialog(app.window);
+          dialog.show();
+          dialog.raise();
+          return;
+        }
         // @ts-ignore
         await app.client.user?.setPresence({ status });
         this.updatePresence();
