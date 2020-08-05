@@ -21,23 +21,20 @@
     text-transform: uppercase;
   }
 }
-
-#DMPanel, #ChannelsContainer, #MembersList {
-  QScrollBar {
-    height: 8px;
-    width: 8px;
-    background-color: transparent;
-    border: 2px solid $background-secondary;
+QScrollBar {
+  height: 8px;
+  width: 8px;
+  background-color: transparent;
+  border: 2px solid $background-secondary;
+  border-radius: 4px;
+  &::handle {
+    background-color: $scrollbar-thin-thumb;
     border-radius: 4px;
-    &::handle {
-      background-color: $scrollbar-thin-thumb;
-      border-radius: 4px;
-    }
-    &::add-line {
-      height: 0px;
-    }
-    &::sub-line {
-      height: 0px;
-    }
+  }
+  &::add-line {
+    height: 0px;
+  }
+  &::sub-line {
+    height: 0px;
   }
 }
