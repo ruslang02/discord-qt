@@ -7,6 +7,7 @@ import './UserButton.scss';
 import { app, MAX_QSIZE } from '../..';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { Events } from '../../structures/Events';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 const buttons = new WeakMap<User | GuildMember, UserButton>();
 setTimeout(() => {
@@ -138,22 +139,8 @@ export class UserButton extends DChannelButton {
     this.statusIcon.hide();
     const activity = presence.activities.find(a => !!a.emoji);
     if (!activity || !activity.emoji) return;
-    if (activity.emoji.name && !activity.emoji.id) {
-      TWEmoji.parse(activity.emoji.name, {
-        // @ts-ignore
-        callback: async (icon, { base, size, ext }) => {
-          const url = `${base}${size}/${icon}${ext}`;
-          return this.dlStatusEmoji(url);
-        }
-      })
-      return;
-    }
     // @ts-ignore
-    const emojiUrl = app.client.rest.cdn.Emoji(activity.emoji.id, 'png');
-    return this.dlStatusEmoji(emojiUrl);
-  }
-
-  private async dlStatusEmoji(emojiUrl?: string) {
+    const emojiUrl = await resolveEmoji({emoji_id: activity.emoji.id, emoji_name: activity.emoji.name});
     if (!emojiUrl) return;
     const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
     if (!buf) return;

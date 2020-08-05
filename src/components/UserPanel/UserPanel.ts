@@ -1,7 +1,6 @@
 import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon } from "@nodegui/nodegui";
 import { Client, Constants, Presence, Activity, CustomStatus, PresenceData } from "discord.js";
 import path, { join } from 'path';
-import TWEmoji from 'twemoji';
 import { app, MAX_QSIZE } from "../..";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DIconButton } from "../DIconButton/DIconButton";
@@ -9,6 +8,7 @@ import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import './UserPanel.scss';
 import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog/CustomStatusDialog';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -96,9 +96,7 @@ export class UserPanel extends QWidget {
         // if (!app.client) return;
         const status = text === 'Do Not Disturb' ? 'dnd': text?.toLowerCase();
         if (text === 'Custom Status...') {
-          const dialog = new CustomStatusDialog(app.window);
-          dialog.show();
-          dialog.raise();
+          app.window.popovers.customStatus.show();
           return;
         }
         // @ts-ignore
@@ -171,23 +169,7 @@ export class UserPanel extends QWidget {
 
   async loadStatusEmoji(status: CustomStatus) {
     this.statusIcon.hide();
-    if (!status.emoji_id) {
-      if (!status.emoji_name) return;
-      TWEmoji.parse(status.emoji_name, {
-        // @ts-ignore
-        callback: async (icon, { base, size, ext }) => {
-          const url = `${base}${size}/${icon}${ext}`;
-          return this.dlStatusEmoji(url);
-        }
-      })
-      return;
-    }
-    // @ts-ignore
-    const emojiUrl = app.client.rest.cdn.Emoji(status.emoji_id, 'png');
-    return this.dlStatusEmoji(emojiUrl);
-  }
-
-  private async dlStatusEmoji(emojiUrl?: string) {
+    const emojiUrl = await resolveEmoji(status);
     if (!emojiUrl) return;
     const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
     if (!buf) return;

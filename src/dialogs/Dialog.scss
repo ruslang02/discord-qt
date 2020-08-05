@@ -18,22 +18,53 @@
 
     #FormLabel {
       color: $channels-default;
-      margin-bottom: 8px;
       font-size: 12px;
       line-height: 16px;
       font-weight: 600;
       text-transform: uppercase;
     }
 
-    #StatusInput {
+    #EmojiInput,
+    #StatusInput,
+    #ClearInput {
       font-size: 16px;
       background-color: $deprecated-text-input-bg;
       border: 1px solid transparent;
       border-color: $deprecated-text-input-border;
       border-radius: 3px;
-      padding: 10px;
+      padding: 6px 8px;
       line-height: 1.3;
       color: $text-normal;
+      &:hover {
+        border-color: $deprecated-text-input-border-hover;
+      }
+      &:focus {
+        border-color: $blurple;
+      }
+    }
+
+    #ClearInput {
+      &::drop-down {
+        width: 36px;
+        border: none;
+      }
+      selection-background-color: $background-modifier-active;
+      QAbstractItemView {
+        border-radius: 3px;
+        background-color: $background-primary;
+        border: 1px solid $deprecated-text-input-border;
+      }
+      &::item {
+        color: $text-normal;
+        height: 30px;
+      }
+    }
+
+    #Footer {
+      background-color: $background-secondary;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      border-radius: 0px 0px 5px 5px;
     }
   }
 }

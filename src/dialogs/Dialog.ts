@@ -1,18 +1,19 @@
-import './Dialog.scss';
-import { QWidget, QLabel, QSize, QBoxLayout, Direction, WidgetEventTypes, SizeConstraint, QMouseEvent, NativeElement, QPoint } from '@nodegui/nodegui';
-import { DIconButton } from '../components/DIconButton/DIconButton';
+
+import { QWidget, QLabel, QSize, QBoxLayout, Direction, WidgetEventTypes, QMouseEvent, NativeElement, QPoint } from '@nodegui/nodegui';
 import { join } from 'path';
-import { app } from '..';
+import { DIconButton } from '../components/DIconButton/DIconButton';
+import { RootWindow } from '../windows/RootWindow';
+import './Dialog.scss';
 export class Dialog extends QWidget {
   protected window = new QWidget(this);
-  layout = new QBoxLayout(Direction.TopToBottom);
+  controls = new QBoxLayout(Direction.TopToBottom);
   protected header = new QLabel(this);
   protected closeBtn = new DIconButton({
     iconPath: join(__dirname, './assets/icons/close.png'),
     iconQSize: new QSize(24, 24),
     tooltipText: 'Close'
   });
-  private p0 = new QPoint(0, 0);
+  protected p0 = new QPoint(0, 0);
 
   constructor(parent?: any) {
     super(parent);
@@ -29,19 +30,28 @@ export class Dialog extends QWidget {
       ) this.hide();
     });
 
-    app.window.addEventListener(WidgetEventTypes.Resize, this.resizeToWindow.bind(this));
+    this.initEvents();
+  }
+
+  show() {
+    super.show();
+    this.raise();
+  }
+
+  protected async initEvents() {
+    (this.nodeParent as RootWindow).addEventListener(WidgetEventTypes.Resize, this.resizeToWindow.bind(this));
     this.resizeToWindow();
   }
 
   protected resizeToWindow() {
-    const size = app.window.size();
+    const size = (this.nodeParent as RootWindow).size();
     this.setGeometry(0, 0, size.width(), size.height());
   }
 
   protected initDialog() {
-    const { window, header, closeBtn, layout } = this;
+    const { window, header, closeBtn, layout, controls } = this;
 
-    layout.setContentsMargins(0, 0, 0, 0);
+    controls.setContentsMargins(0, 0, 0, 0);
 
     const hLayout = new QBoxLayout(Direction.LeftToRight);
     hLayout.addStretch(1);
@@ -63,8 +73,8 @@ export class Dialog extends QWidget {
     headLayout.addWidget(header, 1);
     headLayout.addWidget(closeBtn);
 
-    layout.addLayout(headLayout, 0);
-    window.setLayout(layout);
+    controls.addLayout(headLayout, 0);
+    window.setLayout(controls);
     this.setLayout(hLayout);
   }
 }
