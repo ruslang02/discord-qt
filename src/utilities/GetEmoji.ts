@@ -7,6 +7,7 @@ import { paths } from '..';
 const { writeFile, mkdir } = promises;
 export let EMOJI_PATH: string = '';
 export async function getEmoji(emoji: Emoji): Promise<string | null> {
+  if (!emoji.id) return null;
   const path = join(EMOJI_PATH, emoji.id + '.png');
   if (existsSync(path)) return path;
   const buf = await pictureWorker.loadImage(emoji.url || '', { roundify: false })

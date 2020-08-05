@@ -1,13 +1,14 @@
-import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QModelIndex, QMouseEvent, MouseButton } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QModelIndex, QMouseEvent, MouseButton, QPoint } from "@nodegui/nodegui";
 import './InputPanel.scss';
 import { DIconButton } from "../DIconButton/DIconButton";
 import path, { basename, join, extname } from 'path';
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Client, Channel, TextChannel, Guild, User, Permissions } from "discord.js";
+import { DMChannel, Client, Channel, TextChannel, Guild, User, Permissions, Emoji } from "discord.js";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { pathToFileURL, fileURLToPath } from 'url';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
 
 const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
 
@@ -110,6 +111,7 @@ export class InputPanel extends QWidget {
     }
     if (this.files.size) attachPanel.show(); else attachPanel.hide();
   }
+  private p0 = new QPoint(0, 0);
   private initComponent() {
     const { input, root, rootLayout, typingLabel, attachLayout, attachPanel, addBtn } = this;
     this.setLayout(new QBoxLayout(Direction.TopToBottom));
@@ -133,7 +135,17 @@ export class InputPanel extends QWidget {
       iconQSize: new QSize(24, 24),
       tooltipText: 'Emoji'
     });
+    const emojiPicker = new EmojiPicker(this, Direction.BottomToTop);
+    emojiPicker.events.on('emoji', (emoji: Emoji) => {
+      this.input.insertPlainText(emoji.toString());
+    });
     emojiBtn.setFixedSize(38, 44);
+    emojiBtn.addEventListener('clicked', () => {
+      const map = emojiBtn.mapToGlobal(this.p0);
+      map.setX(map.x() - emojiPicker.size().width() + emojiBtn.size().width());
+      map.setY(map.y() - emojiPicker.size().height());
+      emojiPicker.popup(map);
+    })
     input.setAcceptRichText(false);
     input.setMaximumSize(MAX_QSIZE, 42);
     input.setMinimumSize(0, 42);

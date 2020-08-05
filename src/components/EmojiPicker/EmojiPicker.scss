@@ -10,6 +10,7 @@
     line-height: 32px;
     height: 30px;
     padding: 2px 8px;
+    border-radius: 4px;
     color: $text-normal;
     background-color: $background-tertiary;
     border: none;
@@ -18,8 +19,6 @@
   #EmojiView {
     background-color: transparent;
     border: none;
-    border-top: 1px solid $deprecated-text-input-border;
-    border-bottom: 1px solid $deprecated-text-input-border;
     padding: 8px 0px 8px 8px;
     QScrollBar {
       border-color: $background-primary;

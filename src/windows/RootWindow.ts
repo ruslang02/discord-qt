@@ -9,15 +9,13 @@ import { SettingsView } from "../views/SettingsView/SettingsView";
 import { Account } from "../structures/Account";
 import { Events } from "../structures/Events";
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
-import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 
 const { version, name } = require('../../package.json');
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
-  emojiPicker = new EmojiPicker(this);
-  popovers = {
+  dialogs = {
     customStatus: new CustomStatusDialog(this),
     acceptInvite: new AcceptInviteDialog(this),
   };

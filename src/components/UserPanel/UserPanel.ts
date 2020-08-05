@@ -96,7 +96,7 @@ export class UserPanel extends QWidget {
         // if (!app.client) return;
         const status = text === 'Do Not Disturb' ? 'dnd': text?.toLowerCase();
         if (text === 'Custom Status...') {
-          app.window.popovers.customStatus.show();
+          app.window.dialogs.customStatus.show();
           return;
         }
         // @ts-ignore
@@ -124,7 +124,7 @@ export class UserPanel extends QWidget {
       tooltipText: 'Accept Invite Code'
     });
     iBtn.setFixedSize(32, 32);
-    iBtn.addEventListener('clicked', () => app.window.popovers.acceptInvite.show());
+    iBtn.addEventListener('clicked', () => app.window.dialogs.acceptInvite.show());
 
     const setBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/cog.png'),

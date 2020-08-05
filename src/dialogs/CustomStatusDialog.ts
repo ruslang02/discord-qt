@@ -9,6 +9,7 @@ import { resolveEmoji } from '../utilities/ResolveEmoji';
 import { RootWindow } from '../windows/RootWindow';
 import { Emoji } from 'discord.js';
 import { getEmoji } from '../utilities/GetEmoji';
+import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
 
 export class CustomStatusDialog extends Dialog {
   private statusLabel = new QLabel(this);
@@ -51,16 +52,17 @@ export class CustomStatusDialog extends Dialog {
     layout.setContentsMargins(16, 0, 16, 16);
     statusLabel.setObjectName('FormLabel');
     const statusLayout = new QBoxLayout(Direction.LeftToRight);
+    const emojiPicker = new EmojiPicker(emojiInput);
     emojiInput.setObjectName('EmojiInput');
     emojiInput.setFixedSize(48, 48);
     emojiInput.setCursor(CursorShape.PointingHandCursor);
     emojiInput.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       const map = emojiInput.mapToGlobal(this.p0);
       const point = new QPoint(map.x(), map.y() + emojiInput.size().height());
-      app.window.emojiPicker.popup(point);
-      app.window.emojiPicker.events.once('emoji', async (emoji: Emoji) => {
+      emojiPicker.popup(point);
+      emojiPicker.events.once('emoji', async (emoji: Emoji) => {
         await this.loadEmoji(emoji);
-        app.window.emojiPicker.hide();
+        emojiPicker.hide();
       })
     });
     statusInput.setObjectName('StatusInput');
