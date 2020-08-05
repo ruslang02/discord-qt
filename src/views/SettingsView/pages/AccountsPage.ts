@@ -11,6 +11,7 @@ import { Client } from 'discord.js';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Account } from "../../../structures/Account";
 import { Events } from "../../../structures/Events";
+import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -197,9 +198,7 @@ export class AccountsPage extends Page {
     layout.addWidget(headerLabel);
     layout.addWidget(helpLabel);
     layout.addWidget(addBlock);
-    const errorMsg = new QLabel();
-    errorMsg.setObjectName('ErrorMessage');
-    errorMsg.addEventListener(WidgetEventTypes.MouseButtonPress, () => errorMsg.hide());
+    const errorMsg = new DErrorMessage(this);
     layout.addWidget(errorMsg);
     errorMsg.hide();
     const divider = new Divider();

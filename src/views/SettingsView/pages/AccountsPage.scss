@@ -1,14 +1,5 @@
 @import '../../../Colors.scss';
 
-#ErrorMessage {
-  background-color: rgba(240,71,71,.3);
-  border-radius: 3px;
-  border: 1px solid #f04747;
-  margin-bottom: 12px;
-  font-size: 14px;
-  padding: 12px;
-  color: white;
-}
 #Account {
   border-radius: 5px;
   background-color: $background-mobile-secondary;

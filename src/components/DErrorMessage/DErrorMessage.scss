@@ -1,0 +1,11 @@
+@import '../../Colors.scss';
+
+#DErrorMessage {
+  background-color: transparentize($red, .7);
+  border-radius: 3px;
+  border: 1px solid $red;
+  margin-bottom: 12px;
+  font-size: 14px;
+  padding: 12px;
+  color: white;
+}
