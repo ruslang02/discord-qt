@@ -15,13 +15,6 @@ export class MainPanel extends QWidget {
 
     this.setLayout(this.layout);
     this.initComponent();
-    this.setAcceptDrops(true);
-    this.addEventListener(WidgetEventTypes.Drop, (e) => {
-      let dropEvent = new QDropEvent(e as NativeElement);
-      let mimeData = dropEvent.mimeData();
-      console.log('dropped', dropEvent.type());
-      this.inputPanel.addFiles([...mimeData.urls().map(v => v.toString())]);
-    });
   }
 
   private initComponent() {

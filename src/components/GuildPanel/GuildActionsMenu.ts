@@ -30,6 +30,7 @@ export class GuildActionsMenu extends QWidget {
     leavebtn.addEventListener('clicked', () => {
       console.log(this.guild);
       this.guild?.leave();
+      app.emit(Events.SWITCH_VIEW, 'dm');
     })
     layout.addWidget(leavebtn);
   }

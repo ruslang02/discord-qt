@@ -17,4 +17,8 @@
       padding-bottom: 5px;
     }
   }
+  #AttachmentPanel QLabel {
+    background-color: $background-secondary;
+    border-radius: 8px;
+  }
 }
