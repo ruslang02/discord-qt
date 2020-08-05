@@ -1,14 +1,14 @@
-import { Dialog } from '../Dialog';
+import { Dialog } from './Dialog';
 import { QLabel, QLineEdit, QComboBox, QBoxLayout, Direction, QWidget, CursorShape, QPixmap, AlignmentFlag, WidgetAttribute, WidgetEventTypes, QPushButton, QIcon, QPoint, QSize } from '@nodegui/nodegui';
-import { app } from '../..';
-import { Events } from '../../structures/Events';
-import { DColorButton, DColorButtonColor } from '../../components/DColorButton/DColorButton';
-import { DIconButton } from '../../components/DIconButton/DIconButton';
-import { pictureWorker } from '../../utilities/PictureWorker';
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
-import { RootWindow } from '../../windows/RootWindow';
+import { app } from '..';
+import { Events } from '../structures/Events';
+import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
+import { DIconButton } from '../components/DIconButton/DIconButton';
+import { pictureWorker } from '../utilities/PictureWorker';
+import { resolveEmoji } from '../utilities/ResolveEmoji';
+import { RootWindow } from '../windows/RootWindow';
 import { Emoji } from 'discord.js';
-import { getEmoji } from '../../utilities/GetEmoji';
+import { getEmoji } from '../utilities/GetEmoji';
 
 export class CustomStatusDialog extends Dialog {
   private statusLabel = new QLabel(this);

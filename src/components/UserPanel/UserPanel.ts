@@ -7,7 +7,7 @@ import { DIconButton } from "../DIconButton/DIconButton";
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import './UserPanel.scss';
-import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog/CustomStatusDialog';
+import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class UserPanel extends QWidget {
@@ -124,7 +124,7 @@ export class UserPanel extends QWidget {
       tooltipText: 'Accept Invite Code'
     });
     iBtn.setFixedSize(32, 32);
-    iBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'invite'));
+    iBtn.addEventListener('clicked', () => app.window.popovers.acceptInvite.show());
 
     const setBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/cog.png'),

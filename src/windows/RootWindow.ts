@@ -8,8 +8,9 @@ import './RootWindow.scss';
 import { SettingsView } from "../views/SettingsView/SettingsView";
 import { Account } from "../structures/Account";
 import { Events } from "../structures/Events";
-import { CustomStatusDialog } from '../dialogs/CustomStatusDialog/CustomStatusDialog';
+import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
+import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 
 const { version, name } = require('../../package.json');
 
@@ -18,6 +19,7 @@ export class RootWindow extends QMainWindow {
   emojiPicker = new EmojiPicker(this);
   popovers = {
     customStatus: new CustomStatusDialog(this),
+    acceptInvite: new AcceptInviteDialog(this),
   };
   private mainView = new MainView();
   private settingsView = new SettingsView();
