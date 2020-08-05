@@ -10,8 +10,9 @@ export class GuildButton extends QLabel {
     this.setObjectName("PageButton");
     this.setFixedSize(72, 56);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    this.setProperty('toolTip', guild.name);
-    this.setText(guild.nameAcronym);
+    this.setProperty('toolTip', guild.available ? guild.name : 'This guild is unavailable.');
+    this.setText(guild.available ? guild.nameAcronym : '!');
+    if (!guild.available) this.setInlineStyle('border: 1px solid red');
     this.setAlignment(AlignmentFlag.AlignCenter);
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       app.emit(Events.SWITCH_VIEW, 'guild', { guild });

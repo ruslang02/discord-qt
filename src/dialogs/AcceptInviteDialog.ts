@@ -42,20 +42,7 @@ export class AcceptInviteDialog extends Dialog {
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
     saveBtn.setText('Accept');
     saveBtn.setFixedSize(96, 38);
-    saveBtn.addEventListener('clicked', async () => {
-      let code = this.urlInput.text();
-      if (code.includes('//'))
-        code = new URL(code).pathname.replace(/\//g, '');
-      try {
-        await app.client.user?.acceptInvite(code);
-      } catch (e) {
-        this.errMsg.setText('This invite link is not valid.');
-        this.errMsg.show();
-        return;
-      }
-      this.urlLabel.clear();
-      this.hide();
-    })
+    saveBtn.addEventListener('clicked', () => this.checkInvite());
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
     cancelBtn.setText('Cancel');
     cancelBtn.setFixedSize(80, 38);
@@ -64,5 +51,24 @@ export class AcceptInviteDialog extends Dialog {
     footLayout.addWidget(saveBtn);
     footer.setLayout(footLayout);
     this.controls.addWidget(footer);
+  }
+  async checkInvite(url?: string) {
+    if (url) {
+      this.urlInput.setText(url);
+      this.show();
+      this.raise();
+    }
+    let code = this.urlInput.text();
+    if (code.includes('//'))
+      code = new URL(code).pathname.replace(/\//g, '');
+    try {
+      await app.client.user?.acceptInvite(code);
+    } catch (e) {
+      this.errMsg.setText('This invite link is not valid.');
+      this.errMsg.show();
+      return;
+    }
+    this.urlLabel.clear();
+    this.hide();
   }
 }

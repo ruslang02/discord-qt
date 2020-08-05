@@ -139,6 +139,7 @@ export class InputPanel extends QWidget {
     emojiPicker.events.on('emoji', (emoji: Emoji) => {
       this.input.insertPlainText(emoji.toString());
     });
+    emojiPicker.addEventListener(WidgetEventTypes.Hide, () => emojiBtn.setIcon(emojiBtn.qiconOff));
     emojiBtn.setFixedSize(38, 44);
     emojiBtn.addEventListener('clicked', () => {
       const map = emojiBtn.mapToGlobal(this.p0);

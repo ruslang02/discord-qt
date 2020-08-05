@@ -28,7 +28,6 @@ export class GuildActionsMenu extends QWidget {
     leavebtn.setText('Leave Server');
     leavebtn.setMinimumSize(0, 32);
     leavebtn.addEventListener('clicked', () => {
-      console.log(this.guild);
       this.guild?.leave();
       app.emit(Events.SWITCH_VIEW, 'dm');
     })

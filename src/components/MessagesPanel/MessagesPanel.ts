@@ -97,7 +97,6 @@ export class MessagesPanel extends QScrollArea {
     const messages = (await channel.messages.fetch({ before })).array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
     for (const message of messages) {
-      // console.log(message.content);
       const widget = new MessageItem();
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
       await widget.loadMessage(message);
