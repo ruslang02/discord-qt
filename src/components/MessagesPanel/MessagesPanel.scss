@@ -1,6 +1,7 @@
-@import '../../Colors.scss';
+@import "../../Colors.scss";
 
-#MessagesPanel, #MessagesContainer {
+#MessagesPanel,
+#MessagesContainer {
   background-color: $background-primary;
   border: none;
   QScrollBar {
@@ -44,5 +45,18 @@
   }
   #Avatar {
     margin-top: 2px;
+  }
+  #InviteContainer {
+    background-color: $background-secondary;
+    border-radius: 4px;
+    #Helper {
+      font-weight: 700;
+      color: $interactive-normal;
+      text-transform: uppercase;
+    }
+    #Name {
+      font-weight: 600;
+      color: $text-normal;
+    }
   }
 }

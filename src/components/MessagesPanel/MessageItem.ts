@@ -1,12 +1,15 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QListWidget } from "@nodegui/nodegui";
 import { Message, Collection, MessageAttachment, Snowflake } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import open from 'open';
 import markdownIt from 'markdown-it';
 import { CancelToken } from '../../utilities/CancelToken';
-import { app } from '../..';
+import { app, MAX_QSIZE } from '../..';
+import { DIconButton } from '../DIconButton/DIconButton';
+import { Dir } from 'fs';
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
+const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const avatarCache = new Map<Snowflake, QPixmap>();
 const MD = markdownIt({
   html: false,
@@ -59,9 +62,13 @@ export class MessageItem extends QWidget {
     contentLabel.setObjectName('Content');
     contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    contentLabel.setOpenExternalLinks(true);
     contentLabel.setWordWrap(true);
     contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
+    contentLabel.addEventListener('linkActivated', (link) => {
+      const url = new URL(link);
+      if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
+      else open(link);
+    })
 
     infoContainer.setLayout(infoLayout);
     msgContainer.setLayout(msgLayout);
@@ -128,14 +135,14 @@ export class MessageItem extends QWidget {
   }
   private alreadyRendered = false;
   async renderImages() {
-    const {message, avatar} = this;
+    const { message, avatar } = this;
     if (!message || this.alreadyRendered) return;
     (async () => {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) return avatar.setPixmap(cachePixmap);
       const image = await pictureWorker.loadImage(
-        message.author.avatarURL({ format: 'png', size: 64 }) || 
-        message.author.defaultAvatarURL, 
+        message.author.avatarURL({ format: 'png', size: 64 }) ||
+        message.author.defaultAvatarURL,
         { size: 64 }
       );
       if (image) {
@@ -168,6 +175,44 @@ export class MessageItem extends QWidget {
     return MD.render(content);
   }
 
+  private async processInvites(message: Message) {
+    const invites = message.content.match(INVITE_REGEX) || [];
+    for (const inviteLink of invites) {
+      try {
+        const invite = await app.client.fetchInvite(inviteLink);
+        const item = new QWidget(this);
+        item.setObjectName('InviteContainer');
+        item.setMinimumSize(432, 0);
+        item.setMaximumSize(432, MAX_QSIZE);
+        const layout = new QBoxLayout(Direction.TopToBottom);
+        item.setLayout(layout);
+        layout.setContentsMargins(16, 16, 16, 16);
+        layout.setSpacing(12);
+        const helperText = new QLabel(item);
+        helperText.setText('An invite to join a server');
+        helperText.setObjectName('Helper');
+        const mainLayout = new QBoxLayout(Direction.LeftToRight);
+        const avatar = new QLabel(item);
+        pictureWorker.loadImage(invite.guild?.iconURL({ size: 32 }) || '', {size: 32})
+          .then(buf => {
+            if (!buf) return;
+            const pix = new QPixmap();
+            pix.loadFromData(buf, 'PNG');
+            avatar.setPixmap(pix);
+          });
+        const nameLabel = new QLabel(item);
+        nameLabel.setText(`${invite.guild?.name || 'A server'} <span style='font-size: small; color: #72767d'>${invite.memberCount} Members</span>`);
+        nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
+        nameLabel.setObjectName('Name');
+        mainLayout.addWidget(avatar);
+        mainLayout.addWidget(nameLabel, 1);
+        layout.addWidget(helperText);
+        layout.addLayout(mainLayout, 1);
+        this.msgLayout.addWidget(item);
+      } catch (e) { }
+    }
+  }
+
   async loadMessage(message: Message, token?: CancelToken) {
     const { avatar, userNameLabel, dateLabel, contentLabel } = this;
     this.message = message;
@@ -175,6 +220,7 @@ export class MessageItem extends QWidget {
     if (token?.cancelled) return;
     dateLabel.setText(message.createdAt.toLocaleString());
     contentLabel.setCursor(CursorShape.IBeamCursor);
+    if (message.system) return this.loadSystemMessage(message);
     if (message.content.trim() == "")
       contentLabel.hide();
     else {
@@ -187,5 +233,30 @@ export class MessageItem extends QWidget {
     }
     if (token?.cancelled) return;
     await this.processAttachments(message.attachments);
+    await this.processInvites(message);
+  }
+
+  private loadSystemMessage(message: Message) {
+    let content = '';
+    switch (message.type) {
+      case 'GUILD_MEMBER_JOIN':
+        content = 'joined the server.';
+        break;
+      case 'RECIPIENT_ADD':
+        content = 'was added to the group DM.';
+        break;
+      case 'RECIPIENT_REMOVE':
+        content = 'was removed from the group DM.';
+        break;
+      case 'CALL':
+        content = 'called.';
+        break;
+      case 'PINS_ADD':
+        content = 'pinned a message to this channel.';
+        break;
+    }
+    this.dateLabel.hide();
+    this.contentLabel.setText('<i>&nbsp;</i>' + content);
+    this.msgLayout.setDirection(Direction.LeftToRight);
   }
 }
