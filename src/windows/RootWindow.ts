@@ -8,12 +8,17 @@ import './RootWindow.scss';
 import { SettingsView } from "../views/SettingsView/SettingsView";
 import { Account } from "../structures/Account";
 import { Events } from "../structures/Events";
+import { CustomStatusDialog } from '../dialogs/CustomStatusDialog/CustomStatusDialog';
+import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
 
 const { version, name } = require('../../package.json');
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
-
+  emojiPicker = new EmojiPicker(this);
+  popovers = {
+    customStatus: new CustomStatusDialog(this),
+  };
   private mainView = new MainView();
   private settingsView = new SettingsView();
 

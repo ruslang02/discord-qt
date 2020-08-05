@@ -1,0 +1,37 @@
+@import "../../Colors.scss";
+
+#EmojiPicker {
+  background-color: $background-primary;
+  border-radius: 5px;
+  border: 1px solid $deprecated-text-input-border;
+
+  QLineEdit {
+    font-size: 16px;
+    line-height: 32px;
+    height: 30px;
+    padding: 2px 8px;
+    color: $text-normal;
+    background-color: $background-tertiary;
+    border: none;
+  }
+
+  #EmojiView {
+    background-color: transparent;
+    border: none;
+    border-top: 1px solid $deprecated-text-input-border;
+    border-bottom: 1px solid $deprecated-text-input-border;
+    padding: 8px 0px 8px 8px;
+    QScrollBar {
+      border-color: $background-primary;
+    }
+    &::item {
+      border-radius: 3px;
+      outline: 0;
+      padding: 3px;
+      font-size: 0;
+    }
+    &::item:hover, &::item:selected {
+      background-color: $background-accent;
+    }
+  }
+}

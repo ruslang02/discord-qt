@@ -11,7 +11,7 @@ import { Events } from "./structures/Events";
 const { readdir } = fs.promises;
 
 const FONTS_PATH = join(__dirname, './assets/fonts');
-const paths = envPaths('discord', {suffix: 'qt'})
+export const paths = envPaths('discord', {suffix: 'qt'})
 const CONFIG_PATH = join(paths.config, 'config.json');
 
 class Application extends EventEmitter {
