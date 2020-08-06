@@ -1,4 +1,4 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QListWidget } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QListWidget, QPoint } from "@nodegui/nodegui";
 import { Message, Collection, MessageAttachment, Snowflake } from "discord.js";
 import { pictureWorker } from "../../utilities/PictureWorker";
 import open from 'open';
@@ -39,7 +39,7 @@ export class MessageItem extends QWidget {
     this.setLayout(this.controls);
     this.initComponent();
   }
-
+  private p0 = new QPoint(0, 0);
   private initComponent() {
     const { controls, avatar, userNameLabel, dateLabel, contentLabel, msgContainer, msgLayout, infoContainer, infoLayout } = this;
     controls.setContentsMargins(16, 4, 16, 4);
@@ -48,6 +48,18 @@ export class MessageItem extends QWidget {
     avatar.setObjectName('Avatar');
     avatar.setMinimumSize(48, 0);
     avatar.setAlignment(AlignmentFlag.AlignTop);
+    avatar.setCursor(CursorShape.PointingHandCursor);
+    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+      if (!this.message) return;
+      avatar.setCursor(CursorShape.ArrowCursor);
+      const { miniProfile } = app.window.dialogs;
+      const map = avatar.mapToGlobal(this.p0);
+      const globalMap = app.window.mapToGlobal(this.p0)
+      map.setX(map.x() + avatar.size().width());
+      miniProfile.loadProfile(this.message.member || this.message.author)
+      miniProfile.popup(map);
+      setTimeout(() => avatar.setCursor(CursorShape.PointingHandCursor), 1000);
+    })
     if (!app.config.enableAvatars) avatar.hide();
 
     infoLayout.setSpacing(8);

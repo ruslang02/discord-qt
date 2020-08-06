@@ -39,7 +39,6 @@ export class EmojiPicker extends QMenu {
   private initComponent() {
     const { controls, root, emojiView, textInput } = this;
     root.setLayout(controls);
-    root.setMouseTracking(false);
     root.setObjectName('EmojiPicker');
     root.setFixedSize(392, 350);
     controls.setContentsMargins(0, 0, 0, 0);

@@ -10,6 +10,7 @@ import { Account } from "../structures/Account";
 import { Events } from "../structures/Events";
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
+import { MiniProfile } from '../components/MiniProfile/MiniProfile';
 
 const { version, name } = require('../../package.json');
 
@@ -18,6 +19,7 @@ export class RootWindow extends QMainWindow {
   dialogs = {
     customStatus: new CustomStatusDialog(this),
     acceptInvite: new AcceptInviteDialog(this),
+    miniProfile: new MiniProfile(this),
   };
   private mainView = new MainView();
   private settingsView = new SettingsView();

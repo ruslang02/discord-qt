@@ -1,0 +1,30 @@
+@import "../../Colors.scss";
+
+#MiniProfile {
+  background-color: $background-primary;
+  border-radius: 5px;
+  border: 1px solid $deprecated-text-input-border;
+  #Profile {
+    background-color: $background-secondary;
+    border-radius: 5px;
+  }
+  #Nickname {
+    font-weight: 500;
+    line-height: 18px;
+    color: #fff;
+    font-size: 16px;
+    margin-top: 12px;
+  }
+  #Username {
+    line-height: 18px;
+    color: $header-secondary;
+    font-size: 14px;
+  }
+  #CustomStatusLabel {
+    margin-top: 12px;
+    text-align: center;
+    #Text {
+      text-align:center;
+    }
+  }
+}
