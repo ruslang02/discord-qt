@@ -8,7 +8,6 @@ import { pictureWorker } from '../utilities/PictureWorker';
 import { resolveEmoji } from '../utilities/ResolveEmoji';
 import { RootWindow } from '../windows/RootWindow';
 import { Emoji } from 'discord.js';
-import { getEmoji } from '../utilities/GetEmoji';
 import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
 
 export class CustomStatusDialog extends Dialog {
@@ -39,7 +38,7 @@ export class CustomStatusDialog extends Dialog {
   }
 
   private async loadEmoji(emoji: Emoji) {
-    const emojiFile = await getEmoji(emoji);
+    const emojiFile = await resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name });
     if (!emojiFile) return;
     this.emoji = emoji;
     this.emojiInput.setPixmap(new QPixmap(emojiFile).scaled(32, 32, 1, 1));
@@ -71,7 +70,7 @@ export class CustomStatusDialog extends Dialog {
     resetButton.setText('×');
     resetButton.setFixedSize(38, 38);
     resetButton.setInlineStyle('font-size: 32px; padding: 0');
-    resetButton.addEventListener('clicked', () => app.client.user?.setCustomStatus({text: undefined}));
+    resetButton.addEventListener('clicked', () => app.client.user?.setCustomStatus({ text: undefined }));
     statusLayout.setSpacing(5);
     statusLayout.setContentsMargins(0, 0, 0, 0);
     statusLayout.addWidget(emojiInput);

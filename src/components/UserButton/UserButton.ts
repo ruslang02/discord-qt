@@ -140,12 +140,9 @@ export class UserButton extends DChannelButton {
     const activity = presence.activities.find(a => !!a.emoji);
     if (!activity || !activity.emoji) return;
     // @ts-ignore
-    const emojiUrl = await resolveEmoji({emoji_id: activity.emoji.id, emoji_name: activity.emoji.name});
-    if (!emojiUrl) return;
-    const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
-    if (!buf) return;
-    const pix = new QPixmap();
-    pix.loadFromData(buf, 'PNG');
+    const emojiPath = await resolveEmoji({emoji_id: activity.emoji.id, emoji_name: activity.emoji.name});
+    if (!emojiPath) return;
+    const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();
   }

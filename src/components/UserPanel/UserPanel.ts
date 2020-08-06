@@ -169,12 +169,9 @@ export class UserPanel extends QWidget {
 
   async loadStatusEmoji(status: CustomStatus) {
     this.statusIcon.hide();
-    const emojiUrl = await resolveEmoji(status);
-    if (!emojiUrl) return;
-    const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 16 })
-    if (!buf) return;
-    const pix = new QPixmap();
-    pix.loadFromData(buf, 'PNG');
+    const emojiPath = await resolveEmoji(status);
+    if (!emojiPath) return;
+    const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();
   }

@@ -2,8 +2,8 @@ import { QWidget, QBoxLayout, Direction, QLineEdit, QMenu, WidgetAttribute, QLis
 import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
 import { app } from '../..';
-import { getEmoji } from '../../utilities/GetEmoji';
 import './EmojiPicker.scss';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class EmojiPicker extends QMenu {
   events = new EventEmitter();
@@ -107,7 +107,7 @@ export class EmojiPicker extends QMenu {
     item.setToolTip(`:${emoji.name}:`);
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
-    const path = await getEmoji(emoji);
+    const path = await resolveEmoji({emoji_id: emoji.id || undefined, emoji_name: emoji.name});
     if (!path) return;
     item.setIcon(new QIcon(path));
     this.emojiView.addItem(item);

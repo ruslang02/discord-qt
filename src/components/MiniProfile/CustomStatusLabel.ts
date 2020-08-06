@@ -1,10 +1,7 @@
 import { QBoxLayout, Direction, QWidget, QLabel, QPixmap, AlignmentFlag } from '@nodegui/nodegui';
 import { CustomStatus, Presence, Emoji, Activity, User, ClientUser } from 'discord.js';
-import { getEmoji } from '../../utilities/GetEmoji';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
-import { pictureWorker } from '../../utilities/PictureWorker';
-import { MAX_QSIZE, app } from '../..';
-import { stat } from 'fs';
+import { app } from '../..';
 
 export class CustomStatusLabel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -57,12 +54,9 @@ export class CustomStatusLabel extends QWidget {
     
     const status = { emoji_id: emojiId, emoji_name: emojiName } as CustomStatus;
     this.show();
-    const emojiUrl = await resolveEmoji(status);
-    if (!emojiUrl) return;
-    const buf = await pictureWorker.loadImage(emojiUrl, { roundify: false, size: 64 })
-    if (!buf) return;
-    const pix = new QPixmap();
-    pix.loadFromData(buf, 'PNG');
+    const emojiPath = await resolveEmoji(status);
+    if (!emojiPath) return;
+    const pix = new QPixmap(emojiPath);
     const size = !!statusText ? 20 : 48;
     statusIcon.setPixmap(pix.scaled(size, size, 1, 1));
     statusIcon.setProperty('toolTip', `:${emojiName}:`);
