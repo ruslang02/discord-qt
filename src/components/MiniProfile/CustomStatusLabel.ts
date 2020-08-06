@@ -19,7 +19,7 @@ export class CustomStatusLabel extends QWidget {
     const { layout, statusIcon, statusLabel } = this;
     this.setLayout(layout);
     layout.setContentsMargins(0, 12, 0, 0);
-    layout.setSpacing(5);
+    layout.setSpacing(12);
     layout.addStretch();
     layout.addWidget(statusIcon, 0);
     layout.addWidget(statusLabel, 1);
@@ -57,7 +57,7 @@ export class CustomStatusLabel extends QWidget {
     const emojiPath = await resolveEmoji(status);
     if (!emojiPath) return;
     const pix = new QPixmap(emojiPath);
-    const size = !!statusText ? 20 : 48;
+    const size = !!statusText ? 24 : 48;
     statusIcon.setPixmap(pix.scaled(size, size, 1, 1));
     statusIcon.setProperty('toolTip', `:${emojiName}:`);
     statusIcon.show();

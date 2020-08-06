@@ -141,7 +141,7 @@ export class UserButton extends DChannelButton {
     if (!activity || !activity.emoji) return;
     // @ts-ignore
     const emojiPath = await resolveEmoji({emoji_id: activity.emoji.id, emoji_name: activity.emoji.name});
-    if (!emojiPath) return;
+    if (!emojiPath) return console.log(activity);
     const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();
