@@ -9,6 +9,7 @@
     margin: 0 12px 8px;
     background-color: $background-primary;
     border: none;
+    color: white;
     &:hover, &[active='true'] {
       background-color: $blurple;
       border-radius: 15px;
