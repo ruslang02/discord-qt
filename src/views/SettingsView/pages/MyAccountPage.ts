@@ -21,13 +21,10 @@ export class MyAccountPage extends Page {
   private loadUser() {
     this.unabel.setText(`${app.client.user?.username}#${app.client.user?.discriminator}`);
     this.emabel.setText(app.client.user?.email || "");
-    pictureWorker.loadImage(app.client.user?.avatarURL({size: 128, format: 'png'}) || app.client.user?.defaultAvatarURL || '', {size: 128})
-      .then(buffer => {
-        if(!buffer) return;
-        const avamap = new QPixmap();
-        avamap.loadFromData(buffer);
-        this.avatar.setPixmap(avamap.scaled(100, 100, 1, 1));
-      });
+    pictureWorker.loadImage(
+      app.client.user?.avatarURL({ size: 128, format: 'png' }) ||
+      app.client.user?.defaultAvatarURL || ''
+    ).then(path => path && this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
   }
 
   unabel = new QLabel(this);

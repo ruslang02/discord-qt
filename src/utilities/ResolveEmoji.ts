@@ -20,13 +20,9 @@ export async function resolveEmoji(status: CustomStatus): Promise<string | null>
   const url = await getEmojiURL(status);
   if (!url) return null;
   if (fname === '') fname = `tw/${basename(url).split('.')[0]}`;
-  const path = join(EMOJI_PATH, fname + '.png');
-  if (existsSync(path)) return path;
-  //@ts-ignore
-  const buf = await pictureWorker.loadImage(url, { roundify: false })
-  if (!buf) return null;
-  await writeFile(path, buf);
-  return path;
+  const filePath = await pictureWorker.loadImage(url, { roundify: false })
+  if (!filePath) return null;
+  return filePath;
 }
 
 export function getEmojiURL(status: CustomStatus): Promise<string | null> {

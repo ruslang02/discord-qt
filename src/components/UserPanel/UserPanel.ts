@@ -154,17 +154,13 @@ export class UserPanel extends QWidget {
   }
 
   async updateAvatar(): Promise<void> {
+    const { avatar } = this;
     const { client } = app;
     if (!client.user) return;
-    let avatarBuf = await pictureWorker.loadImage(
+    let path = await pictureWorker.loadImage(
       client.user.avatarURL({ format: 'png', size: 64 }) || client.user.defaultAvatarURL
     );
-
-    if (avatarBuf !== null) {
-      const avatarPixmap = new QPixmap();
-      avatarPixmap.loadFromData(avatarBuf, 'PNG');
-      this.avatar.setPixmap(avatarPixmap.scaled(32, 32, 1, 1));
-    }
+    path && avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }
 
   async loadStatusEmoji(status: CustomStatus) {
@@ -177,7 +173,7 @@ export class UserPanel extends QWidget {
   }
 
   async updatePresence() {
-    const { avatar, nameLabel, discLabel, controls, statusBtn, statusIcon, statusText } = this;
+    const { discLabel, statusBtn, statusIcon, statusText } = this;
     const user = app.client.user;
     if (!user) return;
     const { customStatus, presence } = user;

@@ -100,10 +100,9 @@ export class InputPanel extends QWidget {
       const url = pathToFileURL(file);
       if (!PIXMAP_EXTS.includes(extname(file).replace(/\./g, '').toUpperCase()))
         loadDefault();
-      else pictureWorker.loadImage(url.href, { roundify: false }).then(buffer => {
-        if (!buffer) return;
-        const pix = new QPixmap();
-        pix.loadFromData(buffer);
+      else pictureWorker.loadImage(url.href, { roundify: false }).then(path => {
+        if (!path) return;
+        const pix = new QPixmap(path);
         if (pix.width() < 1) loadDefault();
         else attach.setPixmap(pix.scaled(120, 60, 1, 1));
       });

@@ -23,10 +23,9 @@ export class GuildButton extends QLabel {
     if (this.hasPixmap) return;
     this.hasPixmap = true;
     pictureWorker.loadImage(this.guild.iconURL({size: 64, format: 'png'}) || '')
-      .then(imageBuffer => {
-        if (imageBuffer) {
-          const guildImage = new QPixmap();
-          guildImage.loadFromData(imageBuffer, 'PNG');
+      .then(path => {
+        if (path) {
+          const guildImage = new QPixmap(path);
           this.setPixmap(guildImage.scaled(48, 48, 1, 1));
         }
       });

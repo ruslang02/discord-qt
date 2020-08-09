@@ -7,6 +7,7 @@ import { CancelToken } from '../../utilities/CancelToken';
 import { app, MAX_QSIZE } from '../..';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { Dir } from 'fs';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
@@ -102,11 +103,10 @@ export class MessageItem extends QWidget {
     for (const emo of emoIds) {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
+      const emojiPath = resolveEmoji({emoji_id: id, emoji_name: name});
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
-      const buffer = await pictureWorker.loadImage(url, { roundify: false, format, size: 32 });
-      if (!buffer) continue;
 
-      content = content.replace(emo, `<a href='${url}'><img width=${size} src='data:image/${format};base64,${buffer.toString('base64')}'></a>`);
+      content = content.replace(emo, `<a href='${url}'><img width=${size} src='${emojiPath}'></a>`);
       contentLabel.addEventListener('linkHovered', (link: string) => {
         if (link === url) contentLabel.setProperty('toolTip', `:${name}:`);
       })
@@ -154,23 +154,19 @@ export class MessageItem extends QWidget {
       if (cachePixmap) return avatar.setPixmap(cachePixmap);
       const image = await pictureWorker.loadImage(
         message.author.avatarURL({ format: 'png', size: 64 }) ||
-        message.author.defaultAvatarURL,
-        { size: 64 }
+        message.author.defaultAvatarURL
       );
       if (image) {
-        let pixmap = new QPixmap();
-        pixmap.loadFromData(image);
-        pixmap = pixmap.scaled(40, 40, 1, 1);
+        let pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
         avatar.setPixmap(pixmap);
         avatarCache.set(message.author.id, pixmap);
       }
     })();
     this.attachs.forEach(async (url, label) => {
       this.attachs.delete(label);
-      const pixmap = new QPixmap();
       const image = await pictureWorker.loadImage(url);
       if (!image) return;
-      pixmap.loadFromData(image);
+      const pixmap = new QPixmap(image);
       label.setPixmap(pixmap);
     });
     this.alreadyRendered = true;
@@ -205,12 +201,10 @@ export class MessageItem extends QWidget {
         helperText.setObjectName('Helper');
         const mainLayout = new QBoxLayout(Direction.LeftToRight);
         const avatar = new QLabel(item);
-        pictureWorker.loadImage(invite.guild?.iconURL({ size: 32 }) || '', {size: 32})
-          .then(buf => {
-            if (!buf) return;
-            const pix = new QPixmap();
-            pix.loadFromData(buf, 'PNG');
-            avatar.setPixmap(pix);
+        pictureWorker.loadImage(invite.guild?.iconURL({ size: 32 }) || '')
+          .then(path => {
+            if (!path) return;
+            avatar.setPixmap(new QPixmap(path));
           });
         const nameLabel = new QLabel(item);
         nameLabel.setText(`${invite.guild?.name || 'A server'} <span style='font-size: small; color: #72767d'>${invite.memberCount} Members</span>`);

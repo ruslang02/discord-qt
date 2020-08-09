@@ -1,12 +1,8 @@
 import { Dialog } from './Dialog';
-import { QLabel, QLineEdit, QComboBox, QBoxLayout, Direction, QWidget, CursorShape, QPixmap, AlignmentFlag, WidgetAttribute, WidgetEventTypes, QPushButton, QIcon, QPoint, QSize } from '@nodegui/nodegui';
+import { QLabel, QLineEdit, QComboBox, QBoxLayout, Direction, QWidget, CursorShape, QPixmap, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
 import { app } from '..';
-import { Events } from '../structures/Events';
 import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
-import { DIconButton } from '../components/DIconButton/DIconButton';
-import { pictureWorker } from '../utilities/PictureWorker';
 import { resolveEmoji } from '../utilities/ResolveEmoji';
-import { RootWindow } from '../windows/RootWindow';
 import { Emoji } from 'discord.js';
 import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
 

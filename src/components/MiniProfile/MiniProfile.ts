@@ -71,12 +71,10 @@ export class MiniProfile extends QMenu {
     if (!user) return;
     this.setMinimumSize(250, 0);
     avatar.clear();
-    pictureWorker.loadImage(user.avatarURL() || '', {size: 128})
-      .then(buf => {
-        if (!buf) return;
-        const pix = new QPixmap();
-        pix.loadFromData(buf, 'PNG');
-        avatar.setPixmap(pix.scaled(80, 80, 1, 1));
+    pictureWorker.loadImage(user.avatarURL() || '')
+      .then(path => {
+        if (!path) return;
+        avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1));
       })
     if (member?.nickname) {
       username.show();

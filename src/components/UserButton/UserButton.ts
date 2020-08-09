@@ -94,14 +94,10 @@ export class UserButton extends DChannelButton {
   async loadAvatar() {
     if (!app.config.enableAvatars || !this.user || this.hasPixmap) return;
     this.hasPixmap = true;
-    pictureWorker.loadImage(
-      this.user.avatarURL({ format: "png", size: 32 }) || this.user.defaultAvatarURL, { size: 32 })
-      .then(async (buffer) => {
-        if (buffer === null) return;
-        const avatarPixmap = new QPixmap();
-        avatarPixmap.loadFromData(buffer, 'PNG');
-        this.avatar.setPixmap(avatarPixmap.scaled(32, 32, 1, 1));
-      });
+    const path = await pictureWorker.loadImage(
+      this.user.avatarURL({ format: "png", size: 32 }) || this.user.defaultAvatarURL
+    );
+    path && this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }
 
   async loadPresence(presence: Presence) {
@@ -109,7 +105,7 @@ export class UserButton extends DChannelButton {
     this.loadStatusEmoji(presence);
 
     if (presence.activities.length) {
-      const { type, name, state} = presence.activities[0];
+      const { type, name, state } = presence.activities[0];
       [this.statusLabel, this.statusIcon].forEach(w => w.setMaximumSize(MAX_QSIZE, MAX_QSIZE));
       let status = '';
 
@@ -140,7 +136,7 @@ export class UserButton extends DChannelButton {
     const activity = presence.activities.find(a => !!a.emoji);
     if (!activity || !activity.emoji) return;
     // @ts-ignore
-    const emojiPath = await resolveEmoji({emoji_id: activity.emoji.id, emoji_name: activity.emoji.name});
+    const emojiPath = await resolveEmoji({ emoji_id: activity.emoji.id, emoji_name: activity.emoji.name });
     if (!emojiPath) return console.log(activity);
     const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));

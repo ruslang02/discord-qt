@@ -1,6 +1,6 @@
 import https from "https";
 
-export async function httpsGet(url: string | null, options: { size: number, format: string }): Promise<Buffer | null> {
+export async function httpsGet(url: string | null): Promise<Buffer | null> {
   if (url === null) return null;
   return new Promise((resolve) => {
     https.get(url, (res) => {

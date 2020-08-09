@@ -71,12 +71,7 @@ export class AccountsPage extends Page {
 
     const avatar = new QLabel(accWidget);
     pictureWorker.loadImage(account.avatar, { roundify: true })
-      .then(buffer => {
-        if (!buffer) return;
-        const pm = new QPixmap();
-        pm.loadFromData(buffer);
-        avatar.setPixmap(pm.scaled(32, 32, 1, 1));
-      });
+      .then(path => path && avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)));
     const uname = new QLabel(accWidget);
     uname.setObjectName('UserName');
     uname.setText(account.username);
