@@ -4,24 +4,14 @@ import { Events } from '../../structures/Events';
 import { Client } from 'discord.js';
 import DBus, { ProxyObject, ClientInterface, DBusError } from 'dbus-next';
 import { getString, getNumber, ms2str } from './MPRISUtilities';
+import { PlayerInfo } from './PlayerInfo';
+import { createLogger } from '../../utilities/Console';
 
 const MPRIS_IFACE = 'org.mpris.MediaPlayer2.Player';
 const MPRIS_PATH = '/org/mpris/MediaPlayer2';
 const PROPERTIES_IFACE = 'org.freedesktop.DBus.Properties';
 const PLAYER = 'org.mpris.MediaPlayer2.clementine';
-const { version } = require('../../../package.json');
-
-export type PlayerInfo = {
-  title: string;
-  artist: string;
-  album: string;
-  duration: number;
-  current: number;
-  art: string;
-  id: string;
-  state: string;
-  bitrate: number;
-};
+const { log, error, debug } = createLogger('[mpris]');
 
 export class ActivityPanel extends QWidget {
   private bus: DBus.MessageBus;
@@ -41,14 +31,16 @@ export class ActivityPanel extends QWidget {
       this.player = this.mpris.getInterface(MPRIS_IFACE);
       this.props = this.mpris.getInterface(PROPERTIES_IFACE);
       this.props.on('PropertiesChanged', this.updatePresence.bind(this));
+      log('Init complete.')
     } catch (e) {
       const err = e as DBusError;
-      throw new Error(`MPRIS initialization failed. ${err.text}`);
+      error(`Couldn't connect to ${PLAYER}, Music Rich Presence inactive.`);
     }
   }
 
   private async updatePresence() {
     const player = await this.getPlaying();
+    debug(`Currently playing ${player.title} from ${player.artist}, ${ms2str(player.current)} / ${ms2str(player.duration)}`);
     app.client?.user?.setPresence({
       activity: player.state === 'Paused' ? undefined : {
         name: 'Clementine',
