@@ -1,11 +1,11 @@
-@import '../Colors.scss';
+@import "../Colors.scss";
 * {
-  font-family: 'Source Sans Pro'; // Default font
-//font-family: Whitney;           // Discord's font
+  font-family: "Source Sans Pro"; // Default font
+  //font-family: Whitney;           // Discord's font
 }
 #RootWindow {
-  height: '100%';
-  width: '100%';
+  height: "100%";
+  width: "100%";
   background-color: $black;
 }
 QToolTip {
@@ -14,4 +14,36 @@ QToolTip {
   font-size: 14px;
   border: 1px solid $interactive-hover;
   padding: 1px 2px;
+}
+QMenu {
+  background: $background-floating;
+  border-radius: 4px;
+  padding: 8px;
+  border: none;
+  color: $interactive-normal;
+  &::separator {
+    height: 1px;
+    background: $background-modifier-accent;
+    margin: 4px;
+  }
+  &::item {
+    color: $interactive-normal;
+    background-color: $background-floating;
+    border-radius: 2px;
+    font-size: 14px;
+    line-height: 18px;
+    padding: 6px 8px;
+    min-width: 120px;
+    max-width: 240px;
+  }
+  &::item:selected {
+    background-color: #5c6fb1;
+    color: white;
+  }
+  &::item:disabled {
+    color: $interactive-muted;
+  }
+  &::icon {
+    left: 8px;
+  }
 }

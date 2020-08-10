@@ -23,9 +23,9 @@
     }
     &::menu-indicator{ width:0px; }
   }
-}
-QMenu::item {
-  &:selected {
-    background-color: #43b581;
+  #StatusMenu {
+    &::item {
+      padding: 6px 25px 6px 15px;
+    }
   }
 }

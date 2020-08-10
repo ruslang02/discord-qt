@@ -8,6 +8,7 @@ export class ChannelButton extends DChannelButton {
   private chlabel = new QLabel();
   private pound = new QPixmap(join(__dirname, './assets/icons/pound.png'));
   private clipboard = QApplication.clipboard();
+  private channelMenu = new QMenu(this);
 
   constructor(parent?: any) {
     super(parent);
@@ -18,7 +19,7 @@ export class ChannelButton extends DChannelButton {
   }
 
   private initComponent() {
-    const {chicon, chlabel, pound, layout} = this;
+    const { chicon, chlabel, pound, layout } = this;
     layout.setSpacing(6);
     chicon.setPixmap(pound);
     chlabel.setInlineStyle('font-size: 16px; line-height: 20px;');
@@ -28,16 +29,19 @@ export class ChannelButton extends DChannelButton {
   }
 
   loadChannel(channel: TextChannel) {
+    const { channelMenu } = this;
     this.chlabel.setText(channel.name);
+    channelMenu.setInlineStyle('background: #18191c');
+    const copyId = new QAction();
+    copyId.setText('Copy ID');
+    copyId.addEventListener('triggered', () => {
+      this.clipboard.setText(channel.id, QClipboardMode.Clipboard);
+    });
+    channelMenu.addAction(copyId);
     this.addEventListener('customContextMenuRequested', (pos) => {
-      const menu = new QMenu();
-      const copyId = new QAction();
-      copyId.setText('Copy ID');
-      copyId.addEventListener('triggered', () => {
-        this.clipboard.setText(channel.id, QClipboardMode.Clipboard);
-      });
-      menu.addAction(copyId);
-      menu.exec(this.mapToGlobal(new QPoint(pos.x, pos.y)));
-    })
+      channelMenu.setInlineStyle('background: #18191c');
+      channelMenu.repolish();
+      channelMenu.popup(this.mapToGlobal(new QPoint(pos.x, pos.y)));
+    });
   }
 }

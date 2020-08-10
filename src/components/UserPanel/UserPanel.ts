@@ -1,4 +1,4 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon } from "@nodegui/nodegui";
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy } from "@nodegui/nodegui";
 import { Client, Constants, Presence, Activity, CustomStatus, PresenceData } from "discord.js";
 import path, { join } from 'path';
 import { app, MAX_QSIZE } from "../..";
@@ -88,8 +88,8 @@ export class UserPanel extends QWidget {
     layInfo.addWidget(nameLabel);
     layInfo.addLayout(layStat);
 
-    const statusMenu = new QMenu();
-
+    const statusMenu = new QMenu(this);
+    statusMenu.setObjectName('StatusMenu');
     ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach(text => {
       const action = new QAction();
       action.addEventListener('triggered', async () => {
@@ -117,6 +117,7 @@ export class UserPanel extends QWidget {
     statusBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     statusBtn.addEventListener('clicked', () => statusBtn.showMenu());
     statusBtn.setMenu(statusMenu);
+    statusBtn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
 
     const iBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/invite.png'),
