@@ -26,7 +26,7 @@ export class Config extends IConfig {
         recentEmojis: recentEmojis ?? [],
       } as IConfig;
       Object.assign(this, appConfig);
-      console.log('Loaded config:', appConfig);
+      if (appConfig.debug === true) console.log('Loaded config:', appConfig);
     } catch(err) {
       if (!existsSync(file))
         await writeFile(file, '{}', 'utf8');
