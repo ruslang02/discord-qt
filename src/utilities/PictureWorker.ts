@@ -19,7 +19,7 @@ class PictureWorker {
     this.worker.on('message', this.resolveImage.bind(this));
   }
 
-  loadImage(url: string, options?: Options): Promise<string | null> {
+  loadImage(url?: string | null, options?: Options): Promise<string | null> {
     const { callbacks, worker } = this;
     if (!url || (url || '').toString().trim() === '') return Promise.resolve(null);
 
@@ -34,6 +34,7 @@ class PictureWorker {
     url = uri.href;
 
     return new Promise(resolve => {
+      if (!url) return;
       const cb = callbacks.get(url);
       if (cb !== undefined) {
         callbacks.set(url, (b) => {

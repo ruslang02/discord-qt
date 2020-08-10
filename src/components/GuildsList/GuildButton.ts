@@ -22,7 +22,7 @@ export class GuildButton extends QLabel {
   async loadAvatar() {
     if (this.hasPixmap) return;
     this.hasPixmap = true;
-    pictureWorker.loadImage(this.guild.iconURL({size: 64, format: 'png'}) || '')
+    pictureWorker.loadImage(this.guild.iconURL({size: 256, format: 'png'}))
       .then(path => {
         if (path) {
           const guildImage = new QPixmap(path);

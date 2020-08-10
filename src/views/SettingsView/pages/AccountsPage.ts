@@ -12,6 +12,7 @@ import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Account } from "../../../structures/Account";
 import { Events } from "../../../structures/Events";
 import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
+import { clientOptions } from '../../../structures/ClientOptions';
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -159,9 +160,8 @@ export class AccountsPage extends Page {
       const token = addTokenField.text();
       addButton.setEnabled(false);
       try {
-        const client = new Client({
-          waitForGuildsTimeout: 0
-        });
+        console.log(token);
+        const client = new Client(clientOptions);
         await client.login(token);
         if (client.user?.bot) {
           await client.destroy();
@@ -170,7 +170,7 @@ export class AccountsPage extends Page {
         const account = {
           username: client.user?.username || 'Unknown User',
           discriminator: client.user?.discriminator || '0000',
-          avatar: client.user?.avatarURL({format: 'png', size: 64}) || '',
+          avatar: client.user?.avatarURL({format: 'png', size: 256}) || client.user?.defaultAvatarURL,
           token,
           autoLogin: false,
         } as Account;

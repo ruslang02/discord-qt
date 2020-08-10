@@ -1,13 +1,12 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QListWidget, QPoint } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QPoint } from "@nodegui/nodegui";
 import { Message, Collection, MessageAttachment, Snowflake } from "discord.js";
-import { pictureWorker } from "../../utilities/PictureWorker";
 import open from 'open';
+import { pathToFileURL } from 'url';
 import markdownIt from 'markdown-it';
 import { CancelToken } from '../../utilities/CancelToken';
 import { app, MAX_QSIZE } from '../..';
-import { DIconButton } from '../DIconButton/DIconButton';
-import { Dir } from 'fs';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { pictureWorker } from "../../utilities/PictureWorker";
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
@@ -55,7 +54,6 @@ export class MessageItem extends QWidget {
       avatar.setCursor(CursorShape.ArrowCursor);
       const { miniProfile } = app.window.dialogs;
       const map = avatar.mapToGlobal(this.p0);
-      const globalMap = app.window.mapToGlobal(this.p0)
       map.setX(map.x() + avatar.size().width());
       miniProfile.loadProfile(this.message.member || this.message.author)
       miniProfile.popup(map);
@@ -103,10 +101,11 @@ export class MessageItem extends QWidget {
     for (const emo of emoIds) {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
-      const emojiPath = resolveEmoji({emoji_id: id, emoji_name: name});
+      const emojiPath = await resolveEmoji({emoji_id: id, emoji_name: name});
+      if (!emojiPath) continue;
       const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
 
-      content = content.replace(emo, `<a href='${url}'><img width=${size} src='${emojiPath}'></a>`);
+      content = content.replace(emo, `<a href='${url}'><img width=${size} src='${pathToFileURL(emojiPath)}'></a>`);
       contentLabel.addEventListener('linkHovered', (link: string) => {
         if (link === url) contentLabel.setProperty('toolTip', `:${name}:`);
       })
@@ -153,7 +152,7 @@ export class MessageItem extends QWidget {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) return avatar.setPixmap(cachePixmap);
       const image = await pictureWorker.loadImage(
-        message.author.avatarURL({ format: 'png', size: 64 }) ||
+        message.author.avatarURL({ format: 'png', size: 256 }) ||
         message.author.defaultAvatarURL
       );
       if (image) {
@@ -201,10 +200,10 @@ export class MessageItem extends QWidget {
         helperText.setObjectName('Helper');
         const mainLayout = new QBoxLayout(Direction.LeftToRight);
         const avatar = new QLabel(item);
-        pictureWorker.loadImage(invite.guild?.iconURL({ size: 32 }) || '')
+        pictureWorker.loadImage(invite.guild?.iconURL({ size: 256, format: 'png' }) || '')
           .then(path => {
             if (!path) return;
-            avatar.setPixmap(new QPixmap(path));
+            avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
           });
         const nameLabel = new QLabel(item);
         nameLabel.setText(`${invite.guild?.name || 'A server'} <span style='font-size: small; color: #72767d'>${invite.memberCount} Members</span>`);

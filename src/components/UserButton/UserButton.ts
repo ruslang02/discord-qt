@@ -95,7 +95,7 @@ export class UserButton extends DChannelButton {
     if (!app.config.enableAvatars || !this.user || this.hasPixmap) return;
     this.hasPixmap = true;
     const path = await pictureWorker.loadImage(
-      this.user.avatarURL({ format: "png", size: 32 }) || this.user.defaultAvatarURL
+      this.user.avatarURL({ format: "png", size: 256 }) || this.user.defaultAvatarURL
     );
     path && this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }

@@ -71,7 +71,7 @@ export class MiniProfile extends QMenu {
     if (!user) return;
     this.setMinimumSize(250, 0);
     avatar.clear();
-    pictureWorker.loadImage(user.avatarURL() || '')
+    pictureWorker.loadImage(user.avatarURL({ format: 'png', size: 256 }))
       .then(path => {
         if (!path) return;
         avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1));

@@ -158,7 +158,7 @@ export class UserPanel extends QWidget {
     const { client } = app;
     if (!client.user) return;
     let path = await pictureWorker.loadImage(
-      client.user.avatarURL({ format: 'png', size: 64 }) || client.user.defaultAvatarURL
+      client.user.avatarURL({ format: 'png', size: 256 }) || client.user.defaultAvatarURL
     );
     path && avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }

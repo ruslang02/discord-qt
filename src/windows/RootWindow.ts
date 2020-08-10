@@ -11,8 +11,7 @@ import { Events } from "../structures/Events";
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { MiniProfile } from '../components/MiniProfile/MiniProfile';
-
-const { version, name } = require('../../package.json');
+import { clientOptions } from '../structures/ClientOptions';
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
@@ -71,24 +70,7 @@ export class RootWindow extends QMainWindow {
   public async loadClient(account: Account): Promise<boolean> {
     const { Events: DiscordEvents } = Constants;
     if (app.client) await app.client.destroy();
-    app.client = new Client({
-      useUserGateway: true,
-      waitForGuildsTimeout: 0,
-      userAgent: `Discord-Qt/${version} Node.js/${process.version}`,
-      ws: {
-        compress: false,
-        // @ts-ignore
-        properties: {
-          os: process.platform,
-          browser: "DiscordQt",
-          release_channel: "stable",
-          client_version: version,
-          os_arch: process.arch,
-          // @ts-ignore
-          client_build_number: __BUILDNUM__ || 0,
-        }
-      }
-    });
+    app.client = new Client(clientOptions);
     app.client.on(DiscordEvents.ERROR, console.error)
     if (app.config.debug) app.client.on(DiscordEvents.DEBUG, console.debug)
     app.client.on(DiscordEvents.WARN, console.warn)
