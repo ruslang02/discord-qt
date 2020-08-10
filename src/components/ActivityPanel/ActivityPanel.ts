@@ -14,20 +14,20 @@ const PLAYER = 'org.mpris.MediaPlayer2.clementine';
 const { log, error, debug } = createLogger('[mpris]');
 
 export class ActivityPanel extends QWidget {
-  private bus: DBus.MessageBus;
+  private bus: DBus.MessageBus | null = null;
   private mpris: ProxyObject | null = null;
   private player: ClientInterface | null = null;
   private props: ClientInterface | null = null;
   constructor() {
     super();
-    this.bus = DBus.sessionBus();
     this.initMPRIS();
     setInterval(this.updatePresence.bind(this), 4000);
   }
   private async initMPRIS(): Promise<void> {
     const { bus } = this;
     try {
-      this.mpris = await bus.getProxyObject(PLAYER, MPRIS_PATH);
+      this.bus = DBus.sessionBus();
+      this.mpris = await this.bus.getProxyObject(PLAYER, MPRIS_PATH);
       this.player = this.mpris.getInterface(MPRIS_IFACE);
       this.props = this.mpris.getInterface(PROPERTIES_IFACE);
       this.props.on('PropertiesChanged', this.updatePresence.bind(this));
@@ -39,6 +39,7 @@ export class ActivityPanel extends QWidget {
   }
 
   private async updatePresence() {
+    if (!this.bus || !this.props) return;
     const player = await this.getPlaying();
     debug(`Currently playing ${player.title} from ${player.artist}, ${ms2str(player.current)} / ${ms2str(player.duration)}`);
     app.client?.user?.setPresence({

@@ -80,7 +80,6 @@ export class RootWindow extends QMainWindow {
       app.emit(Events.SWITCH_VIEW, 'dm');
       return true;
     } catch (e) {
-      console.log(e);
       this.setWindowTitle(`Discord-Qt • Not logged in`);
       return false;
     }
