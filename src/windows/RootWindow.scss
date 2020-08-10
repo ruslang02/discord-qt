@@ -8,3 +8,10 @@
   width: '100%';
   background-color: $black;
 }
+QToolTip {
+  background-color: #000;
+  color: $text-normal;
+  font-size: 14px;
+  border: 1px solid $interactive-hover;
+  padding: 1px 2px;
+}
