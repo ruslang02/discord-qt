@@ -1,9 +1,10 @@
 @import '../../Colors.scss';
 
 #InputContainer {
-  #TypingLabel {
+  #TypingLabel, #StatusLabel {
     color: $text-normal;
-    font-size: 12px;
+    font-size: 14px;
+    line-height: 24px;
   }
   #InputPanel {
     background: $channeltextarea-background;

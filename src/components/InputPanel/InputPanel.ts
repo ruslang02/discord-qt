@@ -1,27 +1,31 @@
-import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QModelIndex, QMouseEvent, MouseButton, QPoint } from "@nodegui/nodegui";
-import './InputPanel.scss';
-import { DIconButton } from "../DIconButton/DIconButton";
+import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QMouseEvent, MouseButton, QPoint, FocusReason } from "@nodegui/nodegui";
 import path, { basename, join, extname } from 'path';
+import { pathToFileURL, fileURLToPath } from 'url';
+import { DMChannel, Client, Channel, TextChannel, User, Permissions, Emoji, Constants, MessageOptions } from "discord.js";
+import { DIconButton } from "../DIconButton/DIconButton";
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Client, Channel, TextChannel, Guild, User, Permissions, Emoji } from "discord.js";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
-import { pathToFileURL, fileURLToPath } from 'url';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
+import './InputPanel.scss';
 
 const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
 
 export class InputPanel extends QWidget {
   channel?: TextChannel | DMChannel;
-  root = new QWidget();
+  root = new QWidget(this);
   rootLayout = new QBoxLayout(Direction.LeftToRight);
-  private input = new QTextEdit();
-  private typingLabel = new QLabel();
+  private input = new QTextEdit(this);
+  private typingLabel = new QLabel(this);
+  private statusLabel = new QLabel(this);
 
-  private attachPanel = new QWidget();
+  private attachPanel = new QWidget(this);
   private attachLayout = new QBoxLayout(Direction.LeftToRight);
   private files = new Set<string>();
+
+  private p0 = new QPoint(0, 0);
+  private dialog = new QFileDialog(this, 'Select an attachment to add');
 
   private addBtn = new DIconButton({
     iconPath: path.join(__dirname, './assets/icons/plus-circle.png'),
@@ -57,7 +61,7 @@ export class InputPanel extends QWidget {
         }`);
       // TODO: How do you make the input focus programmatically???
       setTimeout(() => {
-        input.setProperty('focus', 'true');
+        input.setProperty('focus', FocusReason.OtherFocusReason);
         input.activateWindow();
         input.show();
         input.raise();
@@ -65,17 +69,17 @@ export class InputPanel extends QWidget {
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
-      client.on('typingStart', (typingChannel: DMChannel | Channel, user) => {
-        if (this.channel?.id !== typingChannel.id)
-          return;
-        typingLabel.setText(`<b>${user.username}</b> is typing...`);
-        setTimeout(() => typingLabel.setText(''), 2000);
+      const { Events: DEvents } = Constants;
+      client.on(DEvents.TYPING_START, (typingChannel: DMChannel | Channel, user) => {
+        if (this.channel?.id !== typingChannel.id) return;
+        typingLabel.setText(`<b>${user.username}</b> is typing...`); // TODO: Multiple, guild typing indicators
+        setTimeout(() => typingLabel.clear(), 2000);
       });
     })
   }
 
   addFiles(files: string[]) {
-    files.forEach(f => this.files.add(f));
+    for (const file of files) this.files.add(file);
     this.renderAttachPanel();
   }
 
@@ -92,13 +96,14 @@ export class InputPanel extends QWidget {
       }
       attach.addEventListener(WidgetEventTypes.MouseButtonPress, e => {
         const event = new QMouseEvent(e as NativeElement);
-        if((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
+        if ((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
           this.files.delete(file);
           this.renderAttachPanel();
         }
       })
       const url = pathToFileURL(file);
-      if (!PIXMAP_EXTS.includes(extname(file).replace(/\./g, '').toUpperCase()))
+      const ext = extname(file).replace(/\./g, '').toUpperCase();
+      if (!PIXMAP_EXTS.includes(ext))
         loadDefault();
       else pictureWorker.loadImage(url.href, { roundify: false }).then(path => {
         if (!path) return;
@@ -106,24 +111,25 @@ export class InputPanel extends QWidget {
         if (pix.width() < 1) loadDefault();
         else attach.setPixmap(pix.scaled(120, 60, 1, 1));
       });
+
       attachLayout.insertWidget(attachLayout.nodeChildren.size, attach);
     }
     if (this.files.size) attachPanel.show(); else attachPanel.hide();
   }
-  private p0 = new QPoint(0, 0);
+
   private initComponent() {
-    const { input, root, rootLayout, typingLabel, attachLayout, attachPanel, addBtn } = this;
+    const { input, root, rootLayout, typingLabel, statusLabel, attachLayout, attachPanel, addBtn, dialog } = this;
     this.setLayout(new QBoxLayout(Direction.TopToBottom));
     root.setLayout(rootLayout);
+    dialog.setFileMode(FileMode.ExistingFile);
 
-    this.layout?.setContentsMargins(16, 0, 16, 0)
+    this.layout?.setContentsMargins(16, 0, 16, 0);
+    this.layout?.setSpacing(0);
     rootLayout.setContentsMargins(0, 0, 12, 0);
     rootLayout.setSpacing(0);
 
     addBtn.setFixedSize(56, 44);
     addBtn.addEventListener('clicked', () => {
-      const dialog = new QFileDialog(this, 'Select an attachment to add');
-      dialog.setFileMode(FileMode.ExistingFile);
       dialog.exec();
       dialog.selectedFiles().forEach(f => this.files.add(f));
       this.renderAttachPanel();
@@ -150,51 +156,18 @@ export class InputPanel extends QWidget {
     input.setMaximumSize(MAX_QSIZE, 42);
     input.setMinimumSize(0, 42);
     input.setAcceptDrops(true);
-    input.addEventListener(WidgetEventTypes.DragEnter, (e) => {
-      let ev = new QDragMoveEvent(e as NativeElement);
-      try {
-        let mimeData = ev.mimeData();
-        if (mimeData.hasUrls()) {
-          const url = new URL(mimeData.text());
-          if (url.protocol !== 'file:') return;
-          this.addFiles([fileURLToPath(url.href)]);
-          this.renderAttachPanel();
-        }
-        ev.accept();
-      } catch (e) { }
-    });
-    input.addEventListener(WidgetEventTypes.KeyPress, (native) => {
-      if (!native) return;
-      const event = new QKeyEvent(native);
-      const message = input.toPlainText();
-      if (
-        event.key() === Key.Key_Return &&
-        (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier &&
-        message.trim() !== ''
-      ) {
-        if (this.channel) {
-          this.channel.send(message, {
-            files: [...this.files.values()].map(attachment => ({ attachment, name: basename(attachment) }))
-          });
-          this.files.clear();
-          this.renderAttachPanel();
-        }
-        setTimeout(() => input.clear());
-      } else
-        setTimeout(() => {
-          const textHeight = (input.toPlainText().split('\n').length || 1) * 24 + 18;
-          const maxHeight = app.window.size().height() / 2;
-          const height = Math.min(textHeight, maxHeight);
-          input.setMaximumSize(MAX_QSIZE, height);
-          input.setMinimumSize(0, height);
-        })
-    });
+    input.addEventListener(WidgetEventTypes.DragEnter, this.handleDrag.bind(this));
+    input.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
 
     rootLayout.addWidget(addBtn);
     rootLayout.addWidget(input, 1);
     rootLayout.addWidget(emojiBtn);
 
     typingLabel.setObjectName('TypingLabel');
+    statusLabel.setObjectName('StatusLabel');
+    const bottomLayout = new QBoxLayout(Direction.LeftToRight);
+    bottomLayout.addWidget(typingLabel, 1);
+    bottomLayout.addWidget(statusLabel);
     attachPanel.setLayout(attachLayout);
     attachPanel.setObjectName('AttachmentPanel');
     attachLayout.setContentsMargins(0, 5, 0, 5);
@@ -202,6 +175,88 @@ export class InputPanel extends QWidget {
     attachPanel.hide();
     this.layout?.addWidget(attachPanel);
     this.layout?.addWidget(root);
-    this.layout?.addWidget(typingLabel);
+    (this.layout as QBoxLayout).addLayout(bottomLayout);
+  }
+
+  private handleDrag(e?: any) {
+    let ev = new QDragMoveEvent(e as NativeElement);
+    try {
+      let mimeData = ev.mimeData();
+      if (mimeData.hasUrls()) {
+        const url = new URL(mimeData.text());
+        if (url.protocol !== 'file:') return;
+        this.addFiles([fileURLToPath(url.href)]);
+        this.renderAttachPanel();
+      }
+      ev.accept();
+    } catch (e) { }
+  }
+
+  private handleKeyPress(native?: any) {
+    const { input } = this;
+    if (!native) return;
+    const event = new QKeyEvent(native);
+    const message = input.toPlainText();
+    if (
+      event.key() === Key.Key_Return &&
+      (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier &&
+      message.trim() !== ''
+    ) this.sendMessage();
+    else setTimeout(this.adjustInputSize.bind(this));
+  }
+
+  private adjustInputSize() {
+    const { input } = this;
+    const textHeight = (input.toPlainText().split('\n').length || 1) * 24 + 18;
+    const maxHeight = app.window.size().height() / 2;
+    const height = Math.min(textHeight, maxHeight);
+    input.setMaximumSize(MAX_QSIZE, height);
+    input.setMinimumSize(0, height);
+  }
+
+  private async sendMessage() {
+    const { input, statusLabel } = this;
+    const message = input.toPlainText().trim();
+    setTimeout(() => input.clear());
+    if (this.channel) {
+      const msgOptions = {
+        files: [...this.files.values()].map(attachment => ({ attachment, name: basename(attachment) }))
+      };
+      statusLabel.setText('Sending...');
+      statusLabel.setInlineStyle('color: #dcddde');
+      try {
+        if (message.startsWith('/'))
+          await this.execCommand(message, msgOptions);
+        else {
+          await this.channel.send(message, msgOptions);
+        }
+        statusLabel.setText('');
+      } catch (e) {
+        statusLabel.setInlineStyle('color: #f04747');
+        statusLabel.setText(e.message);
+      }
+      this.files.clear();
+      this.renderAttachPanel();
+    }
+  }
+
+  private async execCommand(message: string, msgOptions: MessageOptions) {
+    if (!this.channel) return;
+    const { input } = this;
+    const command = message.toLowerCase().trim().slice(1).split(' ')[0];
+    message = message.replace(`/${command}`, '').trim();
+    console.log({command, message});
+    switch (command) {
+      case 'shrug':
+        return this.channel.send(`${message} ¯\\_(ツ)_/¯`, msgOptions);
+      case 'tableflip':
+        return this.channel.send(`${message} (╯°□°）╯︵ ┻━┻`, msgOptions);
+      case 'unflip':
+        return this.channel.send(`${message} ┬─┬ ノ( ゜-゜ノ)`, msgOptions);
+      case 'me':
+        return this.channel.send(`*${message}*`, msgOptions);
+      default:
+        return this.channel.send(input.toPlainText(), msgOptions);
+    }
   }
 }

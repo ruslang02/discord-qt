@@ -1,11 +1,10 @@
-import { QWidget, FlexLayout, QStackedWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
+import { QWidget, QStackedWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
 import { UserPanel } from "../UserPanel/UserPanel";
-import './LeftPanel.scss';
 import { GuildPanel } from "../GuildPanel/GuildPanel";
 import { DMPanel } from "../DMPanel/DMPanel";
 import { MAX_QSIZE, app } from "../..";
-import { DMChannel } from 'discord.js';
 import { Events } from "../../structures/Events";
+import './LeftPanel.scss';
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();
