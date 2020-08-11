@@ -6,7 +6,6 @@ import { DMPanel } from "../DMPanel/DMPanel";
 import { MAX_QSIZE, app } from "../..";
 import { DMChannel } from 'discord.js';
 import { Events } from "../../structures/Events";
-import { ActivityPanel } from '../ActivityPanel/ActivityPanel';
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();
@@ -14,7 +13,6 @@ export class LeftPanel extends QWidget {
   private dmPanel = new DMPanel();
   private userPanel = new UserPanel();
   private controls = new QBoxLayout(Direction.TopToBottom);
-  private activityPanel = new ActivityPanel();
 
   constructor() {
     super();
@@ -31,7 +29,7 @@ export class LeftPanel extends QWidget {
     })
   }
   private initLeftPanel() {
-    const { guildPanel, dmPanel, userPanel, container, controls, activityPanel } = this;
+    const { guildPanel, dmPanel, userPanel, container, controls } = this;
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
     this.setMaximumSize(240, MAX_QSIZE);
@@ -43,6 +41,5 @@ export class LeftPanel extends QWidget {
     controls.setContentsMargins(0, 0, 0, 0);
     controls.addWidget(container, 1);
     controls.addWidget(userPanel, 0);
-    controls.addWidget(activityPanel, 0);
   }
 }
