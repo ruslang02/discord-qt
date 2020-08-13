@@ -4,9 +4,9 @@ import './DMPanel.scss';
 import { DMUsersList } from "./DMUsersList";
 
 export class DMPanel extends QWidget {
-  private titleBar = new DMTitleBar();
   private actionsMenu = new QWidget();
   private usersList = new DMUsersList();
+  private titleBar = new DMTitleBar(this.usersList);
   private controls = new QBoxLayout(Direction.TopToBottom);
 
   constructor() {

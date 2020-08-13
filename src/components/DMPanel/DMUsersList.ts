@@ -74,6 +74,17 @@ export class DMUsersList extends QListWidget {
     this.isLoading = false;
   }
 
+  async filter(query?: string) {
+    query = (query || '').replace(/ /g, '').toLowerCase().trim();
+    let i = 0;
+    for (const btn of [...this.channels.values()]) {
+      if (!btn.user) return;
+      const show = query !== '' ? btn.user.username.toLowerCase().replace(/ /g, '').includes(query) : true;
+      this.setRowHidden(++i, !show);
+    }
+
+  }
+
   async loadDMs() {
     this.channels.clear();
     this.clear();
