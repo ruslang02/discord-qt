@@ -45,9 +45,9 @@ export class InputPanel extends QWidget {
   private setEvents() {
     const { input, typingLabel } = this;
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (!['dm', 'guild'].includes(view) || !options) return;
-      const channel = options.dm || options.channel || null;
-      if (!channel) return;
+      if (!['dm', 'guild'].includes(view)) return;
+      const channel = options?.dm || options?.channel || null;
+      if (!channel) return input.setPlaceholderText('');
       this.channel = channel;
       this.files.clear();
       this.renderAttachPanel();

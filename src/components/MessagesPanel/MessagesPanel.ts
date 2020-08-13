@@ -28,7 +28,12 @@ export class MessagesPanel extends QScrollArea {
 
   private initEvents() {
     app.on(Events.SWITCH_VIEW, async (view: string, options?: ViewOptions) => {
-      if (!['dm', 'guild'].includes(view) || !options) return;
+      if (!['dm', 'guild'].includes(view)) return;
+      if (!options || !options.dm && !options.channel) {
+        this.channel = undefined;
+        this.initRoot();
+        return;
+      }
       const channel = options.dm || options.channel || null;
       if (!channel) return;
       if (this.cancelToken) this.cancelToken.cancel();

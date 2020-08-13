@@ -25,9 +25,13 @@ export class MainTitleBar extends DTitleBar {
     this.setInlineStyle('background-color: #36393f');
     this.initComponent();
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (!['dm', 'guild'].includes(view) || !options) return;
-      if (options.dm) this.handleDMOpen(options.dm);
-      else if (options.channel) this.handleGuildOpen(options.channel)
+      if (!['dm', 'guild'].includes(view)) return;
+      if (options?.dm) this.handleDMOpen(options.dm);
+      else if (options?.channel) this.handleGuildOpen(options.channel)
+      else {
+        this.channel = undefined;
+        this.handleClear();
+      }
     });
     app.on(Events.NEW_CLIENT, (client: Client) => {
       const { Events: DiscordEvents } = Constants;
@@ -82,10 +86,18 @@ export class MainTitleBar extends DTitleBar {
     statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel?.recipient.presence.status || 'offline')}`);
   }
 
+  private handleClear() {
+    const { userNameLabel, statusLabel, iconLabel } = this;
+    iconLabel.hide();
+    userNameLabel.setText('');
+    statusLabel.hide();
+  }
+
   private handleDMOpen(channel: DMChannel) {
     const { userNameLabel, statusLabel, iconLabel, atPixmap } = this;
     this.channel = channel;
     iconLabel.setPixmap(atPixmap);
+    iconLabel.show();
     userNameLabel.setText(channel.recipient.username);
     statusLabel.show();
     this.updateStatus();
@@ -95,6 +107,7 @@ export class MainTitleBar extends DTitleBar {
     const { userNameLabel, statusLabel, iconLabel, poundPixmap } = this;
     this.channel = channel;
     iconLabel.setPixmap(poundPixmap);
+    iconLabel.show();
     userNameLabel.setText(channel.name);
     statusLabel.hide();
     this.updateStatus();

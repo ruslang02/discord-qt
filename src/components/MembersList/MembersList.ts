@@ -27,7 +27,7 @@ export class MembersList extends QListWidget {
     this.initMenu();
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (view === 'dm') return this.hide();
+      if (view === 'dm' || view === 'guild' && !options?.channel) return this.hide();
       if (view !== 'guild' || !options?.channel) return;
       if (this.cancelToken) this.cancelToken.cancel();
       const cancel = new CancelToken();

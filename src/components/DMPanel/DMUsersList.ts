@@ -39,6 +39,10 @@ export class DMUsersList extends QListWidget {
     });
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+      if (view === 'guild') {
+        this.active?.setActivated(false);
+        this.active = undefined;
+      }
       if (view !== 'dm' || !options || !options.dm) return;
       const button = this.channels.get(options.dm);
       this.active?.setActivated(false);
