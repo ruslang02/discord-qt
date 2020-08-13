@@ -1,6 +1,6 @@
 {
   "name": "discord-qt",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "main": "dist/index.js",
   "author": "Ruslan Garifullin",
   "repository": {
