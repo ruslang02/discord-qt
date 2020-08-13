@@ -4,6 +4,7 @@ import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
 import envPaths from 'env-paths';
+export const paths = envPaths('discord', {suffix: 'qt'});
 
 import { RootWindow } from "./windows/RootWindow";
 import { Config } from "./structures/Config";
@@ -11,7 +12,6 @@ import { Events } from "./structures/Events";
 const { readdir } = fs.promises;
 
 const FONTS_PATH = join(__dirname, './assets/fonts');
-export const paths = envPaths('discord', {suffix: 'qt'})
 const CONFIG_PATH = join(paths.config, 'config.json');
 
 class Application extends EventEmitter {

@@ -1,17 +1,10 @@
 import { CustomStatus } from 'discord.js';
-import TWEmoji from 'twemoji';
-import fs, { existsSync } from 'fs';
-import { app, paths } from '..';
 import { join, basename } from 'path';
+import TWEmoji from 'twemoji';
+import { app, paths } from '..';
 import { pictureWorker } from '../utilities/PictureWorker';
-const { mkdir, writeFile } = fs.promises;
 
-export let EMOJI_PATH: string = '';
-setTimeout(() => {
-  EMOJI_PATH = join(paths.cache, 'emojis');
-  if (!existsSync(EMOJI_PATH + '/tw'))
-    mkdir(EMOJI_PATH + '/tw', { recursive: true });
-});
+export const EMOJI_PATH = join(paths.cache, 'emojis');
 
 export async function resolveEmoji(status: CustomStatus): Promise<string | null> {
   status.emoji_id = (status.emoji_id || '').toString();
