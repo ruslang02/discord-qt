@@ -51,13 +51,11 @@ export class MessageItem extends QWidget {
     avatar.setCursor(CursorShape.PointingHandCursor);
     avatar.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       if (!this.message) return;
-      avatar.setCursor(CursorShape.ArrowCursor);
       const { miniProfile } = app.window.dialogs;
       const map = avatar.mapToGlobal(this.p0);
       map.setX(map.x() + avatar.size().width());
       miniProfile.loadProfile(this.message.member || this.message.author)
       miniProfile.popup(map);
-      setTimeout(() => avatar.setCursor(CursorShape.PointingHandCursor), 1000);
     })
     if (!app.config.enableAvatars) avatar.hide();
 

@@ -23,11 +23,12 @@ export class GuildsList extends QListWidget {
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
       const { Events: DEvents } = Constants;
-      client.on(DEvents.CLIENT_READY, this.loadGuilds.bind(this));
+      client.on(DEvents.CLIENT_READY, async () => {
+        await this.loadGuilds();
+        app.emit(Events.SWITCH_VIEW, 'dm');
+      });
       client.on(DEvents.GUILD_DELETE, (guild: Guild) => {
-        const entry = this.guilds.get(guild);
-        if (!entry) return;
-        entry.hide();
+        this.guilds.get(guild)?.hide();
       });
       client.on(DEvents.GUILD_CREATE, (guild: Guild) => {
         const btn = new GuildButton(guild, this);
@@ -50,12 +51,12 @@ export class GuildsList extends QListWidget {
         this.active = this.mpBtn;
         this.active.repolish();
       } else if (view === 'guild' && options) {
-        const guild = options.guild || options.channel?.guild || null;
+        const guild = options.guild || options.channel?.guild;
         if (!guild) return;
         this.active?.setProperty('active', false);
         this.active?.repolish();
         const active = this.guilds.get(guild);
-        active?.setProperty('active', false);
+        active?.setProperty('active', true);
         this.active = active;
         this.active?.repolish();
       }
@@ -84,6 +85,7 @@ export class GuildsList extends QListWidget {
     this.addItem(hrItem);
     this.setItemWidget(mpBtnItem, mpBtn);
     this.setItemWidget(hrItem, hr);
+    this.mpBtn = mpBtn;
   }
   async loadGuilds() {
     const { client } = app;

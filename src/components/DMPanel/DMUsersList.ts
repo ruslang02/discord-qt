@@ -84,7 +84,7 @@ export class DMUsersList extends QListWidget {
     for (const btn of [...this.channels.values()]) {
       if (!btn.user) return;
       const show = query !== '' ? btn.user.username.toLowerCase().replace(/ /g, '').includes(query) : true;
-      this.setRowHidden(++i, !show);
+      this.setRowHidden(i++, !show);
     }
 
   }
@@ -92,7 +92,7 @@ export class DMUsersList extends QListWidget {
   async loadDMs() {
     this.channels.clear();
     this.clear();
-    this.addDMLabel();
+    // this.addDMLabel();
 
     const promises: Promise<void>[] =
       (app.client.channels.cache.array() as DMChannel[])

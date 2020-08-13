@@ -76,13 +76,11 @@ export class MembersList extends QListWidget {
       btn.loadUser(member);
       btn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
       btn.addEventListener('clicked', async () => {
-        btn.setCursor(CursorShape.ArrowCursor);
         const { miniProfile } = app.window.dialogs;
         const map = btn.mapToGlobal(this.p0);
         map.setX(map.x() - 250);
         miniProfile.loadProfile(member)
         miniProfile.popup(map);
-        setTimeout(() => btn.setCursor(CursorShape.PointingHandCursor), 1000);
       });
 
       btn.addEventListener('customContextMenuRequested', ({ x, y }) => {

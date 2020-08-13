@@ -22,4 +22,7 @@
     background-color: $background-secondary;
     border-radius: 8px;
   }
+  QScrollBar {
+    border-color: $channeltextarea-background;
+  }
 }

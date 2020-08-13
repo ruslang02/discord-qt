@@ -47,3 +47,20 @@ QMenu {
     left: 8px;
   }
 }
+QScrollBar {
+  height: 8px;
+  width: 8px;
+  background-color: transparent;
+  border: 2px solid $background-secondary;
+  border-radius: 2px;
+  &::handle {
+    background-color: $scrollbar-thin-thumb;
+    border-radius: 2px;
+  }
+  &::add-line, &::sub-line {
+    height: 0px;
+  }
+  &::add-page, &::sub-page {
+    background-color: transparent;
+  }
+}
