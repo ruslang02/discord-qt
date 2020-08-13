@@ -46,7 +46,7 @@ export class UserButton extends DChannelButton {
   private statusLabel = new QLabel(this);
   private statusLayout = new QBoxLayout(Direction.LeftToRight);
   private infoControls = new QBoxLayout(Direction.TopToBottom);
-  private user?: User;
+  user?: User;
   isGuildMember = false;
 
   constructor(parent?: any) {

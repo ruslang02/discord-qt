@@ -101,15 +101,27 @@ export class MessageItem extends QWidget {
     for (const emo of emoIds) {
       const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
       const format = type === 'a' ? 'gif' : 'png';
-      const emojiPath = await resolveEmoji({emoji_id: id, emoji_name: name});
-      if (!emojiPath) continue;
-      const url = `https://cdn.discordapp.com/emojis/${id}.${format}`;
+      try {
+        const emojiPath = await resolveEmoji({ emoji_id: id, emoji_name: name });
+        if (!emojiPath) continue;
+        // @ts-ignore
+        const url = app.client.rest.cdn.Emoji(id, format);
+        const uri = new URL(url);
+        uri.searchParams.append('emojiname', name);
 
-      content = content.replace(emo, `<a href='${url}'><img width=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-      contentLabel.addEventListener('linkHovered', (link: string) => {
-        if (link === url) contentLabel.setProperty('toolTip', `:${name}:`);
-      })
+        const pix = new QPixmap(emojiPath);
+        const larger = pix.width() > pix.height() ? 'width' : 'height'
+
+        content = content.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
+      } catch (e) { }
     }
+    contentLabel.addEventListener('linkHovered', (link: string) => {
+      try {
+        const uri = new URL(link);
+        const name = uri.searchParams.get('emojiname');
+        if (name) contentLabel.setProperty('toolTip', `:${name}:`);
+      } catch (e) { }
+    });
     return content;
   }
   private attachs = new Map<QLabel, string>();
@@ -219,7 +231,7 @@ export class MessageItem extends QWidget {
   }
 
   async loadMessage(message: Message, token?: CancelToken) {
-    const { avatar, userNameLabel, dateLabel, contentLabel } = this;
+    const { userNameLabel, dateLabel, contentLabel } = this;
     this.message = message;
     userNameLabel.setText(message.member?.nickname || message.author.username);
     if (token?.cancelled) return;
