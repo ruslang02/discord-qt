@@ -46,7 +46,6 @@ export class CustomStatusLabel extends QWidget {
       emojiName = activity?.emoji?.name || '';
       statusText = activity?.state || '';
     }
-    console.log({emojiId, emojiName, statusText});
     if (!statusText && !emojiName) return this.hide();
     if (!statusText) statusLabel.hide(); else statusLabel.show();
     if (!emojiName) statusIcon.hide(); else statusIcon.show();

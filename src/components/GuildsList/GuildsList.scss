@@ -1,8 +1,11 @@
-@import '../../Colors.scss';
+@import "../../Colors.scss";
+
 #GuildsList {
-  QScrollBar {height:0px;}
   background: $background-tertiary;
 
+  QScrollBar:vertical {
+    width: 0px;
+  }
   #PageButton {
     border-radius: 24px;
     font-size: 18px;
@@ -10,12 +13,12 @@
     background-color: $background-primary;
     border: none;
     color: white;
-    &:hover, &[active='true'] {
+    &:hover,
+    &[active="true"] {
       background-color: $blurple;
       border-radius: 15px;
     }
   }
-
   #Separator {
     height: 2px;
     background-color: $background-modifier-accent;

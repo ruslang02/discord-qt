@@ -48,11 +48,17 @@ QMenu {
   }
 }
 QScrollBar {
-  height: 8px;
-  width: 8px;
   background-color: transparent;
-  border: 2px solid $background-secondary;
   border-radius: 2px;
+
+  &:horizontal {
+    height: 8px;
+    border: 2px solid $background-secondary;
+  }
+  &:vertical {
+    width: 8px;
+    border: 2px solid $background-secondary;
+  }
   &::handle {
     background-color: $scrollbar-thin-thumb;
     border-radius: 2px;

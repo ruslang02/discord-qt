@@ -160,7 +160,6 @@ export class AccountsPage extends Page {
       const token = addTokenField.text();
       addButton.setEnabled(false);
       try {
-        console.log(token);
         const client = new Client(clientOptions);
         await client.login(token);
         if (client.user?.bot) {

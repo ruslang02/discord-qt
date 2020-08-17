@@ -245,7 +245,6 @@ export class InputPanel extends QWidget {
     const { input } = this;
     const command = message.toLowerCase().trim().slice(1).split(' ')[0];
     message = message.replace(`/${command}`, '').trim();
-    console.log({command, message});
     switch (command) {
       case 'shrug':
         return this.channel.send(`${message} ¯\\_(ツ)_/¯`, msgOptions);
