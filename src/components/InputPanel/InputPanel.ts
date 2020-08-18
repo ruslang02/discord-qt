@@ -22,6 +22,12 @@ export class InputPanel extends QWidget {
 
   private attachPanel = new QWidget(this);
   private attachLayout = new QBoxLayout(Direction.LeftToRight);
+  private emojiBtn = new DIconButton({
+    iconPath: path.join(__dirname, './assets/icons/emoticon.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: 'Emoji'
+  });
+  private emojiPicker = new EmojiPicker(this, Direction.BottomToTop);
   private files = new Set<string>();
 
   private p0 = new QPoint(0, 0);
@@ -59,13 +65,8 @@ export class InputPanel extends QWidget {
         `@${(<DMChannel>channel).recipient.username}` :
         `#${(<TextChannel>channel).name}`
         }`);
-      // TODO: How do you make the input focus programmatically???
-      setTimeout(() => {
-        input.setProperty('focus', FocusReason.OtherFocusReason);
-        input.activateWindow();
-        input.show();
-        input.raise();
-      }, 100)
+      // Waiting for nodegui release
+      // input.setFocus(FocusReason.TabFocusReason);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -118,7 +119,7 @@ export class InputPanel extends QWidget {
   }
 
   private initComponent() {
-    const { input, root, rootLayout, typingLabel, statusLabel, attachLayout, attachPanel, addBtn, dialog } = this;
+    const { input, root, rootLayout, typingLabel, statusLabel, attachLayout, attachPanel, addBtn, dialog, emojiPicker, emojiBtn } = this;
     this.setLayout(new QBoxLayout(Direction.TopToBottom));
     root.setLayout(rootLayout);
     dialog.setFileMode(FileMode.ExistingFile);
@@ -135,29 +136,19 @@ export class InputPanel extends QWidget {
       this.renderAttachPanel();
     })
     input.setObjectName('Input');
-    const emojiBtn = new DIconButton({
-      iconPath: path.join(__dirname, './assets/icons/emoticon.png'),
-      iconQSize: new QSize(24, 24),
-      tooltipText: 'Emoji'
-    });
-    const emojiPicker = new EmojiPicker(this, Direction.BottomToTop);
     emojiPicker.events.on('emoji', (emoji: Emoji) => {
       this.input.insertPlainText(emoji.toString());
+      emojiPicker.close();
+      this.input.setFocus(FocusReason.TabFocusReason);
     });
     emojiPicker.addEventListener(WidgetEventTypes.Hide, () => emojiBtn.setIcon(emojiBtn.qiconOff));
     emojiBtn.setFixedSize(38, 44);
-    emojiBtn.addEventListener('clicked', () => {
-      const map = emojiBtn.mapToGlobal(this.p0);
-      map.setX(map.x() - emojiPicker.size().width() + emojiBtn.size().width());
-      map.setY(map.y() - emojiPicker.size().height());
-      emojiPicker.popup(map);
-    })
-    input.setAcceptRichText(false);
+    emojiBtn.addEventListener('clicked', this.handleEmojiOpen.bind(this));
     input.setMaximumSize(MAX_QSIZE, 42);
     input.setMinimumSize(0, 42);
     input.setAcceptDrops(true);
     input.addEventListener(WidgetEventTypes.DragEnter, this.handleDrag.bind(this));
-    input.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
+    input.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyRelease.bind(this));
 
     rootLayout.addWidget(addBtn);
     rootLayout.addWidget(input, 1);
@@ -178,6 +169,14 @@ export class InputPanel extends QWidget {
     (this.layout as QBoxLayout).addLayout(bottomLayout);
   }
 
+  private handleEmojiOpen() {
+    const { emojiBtn, emojiPicker } = this;
+    const map = emojiBtn.mapToGlobal(this.p0);
+    map.setX(map.x() - emojiPicker.size().width() + emojiBtn.size().width());
+    map.setY(map.y() - emojiPicker.size().height());
+    emojiPicker.popup(map);
+  }
+
   private handleDrag(e?: any) {
     let ev = new QDragMoveEvent(e as NativeElement);
     try {
@@ -192,7 +191,7 @@ export class InputPanel extends QWidget {
     } catch (e) { }
   }
 
-  private handleKeyPress(native?: any) {
+  private handleKeyRelease(native?: any) {
     const { input } = this;
     if (!native) return;
     const event = new QKeyEvent(native);
@@ -202,6 +201,10 @@ export class InputPanel extends QWidget {
       (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier &&
       message.trim() !== ''
     ) this.sendMessage();
+    else if (
+      event.key() === Key.Key_E &&
+      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
+    ) this.handleEmojiOpen();
     else setTimeout(this.adjustInputSize.bind(this));
   }
 

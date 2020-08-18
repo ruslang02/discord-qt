@@ -1,4 +1,4 @@
-import { QWidget, QBoxLayout, Direction, QLineEdit, QMenu, WidgetAttribute, QListWidget, QSize, ScrollBarPolicy, QLabel, ListViewMode, ResizeMode, Flow, QListWidgetItem, QIcon, AlignmentFlag, QVariant, WidgetEventTypes } from '@nodegui/nodegui';
+import { QWidget, QBoxLayout, Direction, QLineEdit, QMenu, WidgetAttribute, QListWidget, QSize, ScrollBarPolicy, QLabel, ListViewMode, ResizeMode, Flow, QListWidgetItem, QIcon, AlignmentFlag, QVariant, WidgetEventTypes, FocusReason, QKeyEvent, NativeElement, Key, QBrush, QColor, BrushStyle, Movement } from '@nodegui/nodegui';
 import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
 import { app } from '../..';
@@ -23,7 +23,10 @@ export class EmojiPicker extends QMenu {
     this.initComponent();
     this.setAttribute(WidgetAttribute.WA_TranslucentBackground, true);
     this.addEventListener(WidgetEventTypes.Hide, this.clear.bind(this));
-    this.addEventListener(WidgetEventTypes.Show, this.clear.bind(this));
+    this.addEventListener(WidgetEventTypes.Show, () => {
+      this.clear();
+      // this.textInput.setFocus(FocusReason.PopupFocusReason);
+    });
   }
 
   clear() {
@@ -46,7 +49,16 @@ export class EmojiPicker extends QMenu {
     const textLayout = new QBoxLayout(Direction.LeftToRight);
     textLayout.setContentsMargins(12, 12, 12, 12);
     textInput.setPlaceholderText('Find the perfect emoji');
-    textInput.addEventListener('textEdited', this.updateView.bind(this));
+    textInput.addEventListener(WidgetEventTypes.KeyRelease, (e) => {
+      const ev = new QKeyEvent(e as NativeElement);
+      if (ev.key() === Key.Key_Up) {
+        this.emojiView.setCurrentRow(this.emojiView.currentRow() - 1);
+      } else if (ev.key() === Key.Key_Down) {
+        this.emojiView.setCurrentRow(this.emojiView.currentRow() + 1);
+      } else if (ev.key() === Key.Key_Return) {
+        this.handleItemClicked(this.emojiView.currentItem());
+      } else this.updateView();
+    });
     textLayout.addWidget(textInput);
     controls.addLayout(textLayout);
     emojiView.setObjectName("EmojiView");
@@ -55,28 +67,31 @@ export class EmojiPicker extends QMenu {
     emojiView.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     emojiView.setViewMode(ListViewMode.IconMode);
     emojiView.setResizeMode(ResizeMode.Adjust);
+    emojiView.setMovement(Movement.Static);
     emojiView.setFlow(Flow.LeftToRight);
     emojiView.setIconSize(new QSize(32, 32));
     emojiView.setItemAlignment(AlignmentFlag.AlignCenter);
-    emojiView.addEventListener('itemClicked', item => {
-      const emojiId = item.data(256).toString();
-      const emoji = app.client.emojis.resolve(emojiId);
-      if (!emoji) return;
-      if (app.config.recentEmojis) {
-        let add = true;
-        app.config.recentEmojis = app.config.recentEmojis.map(obj => {
-          if (obj[0] === emojiId) {
-            obj[1] += 1;
-            add = false;
-          }
-          return obj;
-        });
-        if (add) app.config.recentEmojis.push([emojiId, 1]);
-        app.config.save();
-      }
-      this.events.emit('emoji', emoji);
-    });
+    emojiView.addEventListener('itemClicked', this.handleItemClicked.bind(this));
     controls.addWidget(emojiView, 1);
+  }
+
+  private handleItemClicked(item: QListWidgetItem) {
+    const emojiId = item.data(256).toString();
+    const emoji = app.client.emojis.resolve(emojiId);
+    if (!emoji) return;
+    if (app.config.recentEmojis) {
+      let add = true;
+      app.config.recentEmojis = app.config.recentEmojis.map(obj => {
+        if (obj[0] === emojiId) {
+          obj[1] += 1;
+          add = false;
+        }
+        return obj;
+      });
+      if (add) app.config.recentEmojis.push([emojiId, 1]);
+      app.config.save();
+    }
+    this.events.emit('emoji', emoji);
   }
 
   private updateView() {
@@ -107,9 +122,10 @@ export class EmojiPicker extends QMenu {
     item.setToolTip(`:${emoji.name}:`);
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
-    const path = await resolveEmoji({emoji_id: emoji.id || undefined, emoji_name: emoji.name});
+    const path = await resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name });
     if (!path) return;
     item.setIcon(new QIcon(path));
     this.emojiView.addItem(item);
+    this.emojiView.setCurrentRow(0);
   }
 }
