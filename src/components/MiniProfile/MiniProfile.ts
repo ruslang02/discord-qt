@@ -93,9 +93,9 @@ export class MiniProfile extends QMenu {
     if (member?.nickname) {
       username.show();
       nickname.setText(member.nickname);
-      username.setText(`${user.username}#${user.discriminator}`);
+      username.setText(user.tag);
     } else {
-      nickname.setText(`${user.username}#${user.discriminator}`);
+      nickname.setText(user.tag);
       username.hide();
     }
     profile.setProperty('isPlaying', this.presence.load(user.presence) ? 'true' : 'false');

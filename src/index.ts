@@ -9,6 +9,7 @@ export const paths = envPaths('discord', {suffix: 'qt'});
 import { RootWindow } from "./windows/RootWindow";
 import { Config } from "./structures/Config";
 import { Events } from "./structures/Events";
+import { DQClient } from './dqjs/client/Client';
 const { readdir } = fs.promises;
 
 const FONTS_PATH = join(__dirname, './assets/fonts');
@@ -42,10 +43,10 @@ class Application extends EventEmitter {
     (global as any).win = v;
   }
 
-  public get client(): Client {
+  public get client(): DQClient {
     return (global as any).client;
   }
-  public set client(v: Client) {
+  public set client(v: DQClient) {
     (global as any).client = v;
     this.emit(Events.NEW_CLIENT, v);
   }

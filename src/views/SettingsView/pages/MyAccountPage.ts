@@ -2,7 +2,7 @@ import { Page } from './Page';
 import { app, MAX_QSIZE } from '../../..';
 import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
 import { pictureWorker } from '../../../utilities/PictureWorker';
-import { Client } from 'discord.js';
+import { Client, Constants } from 'discord.js';
 import './MyAccountPage.scss';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { Events } from '../../../structures/Events';
@@ -14,12 +14,12 @@ export class MyAccountPage extends Page {
     super();
     this.initPage();
     app.on(Events.NEW_CLIENT, (client: Client) => {
-      client.on('ready', this.loadUser.bind(this));
+      client.on(Constants.Events.CLIENT_READY, this.loadUser.bind(this));
     });
   }
 
   private loadUser() {
-    this.unabel.setText(`${app.client.user?.username}#${app.client.user?.discriminator}`);
+    this.unabel.setText(app.client.user?.tag || '');
     this.emabel.setText(app.client.user?.email || "");
     pictureWorker.loadImage(
       app.client.user?.avatarURL({ size: 256, format: 'png' }) ||
