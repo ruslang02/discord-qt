@@ -1,19 +1,22 @@
-import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, QLabel, QPixmap, AlignmentFlag, QAction } from '@nodegui/nodegui';
+import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, QLabel, QPixmap, AlignmentFlag, QAction, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
 import './MiniProfile.scss';
 import { CustomStatusLabel } from './CustomStatusLabel';
-import { MAX_QSIZE } from '../..';
+import { MAX_QSIZE, app } from '../..';
 import { GuildMember, User } from 'discord.js';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { ProfilePresence } from './ProfilePresence';
 
 export class MiniProfile extends QMenu {
   private controls = new QBoxLayout(Direction.TopToBottom);
   private root = new QWidget(this);
   private profile = new QWidget(this);
-  private presence = new QWidget(this);
+  private presence = new ProfilePresence(this);
   private avatar = new QLabel(this);
   private nickname = new QLabel(this);
   private username = new QLabel(this);
   private custom = new CustomStatusLabel();
+  private adjustTimer?: NodeJS.Timer;
+  private p0 = new QPoint(0, 0);
 
   constructor(parent?: any) {
     super(parent);
@@ -24,10 +27,21 @@ export class MiniProfile extends QMenu {
     (this.layout as QBoxLayout).setContentsMargins(0, 0, 0, 0);
     this.initComponent();
     this.setAttribute(WidgetAttribute.WA_TranslucentBackground, true);
+    this.addEventListener(WidgetEventTypes.Show, () => {
+      if (this.adjustTimer) clearInterval(this.adjustTimer);
+      this.adjustTimer = setInterval(() => this.adjustSize(), 10);
+    });
+    this.addEventListener(WidgetEventTypes.Close, () => this.adjustTimer && clearInterval(this.adjustTimer));
+  }
+
+  popup(point: QPoint) {
+    if(point.y() + this.size().height() > app.window.mapToGlobal(this.p0).y() + app.window.size().height())
+      point.setY(point.y() - this.size().height());
+    super.popup(point);
   }
 
   private initComponent() {
-    const { controls, root, profile } = this;
+    const { controls, root, profile, presence } = this;
     
     root.setLayout(controls);
     root.setMinimumSize(250, 0);
@@ -37,7 +51,8 @@ export class MiniProfile extends QMenu {
     controls.setSpacing(0);
 
     this.initProfile();
-    controls.addWidget(profile)
+    controls.addWidget(profile);
+    controls.addWidget(presence);
   }
 
   private initProfile() {
@@ -59,7 +74,9 @@ export class MiniProfile extends QMenu {
 
     avatar.setMinimumSize(0, 80)
     nickname.setObjectName('Nickname');
+    nickname.setWordWrap(true);
     username.setObjectName('Username');
+    username.setWordWrap(true);
 
     profile.setLayout(layout);
   }
@@ -72,10 +89,7 @@ export class MiniProfile extends QMenu {
     this.setMinimumSize(250, 0);
     avatar.clear();
     pictureWorker.loadImage(user.avatarURL({ format: 'png', size: 256 }))
-      .then(path => {
-        if (!path) return;
-        avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1));
-      })
+      .then(path => path && avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)))
     if (member?.nickname) {
       username.show();
       nickname.setText(member.nickname);
@@ -84,6 +98,8 @@ export class MiniProfile extends QMenu {
       nickname.setText(`${user.username}#${user.discriminator}`);
       username.hide();
     }
+    profile.setProperty('isPlaying', this.presence.load(user.presence) ? 'true' : 'false');
+    profile.repolish();
     custom.loadStatus(user);
   }
 }

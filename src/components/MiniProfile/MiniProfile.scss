@@ -6,7 +6,11 @@
   border: 1px solid $deprecated-text-input-border;
   #Profile {
     background-color: $background-secondary;
-    border-radius: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    &[isPlaying="true"] {
+      background-color: $blurple;
+    }
   }
   #Nickname {
     font-weight: 500;
@@ -23,8 +27,21 @@
   #CustomStatusLabel {
     margin-top: 12px;
     #Text {
-      text-align:center;
+      text-align: center;
       color: white;
+      font-size: 14px;
+    }
+  }
+  #ProfilePresence {
+    background-color: darken($blurple, 2);
+    #Header {
+      text-transform: uppercase;
+      color: white;
+      font-size: 12px;
+      line-height: 16px;
+      font-weight: 600;
+    }
+    #Label {
       font-size: 14px;
     }
   }
