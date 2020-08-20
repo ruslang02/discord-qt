@@ -1,5 +1,5 @@
 import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, QLabel, QPixmap, AlignmentFlag, QAction, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
-import './MiniProfile.scss';
+
 import { CustomStatusLabel } from './CustomStatusLabel';
 import { MAX_QSIZE, app } from '../..';
 import { GuildMember, User } from 'discord.js';

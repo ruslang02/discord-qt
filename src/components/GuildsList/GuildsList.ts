@@ -5,7 +5,7 @@ import { app, MAX_QSIZE } from "../..";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { GuildButton } from './GuildButton';
-import './GuildsList.scss';
+
 
 export class GuildsList extends QListWidget {
   private mpBtn = new QPushButton();

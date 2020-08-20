@@ -1,4 +1,4 @@
-@import '../../Colors.scss';
+
 
 #SettingsView {
   width: '100%';
@@ -70,7 +70,7 @@
     background: none;
     QLabel {
       font-size: 16px;
-      color: white;
+      color: $header-primary;
     }
     #CheckBox {
       border: none;

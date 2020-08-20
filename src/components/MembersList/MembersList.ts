@@ -5,7 +5,7 @@ import { UserButton } from '../UserButton/UserButton';
 import { ViewOptions } from '../../views/ViewOptions';
 import { CancelToken } from '../../utilities/CancelToken';
 import { Events } from '../../structures/Events';
-import './MembersList.scss';
+
 
 export class MembersList extends QListWidget {
   private cancelToken?: CancelToken;

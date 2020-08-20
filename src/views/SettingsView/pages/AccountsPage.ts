@@ -4,7 +4,7 @@ import { DColorButton, DColorButtonColor } from '../../../components/DColorButto
 import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
 import { Divider } from '../SettingsView';
 import { app } from '../../..';
-import './AccountsPage.scss';
+
 import { join } from 'path';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client } from 'discord.js';

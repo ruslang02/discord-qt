@@ -1,4 +1,4 @@
-@import "../../Colors.scss";
+
 
 #MessagesPanel,
 #MessagesContainer {
@@ -34,7 +34,7 @@
   }
   #UserNameLabel {
     font-size: 16px;
-    color: white;
+    color: $header-primary;
     font-weight: 500;
   }
   #DateLabel {

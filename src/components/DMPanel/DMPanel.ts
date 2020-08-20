@@ -1,6 +1,6 @@
 import { QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
 import { DMTitleBar } from "./DMTitleBar";
-import './DMPanel.scss';
+
 import { DMUsersList } from "./DMUsersList";
 
 export class DMPanel extends QWidget {

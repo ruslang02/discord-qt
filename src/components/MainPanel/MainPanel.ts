@@ -12,7 +12,7 @@ export class MainPanel extends QWidget {
 
   constructor() {
     super();
-
+    
     this.setLayout(this.layout);
     this.initComponent();
   }

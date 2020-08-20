@@ -1,5 +1,5 @@
 import { QPushButton, CursorShape } from '@nodegui/nodegui';
-import './DColorButton.scss';
+
 
 export enum DColorButtonColor {
   BLURPLE = 0,

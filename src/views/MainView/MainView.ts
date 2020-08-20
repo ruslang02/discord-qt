@@ -3,7 +3,7 @@ import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
 import { GuildsList } from '../../components/GuildsList/GuildsList';
 import { MainTitleBar } from '../../components/MainTitleBar/MainTitleBar';
 import { MainPanel } from '../../components/MainPanel/MainPanel';
-import './MainView.scss';
+
 
 export class MainView extends QWidget {
   private controls = new QBoxLayout(Direction.LeftToRight);

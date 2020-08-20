@@ -2,7 +2,7 @@ import { QWidget, QBoxLayout, Direction, QLineEdit, QMenu, WidgetAttribute, QLis
 import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
 import { app } from '../..';
-import './EmojiPicker.scss';
+
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class EmojiPicker extends QMenu {

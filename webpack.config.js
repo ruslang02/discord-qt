@@ -5,6 +5,9 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { IgnorePlugin, DefinePlugin, ProvidePlugin } = require("webpack");
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const globImporter = require('node-sass-glob-importer');
+const StringReplaceLoader = require('string-replace-loader');
+
 let __BUILDNUM__;
 try {
   __BUILDNUM__ = childProcess.execSync('git rev-list HEAD --count').toString()
@@ -16,8 +19,10 @@ module.exports = (_env, argv) => {
   return {
     mode: isDev ? "development" : "production",
     entry: {
-      index: "./src",
-      worker: "./worker"
+      "index.js": "./src",
+      "worker.js": "./worker",
+      'light.theme': './src/themes/light.theme.scss',
+      'dark.theme': './src/themes/dark.theme.scss',
     },
     optimization: {
       minimize: !isDev,
@@ -35,7 +40,7 @@ module.exports = (_env, argv) => {
     },
     output: {
       path: path.resolve(__dirname, "dist"),
-      filename: "[name].js",
+      filename: "[name]",
     },
     module: {
       exprContextCritical: false,
@@ -66,13 +71,16 @@ module.exports = (_env, argv) => {
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
-              options: {
-                // only enable hot in development
-                hmr: isDev,
-              },
             },
             'css-loader',
-            'sass-loader'
+            {
+              loader: 'sass-loader',
+              options: {
+                sassOptions: {
+                  importer: globImporter(),
+                }
+              }
+            },
           ],
         },
         {
@@ -94,13 +102,15 @@ module.exports = (_env, argv) => {
       }
     },
     plugins: [
+      new CleanWebpackPlugin(),
       new IgnorePlugin({ resourceRegExp: /node-opus|@discordjs\/opus|opusscript|ffmpeg-static/g }),
       new DefinePlugin({ __BUILDNUM__ }),
       new ProvidePlugin({
         'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
       }),
-      new CleanWebpackPlugin(),
-      new MiniCssExtractPlugin(),
+      new MiniCssExtractPlugin({
+        filename: 'themes/[name].css',
+      }),
       new CopyPlugin({
         patterns: [{ from: 'assets', to: 'assets' }]
       })

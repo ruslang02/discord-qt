@@ -1,4 +1,4 @@
-@import "../../Colors.scss";
+
 
 #GuildsList {
   background: $background-tertiary;
@@ -12,7 +12,7 @@
     margin: 0 12px 8px;
     background-color: $background-primary;
     border: none;
-    color: white;
+    color: $header-primary;
     &:hover,
     &[active="true"] {
       background-color: $blurple;

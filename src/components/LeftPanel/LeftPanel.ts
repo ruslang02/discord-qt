@@ -4,7 +4,7 @@ import { GuildPanel } from "../GuildPanel/GuildPanel";
 import { DMPanel } from "../DMPanel/DMPanel";
 import { MAX_QSIZE, app } from "../..";
 import { Events } from "../../structures/Events";
-import './LeftPanel.scss';
+
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();

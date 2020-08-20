@@ -14,7 +14,7 @@ export class Config extends IConfig {
     const { file } = this;
     await mkdir(dirname(file), {recursive: true});
     try {
-      const {accounts, roundifyAvatars, fastLaunch, debug, enableAvatars, processMarkDown, recentEmojis} = 
+      const {accounts, roundifyAvatars, fastLaunch, debug, enableAvatars, processMarkDown, recentEmojis, lightTheme} = 
         JSON.parse(await readFile(file, 'utf8'));
       const appConfig = {
         accounts: accounts || [],
@@ -23,6 +23,7 @@ export class Config extends IConfig {
         debug: debug ?? false,
         enableAvatars: enableAvatars ?? true,
         processMarkDown: processMarkDown ?? true,
+        lightTheme: lightTheme ?? false,
         recentEmojis: recentEmojis ?? [],
       } as IConfig;
       Object.assign(this, appConfig);
@@ -38,6 +39,7 @@ export class Config extends IConfig {
         debug: false,
         enableAvatars: true,
         processMarkDown: true,
+        lightTheme: false,
         recentEmojis: [],
       });
     }
