@@ -2,13 +2,8 @@ import { Page } from './Page';
 import { app, MAX_QSIZE } from '../../..';
 import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
 import { pictureWorker } from '../../../utilities/PictureWorker';
-<<<<<<< HEAD
-import { Client } from 'discord.js';
-import './MyAccountPage.scss';
-=======
 import { Client, Constants } from 'discord.js';
 
->>>>>>> 6781d0c... feat: themes support, light theme
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { Events } from '../../../structures/Events';
 
