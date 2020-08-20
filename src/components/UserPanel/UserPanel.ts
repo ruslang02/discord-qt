@@ -6,7 +6,7 @@ import { pictureWorker } from "../../utilities/PictureWorker";
 import { DIconButton } from "../DIconButton/DIconButton";
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-import './UserPanel.scss';
+
 import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 

@@ -4,7 +4,7 @@ import fs from "fs";
 import { app } from '..';
 import { Client, Constants } from 'discord.js';
 import { MainView } from '../views/MainView/MainView';
-import './RootWindow.scss';
+
 import { SettingsView } from "../views/SettingsView/SettingsView";
 import { Account } from "../structures/Account";
 import { Events } from "../structures/Events";
@@ -44,6 +44,7 @@ export class RootWindow extends QMainWindow {
     app.on(Events.READY, () => {
       const autoAccount = app.config.accounts?.find(a => a.autoLogin);
       if (autoAccount) this.loadClient(autoAccount);
+      this.loadStyles();
     })
   }
 
@@ -59,8 +60,9 @@ export class RootWindow extends QMainWindow {
     this.root.setCurrentWidget(this.mainView);
   }
 
-  protected async loadStyles() {
-    const stylesheet = await fs.promises.readFile(path.resolve(__dirname, "index.css"), "utf8");
+  async loadStyles() {
+    const stylePath = path.join(__dirname, 'themes', `${app.config.lightTheme ? 'light' : 'dark'}.theme.css`);
+    const stylesheet = await fs.promises.readFile(stylePath, "utf8");
     this.setStyleSheet(stylesheet);
   }
   protected loadIcon() {

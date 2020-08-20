@@ -1,5 +1,5 @@
 import { QPushButton, QBoxLayout, Direction, QCursor, CursorShape, QWidget, QLabel } from '@nodegui/nodegui';
-import './DChannelButton.scss';
+
 
 export class DChannelButton extends QPushButton {
   layout = new QBoxLayout(Direction.LeftToRight);

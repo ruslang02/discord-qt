@@ -1,10 +1,10 @@
-import { QWidget, QBoxLayout, Direction, QScrollArea, QPushButton, QIcon, QSize, QLabel, Shape, CursorShape, AlignmentFlag, TextInteractionFlag } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QScrollArea, QPushButton, QIcon, QSize, QLabel, Shape, CursorShape, AlignmentFlag, TextInteractionFlag, QGraphicsDropShadowEffect } from "@nodegui/nodegui";
 import { join } from "path";
 import { SectionList } from "./SectionList";
 import { MAX_QSIZE, app } from "../..";
 import { Page } from "./pages/Page";
 import { AccountsPage } from "./pages/AccountsPage";
-import './SettingsView.scss';
+
 import { MyAccountPage } from './pages/MyAccountPage';
 import { DIconButton } from '../../components/DIconButton/DIconButton';
 import open from 'open';
@@ -115,6 +115,11 @@ export class SettingsView extends QWidget {
     pageContainer.setObjectName("SettingsContainer");
     pageContainer.setWidget(this.elements[0] as Page);
 
+    const effect = new QGraphicsDropShadowEffect();
+    effect.setBlurRadius(5);
+    effect.setXOffset(0);
+    effect.setYOffset(0);
+    
     const closeBtn = new QPushButton();
     closeBtn.setObjectName('CloseButton');
     closeBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'main'));
@@ -122,6 +127,7 @@ export class SettingsView extends QWidget {
     closeBtn.setCursor(CursorShape.PointingHandCursor);
     closeBtn.setIcon(new QIcon(join(__dirname, './assets/icons/close.png')));
     closeBtn.setIconSize(new QSize(18, 18));
+    closeBtn.setGraphicsEffect(effect);
 
     const closeKeybind = new QLabel();
     closeKeybind.setObjectName('CloseKeybind');

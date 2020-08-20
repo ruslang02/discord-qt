@@ -3,7 +3,7 @@ import { QWidget, QLabel, QSize, QBoxLayout, Direction, WidgetEventTypes, QMouse
 import { join } from 'path';
 import { DIconButton } from '../components/DIconButton/DIconButton';
 import { RootWindow } from '../windows/RootWindow';
-import './Dialog.scss';
+
 export class Dialog extends QWidget {
   protected window = new QWidget(this);
   controls = new QBoxLayout(Direction.TopToBottom);

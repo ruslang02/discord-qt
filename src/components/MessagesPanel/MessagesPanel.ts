@@ -2,7 +2,7 @@ import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, A
 import { app, MAX_QSIZE } from "../..";
 import { DMChannel, Message, Channel, Client, Snowflake, TextChannel, Guild } from "discord.js";
 import { MessageItem } from "./MessageItem";
-import './MessagesPanel.scss';
+
 import { ViewOptions } from '../../views/ViewOptions';
 import { CancelToken } from '../../utilities/CancelToken';
 import { Events } from "../../structures/Events";

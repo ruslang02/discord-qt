@@ -1,5 +1,5 @@
 import { QPushButton, QSize, QIcon, WidgetEventTypes, QCursor, CursorShape } from "@nodegui/nodegui";
-import './DIconButton.scss';
+
 
 export class DIconButton extends QPushButton {
   qiconOn = new QIcon();

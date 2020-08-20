@@ -11,7 +11,7 @@ export class AppearancePage extends Page {
   private prmdcx = new SettingsCheckBox(this); // Process MD checkbox
   private enavcx = new SettingsCheckBox(this); // Display avatars checkbox
   private rdavcx = new SettingsCheckBox(this); // Roundify avatars checkbox
-  private fastcx = new SettingsCheckBox(this); // Fast loading checkbox
+  private lithcx = new SettingsCheckBox(this); // Light theme checkbox
   private dbgcx = new SettingsCheckBox(this); // Debug checkbox
 
   constructor() {
@@ -21,54 +21,38 @@ export class AppearancePage extends Page {
     app.on(Events.READY, this.loadConfig.bind(this));
   }
   private initPage() {
-    const { title, header, enavcx, rdavcx, prmdcx, fastcx, dbgcx, layout } = this;
+    const { title, header, enavcx, rdavcx, lithcx, prmdcx, dbgcx, layout } = this;
     header.setObjectName('Header2');
     header.setText(title);
-    prmdcx.setText('Process Cool Text™ (Markdown)');
-    enavcx.setText('Enable user avatars');
-    rdavcx.setText('Roundify user avatars');
-    fastcx.setText('[dev] Process only first 5 guilds/DMs/channels');
-    dbgcx.setText('[dev] Debug mode');
-    prmdcx.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      const checked = prmdcx.isChecked();
-      prmdcx.setChecked(!checked)
-      app.config.processMarkDown = !checked;
-      app.config.save();
-    });
-    enavcx.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      const checked = enavcx.isChecked();
-      enavcx.setChecked(!checked)
-      app.config.enableAvatars = !checked;
-      app.config.save();
-    });
-    rdavcx.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      const checked = rdavcx.isChecked();
-      rdavcx.setChecked(!checked)
-      app.config.roundifyAvatars = !checked;
-      app.config.save();
-    });
-    fastcx.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      const checked = fastcx.isChecked();
-      fastcx.setChecked(!checked)
-      app.config.fastLaunch = !checked;
-      app.config.save();
-    });
-    dbgcx.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      const checked = dbgcx.isChecked();
-      dbgcx.setChecked(!checked)
-      app.config.debug = !checked;
-      app.config.save();
-    });
-    [header, prmdcx, enavcx, rdavcx, fastcx, dbgcx].forEach(w => layout.addWidget(w));
+    [
+      [prmdcx, 'processMarkDown', 'Process Cool Text™ (Markdown)'],
+      [enavcx, 'enableAvatars', 'Enable user avatars'],
+      [rdavcx, 'roundifyAvatars', 'Roundify user avatars'],
+      [lithcx, 'lightTheme', 'Light theme'],
+      [dbgcx, 'debug', '[dev] Debug mode']
+    ] // @ts-ignore
+      .forEach(([checkbox, id, text]: [SettingsCheckBox, string, string]) => {
+        checkbox.setText(text);
+        checkbox.addEventListener(WidgetEventTypes.MouseButtonRelease, async () => {
+          const checked = checkbox.isChecked();
+          checkbox.setChecked(!checked)
+          // @ts-ignore
+          app.config[id] = !checked;
+          await app.config.save();
+
+          if(id === 'lightTheme') app.window.loadStyles();
+        });
+        layout.addWidget(checkbox);
+      });
     layout.addStretch(1);
   }
   private loadConfig() {
-    const { enavcx, rdavcx, prmdcx, fastcx, dbgcx } = this;
-    const {debug, processMarkDown, enableAvatars, roundifyAvatars, fastLaunch} = app.config;
+    const { enavcx, rdavcx, lithcx, prmdcx, dbgcx } = this;
+    const { debug, processMarkDown, enableAvatars, roundifyAvatars, lightTheme } = app.config;
     enavcx.setChecked(enableAvatars as boolean);
     rdavcx.setChecked(roundifyAvatars as boolean);
     prmdcx.setChecked(processMarkDown as boolean);
-    fastcx.setChecked(fastLaunch as boolean);
+    lithcx.setChecked(lightTheme as boolean);
     dbgcx.setChecked(debug as boolean);
   }
 }

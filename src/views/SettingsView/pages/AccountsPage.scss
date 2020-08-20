@@ -1,4 +1,4 @@
-@import '../../../Colors.scss';
+
 
 #Account {
   border-radius: 5px;
@@ -12,7 +12,7 @@
     font-size: 18px;
     font-weight: 500;
     margin-left: 5px;
-    color: white;
+    color: $header-primary;
   }
   #Discriminator {
     font-size: 18px;

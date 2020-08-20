@@ -8,7 +8,7 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
-import './InputPanel.scss';
+
 
 const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
 

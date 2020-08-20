@@ -3,7 +3,7 @@ import { User, GuildMember, Presence, Client, Constants } from "discord.js";
 import TWEmoji from 'twemoji';
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DChannelButton } from '../DChannelButton/DChannelButton';
-import './UserButton.scss';
+
 import { app, MAX_QSIZE } from '../..';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { Events } from '../../structures/Events';

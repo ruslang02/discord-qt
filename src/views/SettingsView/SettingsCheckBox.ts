@@ -1,4 +1,4 @@
-import { QBoxLayout, Direction, QLabel, AlignmentFlag, CursorShape, QSize, QWidget, QPixmap } from '@nodegui/nodegui';
+import { QBoxLayout, Direction, QLabel, AlignmentFlag, CursorShape, QSize, QWidget, QPixmap, QGraphicsDropShadowEffect } from '@nodegui/nodegui';
 import { join } from 'path';
 
 export class SettingsCheckBox extends QWidget {
@@ -36,6 +36,11 @@ export class SettingsCheckBox extends QWidget {
     layout.setContentsMargins(2, 10, 2, 10);
     label.setAlignment(AlignmentFlag.AlignVCenter);
     checkbox.setObjectName('CheckBox');
+    const effect = new QGraphicsDropShadowEffect();
+    effect.setBlurRadius(5);
+    effect.setXOffset(0);
+    effect.setYOffset(0);
+    checkbox.setGraphicsEffect(effect);
     layout.addWidget(label, 1);
     layout.addWidget(checkbox);
   }

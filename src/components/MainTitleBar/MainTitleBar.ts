@@ -8,7 +8,7 @@ import { DIconButton } from '../DIconButton/DIconButton';
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-import './MainTitleBar.scss';
+
 
 export class MainTitleBar extends DTitleBar {
   private channel?: TextChannel | DMChannel;
@@ -21,8 +21,6 @@ export class MainTitleBar extends DTitleBar {
 
   constructor() {
     super();
-
-    this.setInlineStyle('background-color: #36393f');
     this.initComponent();
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;

@@ -1,5 +1,5 @@
 import { QWidget, FlexLayout, QBoxLayout, Direction, QLabel, QPushButton, QIcon, QSize, WidgetEventTypes, AlignmentFlag, CursorShape, QPixmap } from "@nodegui/nodegui";
-import './GuildPanel.scss';
+
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { app } from '../..';
 import { Guild, TextChannel } from 'discord.js';

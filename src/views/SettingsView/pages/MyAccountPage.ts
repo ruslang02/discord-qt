@@ -3,7 +3,7 @@ import { app, MAX_QSIZE } from '../../..';
 import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Client, Constants } from 'discord.js';
-import './MyAccountPage.scss';
+
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { Events } from '../../../structures/Events';
 

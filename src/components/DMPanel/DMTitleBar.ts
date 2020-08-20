@@ -7,8 +7,7 @@ export class DMTitleBar extends DTitleBar {
 
   constructor(usersList: DMUsersList) {
     super();
-
-    this.setInlineStyle('background-color: #2f3136');
+    this.setProperty('type', 'search');
     this.controls.setContentsMargins(10, 10, 10, 10);
     this.filterInput.setPlaceholderText('Find or start a conversation');
     this.filterInput.addEventListener('textEdited', (text) => {

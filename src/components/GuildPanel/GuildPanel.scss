@@ -1,6 +1,6 @@
-@import '../../Colors.scss';
 
-#GuildPanel {
+
+#MainView #GuildPanel {
   background-color: $background-secondary;
   #DTitleBar, #ChannelsContainer, #ChannelsList {
     background-color: $background-secondary;
@@ -21,7 +21,7 @@
     font-weight: 500;
     font-size: 16px;
     line-height: 20px;
-    color: white;
+    color: $header-primary;
   }
   #ActionsMenu {
     border-bottom: 1px solid $background-floating;
