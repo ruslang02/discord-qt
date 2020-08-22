@@ -2,6 +2,7 @@
 
 import { ClientUser, Guild, Snowflake, PresenceStatus, Util, Constants as Consts } from 'discord.js';
 import DQConstants from '../util/Constants';
+import { CustomStatus } from './CustomStatus';
 const Constants = {
   ...require('discord.js/src/util/Constants') as typeof Consts,
   ...DQConstants
@@ -11,6 +12,7 @@ const Constants = {
  */
 export class DQClientUserSettings {
   public convertEmoticons: boolean = false;
+  public customStatus: CustomStatus | null = null;
   public defaultGuildsRestricted: boolean = false;
   public detectPlatformAccounts: boolean = false;
   public developerMode: boolean = false;
