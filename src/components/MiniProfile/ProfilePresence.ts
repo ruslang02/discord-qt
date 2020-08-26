@@ -70,12 +70,14 @@ export class ProfilePresence extends QWidget {
     if (activity.type === 'PLAYING') {
       label1.setText(`<b>${activity.name}</b>`);
       label1.show();
+      activity.details ? label2.show() : label2.hide();
+      label2.setText(activity.details || '');
     } else {
       activity.details ? label1.show() : label1.hide();
       label1.setText(`<b>${activity.details}</b>`);
     }
-    activity.state ? label2.show() : label2.hide();
-    label2.setText(activity.state || '');
+    activity.state ? label3.show() : label3.hide();
+    label3.setText(activity.state || '');
 
     const lImageUrl = activity.assets?.largeImageURL({size: 256, format: 'png'});
     if (lImageUrl) {
