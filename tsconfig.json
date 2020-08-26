@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "incremental": true,
     "target": "es2019",
+    "lib": ["es6"],
     "module": "commonjs",
     "allowJs": false,
     "checkJs": false,

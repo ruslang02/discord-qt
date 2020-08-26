@@ -1,15 +1,12 @@
 import { ClientOptions } from 'discord.js';
 
 const { version, name } = require('../../package.json');
-
 export const clientOptions: ClientOptions = {
-  useUserGateway: true,
-  waitForGuildsTimeout: 0,
-  userAgent: `Discord-Qt/${version} Node.js/${process.version}`,
   ws: {
     compress: false,
     // @ts-ignore
     properties: {
+      // @ts-ignore
       os: process.platform,
       browser: "DiscordQt",
       release_channel: "stable",

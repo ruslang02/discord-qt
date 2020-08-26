@@ -1,8 +1,8 @@
-import { CustomStatus } from 'discord.js';
 import { join, basename } from 'path';
 import TWEmoji from 'twemoji';
 import { app, paths } from '..';
 import { pictureWorker } from '../utilities/PictureWorker';
+import { CustomStatus } from '../dqjs/structures/CustomStatus';
 
 export const EMOJI_PATH = join(paths.cache, 'emojis');
 

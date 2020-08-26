@@ -1,6 +1,6 @@
 import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QMouseEvent, MouseButton, QPoint, FocusReason } from "@nodegui/nodegui";
 import path, { basename, join, extname } from 'path';
-import { pathToFileURL, fileURLToPath } from 'url';
+import { pathToFileURL, fileURLToPath, URL } from 'url';
 import { DMChannel, Client, Channel, TextChannel, User, Permissions, Emoji, Constants, MessageOptions } from "discord.js";
 import { DIconButton } from "../DIconButton/DIconButton";
 import { app, MAX_QSIZE } from "../..";
@@ -209,7 +209,7 @@ export class InputPanel extends QWidget {
       event.key() === Key.Key_E &&
       (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
     ) this.handleEmojiOpen();
-    else setTimeout(this.adjustInputSize.bind(this));
+    else setTimeout(this.adjustInputSize.bind(this), 0);
   }
 
   private adjustInputSize() {
@@ -224,7 +224,7 @@ export class InputPanel extends QWidget {
   private async sendMessage() {
     const { input, statusLabel } = this;
     const message = input.toPlainText().trim();
-    setTimeout(() => input.clear());
+    setTimeout(() => input.clear(), 0);
     if (this.channel) {
       const msgOptions = {
         files: [...this.files.values()].map(attachment => ({ attachment, name: basename(attachment) }))

@@ -1,7 +1,7 @@
 import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QPoint } from "@nodegui/nodegui";
 import { Message, Collection, MessageAttachment, Snowflake } from "discord.js";
 import open from 'open';
-import { pathToFileURL } from 'url';
+import { pathToFileURL, URL } from 'url';
 import markdownIt from 'markdown-it';
 import { CancelToken } from '../../utilities/CancelToken';
 import { app, MAX_QSIZE } from '../..';

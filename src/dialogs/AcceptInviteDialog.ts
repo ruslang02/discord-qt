@@ -3,6 +3,7 @@ import { QBoxLayout, QWidget, Direction, QLabel, QLineEdit } from '@nodegui/node
 import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
 import { app } from '..';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';
+import { URL } from 'url';
 
 export class AcceptInviteDialog extends Dialog {
   private urlLabel = new QLabel(this);
