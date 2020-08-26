@@ -12,24 +12,29 @@ export class DQClient extends Client {
 
   /**
    * The presence of the Client
-   * @private
    * @type {DQClientPresence}
+   * @private
    */
-  // @ts-ignore
   presence = new DQClientPresence(this);
 
   /**
-   * The action manager of the client
-   * @type {DQActionsManager}
+   * The WebSocket manager
+   * @type {DQWebSocketManager}
    * @private
    */
-  actions = new DQActionsManager(this);
+  ws = new DQWebSocketManager(this) as unknown as WebSocketManager;
+
 
   constructor(options = {}) {
     // @ts-ignore
     super({ _tokenType: '', ...options });
 
+    /**
+     * The action manager of the client
+     * @type {DQActionsManager}
+     * @private
+     */
     // @ts-ignore
-    this.ws = new DQWebSocketManager(this) as unknown as WebSocketManager;
+    this.actions = new DQActionsManager(this);
   }
 }

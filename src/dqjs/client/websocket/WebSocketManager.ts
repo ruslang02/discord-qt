@@ -1,8 +1,14 @@
 import { WebSocketShard, Constants, WSEventType, WebSocketManager, Client } from 'discord.js';
 import READY from './handlers/READY';
+import USER_SETTINGS_UPDATE from './handlers/USER_SETTINGS_UPDATE';
+
 const { WSEvents, Status } = Constants;
 const WSManager = require('discord.js/src/client/websocket/WebSocketManager') as new (client: Client) => WebSocketManager;
-const PacketHandlers = { ...require('discord.js/src/client/websocket/handlers'), READY };
+const PacketHandlers = {
+  ...require('discord.js/src/client/websocket/handlers'),
+  READY,
+  USER_SETTINGS_UPDATE
+};
 
 const BeforeReadyWhitelist = [
   WSEvents.READY,
@@ -37,15 +43,12 @@ export class DQWebSocketManager extends WSManager {
       const item = this.packetQueue.shift();
       this.client.setImmediate(() => {
         // @ts-ignore
-        item && this.handlePacket(item.packet, item.shard);
+        this.handlePacket(item.packet, item.shard);
       });
     }
 
     if (packet && PacketHandlers[packet.t]) {
       PacketHandlers[packet.t](this.client, packet, shard);
-    }
-
-    if (packet && packet.t === WSEvents.READY && typeof packet.d === 'object') {
     }
     return true;
   }

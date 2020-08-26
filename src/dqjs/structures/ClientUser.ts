@@ -26,8 +26,8 @@ export class DQClientUser extends ClientUser {
   constructor(client: DQClient, data: any) {
     // @ts-ignore
     super(client, data.user);
-    console.log(data.user);
     this.settings = data.user_settings ? new DQClientUserSettings(this, data.user_settings) : null;
+    this._patch(data.user);
   }
 
   _patch(data: any) {
@@ -39,7 +39,6 @@ export class DQClientUser extends ClientUser {
     if ('premium' in data) {
       this.premium = typeof data.premium === 'boolean' ? data.premium : null;
     }
-    console.log(this.email);
   }
   /**
    * ClientUser's custom status

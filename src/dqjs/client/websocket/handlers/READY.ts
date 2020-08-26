@@ -15,13 +15,13 @@ export default function ReadyHandler(client: DQClient, { d: data }: Packet, shar
 
   for (const guild of data.guilds) {
     guild.shardID = shard.id;
-    
     client.guilds.add(guild);
   }
 
   for (const privateDM of data.private_channels) {
     client.channels.add(privateDM);
   }
-  // @ts-ignore
-  shard.checkReady();
+
+  shard.status = 0;
+  shard.emit('allReady', data.guilds.length);
 };

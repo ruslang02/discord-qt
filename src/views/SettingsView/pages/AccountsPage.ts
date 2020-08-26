@@ -1,18 +1,17 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPushButton, QPixmap, QIcon, QSize, AlignmentFlag, QGraphicsDropShadowEffect, QColor, WidgetEventTypes, CursorShape } from "@nodegui/nodegui";
+import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, QGraphicsDropShadowEffect, QColor, WidgetEventTypes } from "@nodegui/nodegui";
 import { Page } from "./Page";
 import { DColorButton, DColorButtonColor } from '../../../components/DColorButton/DColorButton';
 import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
 import { Divider } from '../SettingsView';
 import { app } from '../../..';
 
-import { join } from 'path';
 import { pictureWorker } from '../../../utilities/PictureWorker';
-import { Client } from 'discord.js';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Account } from "../../../structures/Account";
 import { Events } from "../../../structures/Events";
 import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 import { clientOptions } from '../../../structures/ClientOptions';
+import { DQClient } from '../../../dqjs/client/Client';
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -160,7 +159,7 @@ export class AccountsPage extends Page {
       const token = addTokenField.text();
       addButton.setEnabled(false);
       try {
-        const client = new Client(clientOptions);
+        const client = new DQClient(clientOptions);
         await client.login(token);
         if (client.user?.bot) {
           await client.destroy();

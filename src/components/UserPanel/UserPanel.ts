@@ -1,14 +1,18 @@
 import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy } from "@nodegui/nodegui";
-import { Client, Constants, Presence, Activity, CustomStatus, PresenceData } from "discord.js";
 import path, { join } from 'path';
-import { app, MAX_QSIZE } from "../..";
-import { pictureWorker } from "../../utilities/PictureWorker";
-import { DIconButton } from "../DIconButton/DIconButton";
+
+import { Client } from "discord.js";
+import { CustomStatus } from '../../dqjs/structures/CustomStatus';
+import Constants from '../../dqjs/util/Constants';
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { pictureWorker } from "../../utilities/PictureWorker";
+
+import { app, MAX_QSIZE } from "../..";
+import { DIconButton } from "../DIconButton/DIconButton";
 
 import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -30,23 +34,23 @@ export class UserPanel extends QWidget {
   }
 
   bindEvents(client: Client) {
-    const { Events: DiscordEvents } = Constants;
+    const { Events } = Constants;
     this.nameLabel.setText('Connecting...');
     this.discLabel.setText('#0000');
-    client.on(DiscordEvents.CLIENT_READY, () => {
+    client.on(Events.CLIENT_READY, () => {
       this.updateData();
       this.updateAvatar();
       this.updatePresence();
     });
-    client.on(DiscordEvents.USER_UPDATE, (prev, cur) => {
+    client.on(Events.USER_UPDATE, (prev, cur) => {
       this.updateData();
       if (prev.avatar !== cur.avatar) this.updateAvatar();
     });
-    client.on(DiscordEvents.PRESENCE_UPDATE, (_o, presence) => {
+    client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
       if (presence.userID === client.user?.id)
         this.updatePresence();
     });
-    client.on(DiscordEvents.USER_SETTINGS_UPDATE, () => {
+    client.on(Events.USER_SETTINGS_UPDATE, () => {
       this.updatePresence();
     });
   }

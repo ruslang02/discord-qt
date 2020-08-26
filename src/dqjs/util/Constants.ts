@@ -147,6 +147,10 @@ const DQConstants = {
         mutualFriends: flags.all ? true : flags.mutualFriends || false,
       };
     },
+  },
+  Events: {
+    ...Constants.Events,
+    USER_SETTINGS_UPDATE: 'userSettingsUpdate'
   }
 }
-export default DQConstants;
+export default { ...Constants, ...DQConstants };
