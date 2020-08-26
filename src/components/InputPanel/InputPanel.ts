@@ -61,12 +61,15 @@ export class InputPanel extends QWidget {
         const canEmbed = !!(channel as TextChannel).permissionsFor(app.client.user as User)?.has(Permissions.FLAGS.ATTACH_FILES)
         this.addBtn.setEnabled(canEmbed);
       } else this.addBtn.setEnabled(true);
-      input.setPlaceholderText(`Message ${channel.type === 'dm' ?
-        `@${(<DMChannel>channel).recipient.username}` :
-        `#${(<TextChannel>channel).name}`
-        }`);
-      // Waiting for nodegui release
-      // input.setFocus(FocusReason.TabFocusReason);
+      input.setPlaceholderText(
+        `Message ${channel.type === 'dm' ?
+          `@${(<DMChannel>channel).recipient.username}` :
+          `#${(<TextChannel>channel).name}`
+        }`
+      );
+
+      // @ts-ignore
+      input.setFocus && input.setFocus(FocusReason.TabFocusReason);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -139,7 +142,8 @@ export class InputPanel extends QWidget {
     emojiPicker.events.on('emoji', (emoji: Emoji) => {
       this.input.insertPlainText(emoji.toString());
       emojiPicker.close();
-      this.input.setFocus(FocusReason.TabFocusReason);
+      // @ts-ignore
+      input.setFocus && input.setFocus(FocusReason.TabFocusReason);
     });
     emojiPicker.addEventListener(WidgetEventTypes.Hide, () => emojiBtn.setIcon(emojiBtn.qiconOff));
     emojiBtn.setFixedSize(38, 44);

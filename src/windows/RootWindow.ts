@@ -76,7 +76,7 @@ export class RootWindow extends QMainWindow {
     app.client = new DQClient(clientOptions);
     app.client.on(DiscordEvents.ERROR, console.error)
     if (app.config.debug) app.client.on(DiscordEvents.DEBUG, console.debug)
-    app.client.on(DiscordEvents.WARN, console.warn)
+    app.client.on(DiscordEvents.WARN, console.warn);
     try {
       await app.client.login(account.token);
       this.setWindowTitle(`Discord-Qt • ${app.client.user?.tag}`);
@@ -84,6 +84,7 @@ export class RootWindow extends QMainWindow {
       return true;
     } catch (e) {
       this.setWindowTitle(`Discord-Qt • Not logged in`);
+      console.error('Couldn\'t log in', e);
       return false;
     }
   }
