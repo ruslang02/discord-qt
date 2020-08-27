@@ -22,16 +22,7 @@
           "webpack:///*": "${workspaceRoot}/*"
       },
       "autoAttachChildProcesses": true,
-    },
-    {
-        "type": "chrome",
-        "request": "attach",
-        "name": "Attach to Chrome",
-        "port": 9229,
-        "webRoot": "${workspaceRoot}",
-        "sourceMapPathOverrides": {
-            "webpack:///*": "${workspaceRoot}/*"
-        }
+      "console": "internalConsole"
     }
   ]
 }

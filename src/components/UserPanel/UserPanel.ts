@@ -1,4 +1,4 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy } from "@nodegui/nodegui";
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy, QApplication, QClipboardMode, WidgetEventTypes } from "@nodegui/nodegui";
 import path, { join } from 'path';
 
 import { Client } from "discord.js";
@@ -20,6 +20,7 @@ export class UserPanel extends QWidget {
   private statusText = new QLabel(this);
   private statusBtn = new QPushButton(this);
   private controls = new QBoxLayout(Direction.LeftToRight);
+  private clipboard = QApplication.clipboard();
 
   constructor() {
     super();
@@ -53,6 +54,16 @@ export class UserPanel extends QWidget {
     });
   }
 
+  private copyUserInfo() {
+    const { clipboard, discLabel, statusText } = this;
+    clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
+    [discLabel, statusText].forEach(w => w.setText('Copied!'));
+    setTimeout(() => {
+      this.updateData();
+      this.updatePresence();
+    }, 3000);
+  }
+
   private initComponent() {
     const { avatar, nameLabel, discLabel, controls, statusBtn, statusIcon, statusText } = this;
     this.setLayout(controls);
@@ -79,6 +90,11 @@ export class UserPanel extends QWidget {
     discLabel.setText('#0000');
     discLabel.setObjectName('DiscLabel');
     statusText.setObjectName('DiscLabel');
+    [nameLabel, discLabel, statusText].forEach(f => {
+      f.setCursor(CursorShape.PointingHandCursor);
+      f.addEventListener(WidgetEventTypes.MouseButtonPress, this.copyUserInfo.bind(this));
+    });
+
 
     layStat.addWidget(discLabel, 1);
     layStat.addWidget(statusIcon);

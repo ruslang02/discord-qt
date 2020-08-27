@@ -230,8 +230,10 @@ export class MessageItem extends QWidget {
 
   async loadMessage(message: Message, token?: CancelToken) {
     const { userNameLabel, dateLabel, contentLabel } = this;
+    const user = message.author;
+    const member = message.guild?.member(user) || await message.guild?.members.fetch({ user });
     this.message = message;
-    userNameLabel.setText(message.member?.nickname || message.author.username);
+    userNameLabel.setText(member?.nickname || user.username);
     if (token?.cancelled) return;
     dateLabel.setText(message.createdAt.toLocaleString());
     contentLabel.setCursor(CursorShape.IBeamCursor);

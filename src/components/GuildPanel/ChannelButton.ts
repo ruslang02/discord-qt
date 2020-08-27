@@ -78,7 +78,6 @@ export class ChannelButton extends DChannelButton {
     });
     channelMenu.addAction(copyId);
     this.addEventListener('customContextMenuRequested', (pos) => {
-      channelMenu.setInlineStyle('background: #18191c');
       channelMenu.repolish();
       channelMenu.popup(this.mapToGlobal(new QPoint(pos.x, pos.y)));
     });

@@ -13,6 +13,9 @@
       outline: none;
     }
   }
+  QMenu {
+    background: $background-floating;
+  }
   #DTitleBar:hover {
     background-color: lighten($background-secondary, 2%);
   }
