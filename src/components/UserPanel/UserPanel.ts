@@ -12,8 +12,6 @@ import { pictureWorker } from "../../utilities/PictureWorker";
 import { app, MAX_QSIZE } from "../..";
 import { DIconButton } from "../DIconButton/DIconButton";
 
-import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
-
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
   private nameLabel = new QLabel(this);
@@ -179,9 +177,11 @@ export class UserPanel extends QWidget {
 
   async updatePresence() {
     const { discLabel, statusBtn, statusIcon, statusText } = this;
-    const user = app.client.user;
-    if (!user) return;
-    const { customStatus, presence } = user;
+    if (!app.client.user) return;
+    const { customStatus, presence } = app.client.user;
+
+    statusBtn.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)};`);
+    statusBtn.setProperty('toolTip', presence.status);
 
     if (!customStatus) {
       statusIcon.hide();
@@ -189,8 +189,6 @@ export class UserPanel extends QWidget {
       discLabel.show();
       return;
     }
-    statusBtn.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)};`);
-    statusBtn.setProperty('toolTip', presence.status);
     this.loadStatusEmoji(customStatus);
     this.statusText.setText(customStatus.text || '');
 

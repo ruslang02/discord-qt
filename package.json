@@ -11,7 +11,8 @@
     "discord-qt": "./index.js"
   },
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack",
+    "build:prod": "webpack -p",
     "start": "qode ./dist/index.js",
     "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect=0.0.0.0:9229 ./dist/index.js",

@@ -2,8 +2,16 @@
 
 #MainView #GuildPanel {
   background-color: $background-secondary;
-  #DTitleBar, #ChannelsContainer, #ChannelsList {
+  #DTitleBar, #ChannelsList {
     background-color: $background-secondary;
+  }
+  #ChannelsList {
+    &::item {
+      padding: 6px 4px;
+      color: transparent;
+      background: none;
+      outline: none;
+    }
   }
   #DTitleBar:hover {
     background-color: lighten($background-secondary, 2%);
@@ -13,9 +21,12 @@
     font-size: 12px;
     line-height: 16px;
     font-weight: 600;
-    margin-top: 16px;
-    margin-right: 6px;
+    padding-top: 12px;
+    padding-right: 6px;
     color: $channels-default;
+    &:hover {
+      color: $interactive-hover;
+    }
   }
   #GuildLabel {
     font-weight: 500;
