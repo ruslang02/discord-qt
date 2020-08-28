@@ -65,7 +65,7 @@ export class Dialog extends QWidget {
     window.setObjectName('Window');
     window.setMinimumSize(440, 200);
     window.setMaximumSize(440, 660);
-    header.setObjectName('Header');
+    header.setObjectName('Header2');
     closeBtn.addEventListener('clicked', () => this.hide());
 
     const headLayout = new QBoxLayout(Direction.LeftToRight);

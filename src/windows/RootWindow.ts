@@ -60,7 +60,7 @@ export class RootWindow extends QMainWindow {
   }
 
   async loadStyles() {
-    const stylePath = path.join(__dirname, 'themes', `${app.config.lightTheme ? 'light' : 'dark'}.theme.css`);
+    const stylePath = path.join(__dirname, 'themes', `${app.config.theme}.theme.css`);
     const stylesheet = await fs.promises.readFile(stylePath, "utf8");
     this.setStyleSheet(stylesheet);
   }

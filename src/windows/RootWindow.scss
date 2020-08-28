@@ -6,8 +6,28 @@
 #RootWindow {
   height: "100%";
   width: "100%";
-  background-color: $black;
+  background-color: $background-primary;
+  color: $text-normal;
+  font-size: 14px;
 }
+
+#Header2 {
+  color: $header-primary;
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+#Header3 {
+  color: $channels-default;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
 QToolTip {
   background-color: #000;
   color: $text-normal;
@@ -15,10 +35,11 @@ QToolTip {
   border: 1px solid $interactive-hover;
   padding: 1px 2px;
 }
+
 QMenu {
   background: $background-floating;
   border-radius: 4px;
-  border: 1px solid $interactive-normal;
+  border: 1px solid $deprecated-text-input-border;
   padding: 8px;
   border: none;
   color: $interactive-normal;
@@ -48,6 +69,7 @@ QMenu {
     left: 8px;
   }
 }
+
 QScrollBar {
   background-color: transparent;
   border-radius: 2px;

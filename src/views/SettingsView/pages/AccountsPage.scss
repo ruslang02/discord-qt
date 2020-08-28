@@ -1,25 +1,17 @@
-
-
 #Account {
   border-radius: 5px;
   background-color: $background-mobile-secondary;
-  border: 1px solid rgba(0,0,0,.15);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  color: $header-primary;
   #Info {
     background-color: $deprecated-text-input-bg;
-    border-bottom: 1px solid rgba(0,0,0,.15);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
   }
   #UserName {
     font-size: 18px;
-    font-weight: 500;
-    margin-left: 5px;
-    color: $header-primary;
-  }
-  #Discriminator {
-    font-size: 18px;
-    color: $text-muted;
   }
   #SCheckBox {
-    margin:1px;
+    margin: 1px;
     border-radius: 0px 0px 5px 5px;
     &:hover {
       background-color: lighten($background-mobile-secondary, 1%);

@@ -65,7 +65,7 @@ export class AccountsPage extends Page {
     const info = new QWidget(accWidget);
     const infoLayout = new QBoxLayout(Direction.LeftToRight);
     infoLayout.setContentsMargins(20, 20, 20, 20);
-    infoLayout.setSpacing(0);
+    infoLayout.setSpacing(10);
     info.setLayout(infoLayout);
     info.setObjectName('Info');
 
@@ -74,13 +74,9 @@ export class AccountsPage extends Page {
       .then(path => path && avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)));
     const uname = new QLabel(accWidget);
     uname.setObjectName('UserName');
-    uname.setText(account.username);
-    const disc = new QLabel(accWidget);
-    disc.setObjectName('Discriminator');
-    disc.setText(`#${account.discriminator}`);
+    uname.setText(`<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`);
     const deleteBtn = new DColorButton(DColorButtonColor.RED);
     deleteBtn.setText('Delete');
-    deleteBtn.setInlineStyle('margin-right: 10px;');
     deleteBtn.setMinimumSize(0, 32);
     deleteBtn.addEventListener('clicked', () => {
       app.config.accounts = app.config.accounts?.filter((v) => v !== account);
@@ -102,8 +98,7 @@ export class AccountsPage extends Page {
       isLoggingIn = false;
     })
     infoLayout.addWidget(avatar);
-    infoLayout.addWidget(uname);
-    infoLayout.addWidget(disc, 1);
+    infoLayout.addWidget(uname, 1);
     infoLayout.addWidget(deleteBtn);
     infoLayout.addWidget(loginBtn);
     const checkbox = new SettingsCheckBox(accWidget);

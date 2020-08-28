@@ -1,0 +1,16 @@
+#DComboBox {
+  &::drop-down {
+    width: 36px;
+    border: none;
+  }
+  selection-background-color: $background-modifier-active;
+  QAbstractItemView {
+    border-radius: 3px;
+    background-color: $background-primary;
+    border: 1px solid $deprecated-text-input-border;
+  }
+  &::item {
+    color: $text-normal;
+    height: 30px;
+  }
+}

@@ -1,20 +1,5 @@
-
-
 #Page {
   background-color: $background-primary;
-  #Header2 {
-    color: $header-primary;
-    margin-bottom: 20px;
-    font-size: 16px;
-    line-height: 20px;
-    font-weight: 600;
-    text-transform: uppercase;
-  }
-  #TextLabel {
-    padding: 0 1px;
-    color: $text-normal;
-    font-size: 14px;
-  }
   #Divider {
     border-top: 1px solid $background-modifier-accent;
     height: 1px;

@@ -23,6 +23,7 @@ module.exports = (_env, argv) => {
       "worker.js": "./worker",
       'light.theme': './src/themes/light.theme.scss',
       'dark.theme': './src/themes/dark.theme.scss',
+      'amoled.theme': './src/themes/amoled.theme.scss',
     },
     optimization: {
       minimize: !isDev,
