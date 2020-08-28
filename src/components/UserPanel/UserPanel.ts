@@ -1,9 +1,8 @@
 import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy, QApplication, QClipboardMode, WidgetEventTypes } from "@nodegui/nodegui";
 import path, { join } from 'path';
 
-import { Client } from "discord.js";
-import { CustomStatus } from '../../dqjs/structures/CustomStatus';
-import Constants from '../../dqjs/util/Constants';
+import { Client, Constants } from "discord.js";
+import { CustomStatus } from '../../structures/CustomStatus';
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';

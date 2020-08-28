@@ -11,7 +11,7 @@ import { Account } from "../../../structures/Account";
 import { Events } from "../../../structures/Events";
 import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 import { clientOptions } from '../../../structures/ClientOptions';
-import { DQClient } from '../../../dqjs/client/Client';
+import { Client } from 'discord.js';
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -159,7 +159,7 @@ export class AccountsPage extends Page {
       const token = addTokenField.text();
       addButton.setEnabled(false);
       try {
-        const client = new DQClient(clientOptions);
+        const client = new Client(clientOptions);
         await client.login(token);
         if (client.user?.bot) {
           await client.destroy();

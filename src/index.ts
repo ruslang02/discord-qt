@@ -1,15 +1,18 @@
-import { Client } from "discord.js";
 import { join } from 'path';
 import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
 import {QFontDatabase} from '@nodegui/nodegui';
+
 import envPaths from 'env-paths';
 export const paths = envPaths('discord', {suffix: 'qt'});
+
+import {Patches} from './patches';
+console.log(`[dqt] Applied ${Patches.length} patches.`);
 
 import { RootWindow } from "./windows/RootWindow";
 import { Config } from "./structures/Config";
 import { Events } from "./structures/Events";
-import { DQClient } from './dqjs/client/Client';
+import { Client } from 'discord.js';
 const { readdir } = fs.promises;
 
 const FONTS_PATH = join(__dirname, './assets/fonts');
@@ -43,10 +46,10 @@ class Application extends EventEmitter {
     (global as any).win = v;
   }
 
-  public get client(): DQClient {
+  public get client(): Client {
     return (global as any).client;
   }
-  public set client(v: DQClient) {
+  public set client(v: Client) {
     (global as any).client = v;
     this.emit(Events.NEW_CLIENT, v);
   }

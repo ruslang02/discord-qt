@@ -12,7 +12,6 @@ import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { MiniProfile } from '../components/MiniProfile/MiniProfile';
 import { clientOptions } from '../structures/ClientOptions';
-import { DQClient } from '../dqjs/client/Client';
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
@@ -73,9 +72,12 @@ export class RootWindow extends QMainWindow {
   public async loadClient(account: Account): Promise<boolean> {
     const { Events: DiscordEvents } = Constants;
     if (app.client) await app.client.destroy();
-    app.client = new DQClient(clientOptions);
+    app.client = new Client(clientOptions);
     app.client.on(DiscordEvents.ERROR, console.error)
-    if (app.config.debug) app.client.on(DiscordEvents.DEBUG, console.debug)
+    if (app.config.debug) {
+      app.client.on(DiscordEvents.DEBUG, console.debug);
+      app.client.on(DiscordEvents.RAW, console.debug);
+    }
     app.client.on(DiscordEvents.WARN, console.warn);
     try {
       await app.client.login(account.token);

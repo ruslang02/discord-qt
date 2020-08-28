@@ -2,7 +2,7 @@ import { QBoxLayout, Direction, QWidget, QLabel, QPixmap, AlignmentFlag } from '
 import { User } from 'discord.js';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { app } from '../..';
-import { CustomStatus } from '../../dqjs/structures/CustomStatus';
+import { CustomStatus } from '../../structures/CustomStatus';
 
 export class CustomStatusLabel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);

@@ -2,7 +2,7 @@ import { join, basename } from 'path';
 import TWEmoji from 'twemoji';
 import { app, paths } from '..';
 import { pictureWorker } from '../utilities/PictureWorker';
-import { CustomStatus } from '../dqjs/structures/CustomStatus';
+import { CustomStatus } from '../structures/CustomStatus';
 
 export const EMOJI_PATH = join(paths.cache, 'emojis');
 

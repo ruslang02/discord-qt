@@ -1,10 +1,9 @@
 import { ClientOptions } from 'discord.js';
 
-const { version, name } = require('../../package.json');
+const { version } = require('../../package.json');
 export const clientOptions: ClientOptions = {
   ws: {
     compress: false,
-    // @ts-ignore
     properties: {
       // @ts-ignore
       os: process.platform,

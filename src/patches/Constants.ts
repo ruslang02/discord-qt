@@ -1,4 +1,4 @@
-import { Constants } from 'discord.js';
+const Constants = require('discord.js/src/util/Constants');
 
 const DQConstants = {
   ExplicitContentFilterTypes: ['DISABLED', 'NON_FRIENDS', 'FRIENDS_AND_NON_FRIENDS'],
@@ -107,7 +107,7 @@ const DQConstants = {
      * @name ClientUserSettings#guildFolders
      * @type {{name?: string, id?: number, guild_ids: Snowflake[], color?: number}[]}
      */
-    guild_folders: 'guildPositions',
+    guild_folders: 'guildFolders',
 
     /**
      * Array of snowflake IDs for guilds, in the order they appear in the Discord client
@@ -123,7 +123,7 @@ const DQConstants = {
      */
     restricted_guilds: 'restrictedGuilds',
 
-    explicit_content_filter: function explicit_content_filter(type: any) {
+    explicit_content_filter: function explicitContentFilter(type: any) {
       /**
        * Safe direct messaging; force people's messages with images to be scanned before they are sent to you.
        * One of `DISABLED`, `NON_FRIENDS`, `FRIENDS_AND_NON_FRIENDS`
@@ -132,10 +132,10 @@ const DQConstants = {
        */
       return DQConstants.ExplicitContentFilterTypes[type];
     },
-    friend_source_flags: function friend_source_flags(flags: any) {
+    friend_source_flags: function friendsSources(flags: any) {
       /**
        * Who can add you as a friend
-       * @name ClientUserSettings#friendSources
+       * @name ClientUserSettings#friendsSources
        * @type {Object}
        * @property {boolean} all Mutual friends and mutual guilds
        * @property {boolean} mutualGuilds Only mutual guilds
@@ -151,6 +151,8 @@ const DQConstants = {
   Events: {
     ...Constants.Events,
     USER_SETTINGS_UPDATE: 'userSettingsUpdate'
-  }
+  },
+  UserAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.3.0 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
 }
-export default { ...Constants, ...DQConstants };
+
+Object.assign(Constants, DQConstants);

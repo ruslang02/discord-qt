@@ -1,16 +1,11 @@
 'use strict';
 
-import { ClientUser, Guild, Snowflake, PresenceStatus, Util, Constants as Consts } from 'discord.js';
-import DQConstants from '../util/Constants';
+import { Constants, ClientUser, Guild, Snowflake, PresenceStatus, Util } from 'discord.js';
 import { CustomStatus } from './CustomStatus';
-const Constants = {
-  ...require('discord.js/src/util/Constants') as typeof Consts,
-  ...DQConstants
-};
 /**
  * A wrapper around the ClientUser's settings.
  */
-export class DQClientUserSettings {
+export class ClientUserSettings {
   public convertEmoticons: boolean = false;
   public customStatus: CustomStatus | null = null;
   public defaultGuildsRestricted: boolean = false;
@@ -19,6 +14,7 @@ export class DQClientUserSettings {
   public enableTTSCommand: boolean = false;
   public explicitContentFilter: 'DISABLED' | 'NON_FRIENDS' | 'FRIENDS_AND_NON_FRIENDS' | string = 'DISABLED';
   public friendsSources: { all: boolean, mutualGuilds: boolean, mutualFriends: boolean } = { all: false, mutualFriends: false, mutualGuilds: false };
+  public guildFolders: Snowflake[] = [];
   public guildPositions: Snowflake[] = [];
   public inlineAttachmentMedia: boolean = false;
   public inlineEmbedMedia: boolean = false;
