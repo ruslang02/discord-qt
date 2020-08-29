@@ -55,6 +55,7 @@ export class RootWindow extends QMainWindow {
     this.resize(1200, 600);
     this.setAttribute(WidgetAttribute.WA_AlwaysShowToolTips, true);
     this.setCentralWidget(this.root);
+    Object.values(this.dialogs).forEach(w => w.hide());
     this.root.addWidget(this.mainView);
     this.root.addWidget(this.settingsView);
     this.root.setCurrentWidget(this.mainView);

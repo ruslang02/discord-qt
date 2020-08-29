@@ -1,9 +1,11 @@
 import { DChannelButton } from '../DChannelButton/DChannelButton';
-import { QLabel, QIcon, QPixmap, WidgetEventTypes, ContextMenuPolicy, QMenu, QAction, QApplication, QClipboardMode, QPoint, QMessageBox, QPushButton, ButtonRole } from '@nodegui/nodegui';
+import { QLabel, QIcon, QPixmap, WidgetEventTypes, ContextMenuPolicy, QMenu, QAction, QApplication, QClipboardMode, QPoint, QMessageBox, QPushButton, ButtonRole, QVariant } from '@nodegui/nodegui';
 import { join } from 'path';
 import { TextChannel, GuildChannel } from 'discord.js';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
+import open from 'open';
+import { DColorButton, DColorButtonColor } from '../DColorButton/DColorButton';
 
 export class ChannelButton extends DChannelButton {
   private static Icons = {
@@ -36,11 +38,18 @@ export class ChannelButton extends DChannelButton {
         break;
       case 'voice':
         const msgBox = new QMessageBox(this);
-        const okBtn = new QPushButton();
-        okBtn.setText('Okay');
-        msgBox.setText('Voice support is not implemented yet.');
+        msgBox.setText('Voice support is not implemented yet.\r\nOpen in the browser?');
         msgBox.setWindowTitle('DiscordQt');
-        msgBox.addButton(okBtn, ButtonRole.AcceptRole);
+        msgBox.setProperty('icon', 4);
+        const noBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
+        noBtn.setText('No')
+        msgBox.addButton(noBtn, ButtonRole.NoRole);
+        const yesBtn = new DColorButton(DColorButtonColor.BLURPLE);
+        yesBtn.setText('Yes')
+        msgBox.addButton(yesBtn, ButtonRole.YesRole);
+        yesBtn.addEventListener('clicked', () => {
+          open(`https://discord.com/channels/${channel.guild.id}/${channel.id}`);
+        });
         msgBox.open();
         break;
     }
