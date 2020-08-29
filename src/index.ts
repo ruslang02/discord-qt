@@ -1,35 +1,46 @@
 import { join } from 'path';
-import fs, { existsSync } from 'fs';
 import { EventEmitter } from "events";
-import {QFontDatabase} from '@nodegui/nodegui';
+import { existsSync, promises } from 'fs';
+const { readdir } = promises;
+import { QFontDatabase, WidgetEventTypes, QApplication } from '@nodegui/nodegui';
 
 import envPaths from 'env-paths';
-export const paths = envPaths('discord', {suffix: 'qt'});
+export const paths = envPaths('discord', { suffix: 'qt' });
 
-import {Patches} from './patches';
+import { Patches } from './patches';
 console.log(`[dqt] Applied ${Patches.length} patches.`);
 
+import { Client } from 'discord.js';
 import { RootWindow } from "./windows/RootWindow";
 import { Config } from "./structures/Config";
 import { Events } from "./structures/Events";
-import { Client } from 'discord.js';
-const { readdir } = fs.promises;
 
 const FONTS_PATH = join(__dirname, './assets/fonts');
 const CONFIG_PATH = join(paths.config, 'config.json');
 
 class Application extends EventEmitter {
   config = new Config(CONFIG_PATH);
+  application = QApplication.instance();
 
   constructor() {
     super();
     this.setMaxListeners(128);
   }
+
   public async start() {
+    const { application, config } = this;
+    application.setQuitOnLastWindowClosed(false);
     await this.loadFonts();
     this.window = new RootWindow();
     this.window.show();
-    await this.config.load();
+    this.window.addEventListener(WidgetEventTypes.Close, async () => {
+      console.log('Bye.');
+      if (app.client) {
+        await app.client.destroy();
+      }
+      application.quit();
+    })
+    await config.load();
     this.emit(Events.READY);
   }
 
@@ -57,7 +68,3 @@ class Application extends EventEmitter {
 export const app = new Application();
 export const MAX_QSIZE = 16777215;
 app.start();
-
-process.on('beforeExit', () => {
-  if(app.client) app.client.destroy();
-});

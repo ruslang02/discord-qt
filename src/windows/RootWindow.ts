@@ -1,19 +1,21 @@
 import { QStackedWidget, QMainWindow, QIcon, WidgetAttribute } from "@nodegui/nodegui";
 import path from "path";
-import fs from "fs";
-import djs, { Client, Constants } from 'discord.js';
-import { app } from '..';
-import { MainView } from '../views/MainView/MainView';
+import { Client, Constants } from 'discord.js';
+import { existsSync, promises } from "fs";
+const { readFile } = promises;
 
-import { SettingsView } from "../views/SettingsView/SettingsView";
-import { Account } from "../structures/Account";
-import { Events } from "../structures/Events";
+import { app } from '..';
+import { MiniProfile } from '../components/MiniProfile/MiniProfile';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
-import { MiniProfile } from '../components/MiniProfile/MiniProfile';
+import { Account } from "../structures/Account";
+import { Events } from "../structures/Events";
 import { clientOptions } from '../structures/ClientOptions';
+import { MainView } from '../views/MainView/MainView';
+import { SettingsView } from "../views/SettingsView/SettingsView";
+
 export class RootWindow extends QMainWindow {
-  private root = new QStackedWidget();
+  private root = new QStackedWidget(this);
   dialogs = {
     customStatus: new CustomStatusDialog(this),
     acceptInvite: new AcceptInviteDialog(this),
@@ -47,7 +49,7 @@ export class RootWindow extends QMainWindow {
   }
 
   protected initializeWindow() {
-    this.setWindowTitle("Discord-Qt");
+    this.setWindowTitle("DiscordQt");
     this.setObjectName("RootWindow");
     this.setMinimumSize(1000, 500);
     this.resize(1200, 600);
@@ -60,7 +62,8 @@ export class RootWindow extends QMainWindow {
 
   async loadStyles() {
     const stylePath = path.join(__dirname, 'themes', `${app.config.theme}.theme.css`);
-    const stylesheet = await fs.promises.readFile(stylePath, "utf8");
+    if (!existsSync(stylePath)) return;
+    const stylesheet = await readFile(stylePath, "utf8");
     this.setStyleSheet(stylesheet);
   }
   protected loadIcon() {
@@ -68,7 +71,7 @@ export class RootWindow extends QMainWindow {
     this.setWindowIcon(icon);
   }
 
-  public async loadClient(account: Account): Promise<boolean> {
+  public async loadClient(account: Account): Promise<void> {
     const { Events: DiscordEvents } = Constants;
     if (app.client) await app.client.destroy();
     app.client = new Client(clientOptions);
@@ -80,13 +83,9 @@ export class RootWindow extends QMainWindow {
     app.client.on(DiscordEvents.WARN, console.warn);
     try {
       await app.client.login(account.token);
-      this.setWindowTitle(`Discord-Qt • ${app.client.user?.tag}`);
       app.emit(Events.SWITCH_VIEW, 'dm');
-      return true;
     } catch (e) {
-      this.setWindowTitle(`Discord-Qt • Not logged in`);
       console.error('Couldn\'t log in', e);
-      return false;
     }
   }
 }
