@@ -1,8 +1,12 @@
-import { Page } from './Page';
 import { QLabel, WidgetEventTypes } from '@nodegui/nodegui';
+import { join } from 'path';
+import {  existsSync } from 'fs';
+import { Page } from './Page';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { app } from '../../..';
 import { Events } from '../../../structures/Events';
+import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
+import { DTextEdit } from '../../../components/DTextEdit/DTextEdit';
 
 export class AppearancePage extends Page {
   title = 'Appearance';
@@ -11,8 +15,8 @@ export class AppearancePage extends Page {
   private prmdcx = new SettingsCheckBox(this); // Process MD checkbox
   private enavcx = new SettingsCheckBox(this); // Display avatars checkbox
   private rdavcx = new SettingsCheckBox(this); // Roundify avatars checkbox
-  private lithcx = new SettingsCheckBox(this); // Light theme checkbox
   private dbgcx = new SettingsCheckBox(this); // Debug checkbox
+  private themeit = new DTextEdit(this); // Theme line edit
 
   constructor() {
     super();
@@ -21,14 +25,14 @@ export class AppearancePage extends Page {
     app.on(Events.READY, this.loadConfig.bind(this));
   }
   private initPage() {
-    const { title, header, enavcx, rdavcx, lithcx, prmdcx, dbgcx, layout } = this;
+    const { title, header, enavcx, rdavcx, prmdcx, dbgcx, themeit, layout } = this;
     header.setObjectName('Header2');
     header.setText(title);
+    layout.addWidget(header);
     [
       [prmdcx, 'processMarkDown', 'Process Cool Text™ (Markdown)'],
       [enavcx, 'enableAvatars', 'Enable user avatars'],
       [rdavcx, 'roundifyAvatars', 'Roundify user avatars'],
-      [lithcx, 'lightTheme', 'Light theme'],
       [dbgcx, 'debug', '[dev] Debug mode']
     ] // @ts-ignore
       .forEach(([checkbox, id, text]: [SettingsCheckBox, string, string]) => {
@@ -38,21 +42,32 @@ export class AppearancePage extends Page {
           checkbox.setChecked(!checked)
           // @ts-ignore
           app.config[id] = !checked;
-          await app.config.save();
-
-          if(id === 'lightTheme') app.window.loadStyles();
+          app.config.save();
         });
         layout.addWidget(checkbox);
       });
+    const themeLabel = new QLabel(this);
+    themeLabel.setObjectName('Header3');
+    themeLabel.setText('\r\nTheme');
+    themeit.setPlaceholderText('light | dark | amoled');
+    themeit.addEventListener('textEdited', async (text) => {
+      const path = join(__dirname, 'themes', `${text}.theme.css`);
+      if (!existsSync(path)) return;
+      app.config.theme = text;
+      await app.config.save();
+      app.window.loadStyles();
+    })
+    layout.addWidget(themeLabel)
+    layout.addWidget(themeit)
     layout.addStretch(1);
   }
   private loadConfig() {
-    const { enavcx, rdavcx, lithcx, prmdcx, dbgcx } = this;
-    const { debug, processMarkDown, enableAvatars, roundifyAvatars, lightTheme } = app.config;
+    const { enavcx, rdavcx, prmdcx, dbgcx, themeit } = this;
+    const { debug, processMarkDown, enableAvatars, roundifyAvatars, theme } = app.config;
     enavcx.setChecked(enableAvatars as boolean);
     rdavcx.setChecked(roundifyAvatars as boolean);
     prmdcx.setChecked(processMarkDown as boolean);
-    lithcx.setChecked(lightTheme as boolean);
     dbgcx.setChecked(debug as boolean);
+    themeit.setText(theme as string);
   }
 }

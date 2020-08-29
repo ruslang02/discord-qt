@@ -14,12 +14,12 @@ export class MyAccountPage extends Page {
     super();
     this.initPage();
     app.on(Events.NEW_CLIENT, (client: Client) => {
-      client.on('ready', this.loadUser.bind(this));
+      client.on(Constants.Events.CLIENT_READY, this.loadUser.bind(this));
     });
   }
 
   private loadUser() {
-    this.unabel.setText(`${app.client.user?.username}#${app.client.user?.discriminator}`);
+    this.unabel.setText(app.client.user?.tag || '');
     this.emabel.setText(app.client.user?.email || "");
     pictureWorker.loadImage(
       app.client.user?.avatarURL({ size: 256, format: 'png' }) ||

@@ -1,6 +1,6 @@
 import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QMouseEvent, MouseButton, QPoint, FocusReason } from "@nodegui/nodegui";
 import path, { basename, join, extname } from 'path';
-import { pathToFileURL, fileURLToPath } from 'url';
+import { pathToFileURL, fileURLToPath, URL } from 'url';
 import { DMChannel, Client, Channel, TextChannel, User, Permissions, Emoji, Constants, MessageOptions } from "discord.js";
 import { DIconButton } from "../DIconButton/DIconButton";
 import { app, MAX_QSIZE } from "../..";
@@ -61,12 +61,15 @@ export class InputPanel extends QWidget {
         const canEmbed = !!(channel as TextChannel).permissionsFor(app.client.user as User)?.has(Permissions.FLAGS.ATTACH_FILES)
         this.addBtn.setEnabled(canEmbed);
       } else this.addBtn.setEnabled(true);
-      input.setPlaceholderText(`Message ${channel.type === 'dm' ?
-        `@${(<DMChannel>channel).recipient.username}` :
-        `#${(<TextChannel>channel).name}`
-        }`);
-      // Waiting for nodegui release
-      // input.setFocus(FocusReason.TabFocusReason);
+      input.setPlaceholderText(
+        `Message ${channel.type === 'dm' ?
+          `@${(<DMChannel>channel).recipient.username}` :
+          `#${(<TextChannel>channel).name}`
+        }`
+      );
+
+      // @ts-ignore
+      input.setFocus && input.setFocus(FocusReason.TabFocusReason);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -139,7 +142,8 @@ export class InputPanel extends QWidget {
     emojiPicker.events.on('emoji', (emoji: Emoji) => {
       this.input.insertPlainText(emoji.toString());
       emojiPicker.close();
-      this.input.setFocus(FocusReason.TabFocusReason);
+      // @ts-ignore
+      input.setFocus && input.setFocus(FocusReason.TabFocusReason);
     });
     emojiPicker.addEventListener(WidgetEventTypes.Hide, () => emojiBtn.setIcon(emojiBtn.qiconOff));
     emojiBtn.setFixedSize(38, 44);
@@ -205,7 +209,7 @@ export class InputPanel extends QWidget {
       event.key() === Key.Key_E &&
       (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
     ) this.handleEmojiOpen();
-    else setTimeout(this.adjustInputSize.bind(this));
+    else setTimeout(this.adjustInputSize.bind(this), 0);
   }
 
   private adjustInputSize() {
@@ -220,7 +224,7 @@ export class InputPanel extends QWidget {
   private async sendMessage() {
     const { input, statusLabel } = this;
     const message = input.toPlainText().trim();
-    setTimeout(() => input.clear());
+    setTimeout(() => input.clear(), 0);
     if (this.channel) {
       const msgOptions = {
         files: [...this.files.values()].map(attachment => ({ attachment, name: basename(attachment) }))

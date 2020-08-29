@@ -1,7 +1,8 @@
 import { QBoxLayout, Direction, QWidget, QLabel, QPixmap, AlignmentFlag } from '@nodegui/nodegui';
-import { CustomStatus, Presence, Emoji, Activity, User, ClientUser } from 'discord.js';
+import { User } from 'discord.js';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { app } from '../..';
+import { CustomStatus } from '../../structures/CustomStatus';
 
 export class CustomStatusLabel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);

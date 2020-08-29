@@ -3,7 +3,7 @@ import { httpsGet } from './HttpsGet';
 import { roundifyPng } from './RoundifyPng';
 import { join, dirname } from 'path';
 import { promises, existsSync } from 'fs';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, URL } from 'url';
 import envPaths from 'env-paths';
 
 const { readFile, writeFile, mkdir } = promises;

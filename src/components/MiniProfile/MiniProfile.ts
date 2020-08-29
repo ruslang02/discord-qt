@@ -1,20 +1,16 @@
-import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, QLabel, QPixmap, AlignmentFlag, QAction, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
-
-import { CustomStatusLabel } from './CustomStatusLabel';
+import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
 import { MAX_QSIZE, app } from '../..';
 import { GuildMember, User } from 'discord.js';
-import { pictureWorker } from '../../utilities/PictureWorker';
 import { ProfilePresence } from './ProfilePresence';
+import { Profile } from './Profile';
+import { RolesSection } from './RolesSection';
 
 export class MiniProfile extends QMenu {
   private controls = new QBoxLayout(Direction.TopToBottom);
   private root = new QWidget(this);
-  private profile = new QWidget(this);
+  private profile = new Profile(this);
   private presence = new ProfilePresence(this);
-  private avatar = new QLabel(this);
-  private nickname = new QLabel(this);
-  private username = new QLabel(this);
-  private custom = new CustomStatusLabel();
+  private rolesSection = new RolesSection(this);
   private adjustTimer?: NodeJS.Timer;
   private p0 = new QPoint(0, 0);
 
@@ -40,8 +36,17 @@ export class MiniProfile extends QMenu {
     super.popup(point);
   }
 
+  async loadProfile(someone: User | GuildMember) {
+    const user = someone instanceof GuildMember ? someone.user : someone;
+    const member = someone instanceof GuildMember ? someone : null;
+    const isPlaying = this.presence.load(user.presence);
+    this.profile.setPlaying(isPlaying);
+    this.profile.loadProfile(someone);
+    this.rolesSection.loadRoles(member?.roles)
+  }
+
   private initComponent() {
-    const { controls, root, profile, presence } = this;
+    const { controls, root, profile, presence, rolesSection } = this;
     
     root.setLayout(controls);
     root.setMinimumSize(250, 0);
@@ -50,56 +55,8 @@ export class MiniProfile extends QMenu {
     controls.setContentsMargins(1, 1, 1, 1);
     controls.setSpacing(0);
 
-    this.initProfile();
     controls.addWidget(profile);
     controls.addWidget(presence);
-  }
-
-  private initProfile() {
-    const { profile, avatar, nickname, username, custom } = this;
-    profile.setObjectName('Profile');
-
-    const layout = new QBoxLayout(Direction.TopToBottom);
-    layout.setContentsMargins(16, 16, 16, 16);
-    layout.setSpacing(0);
-
-    layout.addWidget(avatar);
-    layout.addWidget(nickname);
-    layout.addWidget(username);
-    layout.addWidget(custom);
-
-    avatar.setAlignment(AlignmentFlag.AlignHCenter);
-    nickname.setAlignment(AlignmentFlag.AlignHCenter);
-    username.setAlignment(AlignmentFlag.AlignHCenter);
-
-    avatar.setMinimumSize(0, 80)
-    nickname.setObjectName('Nickname');
-    nickname.setWordWrap(true);
-    username.setObjectName('Username');
-    username.setWordWrap(true);
-
-    profile.setLayout(layout);
-  }
-
-  async loadProfile(someone: User | GuildMember) {
-    const { profile, avatar, username, nickname, custom } = this;
-    const user = someone instanceof GuildMember ? someone.user : someone;
-    const member = someone instanceof GuildMember ? someone : null;
-    if (!user) return;
-    this.setMinimumSize(250, 0);
-    avatar.clear();
-    pictureWorker.loadImage(user.avatarURL({ format: 'png', size: 256 }))
-      .then(path => path && avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)))
-    if (member?.nickname) {
-      username.show();
-      nickname.setText(member.nickname);
-      username.setText(`${user.username}#${user.discriminator}`);
-    } else {
-      nickname.setText(`${user.username}#${user.discriminator}`);
-      username.hide();
-    }
-    profile.setProperty('isPlaying', this.presence.load(user.presence) ? 'true' : 'false');
-    profile.repolish();
-    custom.loadStatus(user);
+    controls.addWidget(rolesSection);
   }
 }

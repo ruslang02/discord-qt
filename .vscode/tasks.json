@@ -1,0 +1,94 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build:prod",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "label": "npm: build production",
+      "detail": "webpack -p"
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [],
+      "label": "npm: build dev",
+      "detail": "webpack"
+    },
+    {
+      "label": "watch",
+      "command": "npx",
+      "args": [
+        "webpack",
+        "-w"
+      ],
+      "problemMatcher": [
+        {
+          "fileLocation": "absolute",
+          "owner": "typescript",
+          "pattern": [
+            {
+              "regexp": "\\[tsl\\] ERROR in (.*)?\\((\\d+),(\\d+)\\)",
+              "file": 1,
+              "line": 2,
+              "column": 3
+            },
+            {
+              "regexp": "\\s*TS\\d+:\\s*(.*)",
+              "message": 1
+            }
+          ],
+          "severity": "error",
+          "source": "ts",
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": {
+              "regexp": "Compilation starting…"
+            },
+            "endsPattern": {
+              "regexp": "Compilation finished"
+            }
+          }
+        },
+        {
+          "fileLocation": "relative",
+          "owner": "typescript",
+          "pattern": [
+            {
+              "regexp": "WARNING in (.*)",
+              "file": 1
+            },
+            {
+              "regexp": "Module Warning (.*)"
+            },
+            {
+              "regexp": "\\[(\\d+), (\\d+)\\]: (.*)",
+              "line": 1,
+              "column": 2,
+              "message": 3
+            }
+          ],
+          "severity": "warning",
+          "source": "tslint",
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": {
+              "regexp": "Compilation starting…"
+            },
+            "endsPattern": {
+              "regexp": "Compilation finished"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

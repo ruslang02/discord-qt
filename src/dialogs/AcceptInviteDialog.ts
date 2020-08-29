@@ -1,12 +1,14 @@
 import { Dialog } from './Dialog';
-import { QBoxLayout, QWidget, Direction, QLabel, QLineEdit } from '@nodegui/nodegui';
-import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
+import { QBoxLayout, QWidget, Direction, QLabel } from '@nodegui/nodegui';
+import { URL } from 'url';
 import { app } from '..';
+import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';
+import { DTextEdit } from '../components/DTextEdit/DTextEdit';
 
 export class AcceptInviteDialog extends Dialog {
   private urlLabel = new QLabel(this);
-  private urlInput = new QLineEdit(this);
+  private urlInput = new DTextEdit(this);
   private errMsg = new DErrorMessage(this);
 
   constructor(parent?: any) {
@@ -23,8 +25,7 @@ export class AcceptInviteDialog extends Dialog {
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
     urlLabel.setText('Invite link');
-    urlLabel.setObjectName('FormLabel');
-    urlInput.setObjectName('StatusInput');
+    urlLabel.setObjectName('Header3');
     urlInput.setPlaceholderText('https://discord.gg/...');
     layout.addWidget(urlLabel);
     layout.addWidget(urlInput);

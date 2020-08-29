@@ -11,7 +11,8 @@
     "discord-qt": "./index.js"
   },
   "scripts": {
-    "build": "webpack -p",
+    "build": "webpack",
+    "build:prod": "webpack -p",
     "start": "qode ./dist/index.js",
     "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect=0.0.0.0:9229 ./dist/index.js",
@@ -29,7 +30,7 @@
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.3",
     "css-loader": "^3.6.0",
-    "discord.js": "git+https://github.com/ruslang02/discord.js.git",
+    "discord.js": "^12.3.1",
     "env-paths": "^2.2.0",
     "extract-loader": "^5.1.0",
     "file-loader": "^5.1.0",
@@ -52,6 +53,7 @@
     "whatwg-fetch": "^3.4.0"
   },
   "devDependencies": {
-    "@nodegui/packer": "^1.4.1"
+    "@nodegui/packer": "^1.4.1",
+    "@types/ws": "^7.2.6"
   }
 }

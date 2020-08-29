@@ -9,6 +9,6 @@ export abstract class IConfig {
   debug?: boolean;
   processMarkDown?: boolean;
   enableAvatars?: boolean;
-  lightTheme?: boolean;
+  theme?: string;
   recentEmojis?: RecentEmoji[];
 }

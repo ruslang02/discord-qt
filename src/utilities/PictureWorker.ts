@@ -2,6 +2,7 @@ import { Worker } from 'worker_threads';
 import { app } from '..';
 import path, { extname } from 'path';
 import { createLogger } from './Console';
+import { URL } from 'url';
 
 type Options = {
   roundify?: boolean

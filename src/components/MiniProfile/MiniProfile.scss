@@ -8,28 +8,33 @@
     background-color: $background-secondary;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
+    margin-right: 2px;
+    #Nickname {
+      font-weight: 500;
+      line-height: 18px;
+      color: $header-primary;
+      font-size: 16px;
+      margin-top: 12px;
+    }
+    #Username {
+      line-height: 18px;
+      color: $header-secondary;
+      font-size: 14px;
+    }
+    #CustomStatusLabel {
+      margin-top: 12px;
+      #Text {
+        text-align: center;
+        color: $header-primary;
+        font-size: 14px;
+      }
+    }
     &[isPlaying="true"] {
       background-color: $blurple;
-    }
-  }
-  #Nickname {
-    font-weight: 500;
-    line-height: 18px;
-    color: #fff;
-    font-size: 16px;
-    margin-top: 12px;
-  }
-  #Username {
-    line-height: 18px;
-    color: $header-secondary;
-    font-size: 14px;
-  }
-  #CustomStatusLabel {
-    margin-top: 12px;
-    #Text {
-      text-align: center;
-      color: $header-primary;
-      font-size: 14px;
+
+      #Nickname {
+        color: white;
+      }
     }
   }
   #ProfilePresence {
@@ -43,6 +48,55 @@
     }
     #Label {
       font-size: 14px;
+    }
+  }
+
+  #SectionHeader {
+    color: $header-secondary;
+    font-weight: 700;
+    text-transform: uppercase;
+    border: none;
+    background: none;
+  }
+
+  #RolesSection {
+    #RoleBadge {
+      padding: 0px 2px;
+      border: 1px solid;
+      border-radius: 11px;
+      font-size: 12px;
+      border-color: #bbbe99;
+      color: $header-primary;
+    }
+    QListWidget {
+      outline: none;
+      background: $background-secondary;
+      border-radius: 3px;
+      padding: 6px;
+      &::item {
+        padding: 4px 2px;
+        margin-bottom: 2px;
+        border-radius: 3px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 20px;
+        color: $interactive-normal;
+        &:hover {
+          background-color: $background-modifier-hover;
+          color: $interactive-hover;
+        }
+        /*&:active {
+          background-color: $background-modifier-active;
+          color: $interactive-active;
+        }*/
+        &:selected {
+          background-color: $background-modifier-selected;
+          color: $interactive-active;
+        }
+      }
+      QScrollBar {
+        border-color: $background-secondary;
+      }
     }
   }
 }

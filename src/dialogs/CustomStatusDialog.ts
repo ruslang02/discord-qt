@@ -5,13 +5,15 @@ import { DColorButton, DColorButtonColor } from '../components/DColorButton/DCol
 import { resolveEmoji } from '../utilities/ResolveEmoji';
 import { Emoji } from 'discord.js';
 import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
+import { DComboBox } from '../components/DComboBox/DComboBox';
+import { DTextEdit } from '../components/DTextEdit/DTextEdit';
 
 export class CustomStatusDialog extends Dialog {
   private statusLabel = new QLabel(this);
   private emojiInput = new QLabel(this);
-  private statusInput = new QLineEdit(this);
+  private statusInput = new DTextEdit(this);
   private clearLabel = new QLabel(this);
-  private clearInput = new QComboBox(this);
+  private clearInput = new DComboBox(this);
   private emoji?: Emoji;
 
   constructor(parent?: any) {
@@ -45,10 +47,9 @@ export class CustomStatusDialog extends Dialog {
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
-    statusLabel.setObjectName('FormLabel');
     const statusLayout = new QBoxLayout(Direction.LeftToRight);
     const emojiPicker = new EmojiPicker(emojiInput);
-    emojiInput.setObjectName('EmojiInput');
+    emojiInput.setObjectName('DTextEdit');
     emojiInput.setFixedSize(48, 48);
     emojiInput.setCursor(CursorShape.PointingHandCursor);
     emojiInput.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
@@ -60,7 +61,6 @@ export class CustomStatusDialog extends Dialog {
         emojiPicker.hide();
       })
     });
-    statusInput.setObjectName('StatusInput');
     statusInput.setPlaceholderText('Yay! Cookies!');
     const resetButton = new DColorButton(DColorButtonColor.RED_TEXT);
     resetButton.setText('×');
@@ -73,13 +73,11 @@ export class CustomStatusDialog extends Dialog {
     statusLayout.addWidget(statusInput);
     statusLayout.addWidget(resetButton);
     statusLabel.setText('How is it going?');
+    statusLabel.setObjectName('Header3');
     statusLabel.setBuddy(statusInput);
-    clearLabel.setObjectName('FormLabel');
-    clearInput.setObjectName('ClearInput');
+    clearLabel.setObjectName('Header3');
     clearInput.addItems(["Don't clear", "Today", "4 hours", '1 hour', '30 minutes']);
-    clearInput.setStyleSheet("::down-arrow { image: url(assets/icons/menu-down.png) }");
     clearLabel.setText('Clear after');
-    clearInput.setCursor(CursorShape.PointingHandCursor);
     clearLabel.setBuddy(clearInput);
     layout.addWidget(statusLabel);
     layout.addLayout(statusLayout);

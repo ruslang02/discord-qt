@@ -1,14 +1,16 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy } from "@nodegui/nodegui";
-import { Client, Constants, Presence, Activity, CustomStatus, PresenceData } from "discord.js";
+import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy, QApplication, QClipboardMode, WidgetEventTypes } from "@nodegui/nodegui";
 import path, { join } from 'path';
-import { app, MAX_QSIZE } from "../..";
-import { pictureWorker } from "../../utilities/PictureWorker";
-import { DIconButton } from "../DIconButton/DIconButton";
+
+import { Client, Constants } from "discord.js";
+import { CustomStatus } from '../../structures/CustomStatus';
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-
-import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { pictureWorker } from "../../utilities/PictureWorker";
+
+import { app, MAX_QSIZE } from "../..";
+import { DIconButton } from "../DIconButton/DIconButton";
+import { DQConstants } from '../../patches/Constants';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -18,6 +20,7 @@ export class UserPanel extends QWidget {
   private statusText = new QLabel(this);
   private statusBtn = new QPushButton(this);
   private controls = new QBoxLayout(Direction.LeftToRight);
+  private clipboard = QApplication.clipboard();
 
   constructor() {
     super();
@@ -30,25 +33,35 @@ export class UserPanel extends QWidget {
   }
 
   bindEvents(client: Client) {
-    const { Events: DiscordEvents } = Constants;
+    const { Events } = Constants as DQConstants;
     this.nameLabel.setText('Connecting...');
     this.discLabel.setText('#0000');
-    client.on(DiscordEvents.CLIENT_READY, () => {
+    client.on(Events.CLIENT_READY, () => {
       this.updateData();
       this.updateAvatar();
       this.updatePresence();
     });
-    client.on(DiscordEvents.USER_UPDATE, (prev, cur) => {
+    client.on(Events.USER_UPDATE, (prev, cur) => {
       this.updateData();
       if (prev.avatar !== cur.avatar) this.updateAvatar();
     });
-    client.on(DiscordEvents.PRESENCE_UPDATE, (_o, presence) => {
+    client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
       if (presence.userID === client.user?.id)
         this.updatePresence();
     });
-    client.on(DiscordEvents.USER_SETTINGS_UPDATE, () => {
+    client.on(Events.USER_SETTINGS_UPDATE, () => {
       this.updatePresence();
     });
+  }
+
+  private copyUserInfo() {
+    const { clipboard, discLabel, statusText } = this;
+    clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
+    [discLabel, statusText].forEach(w => w.setText('Copied!'));
+    setTimeout(() => {
+      this.updateData();
+      this.updatePresence();
+    }, 3000);
   }
 
   private initComponent() {
@@ -77,6 +90,11 @@ export class UserPanel extends QWidget {
     discLabel.setText('#0000');
     discLabel.setObjectName('DiscLabel');
     statusText.setObjectName('DiscLabel');
+    [nameLabel, discLabel, statusText].forEach(f => {
+      f.setCursor(CursorShape.PointingHandCursor);
+      f.addEventListener(WidgetEventTypes.MouseButtonPress, this.copyUserInfo.bind(this));
+    });
+
 
     layStat.addWidget(discLabel, 1);
     layStat.addWidget(statusIcon);
@@ -175,9 +193,11 @@ export class UserPanel extends QWidget {
 
   async updatePresence() {
     const { discLabel, statusBtn, statusIcon, statusText } = this;
-    const user = app.client.user;
-    if (!user) return;
-    const { customStatus, presence } = user;
+    if (!app.client.user) return;
+    const { customStatus, presence } = app.client.user;
+
+    statusBtn.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)};`);
+    statusBtn.setProperty('toolTip', presence.status);
 
     if (!customStatus) {
       statusIcon.hide();
@@ -185,8 +205,6 @@ export class UserPanel extends QWidget {
       discLabel.show();
       return;
     }
-    statusBtn.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)};`);
-    statusBtn.setProperty('toolTip', presence.status);
     this.loadStatusEmoji(customStatus);
     this.statusText.setText(customStatus.text || '');
 

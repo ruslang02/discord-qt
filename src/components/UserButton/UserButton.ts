@@ -35,7 +35,7 @@ setTimeout(() => {
       if (oldUser.avatar !== user.avatar) btn.loadAvatar();
     })
   });
-});
+}, 0);
 
 export class UserButton extends DChannelButton {
   private avatar = new QLabel(this);
