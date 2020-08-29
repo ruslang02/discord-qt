@@ -41,7 +41,7 @@
     background-color: darken($blurple, 2);
     #Header {
       text-transform: uppercase;
-      color: white;
+      color: $header-primary;
       font-size: 12px;
       line-height: 16px;
       font-weight: 600;

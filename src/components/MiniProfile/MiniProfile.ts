@@ -1,5 +1,4 @@
 import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
-
 import { MAX_QSIZE, app } from '../..';
 import { GuildMember, User } from 'discord.js';
 import { ProfilePresence } from './ProfilePresence';
