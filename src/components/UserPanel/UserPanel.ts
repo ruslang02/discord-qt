@@ -10,6 +10,7 @@ import { pictureWorker } from "../../utilities/PictureWorker";
 
 import { app, MAX_QSIZE } from "../..";
 import { DIconButton } from "../DIconButton/DIconButton";
+import { DQConstants } from '../../patches/Constants';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -32,7 +33,7 @@ export class UserPanel extends QWidget {
   }
 
   bindEvents(client: Client) {
-    const { Events } = Constants;
+    const { Events } = Constants as DQConstants;
     this.nameLabel.setText('Connecting...');
     this.discLabel.setText('#0000');
     client.on(Events.CLIENT_READY, () => {

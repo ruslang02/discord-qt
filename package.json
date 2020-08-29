@@ -53,6 +53,7 @@
     "whatwg-fetch": "^3.4.0"
   },
   "devDependencies": {
-    "@nodegui/packer": "^1.4.1"
+    "@nodegui/packer": "^1.4.1",
+    "@types/ws": "^7.2.6"
   }
 }

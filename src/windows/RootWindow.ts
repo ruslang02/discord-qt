@@ -1,8 +1,8 @@
 import { QStackedWidget, QMainWindow, QIcon, WidgetAttribute } from "@nodegui/nodegui";
 import path from "path";
 import fs from "fs";
+import djs, { Client, Constants } from 'discord.js';
 import { app } from '..';
-import { Client, Constants } from 'discord.js';
 import { MainView } from '../views/MainView/MainView';
 
 import { SettingsView } from "../views/SettingsView/SettingsView";
@@ -12,7 +12,6 @@ import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { MiniProfile } from '../components/MiniProfile/MiniProfile';
 import { clientOptions } from '../structures/ClientOptions';
-
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget();
   dialogs = {

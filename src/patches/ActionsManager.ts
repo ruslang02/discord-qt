@@ -1,8 +1,9 @@
 import { Constants } from 'discord.js';
+import { DQConstants } from './Constants';
 
 const Action = require('discord.js/src/client/actions/Action');
 const ActionsManager = require('discord.js/src/client/actions/ActionsManager');
-const { Events } = Constants;
+const { Events } = Constants as DQConstants;
 
 export class UserSettingsUpdateAction extends Action {
   handle(settings: any) {

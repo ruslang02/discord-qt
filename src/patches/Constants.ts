@@ -156,3 +156,9 @@ const DQConstants = {
 }
 
 Object.assign(Constants, DQConstants);
+
+export type DQConstants = typeof Constants & {
+  ExplicitContentFilterTypes: string[];
+  Events: typeof Constants.Events & { USER_SETTINGS_UPDATE: string };
+  UserSettingsMap: Record<string, string>;
+};

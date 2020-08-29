@@ -30,7 +30,7 @@ Object.defineProperty(ClientUser.prototype, 'customStatus', {
   }
 });
 ClientUser.prototype.setCustomStatus = async function setCustomStatus(data: CustomStatus) {
-  if (!this.settings) return;
+  if (!this.settings) return null;
   await this.client.presence.set({
     activities: [
       {
