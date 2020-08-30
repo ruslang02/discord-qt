@@ -30,11 +30,6 @@ jobs:
         env:
           SKIP_BUILD: 1
         run: npm ci
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{ runner.os }} build
-          path: ${{ github.workspace }}/dist
       - name: Pack binaries
         run: npm run package
       - name: Upload AppImage

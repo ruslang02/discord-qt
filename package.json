@@ -21,14 +21,21 @@
     "package": "nodegui-packer --pack ./dist",
     "package:deb": "node ./build-deb.js"
   },
+  "files": [
+    "/assets",
+    "/src",
+    "/worker",
+    ".npmrc",
+    "assets.d.ts",
+    "downloadNodeGui.js",
+    "index.js",
+    "tsconfig.json",
+    "webpack.config.js"
+  ],
   "dependencies": {
     "@nodegui/nodegui": "^0.24.0",
-    "@types/markdown-it": "^10.0.2",
-    "@types/node": "^14.0.27",
-    "@types/pngjs": "^3.4.2",
-    "@types/twemoji": "^12.1.1",
     "clean-webpack-plugin": "^3.0.0",
-    "copy-webpack-plugin": "^6.0.3",
+    "copy-webpack-plugin": "^6.0.4",
     "css-loader": "^3.6.0",
     "discord.js": "^12.3.1",
     "env-paths": "^2.2.0",
@@ -39,7 +46,7 @@
     "mini-css-extract-plugin": "^0.9.0",
     "native-addon-loader": "^2.0.1",
     "node-sass-glob-importer": "^5.3.2",
-    "open": "git+https://github.com/sindresorhus/open.git",
+    "open": "^7.2.1",
     "pngjs": "^5.0.0",
     "sass": "^1.26.10",
     "sass-loader": "^8.0.2",
@@ -54,6 +61,10 @@
   },
   "devDependencies": {
     "@nodegui/packer": "^1.4.1",
+    "@types/markdown-it": "^10.0.2",
+    "@types/node": "^14.6.2",
+    "@types/pngjs": "^3.4.2",
+    "@types/twemoji": "^12.1.1",
     "@types/ws": "^7.2.6"
   }
 }

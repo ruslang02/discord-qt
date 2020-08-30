@@ -6,6 +6,5 @@ ClientPresence.prototype._parse = async function _parse({ activities }: any) {
     packet.activities = activities;
     packet.game = packet.game || activities[0]
   };
-  console.log(packet);
   return packet;
 }
