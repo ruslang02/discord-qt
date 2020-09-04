@@ -33,7 +33,7 @@
     "webpack.config.js"
   ],
   "dependencies": {
-    "@nodegui/nodegui": "^0.24.0",
+    "@nodegui/nodegui": "^0.25.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.0.4",
     "css-loader": "^3.6.0",

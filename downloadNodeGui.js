@@ -4,7 +4,7 @@ const https = require('follow-redirects').https;
 
 const platform = process.platform;
 const arch = process.arch;
-const version = 'v0.24.0';
+const version = 'v0.25.0';
 
 const binPath = path.join(__dirname, 'node_modules/@nodegui/nodegui/build/Release/nodegui_core.node');
 if (fs.existsSync(binPath)) return process.exit(0);

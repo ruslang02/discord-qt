@@ -1,21 +1,15 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, CursorShape, WidgetEventTypes, TextInteractionFlag, QPoint } from "@nodegui/nodegui";
-import { Message, Collection, MessageAttachment, Snowflake } from "discord.js";
+import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, TextInteractionFlag, WidgetEventTypes } from "@nodegui/nodegui";
+import { Collection, Message, MessageAttachment, Snowflake } from "discord.js";
 import open from 'open';
-import { pathToFileURL, URL } from 'url';
-import markdownIt from 'markdown-it';
-import { CancelToken } from '../../utilities/CancelToken';
+import { URL } from 'url';
 import { app, MAX_QSIZE } from '../..';
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { Events } from '../../structures/Events';
+import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
+import { processEmojis, processMarkdown, processMentions } from './MessageUtilities';
 
-const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const avatarCache = new Map<Snowflake, QPixmap>();
-const MD = markdownIt({
-  html: false,
-  linkify: true,
-  breaks: true
-}).disable(['hr', 'blockquote', 'lheading']).enable('link');
 
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
@@ -24,11 +18,11 @@ export class MessageItem extends QWidget {
   private dateLabel = new QLabel(this);
   private contentLabel = new QLabel(this);
 
-  private msgContainer = new QWidget(this);
   private msgLayout = new QBoxLayout(Direction.TopToBottom);
-
-  private infoContainer = new QWidget(this);
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
+
+  private menu = new QMenu(this);
+  private clipboard = QApplication.clipboard();
 
   message?: Message;
 
@@ -38,10 +32,63 @@ export class MessageItem extends QWidget {
     this.setObjectName('MessageItem');
     this.setLayout(this.controls);
     this.initComponent();
+    this.initMenu();
   }
+
+  private initMenu() {
+    const { menu, clipboard } = this;
+    menu.setCursor(CursorShape.PointingHandCursor);
+    {
+      const action = new QAction(menu);
+      action.setText('Quote (>)');
+      action.addEventListener('triggered', () => {
+        app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
+      });
+      menu.addAction(action);
+    }
+    {
+      const action = new QAction(menu);
+      action.setText('Quote (embed)');
+      action.addEventListener('triggered', () => {
+        app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
+      });
+      menu.addAction(action);
+    }
+    menu.addSeparator();
+    {
+      const action = new QAction(menu);
+      action.setText('Copy Message');
+      action.addEventListener('triggered', () => {
+        clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
+      });
+      menu.addAction(action);
+    }
+    {
+      const action = new QAction(menu);
+      action.setText('Copy Message (source)');
+      action.addEventListener('triggered', () => {
+        clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
+      });
+      menu.addAction(action);
+    }
+    {
+      const action = new QAction(menu);
+      action.setText('Copy ID');
+      action.addEventListener('triggered', () => {
+        clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
+      });
+      menu.addAction(action);
+    }
+    this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    this.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
+      const ev = new QMouseEvent(e as NativeElement);
+      ev.button() === MouseButton.RightButton && menu.popup(new QPoint(ev.globalX(), ev.globalY()));
+    })
+  }
+
   private p0 = new QPoint(0, 0);
   private initComponent() {
-    const { controls, avatar, userNameLabel, dateLabel, contentLabel, msgContainer, msgLayout, infoContainer, infoLayout } = this;
+    const { controls, avatar, userNameLabel, dateLabel, contentLabel, msgLayout, infoLayout } = this;
     controls.setContentsMargins(16, 4, 16, 4);
     controls.setSpacing(10);
 
@@ -72,47 +119,14 @@ export class MessageItem extends QWidget {
     contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
     contentLabel.setWordWrap(true);
+    contentLabel.setCursor(CursorShape.IBeamCursor);
+    contentLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
     contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
     contentLabel.addEventListener('linkActivated', (link) => {
       const url = new URL(link);
       if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
       else open(link);
     })
-
-    infoContainer.setLayout(infoLayout);
-    msgContainer.setLayout(msgLayout);
-
-    infoLayout.addWidget(userNameLabel);
-    infoLayout.addWidget(dateLabel, 1);
-
-    msgLayout.addWidget(infoContainer);
-    msgLayout.addWidget(contentLabel, 1);
-
-    controls.addWidget(avatar);
-    controls.addWidget(msgContainer, 1);
-  }
-
-  private async processEmojis(content: string): Promise<string> {
-    const { contentLabel } = this;
-    const emoIds = content.match(EMOJI_REGEX) || [];
-    const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 32 : 32;
-    for (const emo of emoIds) {
-      const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
-      const format = type === 'a' ? 'gif' : 'png';
-      try {
-        const emojiPath = await resolveEmoji({ emoji_id: id, emoji_name: name });
-        if (!emojiPath) continue;
-        // @ts-ignore
-        const url = app.client.rest.cdn.Emoji(id, format);
-        const uri = new URL(url);
-        uri.searchParams.append('emojiname', name);
-
-        const pix = new QPixmap(emojiPath);
-        const larger = pix.width() > pix.height() ? 'width' : 'height'
-
-        content = content.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-      } catch (e) { }
-    }
     contentLabel.addEventListener('linkHovered', (link: string) => {
       try {
         const uri = new URL(link);
@@ -120,8 +134,17 @@ export class MessageItem extends QWidget {
         if (name) contentLabel.setProperty('toolTip', `:${name}:`);
       } catch (e) { }
     });
-    return content;
+
+    infoLayout.addWidget(userNameLabel);
+    infoLayout.addWidget(dateLabel, 1);
+
+    msgLayout.addLayout(infoLayout);
+    msgLayout.addWidget(contentLabel, 1);
+
+    controls.addWidget(avatar);
+    controls.addLayout(msgLayout, 1);
   }
+
   private attachs = new Map<QLabel, string>();
   private async processAttachments(attachments: Collection<string, MessageAttachment>) {
     for (const attach of attachments.values()) {
@@ -162,11 +185,10 @@ export class MessageItem extends QWidget {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) return avatar.setPixmap(cachePixmap);
       const image = await pictureWorker.loadImage(
-        message.author.avatarURL({ format: 'png', size: 256 }) ||
-        message.author.defaultAvatarURL
+        message.author.displayAvatarURL({ format: 'png', size: 256 })
       );
       if (image) {
-        let pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
+        const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
         avatar.setPixmap(pixmap);
         avatarCache.set(message.author.id, pixmap);
       }
@@ -174,22 +196,9 @@ export class MessageItem extends QWidget {
     this.attachs.forEach(async (url, label) => {
       this.attachs.delete(label);
       const image = await pictureWorker.loadImage(url);
-      if (!image) return;
-      const pixmap = new QPixmap(image);
-      label.setPixmap(pixmap);
+      image && label.setPixmap(new QPixmap(image));
     });
     this.alreadyRendered = true;
-  }
-
-  private async processMarkdown(content: string) {
-    if (!app.config.processMarkDown) return content.replace(/\n/g, '<br/>');
-    content = content
-      .replace(/<\/?p>/g, '')
-      .split('\n')
-      .map(line => line.startsWith("> ") ? line.replace("> ", "<span>▎</span>") : line)
-      .join('\n')
-      .trim();
-    return MD.render(content);
   }
 
   private async processInvites(message: Message) {
@@ -236,16 +245,15 @@ export class MessageItem extends QWidget {
     userNameLabel.setText(member?.nickname || user.username);
     if (token?.cancelled) return;
     dateLabel.setText(message.createdAt.toLocaleString());
-    contentLabel.setCursor(CursorShape.IBeamCursor);
     if (message.system) return this.loadSystemMessage(message);
-    if (message.content.trim() == "")
-      contentLabel.hide();
+    if (message.content.trim() == "") contentLabel.hide();
     else {
       let content = message.content;
       if (token?.cancelled) return;
-      content = await this.processMarkdown(content);
+      content = await processMarkdown(content);
       if (token?.cancelled) return;
-      content = await this.processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
+      content = await processMentions(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
+      content = await processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
       contentLabel.setText('<style>* {vertical-align: middle;} img {max-height: 24px; max-width: 24px;}</style>' + content);
     }
     if (token?.cancelled) return;

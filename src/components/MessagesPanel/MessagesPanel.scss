@@ -22,7 +22,7 @@
 }
 #MessageItem {
   background-color: $background-primary;
-  *:hover, *:active {
+  &:hover {
     background-color: $background-message-hover;
   }
   #UserNameLabel {

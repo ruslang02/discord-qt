@@ -8,6 +8,8 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
+import { Message } from 'discord.js';
+import { MessageEmbedOptions } from 'discord.js';
 
 
 const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
@@ -39,6 +41,8 @@ export class InputPanel extends QWidget {
     tooltipText: 'Embed files'
   });
 
+  private quoteEmbed?: MessageEmbedOptions;
+
   constructor() {
     super();
     this.setObjectName('InputContainer');
@@ -68,8 +72,7 @@ export class InputPanel extends QWidget {
         }`
       );
 
-      // @ts-ignore
-      input.setFocus && input.setFocus(FocusReason.TabFocusReason);
+      input.setFocus(FocusReason.TabFocusReason);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -79,7 +82,24 @@ export class InputPanel extends QWidget {
         typingLabel.setText(`<b>${user.username}</b> is typing...`); // TODO: Multiple, guild typing indicators
         setTimeout(() => typingLabel.clear(), 2000);
       });
-    })
+    });
+
+    app.on(Events.QUOTE_MESSAGE_NOEMBED, (message: Message) => {
+      this.input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
+      this.input.setFocus(FocusReason.TabFocusReason);
+    });
+    app.on(Events.QUOTE_MESSAGE_EMBED, (message: Message) => {
+      this.quoteEmbed = {
+        description: message.cleanContent,
+        author: {
+          name: message.author.username,
+          icon_url: message.author.displayAvatarURL(),
+          url: `https://discordapp.com/channels/${message.guild?.id}/${message.channel.id}/${message.id}`
+        }
+      };
+      this.renderAttachPanel();
+      this.input.setFocus(FocusReason.TabFocusReason);
+    });
   }
 
   addFiles(files: string[]) {
@@ -90,6 +110,21 @@ export class InputPanel extends QWidget {
   private renderAttachPanel() {
     const { attachLayout, attachPanel } = this;
     ([...attachLayout.nodeChildren.values()] as QWidget[]).forEach(w => { w.hide(); attachLayout.removeWidget(w); })
+    if (this.quoteEmbed) {
+      const attach = new QLabel(attachPanel);
+      attach.setFixedSize(120, 60);
+      attach.setAlignment(AlignmentFlag.AlignCenter);
+      attach.setProperty('toolTip', 'Right-click to remove');
+      attach.addEventListener(WidgetEventTypes.MouseButtonPress, e => {
+        const event = new QMouseEvent(e as NativeElement);
+        if ((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
+          this.quoteEmbed = undefined;
+          this.renderAttachPanel();
+        }
+      });
+      attach.setPixmap(new QPixmap(join(__dirname, './assets/icons/reply.png')));
+      attachLayout.insertWidget(attachLayout.nodeChildren.size, attach);
+    }
     for (const file of this.files) {
       const attach = new QLabel(attachPanel);
       attach.setFixedSize(120, 60);
@@ -118,7 +153,7 @@ export class InputPanel extends QWidget {
 
       attachLayout.insertWidget(attachLayout.nodeChildren.size, attach);
     }
-    if (this.files.size) attachPanel.show(); else attachPanel.hide();
+    if (this.files.size || this.quoteEmbed) attachPanel.show(); else attachPanel.hide();
   }
 
   private initComponent() {
@@ -223,6 +258,10 @@ export class InputPanel extends QWidget {
 
   private async sendMessage() {
     const { input, statusLabel } = this;
+    if (this.quoteEmbed) {
+      await this.channel?.send({ embed: this.quoteEmbed });
+    }
+    this.quoteEmbed = undefined;
     const message = input.toPlainText().trim();
     setTimeout(() => input.clear(), 0);
     if (this.channel) {
