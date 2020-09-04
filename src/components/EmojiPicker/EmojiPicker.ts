@@ -25,8 +25,7 @@ export class EmojiPicker extends QMenu {
     this.addEventListener(WidgetEventTypes.Hide, this.clear.bind(this));
     this.addEventListener(WidgetEventTypes.Show, () => {
       this.clear();
-      // @ts-ignore
-      this.textInput.setFocus && this.textInput.setFocus(FocusReason.PopupFocusReason);
+      this.textInput.setFocus(FocusReason.PopupFocusReason);
     });
   }
 

@@ -85,8 +85,9 @@ export class InputPanel extends QWidget {
     });
 
     app.on(Events.QUOTE_MESSAGE_NOEMBED, (message: Message) => {
-      this.input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
-      this.input.setFocus(FocusReason.TabFocusReason);
+      input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
+      input.setFocus(FocusReason.TabFocusReason);
+      this.adjustInputSize();
     });
     app.on(Events.QUOTE_MESSAGE_EMBED, (message: Message) => {
       this.quoteEmbed = {
@@ -98,7 +99,7 @@ export class InputPanel extends QWidget {
         }
       };
       this.renderAttachPanel();
-      this.input.setFocus(FocusReason.TabFocusReason);
+      input.setFocus(FocusReason.TabFocusReason);
     });
   }
 
@@ -175,10 +176,9 @@ export class InputPanel extends QWidget {
     })
     input.setObjectName('Input');
     emojiPicker.events.on('emoji', (emoji: Emoji) => {
-      this.input.insertPlainText(emoji.toString());
+      input.insertPlainText(emoji.toString());
       emojiPicker.close();
-      // @ts-ignore
-      input.setFocus && input.setFocus(FocusReason.TabFocusReason);
+      input.setFocus(FocusReason.TabFocusReason);
     });
     emojiPicker.addEventListener(WidgetEventTypes.Hide, () => emojiBtn.setIcon(emojiBtn.qiconOff));
     emojiBtn.setFixedSize(38, 44);

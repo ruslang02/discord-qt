@@ -23,7 +23,6 @@ export class MessagesPanel extends QScrollArea {
     this.setFrameShape(Shape.NoFrame);
     this.initRoot();
     this.initEvents();
-    this.addEventListener(WidgetEventTypes.Paint, () => this.handleWheel());
   }
 
   private initEvents() {
@@ -57,6 +56,7 @@ export class MessagesPanel extends QScrollArea {
   private initRoot() {
     this.root = new QWidget(this);
     this.root.setObjectName('MessagesContainer');
+    this.root.addEventListener(WidgetEventTypes.Move, this.handleWheel.bind(this, false));
     this.rootControls = new QBoxLayout(Direction.TopToBottom);
     this.rootControls.setContentsMargins(0, 25, 0, 25);
     this.rootControls.setSpacing(10);
@@ -112,7 +112,7 @@ export class MessagesPanel extends QScrollArea {
   private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
     if (this.ratelimit || this.isLoading || this.channel === channel) return;
 
-    this.isLoading = this.ratelimit = true;
+    /*this.isLoading = */this.ratelimit = true;
     if (this.rateTimer) clearTimeout(this.rateTimer);
     this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
 
