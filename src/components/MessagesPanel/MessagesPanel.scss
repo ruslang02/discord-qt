@@ -57,4 +57,22 @@
       color: $text-normal;
     }
   }
+  #EmbedBody {
+    background-color: $background-secondary;
+    border-radius: 4px;
+    #EmbedAuthorName {
+      color: $header-primary;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #EmbedTitle {
+      color: $header-primary;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    #EmbedDescription {
+      color: $text-normal;
+      font-size: 14px;
+    }
+  }
 }

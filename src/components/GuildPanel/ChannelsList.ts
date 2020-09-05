@@ -23,20 +23,22 @@ export class ChannelsList extends QListWidget {
 
   async handleSwitchView(view: string, options?: ViewOptions) {
     if (view !== 'guild' || !options) return;
+    console.log("ooo");
     let newGuild;
     if (options.guild) newGuild = options.guild;
     else if (options.channel) newGuild = options.channel.guild;
     else return;
+    console.log(newGuild.id, this.guild?.id);
     if (newGuild.id !== this.guild?.id) {
       this.guild = newGuild;
       await this.loadChannels();
     }
     if (options.channel) {
-      const chan = (([...this.nodeChildren.values()] as ChannelButton[]).find(a => a.channel === options.channel) as ChannelButton);
+      const chan = ([...this.nodeChildren.values()] as ChannelButton[]).find(a => a.channel === options.channel);
       this.active?.setActivated(false);
-      chan.setActivated(true);
+      chan?.setActivated(true);
       this.active = chan;
-    }
+    } else this.active = undefined;
   }
 
   async loadChannels() {

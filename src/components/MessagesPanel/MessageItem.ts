@@ -1,4 +1,4 @@
-import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, TextInteractionFlag, WidgetEventTypes } from "@nodegui/nodegui";
+import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, TextInteractionFlag, WidgetEventTypes, QGridLayout } from "@nodegui/nodegui";
 import { Collection, Message, MessageAttachment, Snowflake } from "discord.js";
 import open from 'open';
 import { URL } from 'url';
@@ -6,10 +6,18 @@ import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../structures/Events';
 import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
-import { processEmojis, processMarkdown, processMentions } from './MessageUtilities';
+import { processEmojis, processMarkdown, processMentions, processEmbeds, processAttachments, processInvites } from './MessageUtilities';
+import { MessageType } from 'discord.js';
 
-const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const avatarCache = new Map<Snowflake, QPixmap>();
+
+const MessageTypeText: Map<MessageType, string> = new Map([
+  ['GUILD_MEMBER_JOIN', 'joined the server.'],
+  ['RECIPIENT_ADD', 'was added to the group DM.'],
+  ['RECIPIENT_REMOVE', 'was removed from the group DM.'],
+  ['CALL','called.'],
+  ['PINS_ADD', 'pinned a message to this channel.']
+]);
 
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
@@ -145,38 +153,6 @@ export class MessageItem extends QWidget {
     controls.addLayout(msgLayout, 1);
   }
 
-  private attachs = new Map<QLabel, string>();
-  private async processAttachments(attachments: Collection<string, MessageAttachment>) {
-    for (const attach of attachments.values()) {
-      let url = attach.proxyURL;
-      let width = attach.width;
-      let height = attach.height;
-      if (width === null || height === null) continue;
-      const ratio = width / height;
-
-      if (width > 400) {
-        width = 400;
-        height = width / ratio;
-      }
-      if (height > 300) {
-        height = 300;
-        width = height * ratio;
-      }
-      width = Math.ceil(width);
-      height = Math.ceil(height);
-      url += `?width=${width}&height=${height}`;
-
-      const qimage = new QLabel(this);
-      qimage.setFixedSize(width, height);
-      qimage.setInlineStyle('background-color: #2f3136');
-      qimage.setCursor(CursorShape.PointingHandCursor);
-      qimage.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
-        open(attach.url);
-      })
-      this.attachs.set(qimage, url);
-      this.msgLayout.addWidget(qimage);
-    }
-  }
   private alreadyRendered = false;
   async renderImages() {
     const { message, avatar } = this;
@@ -193,48 +169,9 @@ export class MessageItem extends QWidget {
         avatarCache.set(message.author.id, pixmap);
       }
     })();
-    this.attachs.forEach(async (url, label) => {
-      this.attachs.delete(label);
-      const image = await pictureWorker.loadImage(url);
-      image && label.setPixmap(new QPixmap(image));
-    });
+    // @ts-ignore
+    this.msgLayout.nodeChildren.forEach(w => w.loadImages && w.loadImages());
     this.alreadyRendered = true;
-  }
-
-  private async processInvites(message: Message) {
-    const invites = message.content.match(INVITE_REGEX) || [];
-    for (const inviteLink of invites) {
-      try {
-        const invite = await app.client.fetchInvite(inviteLink);
-        const item = new QWidget(this);
-        item.setObjectName('InviteContainer');
-        item.setMinimumSize(432, 0);
-        item.setMaximumSize(432, MAX_QSIZE);
-        const layout = new QBoxLayout(Direction.TopToBottom);
-        item.setLayout(layout);
-        layout.setContentsMargins(16, 16, 16, 16);
-        layout.setSpacing(12);
-        const helperText = new QLabel(item);
-        helperText.setText('An invite to join a server');
-        helperText.setObjectName('Helper');
-        const mainLayout = new QBoxLayout(Direction.LeftToRight);
-        const avatar = new QLabel(item);
-        pictureWorker.loadImage(invite.guild?.iconURL({ size: 256, format: 'png' }) || '')
-          .then(path => {
-            if (!path) return;
-            avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
-          });
-        const nameLabel = new QLabel(item);
-        nameLabel.setText(`${invite.guild?.name || 'A server'} <span style='font-size: small; color: #72767d'>${invite.memberCount} Members</span>`);
-        nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
-        nameLabel.setObjectName('Name');
-        mainLayout.addWidget(avatar);
-        mainLayout.addWidget(nameLabel, 1);
-        layout.addWidget(helperText);
-        layout.addLayout(mainLayout, 1);
-        this.msgLayout.addWidget(item);
-      } catch (e) { }
-    }
   }
 
   async loadMessage(message: Message, token?: CancelToken) {
@@ -257,29 +194,15 @@ export class MessageItem extends QWidget {
       contentLabel.setText('<style>* {vertical-align: middle;} img {max-height: 24px; max-width: 24px;}</style>' + content);
     }
     if (token?.cancelled) return;
-    await this.processAttachments(message.attachments);
-    await this.processInvites(message);
+    [
+      ...processAttachments(message.attachments),
+      ...processEmbeds(message),
+      ...await processInvites(message)
+    ].forEach(w => this.msgLayout.addWidget(w));
   }
 
   private loadSystemMessage(message: Message) {
-    let content = '';
-    switch (message.type) {
-      case 'GUILD_MEMBER_JOIN':
-        content = 'joined the server.';
-        break;
-      case 'RECIPIENT_ADD':
-        content = 'was added to the group DM.';
-        break;
-      case 'RECIPIENT_REMOVE':
-        content = 'was removed from the group DM.';
-        break;
-      case 'CALL':
-        content = 'called.';
-        break;
-      case 'PINS_ADD':
-        content = 'pinned a message to this channel.';
-        break;
-    }
+    let content = MessageTypeText.get(message.type) || message.type;
     this.dateLabel.hide();
     this.contentLabel.setText('<i>&nbsp;</i>' + content);
     this.msgLayout.setDirection(Direction.LeftToRight);
