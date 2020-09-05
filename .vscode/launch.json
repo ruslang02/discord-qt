@@ -21,7 +21,8 @@
       "sourceMapPathOverrides": {
           "webpack:///*": "${workspaceRoot}/*"
       },
-      "autoAttachChildProcesses": true
+      "autoAttachChildProcesses": true,
+      "console": "internalConsole"
     }
   ]
 }

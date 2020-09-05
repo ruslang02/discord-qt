@@ -12,6 +12,7 @@ import { Events } from "../../../structures/Events";
 import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 import { clientOptions } from '../../../structures/ClientOptions';
 import { Client } from 'discord.js';
+import { MarkdownStyles } from '../../../structures/MarkdownStyles';
 
 export class AccountsPage extends Page {
   title = "Accounts";
@@ -139,7 +140,7 @@ export class AccountsPage extends Page {
     addLayout.setSpacing(10);
     const helpLabel = new QLabel();
     helpLabel.setObjectName('TextLabel');
-    helpLabel.setText('In order to login via this client you need to retrieve an Access Token. You can obtain one using <a href="https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs">this</a> guide.');
+    helpLabel.setText(MarkdownStyles + 'In order to login via this client you need to retrieve an Access Token. You can obtain one using <a href="https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs">this</a> guide.');
     helpLabel.setWordWrap(true);
     helpLabel.setOpenExternalLinks(true);
     const addTokenField = new DLineEdit();

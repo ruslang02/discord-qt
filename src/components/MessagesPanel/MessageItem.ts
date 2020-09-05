@@ -8,6 +8,8 @@ import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { processEmojis, processMarkdown, processMentions, processEmbeds, processAttachments, processInvites } from './MessageUtilities';
 import { MessageType } from 'discord.js';
+import { MarkdownStyles } from '../../structures/MarkdownStyles';
+import { TextChannel } from 'discord.js';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 
@@ -15,7 +17,7 @@ const MessageTypeText: Map<MessageType, string> = new Map([
   ['GUILD_MEMBER_JOIN', 'joined the server.'],
   ['RECIPIENT_ADD', 'was added to the group DM.'],
   ['RECIPIENT_REMOVE', 'was removed from the group DM.'],
-  ['CALL','called.'],
+  ['CALL', 'called.'],
   ['PINS_ADD', 'pinned a message to this channel.']
 ]);
 
@@ -130,9 +132,17 @@ export class MessageItem extends QWidget {
     contentLabel.setCursor(CursorShape.IBeamCursor);
     contentLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
     contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
-    contentLabel.addEventListener('linkActivated', (link) => {
+    contentLabel.addEventListener('linkActivated', async (link) => {
       const url = new URL(link);
-      if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
+      if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname);
+      else if (url.protocol === 'dq-channel:') {
+        const channel = await app.client.channels.fetch(url.hostname) as TextChannel;
+        app.emit(Events.SWITCH_VIEW, 'guild', {
+          guild: channel.guild,
+          channel
+        });
+      }
+      else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
       else open(link);
     })
     contentLabel.addEventListener('linkHovered', (link: string) => {
@@ -189,9 +199,14 @@ export class MessageItem extends QWidget {
       if (token?.cancelled) return;
       content = await processMarkdown(content);
       if (token?.cancelled) return;
-      content = await processMentions(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
-      content = await processEmojis(content.replace(/&lt;/g, '<').replace(/&gt;/g, '>'));
-      contentLabel.setText('<style>* {vertical-align: middle;} img {max-height: 24px; max-width: 24px;}</style>' + content);
+      content = content
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim();
+      content = await processMentions(content, message);
+      content = await processEmojis(content);
+      contentLabel.setText(MarkdownStyles + content);
     }
     if (token?.cancelled) return;
     [

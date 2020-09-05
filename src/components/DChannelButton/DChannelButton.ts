@@ -1,4 +1,4 @@
-import { QPushButton, QBoxLayout, Direction, QCursor, CursorShape, QWidget, QLabel } from '@nodegui/nodegui';
+import { QPushButton, QBoxLayout, Direction, QCursor, CursorShape, QWidget, QLabel, WidgetEventTypes } from '@nodegui/nodegui';
 
 
 export class DChannelButton extends QPushButton {
@@ -6,6 +6,7 @@ export class DChannelButton extends QPushButton {
   labels: QLabel[] = [];
   private _hovered = false;
   private _activated = false;
+  protected _destroyed = false;
 
   constructor(parent: any) {
     super(parent);
@@ -13,11 +14,18 @@ export class DChannelButton extends QPushButton {
     this.setLayout(this.layout);
     this.layout.setContentsMargins(8, 4, 8, 4);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
+    this.addEventListener(WidgetEventTypes.HoverEnter,
+      () => this.setHovered(true));
+    this.addEventListener(WidgetEventTypes.HoverLeave,
+      () => this.setHovered(false));
+    this.addEventListener(WidgetEventTypes.DeferredDelete,
+      () => this._destroyed = true);
   }
 
   private hovered() { return this._hovered; }
 
   setHovered(hovered: boolean) {
+    if (this._destroyed) return;
     this._hovered = hovered;
     this.setProperty('hover', hovered);
     [this, ...this.labels].forEach(w => w.repolish());
@@ -26,6 +34,7 @@ export class DChannelButton extends QPushButton {
   activated() { return this._activated; }
 
   setActivated(activated: boolean) {
+    if (this._destroyed) return;
     this._activated = activated;
     this.setProperty('active', activated);
     [this, ...this.labels].forEach(w => w.repolish());

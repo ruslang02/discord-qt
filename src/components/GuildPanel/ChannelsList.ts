@@ -7,7 +7,9 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { ScrollMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
 import { GuildsList } from '../GuildsList/GuildsList';
+import { createLogger } from '../../utilities/Console';
 
+const { debug } = createLogger('[ChannelsList]');
 export class ChannelsList extends QListWidget {
   private guild?: Guild;
   private active?: ChannelButton;
@@ -23,12 +25,10 @@ export class ChannelsList extends QListWidget {
 
   async handleSwitchView(view: string, options?: ViewOptions) {
     if (view !== 'guild' || !options) return;
-    console.log("ooo");
     let newGuild;
     if (options.guild) newGuild = options.guild;
     else if (options.channel) newGuild = options.channel.guild;
     else return;
-    console.log(newGuild.id, this.guild?.id);
     if (newGuild.id !== this.guild?.id) {
       this.guild = newGuild;
       await this.loadChannels();
@@ -46,6 +46,7 @@ export class ChannelsList extends QListWidget {
     const { client } = app;
     if (!guild) return;
 
+    debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
     this.clear();
     const [categories, channels] = guild.channels.cache
       .filter(c => (c.permissionsFor(client.user as User) as Permissions).has('VIEW_CHANNEL'))
@@ -53,7 +54,7 @@ export class ChannelsList extends QListWidget {
       Collection<string, CategoryChannel>,
       Collection<string, GuildChannel>
     ];
-
+    debug(`Loading ${categories.size} categories...`);
     for (const category of categories.sort((a, b) => a.rawPosition - b.rawPosition).values()) {
       const item = new QListWidgetItem();
       const label = new QLabel(this);
@@ -79,6 +80,7 @@ export class ChannelsList extends QListWidget {
       label.adjustSize();
     }
 
+    debug(`Loading ${channels.size} channels...`);
     for (const channel of channels.sort((a, b) => b.rawPosition - a.rawPosition).values()) {
       const btn = new ChannelButton(this);
       const item = new QListWidgetItem();

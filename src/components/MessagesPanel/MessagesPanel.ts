@@ -1,13 +1,13 @@
-import { QScrollArea, QWidget, QBoxLayout, Direction, QLabel, ScrollBarPolicy, AlignmentFlag, Shape, WidgetEventTypes, QPoint, QDropEvent, NativeElement } from "@nodegui/nodegui";
+import { AlignmentFlag, Direction, QBoxLayout, QPoint, QScrollArea, QWidget, ScrollBarPolicy, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { Client, DMChannel, Message, Snowflake, TextChannel } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
-import { DMChannel, Message, Channel, Client, Snowflake, TextChannel, Guild } from "discord.js";
+import { Events } from "../../structures/Events";
+import { CancelToken } from '../../utilities/CancelToken';
+import { createLogger } from '../../utilities/Console';
+import { ViewOptions } from '../../views/ViewOptions';
 import { MessageItem } from "./MessageItem";
 
-import { ViewOptions } from '../../views/ViewOptions';
-import { CancelToken } from '../../utilities/CancelToken';
-import { Events } from "../../structures/Events";
-import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
-
+const { debug } = createLogger('[MessagesPanel]');
 
 export class MessagesPanel extends QScrollArea {
   private channel?: DMChannel | TextChannel;
@@ -112,15 +112,16 @@ export class MessagesPanel extends QScrollArea {
   private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
     if (this.ratelimit || this.isLoading || this.channel === channel) return;
 
-    /*this.isLoading = */this.ratelimit = true;
+    this.isLoading = this.ratelimit = true;
     if (this.rateTimer) clearTimeout(this.rateTimer);
     this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
-
+    debug(`Opening channel ${channel.id}...`);
     this.initRoot();
     this.channel = channel;
     if (token.cancelled) return this.isLoading = false;
     if (channel.messages.cache.size < 30) await channel.messages.fetch({ limit: 30 });
     if (token.cancelled) return this.isLoading = false;
+    debug(`Total of ${channel.messages.cache.size} messages are available.`);
     const messages = channel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
@@ -132,8 +133,9 @@ export class MessagesPanel extends QScrollArea {
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
       return widget.loadMessage(message, token);
     });
-
+    debug(`Waiting for ${promises.length} widgets to be loaded...`);
     await Promise.all(promises);
+    debug(`Widgets finished loading.`);
     setTimeout(() => {
       this.isLoading = false;
       clearInterval(scrollTimer);

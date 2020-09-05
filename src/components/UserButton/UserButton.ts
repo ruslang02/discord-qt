@@ -101,6 +101,7 @@ export class UserButton extends DChannelButton {
   }
 
   async loadPresence(presence: Presence) {
+    if (this._destroyed) return;
     this.statusInd.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)}`);
     this.loadStatusEmoji(presence);
 

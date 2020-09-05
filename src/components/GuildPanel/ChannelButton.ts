@@ -13,18 +13,17 @@ export class ChannelButton extends DChannelButton {
     bullhorn: new QPixmap(join(__dirname, './assets/icons/bullhorn.png')),
     volume_high: new QPixmap(join(__dirname, './assets/icons/volume-high.png')),
   };
-  private chicon = new QLabel();
-  private chlabel = new QLabel();
+  private chicon = new QLabel(this);
+  private chlabel = new QLabel(this);
   private clipboard = QApplication.clipboard();
   private channelMenu = new QMenu(this);
+  private isDestroyed = false;
   channel?: GuildChannel;
 
   constructor(parent?: any) {
     super(parent);
     this.initComponent();
     this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
-    this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setHovered(true));
-    this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setHovered(false));
     this.addEventListener('clicked', this.handleClick.bind(this))
   }
 

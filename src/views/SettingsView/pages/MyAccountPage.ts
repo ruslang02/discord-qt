@@ -6,6 +6,7 @@ import { Client, Constants } from 'discord.js';
 
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { Events } from '../../../structures/Events';
+import { MarkdownStyles } from '../../../structures/MarkdownStyles';
 
 export class MyAccountPage extends Page {
   title = "My Account";
@@ -79,7 +80,7 @@ export class MyAccountPage extends Page {
     twoFAHeader.setText('Two-factor authentication');
 
     const twoFAHelper = new QLabel();
-    twoFAHelper.setText(`This app cannot manage 2FA-authentication, however the official <a href='https://discord.com/channels/@me'>web app</a> can!`);
+    twoFAHelper.setText(MarkdownStyles + `This app cannot manage 2FA-authentication, however the official <a href='https://discord.com/channels/@me'>web app</a> can!`);
     twoFAHelper.setObjectName('TextLabel');
     twoFAHelper.setOpenExternalLinks(true);
 

@@ -1,12 +1,13 @@
-import { Shape, QListWidget, QListWidgetItem, QSize, ScrollBarPolicy, QBrush, QColor, BrushStyle, QMenu, ContextMenuPolicy, QPoint, QPushButton, QAction, QClipboard, QApplication, QClipboardMode, CursorShape } from '@nodegui/nodegui';
+import { BrushStyle, ContextMenuPolicy, QAction, QApplication, QBrush, QClipboardMode, QColor, QListWidget, QListWidgetItem, QMenu, QPoint, QSize, ScrollBarPolicy, Shape } from '@nodegui/nodegui';
 import { TextChannel } from 'discord.js';
-import { MAX_QSIZE, app } from '../..';
-import { UserButton } from '../UserButton/UserButton';
-import { ViewOptions } from '../../views/ViewOptions';
-import { CancelToken } from '../../utilities/CancelToken';
+import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../structures/Events';
+import { CancelToken } from '../../utilities/CancelToken';
+import { createLogger } from '../../utilities/Console';
+import { ViewOptions } from '../../views/ViewOptions';
+import { UserButton } from '../UserButton/UserButton';
 
-
+const { debug } = createLogger('[MembersList]');
 export class MembersList extends QListWidget {
   private cancelToken?: CancelToken;
   private channel?: TextChannel;
@@ -60,14 +61,19 @@ export class MembersList extends QListWidget {
       menu.addAction(item);
     }
   }
-
+  private ratelimit = false;
+  private rateTimer?: NodeJS.Timer;
   private async loadList(channel: TextChannel, token: CancelToken) {
-    const { menu, p0 } = this;
+    const { menu } = this;
+
+    if (this.ratelimit || this.channel === channel) return;
+    this.ratelimit = true;
+    if (this.rateTimer) clearTimeout(this.rateTimer);
+
+    debug(`Loading members list for #${channel.name} (${channel.id})...`);
     this.channel = channel;
     this.clear();
-    if (token.cancelled) return;
     for (const member of channel.members.values()) {
-      if (token.cancelled) return;
       const btn = new UserButton(this);
       const item = new QListWidgetItem();
       item.setSizeHint(new QSize(224, 44));
@@ -91,5 +97,7 @@ export class MembersList extends QListWidget {
       this.addItem(item);
       this.setItemWidget(item, btn);
     }
+    debug(`Finished loading members list.`);
+    this.rateTimer = setTimeout(() => this.ratelimit = false, 500);
   }
 }

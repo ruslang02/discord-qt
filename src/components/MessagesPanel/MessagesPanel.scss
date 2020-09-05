@@ -54,6 +54,7 @@
     }
     #Name {
       font-weight: 600;
+      font-size: 14px;
       color: $text-normal;
     }
   }
@@ -71,6 +72,15 @@
       font-weight: 600;
     }
     #EmbedDescription {
+      color: $text-normal;
+      font-size: 14px;
+    }
+    #EmbedFieldTitle {
+      color: $header-primary;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    #EmbedFieldValue {
       color: $text-normal;
       font-size: 14px;
     }
