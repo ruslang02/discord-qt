@@ -20,7 +20,6 @@ export class AppearancePage extends Page {
   constructor() {
     super();
     this.initPage();
-    this.loadConfig();
     app.on(Events.READY, this.loadConfig.bind(this));
   }
   private initPage() {
@@ -48,11 +47,11 @@ export class AppearancePage extends Page {
     const themeLabel = new QLabel(this);
     themeLabel.setObjectName('Header3');
     themeLabel.setText('\r\nTheme');
-    readdir('./src/themes', {withFileTypes: true}, (err, files) => {
+    readdir('./dist/themes', {withFileTypes: true}, (err, files) => {
       if (!err) {
         files.forEach(file => {
-          if(file.name.search('.theme.scss') > 0) {
-            const myThemeName = file.name.replace('.theme.scss','');
+          if(file.name.search('.theme.css') > 0) {
+            const myThemeName = file.name.replace('.theme.css','');
             themeSel.addItem(undefined, myThemeName, undefined);
           };
         });
@@ -60,7 +59,7 @@ export class AppearancePage extends Page {
     });
     themeSel.addEventListener('currentTextChanged', async (text) => {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
-      if (!existsSync(path)) return;
+      if (!existsSync(path) || !app.config.theme) return;
       app.config.theme = text;
       await app.config.save();
       app.window.loadStyles();
@@ -76,6 +75,6 @@ export class AppearancePage extends Page {
     rdavcx.setChecked(roundifyAvatars as boolean);
     prmdcx.setChecked(processMarkDown as boolean);
     dbgcx.setChecked(debug as boolean);
-    themeSel.setCurrentText(theme as string);
+    typeof theme === 'string' && themeSel.setCurrentText(theme as string);
   }
 }
