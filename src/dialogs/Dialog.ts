@@ -3,6 +3,7 @@ import { QWidget, QLabel, QSize, QBoxLayout, Direction, WidgetEventTypes, QMouse
 import { join } from 'path';
 import { DIconButton } from '../components/DIconButton/DIconButton';
 import { RootWindow } from '../windows/RootWindow';
+import { __ } from 'i18n';
 
 export class Dialog extends QWidget {
   protected window = new QWidget(this);
@@ -11,7 +12,7 @@ export class Dialog extends QWidget {
   protected closeBtn = new DIconButton({
     iconPath: join(__dirname, './assets/icons/close.png'),
     iconQSize: new QSize(24, 24),
-    tooltipText: 'Close'
+    tooltipText: __('CLOSE')
   });
   protected p0 = new QPoint(0, 0);
 

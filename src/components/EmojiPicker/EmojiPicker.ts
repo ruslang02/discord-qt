@@ -4,6 +4,7 @@ import { EventEmitter } from 'events';
 import { app } from '../..';
 
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from 'i18n';
 
 export class EmojiPicker extends QMenu {
   events = new EventEmitter();
@@ -48,7 +49,7 @@ export class EmojiPicker extends QMenu {
     controls.setSpacing(0);
     const textLayout = new QBoxLayout(Direction.LeftToRight);
     textLayout.setContentsMargins(12, 12, 12, 12);
-    textInput.setPlaceholderText('Find the perfect emoji');
+    textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
     textInput.addEventListener(WidgetEventTypes.KeyRelease, (e) => {
       const ev = new QKeyEvent(e as NativeElement);
       if (ev.key() === Key.Key_Up) {

@@ -4,6 +4,7 @@ import { app } from '../..';
 import { ViewOptions } from '../../views/ViewOptions';
 import { Guild } from 'discord.js';
 import { Events } from '../../structures/Events';
+import { __ } from 'i18n';
 
 export class GuildActionsMenu extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -25,7 +26,7 @@ export class GuildActionsMenu extends QWidget {
     const { layout } = this;
     layout.setContentsMargins(16, 16, 16, 16);
     const leavebtn = new DColorButton(DColorButtonColor.RED);
-    leavebtn.setText('Leave Server');
+    leavebtn.setText(__('LEAVE_SERVER'));
     leavebtn.setMinimumSize(0, 32);
     leavebtn.addEventListener('clicked', () => {
       this.guild?.leave();

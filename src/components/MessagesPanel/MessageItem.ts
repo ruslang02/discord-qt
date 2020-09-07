@@ -10,16 +10,9 @@ import { processEmojis, processMarkdown, processMentions, processEmbeds, process
 import { MessageType } from 'discord.js';
 import { MarkdownStyles } from '../../structures/MarkdownStyles';
 import { TextChannel } from 'discord.js';
+import { __ } from "i18n";
 
 const avatarCache = new Map<Snowflake, QPixmap>();
-
-const MessageTypeText: Map<MessageType, string> = new Map([
-  ['GUILD_MEMBER_JOIN', 'joined the server.'],
-  ['RECIPIENT_ADD', 'was added to the group DM.'],
-  ['RECIPIENT_REMOVE', 'was removed from the group DM.'],
-  ['CALL', 'called.'],
-  ['PINS_ADD', 'pinned a message to this channel.']
-]);
 
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
@@ -50,7 +43,7 @@ export class MessageItem extends QWidget {
     menu.setCursor(CursorShape.PointingHandCursor);
     {
       const action = new QAction(menu);
-      action.setText('Quote (>)');
+      action.setText(__('QUOTE') + ' (>)');
       action.addEventListener('triggered', () => {
         app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
       });
@@ -58,7 +51,7 @@ export class MessageItem extends QWidget {
     }
     {
       const action = new QAction(menu);
-      action.setText('Quote (embed)');
+      action.setText(__('QUOTE') + ' (embed)');
       action.addEventListener('triggered', () => {
         app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
       });
@@ -67,7 +60,7 @@ export class MessageItem extends QWidget {
     menu.addSeparator();
     {
       const action = new QAction(menu);
-      action.setText('Copy Message');
+      action.setText(__('COPY_TEXT'));
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
       });
@@ -75,7 +68,7 @@ export class MessageItem extends QWidget {
     }
     {
       const action = new QAction(menu);
-      action.setText('Copy Message (source)');
+      action.setText(__('COPY_TEXT') + ' (source)');
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
       });
@@ -83,7 +76,7 @@ export class MessageItem extends QWidget {
     }
     {
       const action = new QAction(menu);
-      action.setText('Copy ID');
+      action.setText(__('COPY_ID'));
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
       });
@@ -217,7 +210,7 @@ export class MessageItem extends QWidget {
   }
 
   private loadSystemMessage(message: Message) {
-    let content = MessageTypeText.get(message.type) || message.type;
+    let content = __(`MESSAGE_${message.type}`) || message.type;
     this.dateLabel.hide();
     this.contentLabel.setText('<i>&nbsp;</i>' + content);
     this.msgLayout.setDirection(Direction.LeftToRight);

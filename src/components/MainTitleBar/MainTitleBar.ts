@@ -8,6 +8,7 @@ import { DIconButton } from '../DIconButton/DIconButton';
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { __ } from 'i18n';
 
 
 export class MainTitleBar extends DTitleBar {
@@ -54,18 +55,18 @@ export class MainTitleBar extends DTitleBar {
 
     const searchEdit = new DLineEdit();
     searchEdit.setInlineStyle('width: 136px; height: 24px; margin-left: 4px; margin-right: 4px;');
-    searchEdit.setPlaceholderText('Search');
+    searchEdit.setPlaceholderText(__('SEARCH'));
 
     const pinBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/pin.png'),
       iconQSize: new QSize(24, 24),
-      tooltipText: 'Pinned Messages'
+      tooltipText: __('PINNED_MESSAGES')
     });
 
     const helpBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/help-circle.png'),
       iconQSize: new QSize(24, 24),
-      tooltipText: 'Help'
+      tooltipText: __('HELP')
     });
 
     layout.addWidget(iconLabel);

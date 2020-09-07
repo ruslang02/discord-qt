@@ -6,6 +6,7 @@ import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from '../UserButton/UserButton';
+import { __ } from 'i18n';
 
 const { debug } = createLogger('[MembersList]');
 export class MembersList extends QListWidget {
@@ -53,7 +54,7 @@ export class MembersList extends QListWidget {
     menu.addSeparator();
     {
       const item = new QAction();
-      item.setText('Copy ID');
+      item.setText(__('COPY_ID'));
       item.addEventListener('triggered', async () => {
         if (!this.active || !this.active.user) return;
         clipboard.setText(this.active.user.id, QClipboardMode.Clipboard);

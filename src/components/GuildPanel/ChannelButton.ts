@@ -6,6 +6,7 @@ import { app } from '../..';
 import { Events } from '../../structures/Events';
 import open from 'open';
 import { DColorButton, DColorButtonColor } from '../DColorButton/DColorButton';
+import { __ } from 'i18n';
 
 export class ChannelButton extends DChannelButton {
   private static Icons = {
@@ -17,7 +18,6 @@ export class ChannelButton extends DChannelButton {
   private chlabel = new QLabel(this);
   private clipboard = QApplication.clipboard();
   private channelMenu = new QMenu(this);
-  private isDestroyed = false;
   channel?: GuildChannel;
 
   constructor(parent?: any) {
@@ -37,14 +37,14 @@ export class ChannelButton extends DChannelButton {
         break;
       case 'voice':
         const msgBox = new QMessageBox(this);
-        msgBox.setText('Voice support is not implemented yet.\r\nOpen in the browser?');
+        msgBox.setText(__('VOICE_NOT_SUPPORTED'));
         msgBox.setWindowTitle('DiscordQt');
         msgBox.setProperty('icon', 4);
         const noBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
-        noBtn.setText('No')
+        noBtn.setText(__('NO_TEXT'));
         msgBox.addButton(noBtn, ButtonRole.NoRole);
         const yesBtn = new DColorButton(DColorButtonColor.BLURPLE);
-        yesBtn.setText('Yes')
+        yesBtn.setText(__('YES_TEXT'));
         msgBox.addButton(yesBtn, ButtonRole.YesRole);
         yesBtn.addEventListener('clicked', () => {
           open(`https://discord.com/channels/${channel.guild.id}/${channel.id}`);
@@ -80,7 +80,7 @@ export class ChannelButton extends DChannelButton {
     }
     // channelMenu.setInlineStyle('background: #18191c');
     const copyId = new QAction();
-    copyId.setText('Copy ID');
+    copyId.setText(__('COPY_ID'));
     copyId.addEventListener('triggered', () => {
       this.clipboard.setText(channel.id, QClipboardMode.Clipboard);
     });

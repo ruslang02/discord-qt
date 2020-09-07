@@ -6,6 +6,7 @@ import { app, MAX_QSIZE } from '../..';
 import { MarkdownStyles } from '../../structures/MarkdownStyles';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from 'i18n';
 
 const MD = markdownIt({
   html: false,
@@ -193,12 +194,12 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
       layout.setContentsMargins(16, 16, 16, 16);
       layout.setSpacing(12);
       const helperText = new QLabel(item);
-      helperText.setText('An invite to join a server');
+      helperText.setText(__('GUILD_PROFILE_JOIN_SERVER_BUTTON'));
       helperText.setObjectName('Helper');
       const mainLayout = new QBoxLayout(Direction.LeftToRight);
       const avatar = new QLabel(item);
       const nameLabel = new QLabel(item);
-      nameLabel.setText(`${invite.guild?.name || 'A server'} <span style='font-size: small; color: #72767d'>${invite.memberCount} Members</span>`);
+      nameLabel.setText(`${invite.guild?.name} <span style='font-size: small; color: #72767d'>${__('TOTAL_MEMBERS')}: ${invite.memberCount}</span>`);
       nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
       nameLabel.setObjectName('Name');
       mainLayout.addWidget(avatar);

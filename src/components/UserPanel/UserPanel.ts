@@ -1,16 +1,15 @@
-import { QWidget, QLabel, QSize, QPixmap, QBoxLayout, Direction, QPushButton, QCursor, CursorShape, QMenu, QAction, QIcon, ContextMenuPolicy, QApplication, QClipboardMode, WidgetEventTypes } from "@nodegui/nodegui";
-import path, { join } from 'path';
-
+import { ContextMenuPolicy, CursorShape, Direction, QAction, QApplication, QBoxLayout, QClipboardMode, QCursor, QIcon, QLabel, QMenu, QPixmap, QPushButton, QSize, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
 import { Client, Constants } from "discord.js";
+import { __ } from "i18n";
+import path, { join } from 'path';
+import { app, MAX_QSIZE } from "../..";
+import { DQConstants } from '../../patches/Constants';
 import { CustomStatus } from '../../structures/CustomStatus';
 import { Events } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { pictureWorker } from "../../utilities/PictureWorker";
-
-import { app, MAX_QSIZE } from "../..";
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DIconButton } from "../DIconButton/DIconButton";
-import { DQConstants } from '../../patches/Constants';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -34,7 +33,7 @@ export class UserPanel extends QWidget {
 
   bindEvents(client: Client) {
     const { Events } = Constants as DQConstants;
-    this.nameLabel.setText('Connecting...');
+    this.nameLabel.setText(__('CONNECTION_STATUS_CONNECTING'));
     this.discLabel.setText('#0000');
     client.on(Events.CLIENT_READY, () => {
       this.updateData();
@@ -53,14 +52,18 @@ export class UserPanel extends QWidget {
       this.updatePresence();
     });
   }
-
+  private copiedTimer?: NodeJS.Timer;
+  private copiedAmount = 0;
   private copyUserInfo() {
     const { clipboard, discLabel, statusText } = this;
+    if (this.copiedTimer) clearTimeout(this.copiedTimer);
+    this.copiedAmount++;
     clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
-    [discLabel, statusText].forEach(w => w.setText('Copied!'));
-    setTimeout(() => {
+    [discLabel, statusText].forEach(w => w.setText(__('ACCOUNT_USERNAME_COPY_SUCCESS_' + Math.min(this.copiedAmount, 11))));
+    this.copiedTimer = setTimeout(() => {
       this.updateData();
       this.updatePresence();
+      this.copiedAmount = 0;
     }, 3000);
   }
 
@@ -80,7 +83,7 @@ export class UserPanel extends QWidget {
     const layInfo = new QBoxLayout(Direction.TopToBottom);
     layInfo.setSpacing(0);
     layInfo.setContentsMargins(8, 0, 0, 0);
-    nameLabel.setText('No account');
+    nameLabel.setText(__('NO_ACCOUNT'));
     nameLabel.setObjectName('NameLabel');
 
     const layStat = new QBoxLayout(Direction.LeftToRight);
@@ -108,6 +111,7 @@ export class UserPanel extends QWidget {
 
     const statusMenu = new QMenu(this);
     statusMenu.setObjectName('StatusMenu');
+    // TODO: Localization
     ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach(text => {
       const action = new QAction();
       action.addEventListener('triggered', async () => {
@@ -140,7 +144,7 @@ export class UserPanel extends QWidget {
     const iBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/invite.png'),
       iconQSize: new QSize(20, 20),
-      tooltipText: 'Accept Invite Code'
+      tooltipText: __('INSTANT_INVITE_INVITE_CODE')
     });
     iBtn.setFixedSize(32, 32);
     iBtn.addEventListener('clicked', () => app.window.dialogs.acceptInvite.show());
@@ -148,7 +152,7 @@ export class UserPanel extends QWidget {
     const setBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/cog.png'),
       iconQSize: new QSize(20, 20),
-      tooltipText: 'User Settings'
+      tooltipText: __('USER_SETTINGS')
     });
     setBtn.setFixedSize(32, 32);
     setBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'settings'));
@@ -163,7 +167,7 @@ export class UserPanel extends QWidget {
     const { nameLabel, discLabel, statusBtn } = this;
     const { client } = app;
     if (!client.user) {
-      nameLabel.setText('No account');
+      nameLabel.setText(__('NO_ACCOUNT'));
       discLabel.setText('#0000');
       statusBtn.setInlineStyle('');
       return;

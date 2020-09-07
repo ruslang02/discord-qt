@@ -4,6 +4,8 @@ import fs, { existsSync } from 'fs';
 
 const { mkdir, readFile, writeFile } = fs.promises;
 export class Config extends IConfig {
+  locale = "ru-RU";
+  
   constructor(
     private file: string,
   ) {
@@ -14,7 +16,7 @@ export class Config extends IConfig {
     const { file } = this;
     await mkdir(dirname(file), {recursive: true});
     try {
-      const {accounts, roundifyAvatars, fastLaunch, debug, enableAvatars, processMarkDown, recentEmojis, theme} = 
+      const {accounts, roundifyAvatars, fastLaunch, debug, enableAvatars, processMarkDown, recentEmojis, theme, locale} = 
         JSON.parse(await readFile(file, 'utf8'));
       const appConfig = {
         accounts: accounts || [],
@@ -24,6 +26,7 @@ export class Config extends IConfig {
         enableAvatars: enableAvatars ?? true,
         processMarkDown: processMarkDown ?? true,
         theme: theme ?? 'dark',
+        locale: locale ?? 'en',
         recentEmojis: recentEmojis ?? [],
       } as IConfig;
       Object.assign(this, appConfig);
@@ -40,6 +43,7 @@ export class Config extends IConfig {
         enableAvatars: true,
         processMarkDown: true,
         theme: 'dark',
+        locale: 'en',
         recentEmojis: [],
       });
     }

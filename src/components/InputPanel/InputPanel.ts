@@ -10,6 +10,7 @@ import { pictureWorker } from '../../utilities/PictureWorker';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
 import { Message } from 'discord.js';
 import { MessageEmbedOptions } from 'discord.js';
+import { __ } from "i18n";
 
 
 const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
@@ -27,18 +28,18 @@ export class InputPanel extends QWidget {
   private emojiBtn = new DIconButton({
     iconPath: path.join(__dirname, './assets/icons/emoticon.png'),
     iconQSize: new QSize(24, 24),
-    tooltipText: 'Emoji'
+    tooltipText: __('EMOJI')
   });
   private emojiPicker = new EmojiPicker(this, Direction.BottomToTop);
   private files = new Set<string>();
 
   private p0 = new QPoint(0, 0);
-  private dialog = new QFileDialog(this, 'Select an attachment to add');
+  private dialog = new QFileDialog(this, __('UPLOAD_A_MEDIA_FILE'));
 
   private addBtn = new DIconButton({
     iconPath: path.join(__dirname, './assets/icons/plus-circle.png'),
     iconQSize: new QSize(24, 24),
-    tooltipText: 'Embed files'
+    tooltipText: __('UPLOAD_A_MEDIA_FILE')
   });
 
   private quoteEmbed?: MessageEmbedOptions;
@@ -66,10 +67,12 @@ export class InputPanel extends QWidget {
         this.addBtn.setEnabled(canEmbed);
       } else this.addBtn.setEnabled(true);
       input.setPlaceholderText(
-        `Message ${channel.type === 'dm' ?
-          `@${(<DMChannel>channel).recipient.username}` :
-          `#${(<TextChannel>channel).name}`
-        }`
+        __('TEXTAREA_PLACEHOLDER', {
+          channel: channel.type === 'dm' ?
+            `@${(<DMChannel>channel).recipient.username}` :
+            `#${(<TextChannel>channel).name}`
+        }
+        )
       );
 
       input.setFocus(FocusReason.TabFocusReason);
@@ -79,7 +82,7 @@ export class InputPanel extends QWidget {
       const { Events: DEvents } = Constants;
       client.on(DEvents.TYPING_START, (typingChannel: DMChannel | Channel, user) => {
         if (this.channel?.id !== typingChannel.id) return;
-        typingLabel.setText(`<b>${user.username}</b> is typing...`); // TODO: Multiple, guild typing indicators
+        typingLabel.setText(__('ONE_USER_TYPING', { a: user.username || '' })); // TODO: Multiple, guild typing indicators
         setTimeout(() => typingLabel.clear(), 2000);
       });
     });
@@ -115,7 +118,7 @@ export class InputPanel extends QWidget {
       const attach = new QLabel(attachPanel);
       attach.setFixedSize(120, 60);
       attach.setAlignment(AlignmentFlag.AlignCenter);
-      attach.setProperty('toolTip', 'Right-click to remove');
+      attach.setProperty('toolTip', __('RIGHT_CLICK_REMOVE'));
       attach.addEventListener(WidgetEventTypes.MouseButtonPress, e => {
         const event = new QMouseEvent(e as NativeElement);
         if ((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
@@ -130,7 +133,7 @@ export class InputPanel extends QWidget {
       const attach = new QLabel(attachPanel);
       attach.setFixedSize(120, 60);
       attach.setAlignment(AlignmentFlag.AlignCenter);
-      attach.setProperty('toolTip', 'Right-click to remove');
+      attach.setProperty('toolTip', __('RIGHT_CLICK_REMOVE'));
       function loadDefault() {
         attach.setPixmap(new QPixmap(join(__dirname, './assets/icons/file.png')));
       }
@@ -268,7 +271,7 @@ export class InputPanel extends QWidget {
       const msgOptions = {
         files: [...this.files.values()].map(attachment => ({ attachment, name: basename(attachment) }))
       };
-      statusLabel.setText('Sending...');
+      statusLabel.setText(__('TWO_FA_ENTER_SMS_TOKEN_SENDING'));
       statusLabel.setInlineStyle('color: #dcddde');
       try {
         if (message.startsWith('/'))

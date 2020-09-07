@@ -8,6 +8,7 @@ import { app, MAX_QSIZE } from '../..';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { Events } from '../../structures/Events';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from "i18n";
 
 const buttons = new WeakMap<User | GuildMember, UserButton>();
 setTimeout(() => {
@@ -112,16 +113,16 @@ export class UserButton extends DChannelButton {
 
       switch (type) {
         case 'LISTENING':
-          status = `Listening to <b>${name}</b>`;
+          status = __('LISTENING_TO', { name });
           break;
         case 'PLAYING':
-          status = `Playing <b>${name}</b>`;
+          status = __('PLAYING_GAME', { game: name });
           break;
         case 'STREAMING':
-          status = `Streaming <b>${name}</b>`;
+          status = __('STREAMING', { name });
           break;
         case 'WATCHING':
-          status = `Watching <b>${name}</b>`;
+          status = __('WATCHING', { name });
           break;
         case 'CUSTOM_STATUS':
           status = state || '';

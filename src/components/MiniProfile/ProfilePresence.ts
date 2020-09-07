@@ -2,6 +2,7 @@ import { QWidget, QLabel, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegu
 import { Presence } from 'discord.js';
 import { MAX_QSIZE } from '../..';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { __ } from 'i18n';
 
 export class ProfilePresence extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -55,16 +56,16 @@ export class ProfilePresence extends QWidget {
     }
     switch (activity.type) {
       case 'LISTENING':
-        header.setText(`Listening to ${activity.name}`);
+        header.setText(__('USER_ACTIVITY_HEADER_LISTENING', { name: activity.name }));
         break;
       case 'PLAYING':
-        header.setText('Playing a game');
+        header.setText(__('USER_ACTIVITY_HEADER_PLAYING'));
         break;
       case 'WATCHING':
-        header.setText(`Watching ${activity.name}`);
+        header.setText(__('USER_ACTIVITY_HEADER_WATCHING', { name: activity.name }));
         break;
       case 'STREAMING':
-        header.setText(`Streaming ${activity.name}`);
+        header.setText(__('USER_ACTIVITY_HEADER_LIVE_ON_PLATFORM', { platform: activity.name }));
         break;
     }
     if (activity.type === 'PLAYING') {

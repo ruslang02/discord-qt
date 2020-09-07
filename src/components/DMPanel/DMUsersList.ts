@@ -1,10 +1,9 @@
-import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint, ScrollBarPolicy, QListWidget, QListWidgetItem, QSize, ItemFlag, QScrollBar, QVariant, MatchFlag } from "@nodegui/nodegui";
+import { ItemFlag, MatchFlag, QListWidget, QListWidgetItem, QPoint, QSize, ScrollBarPolicy, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { Client, Constants, DMChannel, SnowflakeUtil } from "discord.js";
 import { app } from "../..";
-import { Client, DMChannel, SnowflakeUtil, Constants } from "discord.js";
-import { UserButton } from "../UserButton/UserButton";
-import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
-import { ScrollMode, SelectionMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
+import { ViewOptions } from '../../views/ViewOptions';
+import { UserButton } from "../UserButton/UserButton";
 
 export class DMUsersList extends QListWidget {
   channels = new Map<DMChannel, UserButton>();
@@ -51,16 +50,6 @@ export class DMUsersList extends QListWidget {
     });
   }
 
-  private addDMLabel() {
-    const dmLabel = new QLabel(this);
-    const dmItem = new QListWidgetItem();
-    dmLabel.setText('Direct Messages');
-    dmLabel.setObjectName('DMLabel');
-    dmItem.setSizeHint(new QSize(0, 30));
-    dmItem.setFlags(0)
-    this.addItem(dmItem);
-    this.setItemWidget(dmItem, dmLabel);
-  }
 
   private p0 = new QPoint(0, 0);
   private isLoading = false;

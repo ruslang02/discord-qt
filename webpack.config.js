@@ -113,7 +113,10 @@ module.exports = (_env, argv) => {
         filename: 'themes/[name].css',
       }),
       new CopyPlugin({
-        patterns: [{ from: 'assets', to: 'assets' }]
+        patterns: [
+          { from: 'assets', to: 'assets' },
+          { from: 'locales', to: 'locales'}
+        ]
       })
     ],
     stats: {

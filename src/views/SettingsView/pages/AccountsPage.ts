@@ -13,9 +13,10 @@ import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 import { clientOptions } from '../../../structures/ClientOptions';
 import { Client } from 'discord.js';
 import { MarkdownStyles } from '../../../structures/MarkdownStyles';
+import { __ } from "i18n";
 
 export class AccountsPage extends Page {
-  title = "Accounts";
+  title = __('ACCOUNTS');
   private accountsSection = new QWidget();
   private accountsLayout = new QBoxLayout(Direction.TopToBottom);
 
@@ -51,7 +52,7 @@ export class AccountsPage extends Page {
     noAcLbl.setAlignment(AlignmentFlag.AlignTop + AlignmentFlag.AlignHCenter);
     noAcLbl.setObjectName('TextLabel');
     noAcLbl.setInlineStyle('font-size: 16px; color: #72767d;');
-    noAcLbl.setText('No accounts configured. Wumpus is awaiting your instructions.');
+    noAcLbl.setText(__('NO_ACCOUNTS_PLACEHOLDER'));
     this.checkEmpty();
     app.config.accounts?.forEach(this.processAccount.bind(this));
   }
@@ -77,7 +78,7 @@ export class AccountsPage extends Page {
     uname.setObjectName('UserName');
     uname.setText(`<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`);
     const deleteBtn = new DColorButton(DColorButtonColor.RED);
-    deleteBtn.setText('Delete');
+    deleteBtn.setText(__('DELETE'));
     deleteBtn.setMinimumSize(0, 32);
     deleteBtn.addEventListener('clicked', () => {
       app.config.accounts = app.config.accounts?.filter((v) => v !== account);
@@ -87,7 +88,7 @@ export class AccountsPage extends Page {
       this.checkEmpty();
     })
     const loginBtn = new DColorButton();
-    loginBtn.setText('Login');
+    loginBtn.setText(__('LOGIN'));
     loginBtn.setMinimumSize(0, 32);
     let isLoggingIn = false;
     loginBtn.addEventListener('clicked', async () => {
@@ -103,7 +104,7 @@ export class AccountsPage extends Page {
     infoLayout.addWidget(deleteBtn);
     infoLayout.addWidget(loginBtn);
     const checkbox = new SettingsCheckBox(accWidget);
-    checkbox.setText('Login automatically');
+    checkbox.setText(__('LOGIN_AUTO'));
     checkbox.setChecked(account.autoLogin);
     checkbox.layout.setContentsMargins(20, 15, 20, 15);
     this.checkboxes.push(checkbox);
@@ -140,13 +141,15 @@ export class AccountsPage extends Page {
     addLayout.setSpacing(10);
     const helpLabel = new QLabel();
     helpLabel.setObjectName('TextLabel');
-    helpLabel.setText(MarkdownStyles + 'In order to login via this client you need to retrieve an Access Token. You can obtain one using <a href="https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs">this</a> guide.');
+    helpLabel.setText(MarkdownStyles + __('ACCOUNTS_PAGE_HELPER', {
+      guideURL: 'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs'
+    }));
     helpLabel.setWordWrap(true);
     helpLabel.setOpenExternalLinks(true);
     const addTokenField = new DLineEdit();
     addTokenField.setPlaceholderText('Nvgd6sfgs...');
     const addButton = new DColorButton();
-    addButton.setText('Add account');
+    addButton.setText(__('ADD_ACCOUNT'));
     addButton.setMinimumSize(0, 32);
     let isLoggingIn = false;
     addButton.addEventListener('clicked', async () => {
@@ -159,10 +162,10 @@ export class AccountsPage extends Page {
         await client.login(token);
         if (client.user?.bot) {
           await client.destroy();
-          throw new Error('Bot accounts are currently not supported.');
+          throw new Error(__('BOT_ACCOUNT_ERROR'));
         }
         const account = {
-          username: client.user?.username || 'Unknown User',
+          username: client.user?.username || __('UNKNOWN_USER'),
           discriminator: client.user?.discriminator || '0000',
           avatar: client.user?.avatarURL({format: 'png', size: 256}) || client.user?.defaultAvatarURL,
           token,

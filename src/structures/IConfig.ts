@@ -1,5 +1,5 @@
-import { Account } from './Account';
 import { Snowflake } from 'discord.js';
+import { Account } from './Account';
 
 export type RecentEmoji = [Snowflake, number];
 export abstract class IConfig {
@@ -7,6 +7,7 @@ export abstract class IConfig {
   roundifyAvatars?: boolean;
   fastLaunch?: boolean;
   debug?: boolean;
+  locale?: string;
   processMarkDown?: boolean;
   enableAvatars?: boolean;
   theme?: string;

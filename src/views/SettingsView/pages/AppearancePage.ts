@@ -6,9 +6,10 @@ import { SettingsCheckBox } from '../SettingsCheckBox';
 import { app } from '../../..';
 import { Events } from '../../../structures/Events';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
+import { __ } from 'i18n';
 
 export class AppearancePage extends Page {
-  title = 'Appearance';
+  title = __('APPEARANCE');
 
   private header = new QLabel();
   private prmdcx = new SettingsCheckBox(this); // Process MD checkbox
@@ -28,10 +29,10 @@ export class AppearancePage extends Page {
     header.setText(title);
     layout.addWidget(header);
     [
-      [prmdcx, 'processMarkDown', 'Process Cool Text™ (Markdown)'],
-      [enavcx, 'enableAvatars', 'Enable user avatars'],
-      [rdavcx, 'roundifyAvatars', 'Roundify user avatars'],
-      [dbgcx, 'debug', '[dev] Debug mode']
+      [prmdcx, 'processMarkDown', __('PROCESS_MARKDOWN_DESCRIPTION')],
+      [enavcx, 'enableAvatars', __('ENABLE_AVATARS_DESCRIPTION')],
+      [rdavcx, 'roundifyAvatars', __('ROUNDIFY_AVATARS_DESCRIPTION')],
+      [dbgcx, 'debug', __('DEBUG_MODE_DESCRIPTION')]
     ] // @ts-ignore
       .forEach(([checkbox, id, text]: [SettingsCheckBox, string, string]) => {
         checkbox.setText(text);
@@ -46,7 +47,7 @@ export class AppearancePage extends Page {
       });
     const themeLabel = new QLabel(this);
     themeLabel.setObjectName('Header3');
-    themeLabel.setText('\r\nTheme');
+    themeLabel.setText('\r\n' + __('THEME'));
     readdir('./dist/themes', {withFileTypes: true}, (err, files) => {
       if (!err) {
         files.forEach(file => {

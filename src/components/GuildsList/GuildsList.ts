@@ -5,6 +5,7 @@ import { app, MAX_QSIZE } from "../..";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { GuildButton } from './GuildButton';
+import { __ } from "i18n";
 
 
 export class GuildsList extends QListWidget {
@@ -71,7 +72,7 @@ export class GuildsList extends QListWidget {
     mpBtn.setIconSize(new QSize(28, 28));
     mpBtn.setFixedSize(72, 68);
     mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    mpBtn.setProperty('toolTip', 'Direct Messages');
+    mpBtn.setProperty('toolTip', __('DIRECT_MESSAGES'));
     mpBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm'));
     mpBtn.setInlineStyle('margin-top: 12px;');
     mpBtnItem.setSizeHint(mpBtn.size());

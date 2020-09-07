@@ -10,6 +10,7 @@ import { DIconButton } from '../../components/DIconButton/DIconButton';
 import open from 'open';
 import { AppearancePage } from './pages/AppearancePage';
 import { Events } from "../../structures/Events";
+import { __ } from "i18n";
 
 export type Element = Page | Divider | CategoryHeader | Footer;
 
@@ -63,10 +64,10 @@ export class SettingsView extends QWidget {
   private elements: Element[] = [
     new AccountsPage(),
     new Divider(),
-    new CategoryHeader('User Settings'),
+    new CategoryHeader(__('USER_SETTINGS')),
     new MyAccountPage(),
     new Divider(),
-    new CategoryHeader('App Settings'),
+    new CategoryHeader(__('APP_SETTINGS')),
     new AppearancePage(),
     new Divider(),
     new Footer(),

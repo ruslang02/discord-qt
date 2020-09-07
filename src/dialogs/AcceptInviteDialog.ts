@@ -5,6 +5,7 @@ import { app } from '..';
 import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';
 import { DTextEdit } from '../components/DTextEdit/DTextEdit';
+import { __ } from 'i18n';
 
 export class AcceptInviteDialog extends Dialog {
   private urlLabel = new QLabel(this);
@@ -20,11 +21,11 @@ export class AcceptInviteDialog extends Dialog {
 
   private init() {
     const { header, urlLabel, urlInput, errMsg } = this;
-    header.setText('Accept server invite');
+    header.setText(__('INSTANT_INVITE_ACCEPT'));
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
-    urlLabel.setText('Invite link');
+    urlLabel.setText(__('FORM_LABEL_INVITE_LINK'));
     urlLabel.setObjectName('Header3');
     urlInput.setPlaceholderText('https://discord.gg/...');
     layout.addWidget(urlLabel);
@@ -41,11 +42,11 @@ export class AcceptInviteDialog extends Dialog {
     footLayout.addStretch(1);
     footLayout.setContentsMargins(16, 16, 16, 16);
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
-    saveBtn.setText('Accept');
+    saveBtn.setText(__('OKAY'));
     saveBtn.setFixedSize(96, 38);
     saveBtn.addEventListener('clicked', () => this.checkInvite());
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
-    cancelBtn.setText('Cancel');
+    cancelBtn.setText(__('CANCEL'));
     cancelBtn.setFixedSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());
     footLayout.addWidget(cancelBtn);
@@ -65,7 +66,7 @@ export class AcceptInviteDialog extends Dialog {
     try {
       await app.client.user?.acceptInvite(code);
     } catch (e) {
-      this.errMsg.setText('This invite link is not valid.');
+      this.errMsg.setText(__('INVALID_INVITE_LINK_ERROR'));
       this.errMsg.show();
       return;
     }
