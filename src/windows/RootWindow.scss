@@ -36,6 +36,10 @@ QToolTip {
   padding: 1px 2px;
 }
 
+QLabel {
+  color: $text-normal;
+}
+
 QMenu {
   background: $background-floating;
   border-radius: 4px;

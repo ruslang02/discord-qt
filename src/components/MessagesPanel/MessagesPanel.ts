@@ -2,7 +2,6 @@ import { AlignmentFlag, Direction, QBoxLayout, QPoint, QScrollArea, QWidget, Scr
 import { Client, DMChannel, Message, Snowflake, TextChannel } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
 import { Events } from "../../structures/Events";
-import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { MessageItem } from "./MessageItem";
@@ -14,8 +13,8 @@ export class MessagesPanel extends QScrollArea {
   private rootControls = new QBoxLayout(Direction.BottomToTop);
   private root = new QWidget();
 
-  constructor() {
-    super();
+  constructor(parent?: any) {
+    super(parent);
     this.setObjectName('MessagesPanel');
     this.setAlignment(AlignmentFlag.AlignBottom + AlignmentFlag.AlignHCenter);
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);

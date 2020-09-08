@@ -21,6 +21,7 @@
   "MESSAGE_RECIPIENT_REMOVE": "был удалён из группового чата.",
   "MESSAGE_CALL": "позвонил.",
   "MESSAGE_PINS_ADD": "закрепил сообщение в этом канале.",
+  "LANGUAGE_RESTART_REQUIRED": "Вам необходимо перезапустить приложение, чтобы изменения языка вошли в силу.",
 
   "SEARCH_FOR_EMOJI": "Найдите идеальный эмодзи",
   "CONNECTION_STATUS_CONNECTING": "Подключение",
@@ -93,5 +94,6 @@
   "QUOTE": "Цитировать",
   "COPY_TEXT": "Скопировать текст",
   "GUILD_PROFILE_JOIN_SERVER_BUTTON": "Присоединиться к серверу",
-  "DM_SEARCH_PLACEHOLDER": "Найти или начать беседу"
+  "DM_SEARCH_PLACEHOLDER": "Найти или начать беседу",
+  "LANGUAGE": "Язык"
 }

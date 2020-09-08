@@ -85,7 +85,6 @@ export class MyAccountPage extends Page {
     twoFAHelper.setText(__('TWO_FA_UNAVAILABLE', {
       tfaURL: 'https://discord.com/channels/@me'
     }));
-    twoFAHelper.setObjectName('TextLabel');
 
     layout.addWidget(header);
     layout.addWidget(card, 0);

@@ -49,7 +49,6 @@ export class AccountsPage extends Page {
     this.layout.addWidget(this.accountsSection, 1);
     this.checkboxes.length = 0;
     noAcLbl.setAlignment(AlignmentFlag.AlignTop + AlignmentFlag.AlignHCenter);
-    noAcLbl.setObjectName('TextLabel');
     noAcLbl.setInlineStyle('font-size: 16px; color: #72767d;');
     noAcLbl.setText(__('NO_ACCOUNTS_PLACEHOLDER'));
     this.checkEmpty();
@@ -139,7 +138,6 @@ export class AccountsPage extends Page {
     addLayout.setContentsMargins(0, 20, 0, 20);
     addLayout.setSpacing(10);
     const helpLabel = new DLabel();
-    helpLabel.setObjectName('TextLabel');
     helpLabel.setText(__('ACCOUNTS_PAGE_HELPER', {
       guideURL: 'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs'
     }));

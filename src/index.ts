@@ -15,19 +15,13 @@ i18n.configure({
   directory: join(__dirname, 'locales'),
   locales: ['en-US', 'ru-RU'],
   defaultLocale: "en-US",
- 
-  // setting of log level DEBUG - default to require('debug')('i18n:debug')
-  logDebugFn: function (msg) {},
- 
-  // setting of log level WARN - default to require('debug')('i18n:warn')
-  logWarnFn: function (msg) {},
- 
-  // setting of log level ERROR - default to require('debug')('i18n:error')
+
+  logDebugFn: function () { },
+  logWarnFn: function () { },
   logErrorFn: function (msg) {
     console.log('error', msg)
   },
-
-  // used to alter the behaviour of missing keys
+  // @ts-ignore
   missingKeyFn: function (locale, value) {
     console.error(`Translation missing for word "${value}" in locale "${locale}".`);
     return value;
@@ -50,24 +44,23 @@ class Application extends EventEmitter {
   constructor() {
     super();
     this.setMaxListeners(128);
+    this.application.setQuitOnLastWindowClosed(false);
     (global as any).config = this.config;
   }
 
   public async start() {
-    const { application, config } = this;
-    application.setQuitOnLastWindowClosed(false);
+    const { application } = this;
     await this.loadFonts();
+    this.config = new Config(CONFIG_PATH);
+    await this.config.load();
+    i18n.setLocale(this.config.locale as string);
     this.window = new RootWindow();
     this.window.show();
     this.window.addEventListener(WidgetEventTypes.Close, async () => {
       console.log('Bye.');
-      if (app.client) {
-        await app.client.destroy();
-      }
+      if (app.client) app.client.destroy();
       application.quit();
     })
-    await config.load();
-    i18n.setLocale(config.locale);
     this.emit(Events.READY);
   }
 

@@ -21,6 +21,7 @@
   "MESSAGE_RECIPIENT_REMOVE": "was removed from this group DM.",
   "MESSAGE_CALL": "made a call.",
   "MESSAGE_PINS_ADD": "pinned a message in this channel.",
+  "LANGUAGE_RESTART_REQUIRED": "You need to restart the app to apply language changes.",
 
   "SEARCH_FOR_EMOJI": "Find the perfect emoji",
   "CONNECTION_STATUS_CONNECTING": "Connecting",
@@ -93,5 +94,6 @@
   "QUOTE": "Quote",
   "COPY_TEXT": "Copy Text",
   "GUILD_PROFILE_JOIN_SERVER_BUTTON": "Join Server",
-  "DM_SEARCH_PLACEHOLDER": "Find or start a conversation"
+  "DM_SEARCH_PLACEHOLDER": "Find or start a conversation",
+  "LANGUAGE": "Language"
 }

@@ -85,8 +85,7 @@ export async function processEmojis(content: string): Promise<string> {
       const emojiPath = await resolveEmoji({ emoji_id: id, emoji_name: name });
       if (!emojiPath) continue;
       // @ts-ignore
-      const url = app.client.rest.cdn.Emoji(id, format);
-      const uri = new URL(url);
+      const uri = new URL(app.client.rest.cdn.Emoji(id, format));
       uri.searchParams.append('emojiname', name);
 
       const pix = new QPixmap(emojiPath);
