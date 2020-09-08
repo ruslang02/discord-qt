@@ -92,5 +92,6 @@
   "HELP": "Помощь",
   "QUOTE": "Цитировать",
   "COPY_TEXT": "Скопировать текст",
-  "GUILD_PROFILE_JOIN_SERVER_BUTTON": "Присоединиться к серверу"
+  "GUILD_PROFILE_JOIN_SERVER_BUTTON": "Присоединиться к серверу",
+  "DM_SEARCH_PLACEHOLDER": "Найти или начать беседу"
 }

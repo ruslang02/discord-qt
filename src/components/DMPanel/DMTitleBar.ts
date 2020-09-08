@@ -10,7 +10,7 @@ export class DMTitleBar extends DTitleBar {
     super();
     this.setProperty('type', 'search');
     this.controls.setContentsMargins(10, 10, 10, 10);
-    this.filterInput.setPlaceholderText(__('ACTIVITY_FEED_SHARE_MODAL_SEARCH_PLACEHOLDER'));
+    this.filterInput.setPlaceholderText(__('DM_SEARCH_PLACEHOLDER'));
     this.filterInput.addEventListener('textEdited', (text) => {
       usersList.filter(text);
     });
