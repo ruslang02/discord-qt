@@ -7,14 +7,14 @@
   "ACCOUNTS": "Accounts",
   "NO_ACCOUNTS_PLACEHOLDER": "No accounts connected. Wumpus is waiting for your instructions.",
   "LOGIN_AUTO": "Login on launch",
-  "ACCOUNTS_PAGE_HELPER": "In order to connect your account you need to obtain your account's authentication token, more information <a href='{{guideURL}}'>here</a>.",
+  "ACCOUNTS_PAGE_HELPER": "In order to connect your account you need to obtain your account's authentication token, more information <a href='{{{guideURL}}}'>here</a>.",
   "ADD_ACCOUNT": "Add account",
   "BOT_ACCOUNT_ERROR": "Bot accounts are currently not supported.",
   "PROCESS_MARKDOWN_DESCRIPTION": "Enable processing of <u><b>Fancy</b> Messages</u>™ (MarkDown)",
   "ENABLE_AVATARS_DESCRIPTION": "Enable displaying of user avatars",
   "ROUNDIFY_AVATARS_DESCRIPTION": "Enable rounding of user avatars",
   "DEBUG_MODE_DESCRIPTION": "[dev] Debug mode",
-  "TWO_FA_UNAVAILABLE": "This app can not manage your two-factor authentication settings, however the <a href='{{tfaURL}}'>official app</a> can do it.",
+  "TWO_FA_UNAVAILABLE": "This app can not manage your two-factor authentication settings, however the <a href='{{{tfaURL}}}'>official app</a> can do it.",
   "VOICE_NOT_SUPPORTED": "Voice support is not implemented yet. Open in the browser instead?",
   "MESSAGE_GUILD_MEMBER_JOIN": "joined the server.",
   "MESSAGE_RECIPIENT_ADD": "was added to this group DM.",
@@ -95,5 +95,6 @@
   "COPY_TEXT": "Copy Text",
   "GUILD_PROFILE_JOIN_SERVER_BUTTON": "Join Server",
   "DM_SEARCH_PLACEHOLDER": "Find or start a conversation",
-  "LANGUAGE": "Language"
+  "LANGUAGE": "Language",
+  "COPY_MESSAGE_LINK": "Copy Message Link"
 }

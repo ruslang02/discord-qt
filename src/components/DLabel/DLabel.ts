@@ -3,6 +3,7 @@ import { TextChannel } from "discord.js";
 import { app } from "../..";
 import { Events } from "../../structures/Events";
 import { MarkdownStyles } from "../../structures/MarkdownStyles";
+import open from "open";
 
 export class DLabel extends QLabel {
   constructor(parent?: any) {
@@ -26,6 +27,19 @@ export class DLabel extends QLabel {
       });
     }
     else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
+    else if (
+      /discord(app)?\.com/g.test(url.hostname) &&
+      url.pathname.startsWith('/channels') &&
+      !url.pathname.includes('settings')
+    ) {
+      const [path, guildId, channelId, messageId] = url.pathname.slice(1).split('/');
+      console.log({path, guildId, channelId, messageId});
+      app.emit(Events.SWITCH_VIEW, guildId === '@me' ? 'dm' : 'guild', {
+        dm: app.client.channels.resolve(channelId),
+        guild: guildId === "@me" ? undefined : app.client.guilds.resolve(guildId),
+        channel: app.client.channels.resolve(channelId)
+      });
+    }
     else open(link);
   }
 

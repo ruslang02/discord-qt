@@ -83,7 +83,7 @@ export class MyAccountPage extends Page {
 
     const twoFAHelper = new DLabel(this);
     twoFAHelper.setText(__('TWO_FA_UNAVAILABLE', {
-      tfaURL: 'https://discord.com/channels/@me'
+      tfaURL: 'https://discord.com/channels/@me/settings'
     }));
 
     layout.addWidget(header);

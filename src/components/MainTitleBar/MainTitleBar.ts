@@ -25,8 +25,8 @@ export class MainTitleBar extends DTitleBar {
     this.initComponent();
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
-      if (options?.dm) this.handleDMOpen(options.dm);
-      else if (options?.channel) this.handleGuildOpen(options.channel)
+      if (view === 'dm' && options?.dm) this.handleDMOpen(options.dm);
+      else if (view === 'guild' && options?.channel) this.handleGuildOpen(options.channel)
       else {
         this.channel = undefined;
         this.handleClear();

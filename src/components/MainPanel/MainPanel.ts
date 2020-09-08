@@ -1,7 +1,7 @@
-import { QBoxLayout, Direction, QWidget, QDropEvent, WidgetEventTypes, NativeElement, QUrl, QStackedWidget } from "@nodegui/nodegui";
-import { MessagesPanel } from "../MessagesPanel/MessagesPanel";
+import { Direction, QBoxLayout, QWidget } from "@nodegui/nodegui";
 import { InputPanel } from "../InputPanel/InputPanel";
 import { MembersList } from '../MembersList/MembersList';
+import { MessagesPanel } from "../MessagesPanel/MessagesPanel";
 
 export class MainPanel extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);

@@ -72,6 +72,14 @@ export class MessageItem extends QWidget {
     }
     {
       const action = new QAction(menu);
+      action.setText(__('COPY_MESSAGE_LINK'));
+      action.addEventListener('triggered', () => {
+        clipboard.setText(`https://discord.com/channels/${this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id}/${this.message?.channel.id}/${this.message?.id}`, QClipboardMode.Clipboard);
+      });
+      menu.addAction(action);
+    }
+    {
+      const action = new QAction(menu);
       action.setText(__('COPY_ID'));
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
