@@ -1,16 +1,12 @@
-import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, TextInteractionFlag, WidgetEventTypes, QGridLayout } from "@nodegui/nodegui";
-import { Collection, Message, MessageAttachment, Snowflake } from "discord.js";
-import open from 'open';
-import { URL } from 'url';
-import { app, MAX_QSIZE } from '../..';
+import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
+import { Message, Snowflake } from "discord.js";
+import { __ } from "i18n";
+import { app } from '../..';
 import { Events } from '../../structures/Events';
 import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
-import { processEmojis, processMarkdown, processMentions, processEmbeds, processAttachments, processInvites } from './MessageUtilities';
-import { MessageType } from 'discord.js';
-import { MarkdownStyles } from '../../structures/MarkdownStyles';
-import { TextChannel } from 'discord.js';
-import { __ } from "i18n";
+import { DLabel } from "../DLabel/DLabel";
+import { processAttachments, processEmbeds, processEmojis, processInvites, processMarkdown, processMentions } from './MessageUtilities';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 
@@ -18,8 +14,8 @@ export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
   private avatar = new QLabel(this);
   private userNameLabel = new QLabel(this);
-  private dateLabel = new QLabel(this);
-  private contentLabel = new QLabel(this);
+  private dateLabel = new DLabel(this);
+  private contentLabel = new DLabel(this);
 
   private msgLayout = new QBoxLayout(Direction.TopToBottom);
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
@@ -119,32 +115,8 @@ export class MessageItem extends QWidget {
     dateLabel.setObjectName('DateLabel');
 
     contentLabel.setObjectName('Content');
-    contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    contentLabel.setWordWrap(true);
-    contentLabel.setCursor(CursorShape.IBeamCursor);
     contentLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
-    contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
-    contentLabel.addEventListener('linkActivated', async (link) => {
-      const url = new URL(link);
-      if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname);
-      else if (url.protocol === 'dq-channel:') {
-        const channel = await app.client.channels.fetch(url.hostname) as TextChannel;
-        app.emit(Events.SWITCH_VIEW, 'guild', {
-          guild: channel.guild,
-          channel
-        });
-      }
-      else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
-      else open(link);
-    })
-    contentLabel.addEventListener('linkHovered', (link: string) => {
-      try {
-        const uri = new URL(link);
-        const name = uri.searchParams.get('emojiname');
-        if (name) contentLabel.setProperty('toolTip', `:${name}:`);
-      } catch (e) { }
-    });
 
     infoLayout.addWidget(userNameLabel);
     infoLayout.addWidget(dateLabel, 1);
@@ -199,7 +171,7 @@ export class MessageItem extends QWidget {
         .trim();
       content = await processMentions(content, message);
       content = await processEmojis(content);
-      contentLabel.setText(MarkdownStyles + content);
+      contentLabel.setText(content);
     }
     if (token?.cancelled) return;
     [
@@ -207,6 +179,7 @@ export class MessageItem extends QWidget {
       ...processEmbeds(message),
       ...await processInvites(message)
     ].forEach(w => this.msgLayout.addWidget(w));
+    return message;
   }
 
   private loadSystemMessage(message: Message) {

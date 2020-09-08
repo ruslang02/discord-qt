@@ -13,7 +13,6 @@ export class MessagesPanel extends QScrollArea {
   private channel?: DMChannel | TextChannel;
   private rootControls = new QBoxLayout(Direction.BottomToTop);
   private root = new QWidget();
-  private cancelToken?: CancelToken;
 
   constructor() {
     super();
@@ -35,9 +34,7 @@ export class MessagesPanel extends QScrollArea {
       }
       const channel = options.dm || options.channel || null;
       if (!channel) return;
-      if (this.cancelToken) this.cancelToken.cancel();
-      this.cancelToken = new CancelToken();
-      await this.handleChannelOpen(channel, this.cancelToken);
+      await this.handleChannelOpen(channel);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -45,9 +42,8 @@ export class MessagesPanel extends QScrollArea {
         if (message.channel.id === this.channel?.id) {
           const widget = new MessageItem(this);
           (this.root.layout as QBoxLayout).addWidget(widget);
-          const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
           await widget.loadMessage(message);
-          setTimeout(() => clearInterval(scrollTimer), 50);
+          setTimeout(() => this.ensureVisible(0, MAX_QSIZE));
         }
       })
     })
@@ -63,12 +59,6 @@ export class MessagesPanel extends QScrollArea {
     this.rootControls.addStretch(1);
     this.root.setLayout(this.rootControls);
     this.setWidget(this.root);
-  }
-
-  private scrollDown() {
-    this.ensureVisible(0, MAX_QSIZE);
-    this.lower();
-    this.root.lower();
   }
 
   private p0 = new QPoint(0, 0);
@@ -109,36 +99,36 @@ export class MessagesPanel extends QScrollArea {
   }
   private ratelimit = false;
   private rateTimer?: NodeJS.Timer;
-  private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
+  private async handleChannelOpen(channel: DMChannel | TextChannel) {
     if (this.ratelimit || this.isLoading || this.channel === channel) return;
 
     this.isLoading = this.ratelimit = true;
+    this.hide();
     if (this.rateTimer) clearTimeout(this.rateTimer);
     this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
     debug(`Opening channel ${channel.id}...`);
     this.initRoot();
     this.channel = channel;
-    if (token.cancelled) return this.isLoading = false;
     if (channel.messages.cache.size < 30) await channel.messages.fetch({ limit: 30 });
-    if (token.cancelled) return this.isLoading = false;
     debug(`Total of ${channel.messages.cache.size} messages are available.`);
     const messages = channel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
-    if (token.cancelled) return this.isLoading = false;
     messages.length = Math.min(messages.length, 30);
-    const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
+    //const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
     const promises = messages.map(message => {
       const widget = new MessageItem();
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
-      return widget.loadMessage(message, token);
+      return widget.loadMessage(message);
     });
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
+    console.log(promises);
     await Promise.all(promises);
     debug(`Widgets finished loading.`);
+    this.isLoading = false;
+    this.show();
     setTimeout(() => {
-      this.isLoading = false;
-      clearInterval(scrollTimer);
+      this.ensureVisible(0, MAX_QSIZE);
       this.handleWheel(true);
     }, 300);
   }

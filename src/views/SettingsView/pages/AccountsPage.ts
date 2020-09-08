@@ -1,19 +1,18 @@
-import { QWidget, QBoxLayout, Direction, QLabel, QPixmap, AlignmentFlag, QGraphicsDropShadowEffect, QColor, WidgetEventTypes } from "@nodegui/nodegui";
-import { Page } from "./Page";
-import { DColorButton, DColorButtonColor } from '../../../components/DColorButton/DColorButton';
-import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
-import { Divider } from '../SettingsView';
+import { AlignmentFlag, Direction, QBoxLayout, QColor, QGraphicsDropShadowEffect, QLabel, QPixmap, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
+import { Client } from 'discord.js';
+import { __ } from "i18n";
 import { app } from '../../..';
-
+import { DColorButton, DColorButtonColor } from '../../../components/DColorButton/DColorButton';
+import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
+import { DLabel } from "../../../components/DLabel/DLabel";
+import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
+import { Account } from "../../../structures/Account";
+import { clientOptions } from '../../../structures/ClientOptions';
+import { Events } from "../../../structures/Events";
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { SettingsCheckBox } from '../SettingsCheckBox';
-import { Account } from "../../../structures/Account";
-import { Events } from "../../../structures/Events";
-import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
-import { clientOptions } from '../../../structures/ClientOptions';
-import { Client } from 'discord.js';
-import { MarkdownStyles } from '../../../structures/MarkdownStyles';
-import { __ } from "i18n";
+import { Divider } from '../SettingsView';
+import { Page } from "./Page";
 
 export class AccountsPage extends Page {
   title = __('ACCOUNTS');
@@ -139,13 +138,11 @@ export class AccountsPage extends Page {
     const addLayout = new QBoxLayout(Direction.LeftToRight);
     addLayout.setContentsMargins(0, 20, 0, 20);
     addLayout.setSpacing(10);
-    const helpLabel = new QLabel();
+    const helpLabel = new DLabel();
     helpLabel.setObjectName('TextLabel');
-    helpLabel.setText(MarkdownStyles + __('ACCOUNTS_PAGE_HELPER', {
+    helpLabel.setText(__('ACCOUNTS_PAGE_HELPER', {
       guideURL: 'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs'
     }));
-    helpLabel.setWordWrap(true);
-    helpLabel.setOpenExternalLinks(true);
     const addTokenField = new DLineEdit();
     addTokenField.setPlaceholderText('Nvgd6sfgs...');
     const addButton = new DColorButton();

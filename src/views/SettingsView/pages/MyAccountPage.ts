@@ -8,6 +8,7 @@ import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { Events } from '../../../structures/Events';
 import { MarkdownStyles } from '../../../structures/MarkdownStyles';
 import { __ } from 'i18n';
+import { DLabel } from '../../../components/DLabel/DLabel';
 
 export class MyAccountPage extends Page {
   title = __('ACCOUNT');
@@ -29,9 +30,9 @@ export class MyAccountPage extends Page {
     ).then(path => path && this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
   }
 
-  unabel = new QLabel(this);
-  emabel = new QLabel(this);
-  avatar = new QLabel(this);
+  private unabel = new QLabel(this);
+  private emabel = new QLabel(this);
+  private avatar = new QLabel(this);
 
   private initPage() {
     const { layout, title, avatar, unabel, emabel } = this;
@@ -80,10 +81,11 @@ export class MyAccountPage extends Page {
     twoFAHeader.setObjectName('Header2');
     twoFAHeader.setText(__('TWO_FA'));
 
-    const twoFAHelper = new QLabel();
-    twoFAHelper.setText(MarkdownStyles + __('TWO_FA_UNAVAILABLE', {tfaURL: 'https://discord.com/channels/@me'}));
+    const twoFAHelper = new DLabel(this);
+    twoFAHelper.setText(__('TWO_FA_UNAVAILABLE', {
+      tfaURL: 'https://discord.com/channels/@me'
+    }));
     twoFAHelper.setObjectName('TextLabel');
-    twoFAHelper.setOpenExternalLinks(true);
 
     layout.addWidget(header);
     layout.addWidget(card, 0);

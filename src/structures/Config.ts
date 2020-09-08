@@ -4,7 +4,7 @@ import fs, { existsSync } from 'fs';
 
 const { mkdir, readFile, writeFile } = fs.promises;
 export class Config extends IConfig {
-  locale = "ru-RU";
+  locale = "en-US";
   
   constructor(
     private file: string,

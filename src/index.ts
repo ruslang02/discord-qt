@@ -14,7 +14,7 @@ console.log(`[dqt] Applied ${Patches.length} patches.`);
 i18n.configure({
   directory: join(__dirname, 'locales'),
   locales: ['en-US', 'ru-RU'],
-  defaultLocale: "ru-RU",
+  defaultLocale: "en-US",
  
   // setting of log level DEBUG - default to require('debug')('i18n:debug')
   logDebugFn: function (msg) {},
@@ -67,6 +67,7 @@ class Application extends EventEmitter {
       application.quit();
     })
     await config.load();
+    i18n.setLocale(config.locale);
     this.emit(Events.READY);
   }
 
