@@ -9,6 +9,7 @@ import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { __ } from 'i18n';
 import { DLabel } from '../DLabel/DLabel';
 import { GuildChannel } from 'discord.js';
+import { join } from 'path';
 
 const MD = markdownIt({
   html: false,
@@ -18,6 +19,7 @@ const MD = markdownIt({
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
+const EMOJI_PLACEHOLDER = join(__dirname, 'assets/icons/emoji-placeholder.png');
 
 export async function processMentions(content: string, message: Message) {
   const guild = message.guild;
@@ -75,9 +77,18 @@ export function processMarkdown(content: string) {
   return MD.render(content);
 }
 
+export async function processEmojiPlaceholders(content: string): Promise<string> {
+  const emoIds = content.match(EMOJI_REGEX) || [];
+  const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
+  for (const emo of emoIds) {
+    content = content.replace(emo, `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`);
+  }
+  return content;
+}
+
 export async function processEmojis(content: string): Promise<string> {
   const emoIds = content.match(EMOJI_REGEX) || [];
-  const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 32;
+  const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
   for (const emo of emoIds) {
     const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
     const format = type === 'a' ? 'gif' : 'png';

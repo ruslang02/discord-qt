@@ -6,7 +6,8 @@ import { Events } from '../../structures/Events';
 import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DLabel } from "../DLabel/DLabel";
-import { processAttachments, processEmbeds, processEmojis, processInvites, processMarkdown, processMentions } from './MessageUtilities';
+import { processAttachments, processEmbeds, processEmojis, processInvites, processMarkdown, processMentions, processEmojiPlaceholders } from './MessageUtilities';
+import { connect } from 'http2';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 
@@ -22,6 +23,7 @@ export class MessageItem extends QWidget {
 
   private menu = new QMenu(this);
   private clipboard = QApplication.clipboard();
+  private contentNoEmojis?: string;
 
   message?: Message;
 
@@ -154,6 +156,7 @@ export class MessageItem extends QWidget {
     })();
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach(w => w.loadImages && w.loadImages());
+    if (this.contentNoEmojis) processEmojis(this.contentNoEmojis).then(content => this.contentLabel.setText(content));
     this.alreadyRendered = true;
   }
 
@@ -178,7 +181,8 @@ export class MessageItem extends QWidget {
         .replace(/&gt;/g, '>')
         .trim();
       content = await processMentions(content, message);
-      content = await processEmojis(content);
+      this.contentNoEmojis = content;
+      content = await processEmojiPlaceholders(content);
       contentLabel.setText(content);
     }
     if (token?.cancelled) return;
