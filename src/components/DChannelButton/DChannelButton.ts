@@ -1,11 +1,11 @@
-import { QPushButton, QBoxLayout, Direction, QCursor, CursorShape, QWidget, QLabel, WidgetEventTypes } from '@nodegui/nodegui';
-
+import { QPushButton, QBoxLayout, Direction, QCursor, CursorShape, QLabel, WidgetEventTypes } from '@nodegui/nodegui';
 
 export class DChannelButton extends QPushButton {
   layout = new QBoxLayout(Direction.LeftToRight);
   labels: QLabel[] = [];
   private _hovered = false;
   private _activated = false;
+  private _unread = false;
   protected _destroyed = false;
 
   constructor(parent: any) {
@@ -20,6 +20,15 @@ export class DChannelButton extends QPushButton {
       () => this.setHovered(false));
     this.addEventListener(WidgetEventTypes.DeferredDelete,
       () => this._destroyed = true);
+  }
+
+  private unread() { return this._unread; }
+
+  setUnread(unread: boolean) {
+    if (this._destroyed) return;
+    this._unread = unread;
+    this.setProperty('unread', unread);
+    [this, ...this.labels].forEach(w => w.repolish());
   }
 
   private hovered() { return this._hovered; }

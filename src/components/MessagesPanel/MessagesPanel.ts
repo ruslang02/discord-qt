@@ -42,7 +42,12 @@ export class MessagesPanel extends QScrollArea {
           const widget = new MessageItem(this);
           (this.root.layout as QBoxLayout).addWidget(widget);
           await widget.loadMessage(message);
-          setTimeout(() => this.ensureVisible(0, MAX_QSIZE));
+          setTimeout(() => this.ensureVisible(0, MAX_QSIZE), 100);
+          if (this.ackTimer) return;
+          this.ackTimer = setTimeout(() => {
+            if (this.channel) this.channel.acknowledge();
+            this.ackTimer = undefined;
+          }, 1000);
         }
       })
     })
@@ -98,12 +103,14 @@ export class MessagesPanel extends QScrollArea {
   }
   private ratelimit = false;
   private rateTimer?: NodeJS.Timer;
+  private ackTimer?: NodeJS.Timer;
   private async handleChannelOpen(channel: DMChannel | TextChannel) {
     if (this.ratelimit || this.isLoading || this.channel === channel) return;
 
     this.isLoading = this.ratelimit = true;
     this.hide();
     if (this.rateTimer) clearTimeout(this.rateTimer);
+    if (this.ackTimer) clearTimeout(this.ackTimer);
     this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
     debug(`Opening channel ${channel.id}...`);
     this.initRoot();
@@ -114,21 +121,25 @@ export class MessagesPanel extends QScrollArea {
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
     messages.length = Math.min(messages.length, 30);
-    //const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
+    const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
     const promises = messages.map(message => {
       const widget = new MessageItem();
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
       return widget.loadMessage(message);
     });
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
-    console.log(promises);
     await Promise.all(promises);
     debug(`Widgets finished loading.`);
     this.isLoading = false;
     this.show();
     setTimeout(() => {
-      this.ensureVisible(0, MAX_QSIZE);
+      //this.ensureVisible(0, MAX_QSIZE);
       this.handleWheel(true);
+      clearInterval(scrollTimer);
     }, 300);
+    this.ackTimer = setTimeout(() => {
+      if (this.channel) this.channel.acknowledge();
+      this.ackTimer = undefined;
+    }, 3000);
   }
 }

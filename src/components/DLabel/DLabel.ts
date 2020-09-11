@@ -33,7 +33,6 @@ export class DLabel extends QLabel {
       !url.pathname.includes('settings')
     ) {
       const [path, guildId, channelId, messageId] = url.pathname.slice(1).split('/');
-      console.log({path, guildId, channelId, messageId});
       app.emit(Events.SWITCH_VIEW, guildId === '@me' ? 'dm' : 'guild', {
         dm: app.client.channels.resolve(channelId),
         guild: guildId === "@me" ? undefined : app.client.guilds.resolve(guildId),

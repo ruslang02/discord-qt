@@ -1,13 +1,12 @@
-import { DChannelButton } from '../DChannelButton/DChannelButton';
-import { QLabel, QIcon, QPixmap, WidgetEventTypes, ContextMenuPolicy, QMenu, QAction, QApplication, QClipboardMode, QPoint, QMessageBox, QPushButton, ButtonRole, QVariant } from '@nodegui/nodegui';
+import { ButtonRole, ContextMenuPolicy, QAction, QApplication, QClipboardMode, QLabel, QMenu, QMessageBox, QPixmap, QPoint, WidgetEventTypes } from '@nodegui/nodegui';
+import { GuildChannel, TextChannel } from 'discord.js';
+import { __ } from 'i18n';
+import open from 'open';
 import { join } from 'path';
-import { TextChannel, GuildChannel } from 'discord.js';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
-import open from 'open';
+import { DChannelButton } from '../DChannelButton/DChannelButton';
 import { DColorButton, DColorButtonColor } from '../DColorButton/DColorButton';
-import { __ } from 'i18n';
-
 export class ChannelButton extends DChannelButton {
   private static Icons = {
     pound: new QPixmap(join(__dirname, './assets/icons/pound.png')),
@@ -18,13 +17,14 @@ export class ChannelButton extends DChannelButton {
   private chlabel = new QLabel(this);
   private clipboard = QApplication.clipboard();
   private channelMenu = new QMenu(this);
+  private unreadIcon = new QLabel(this);
   channel?: GuildChannel;
 
   constructor(parent?: any) {
     super(parent);
     this.initComponent();
     this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
-    this.addEventListener('clicked', this.handleClick.bind(this))
+    this.addEventListener('clicked', this.handleClick.bind(this));
   }
 
   private handleClick() {
@@ -55,12 +55,22 @@ export class ChannelButton extends DChannelButton {
   }
 
   private initComponent() {
-    const { chicon, chlabel, layout } = this;
+    const { chicon, chlabel, layout, unreadIcon } = this;
     layout.setSpacing(6);
     chlabel.setInlineStyle('font-size: 16px; line-height: 20px;');
     this.labels.push(chlabel);
     layout.addWidget(chicon);
     layout.addWidget(chlabel, 1);
+
+    unreadIcon.setText('●');
+    unreadIcon.setObjectName('Indicator');
+    unreadIcon.hide();
+    layout.addWidget(unreadIcon);
+  }
+
+  setUnread(value: boolean) {
+    super.setUnread(value);
+    !!value ? this.unreadIcon.show() : this.unreadIcon.hide();
   }
 
   loadChannel(channel: GuildChannel) {
@@ -77,6 +87,9 @@ export class ChannelButton extends DChannelButton {
       case 'news':
         chicon.setPixmap(ChannelButton.Icons.bullhorn);
         break;
+    }
+    if (channel instanceof TextChannel) {
+      this.setUnread(channel.lastReadMessageID != channel.lastMessageID)
     }
     // channelMenu.setInlineStyle('background: #18191c');
     const copyId = new QAction();

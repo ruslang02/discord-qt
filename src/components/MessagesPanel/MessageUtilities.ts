@@ -30,7 +30,7 @@ export async function processMentions(content: string, message: Message) {
   await Promise.all([
     ...userMatches.map(async (match) => {
       const id = match.replace(/<@!?/g, '').replace('>', '');
-      if (guild) {
+      /*if (guild) {
         let memberName: string;
         try {
           const member = await guild.members.fetch(id);
@@ -39,7 +39,7 @@ export async function processMentions(content: string, message: Message) {
           memberName = 'unknown-member';
         }
         newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${memberName}</a>`);
-      } else {
+      } else {*/
         let userName: string;
         try {
           const user = await app.client.users.fetch(id);
@@ -48,7 +48,7 @@ export async function processMentions(content: string, message: Message) {
           userName = 'unknown-user';
         }
         newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${userName}</a>`);
-      }
+      //}
     }),
     ...roleMatches.map(async (match) => {
       const id = match.replace(/<@&/g, '').replace('>', '');

@@ -150,6 +150,7 @@ const DQConstants = {
   },
   Events: {
     ...Constants.Events,
+    MESSAGE_ACK: 'messageAck',
     USER_SETTINGS_UPDATE: 'userSettingsUpdate'
   },
   UserAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.3.0 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
@@ -159,6 +160,6 @@ Object.assign(Constants, DQConstants);
 
 export type DQConstants = typeof Constants & {
   ExplicitContentFilterTypes: string[];
-  Events: typeof Constants.Events & { USER_SETTINGS_UPDATE: string };
+  Events: typeof Constants.Events & { MESSAGE_ACK: string, USER_SETTINGS_UPDATE: string };
   UserSettingsMap: Record<string, string>;
 };

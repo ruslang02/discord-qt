@@ -1,29 +1,41 @@
-import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, Shape, QListWidget, QListWidgetItem, ItemFlag, QVariant, QSize, CursorShape, MatchFlag, WidgetEventTypes } from "@nodegui/nodegui";
+import { CursorShape, ItemFlag, MatchFlag, QLabel, QListWidget, QListWidgetItem, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { CategoryChannel, Client, Collection, Guild, GuildChannel, Permissions, User } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
-import { Guild, TextChannel, CategoryChannel, Channel, Permissions, User, Collection, GuildChannel } from "discord.js";
-import { UserButton } from "../UserButton/UserButton";
-import { ChannelButton } from './ChannelButton';
-import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
-import { ScrollMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
-import { GuildsList } from '../GuildsList/GuildsList';
 import { createLogger } from '../../utilities/Console';
+import { ViewOptions } from '../../views/ViewOptions';
+import { ChannelButton } from './ChannelButton';
+import { Constants } from 'discord.js';
+import { DQConstants } from '../../patches/Constants';
+import { Message } from 'discord.js';
 
 const { debug } = createLogger('[ChannelsList]');
 export class ChannelsList extends QListWidget {
   private guild?: Guild;
   private active?: ChannelButton;
+  private buttons: Set<ChannelButton> = new Set();
 
   constructor() {
     super();
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('ChannelsList');
-    this.setVerticalScrollMode(ScrollMode.ScrollPerPixel);
+    this.setVerticalScrollMode(1);
     this.setSpacing(2);
     app.on(Events.SWITCH_VIEW, this.handleSwitchView.bind(this));
+    app.on(Events.NEW_CLIENT, this.handleEvents.bind(this));
   }
 
-  async handleSwitchView(view: string, options?: ViewOptions) {
+  private handleEvents(client: Client) {
+    const { Events: DEvents } = Constants as DQConstants;
+    client.on(DEvents.MESSAGE_ACK, (data: any) => {
+      [...this.buttons.values()].find(btn => btn.channel?.id === data.channel_id)?.setUnread(false);
+    });
+    client.on('message', (message: Message) => {
+      [...this.buttons.values()].find(btn => btn.channel?.id === message.channel.id)?.setUnread(true);
+    })
+  }
+
+  private async handleSwitchView(view: string, options?: ViewOptions) {
     if (view !== 'guild' || !options) return;
     let newGuild;
     if (options.guild) newGuild = options.guild;
@@ -42,7 +54,7 @@ export class ChannelsList extends QListWidget {
   }
 
   async loadChannels() {
-    const { guild } = this;
+    const { guild, buttons } = this;
     const { client } = app;
     if (!guild) return;
 
@@ -93,6 +105,8 @@ export class ChannelsList extends QListWidget {
       item.setText(channel.id);
       this.insertItem(parent ? this.row(parent) + 1 : 0, item);
       this.setItemWidget(item, btn);
+      buttons.add(btn);
+      btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
     }
   }
 }
