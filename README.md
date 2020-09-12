@@ -36,7 +36,7 @@ You can configure your user accounts, as well as other settings in the Settings 
 By default, the application uses Source Sans Pro font. However, if you want an even more seamless experience, you need to obtain a copy of Whitney fonts (commercial fonts used by Discord) and put them into `/assets/fonts` folder. In order to activate them, uncomment line with Whitley font in `/src/windows/RootWindow.scss` and rebuild.
 
 ## Caution
-Discord-QT is against the Discord Terms of Service as an unofficial client, *however* you most likely won't get banned/detected for using this client. 
+DiscordQt is against Discord's Terms of Service as an unofficial client, *however* you most likely won't get banned/detected for using this client. 
 
 ## License
 GPL 3.0
