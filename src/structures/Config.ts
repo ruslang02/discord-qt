@@ -1,8 +1,8 @@
-import { IConfig } from './IConfig';
+import { existsSync, promises } from 'fs';
 import { dirname, join } from 'path';
-import fs, { existsSync } from 'fs';
+import { IConfig } from './IConfig';
 
-const { mkdir, readFile, writeFile } = fs.promises;
+const { mkdir, readFile, writeFile } = promises;
 export class Config extends IConfig {
   isLoaded = false;
 
@@ -16,14 +16,12 @@ export class Config extends IConfig {
     const { file } = this;
     await mkdir(dirname(file), { recursive: true });
     this.isLoaded = false;
-    let config: IConfig;
+    let config: IConfig = {};
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
-      if (!existsSync(file))
-        await writeFile(file, '{}', 'utf8');
+      if (!existsSync(file)) writeFile(file, '{}', 'utf8');
       else console.error('Config file could not be used, returning to default values...');
-      config = {};
     }
     Object.assign(this, {
       accounts: config.accounts ?? [],

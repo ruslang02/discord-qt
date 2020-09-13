@@ -96,5 +96,7 @@
   "GUILD_PROFILE_JOIN_SERVER_BUTTON": "Присоединиться к серверу",
   "DM_SEARCH_PLACEHOLDER": "Найти или начать беседу",
   "LANGUAGE": "Язык",
-  "COPY_MESSAGE_LINK": "Скопировать ссылку на сообщение"
+  "COPY_MESSAGE_LINK": "Скопировать ссылку на сообщение",
+  "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "Этот эмодзи с",
+  "EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION": "Этот эмодзи с приватного или недоступного сервера."
 }

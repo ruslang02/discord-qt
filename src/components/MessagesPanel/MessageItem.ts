@@ -6,8 +6,7 @@ import { Events } from '../../structures/Events';
 import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { DLabel } from "../DLabel/DLabel";
-import { processAttachments, processEmbeds, processEmojis, processInvites, processMarkdown, processMentions, processEmojiPlaceholders } from './MessageUtilities';
-import { connect } from 'http2';
+import { processAttachments, processEmbeds, processEmojiPlaceholders, processEmojis, processInvites, processMarkdown, processMentions } from './MessageUtilities';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 
@@ -24,6 +23,7 @@ export class MessageItem extends QWidget {
   private menu = new QMenu(this);
   private clipboard = QApplication.clipboard();
   private contentNoEmojis?: string;
+  public _destroyed = false;
 
   message?: Message;
 
@@ -34,6 +34,7 @@ export class MessageItem extends QWidget {
     this.setLayout(this.controls);
     this.initComponent();
     this.initMenu();
+    this.addEventListener(WidgetEventTypes.DeferredDelete, () => this._destroyed = true);
   }
 
   private initMenu() {
@@ -105,14 +106,7 @@ export class MessageItem extends QWidget {
     avatar.setMinimumSize(48, 0);
     avatar.setAlignment(AlignmentFlag.AlignTop);
     avatar.setCursor(CursorShape.PointingHandCursor);
-    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      if (!this.message) return;
-      const { miniProfile } = app.window.dialogs;
-      const map = avatar.mapToGlobal(this.p0);
-      map.setX(map.x() + avatar.size().width());
-      miniProfile.loadProfile(this.message.member || this.message.author)
-      miniProfile.popup(map);
-    })
+    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, this.handleUserClick.bind(this));
     if (!app.config.enableAvatars) avatar.hide();
 
     infoLayout.setSpacing(8);
@@ -122,7 +116,10 @@ export class MessageItem extends QWidget {
     msgLayout.setSpacing(2);
 
     userNameLabel.setObjectName('UserNameLabel');
+    userNameLabel.setCursor(CursorShape.PointingHandCursor);
+    userNameLabel.addEventListener(WidgetEventTypes.MouseButtonPress, this.handleUserClick.bind(this));
     dateLabel.setObjectName('DateLabel');
+    dateLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
 
     contentLabel.setObjectName('Content');
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
@@ -136,6 +133,16 @@ export class MessageItem extends QWidget {
 
     controls.addWidget(avatar);
     controls.addLayout(msgLayout, 1);
+  }
+
+  private handleUserClick() {
+    if (!this.message) return;
+    const { avatar } = this;
+    const { miniProfile } = app.window.dialogs;
+    const map = avatar.mapToGlobal(this.p0);
+    map.setX(map.x() + avatar.size().width());
+    miniProfile.loadProfile(this.message.member || this.message.author)
+    miniProfile.popup(map);
   }
 
   private alreadyRendered = false;
@@ -188,9 +195,9 @@ export class MessageItem extends QWidget {
     if (token?.cancelled) return;
     [
       ...processAttachments(message.attachments),
-      ...processEmbeds(message),
+      ...processEmbeds(message, this),
       ...await processInvites(message)
-    ].forEach(w => this.msgLayout.addWidget(w));
+    ].forEach(w => !this._destroyed && this.msgLayout.addWidget(w));
     return message;
   }
 

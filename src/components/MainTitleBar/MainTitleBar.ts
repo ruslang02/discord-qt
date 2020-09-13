@@ -9,7 +9,9 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { __ } from 'i18n';
+import open from 'open';
 
+const { repository } = require('../../../package.json');
 
 export class MainTitleBar extends DTitleBar {
   private channel?: TextChannel | DMChannel;
@@ -68,6 +70,7 @@ export class MainTitleBar extends DTitleBar {
       iconQSize: new QSize(24, 24),
       tooltipText: __('HELP')
     });
+    helpBtn.addEventListener('clicked', () => open(repository.url));
 
     layout.addWidget(iconLabel);
     layout.addWidget(userNameLabel);

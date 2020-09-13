@@ -4,6 +4,8 @@ import { app } from "../..";
 import { Events } from "../../structures/Events";
 import { MarkdownStyles } from "../../structures/MarkdownStyles";
 import open from "open";
+import { basename, extname } from "path";
+import { __ } from "i18n";
 
 export class DLabel extends QLabel {
   constructor(parent?: any) {
@@ -13,10 +15,10 @@ export class DLabel extends QLabel {
     this.setCursor(CursorShape.IBeamCursor);
     this.addEventListener('linkActivated', this.handleLinkActivated.bind(this));
     this.addEventListener('linkHovered', this.handleLinkHovered.bind(this));
-    this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setProperty('toolTip', ''));
   }
 
   private async handleLinkActivated(link: string) {
+    if (!link) return;
     const url = new URL(link);
     if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname);
     else if (url.protocol === 'dq-channel:') {
@@ -43,11 +45,20 @@ export class DLabel extends QLabel {
   }
 
   private handleLinkHovered(link: string) {
-    try {
-      const uri = new URL(link);
-      const name = uri.searchParams.get('emojiname');
-      if (name) this.setProperty('toolTip', `:${name}:`);
-    } catch (e) { }
+    if (!link) return this.setProperty('toolTip', '');
+    const uri = new URL(link);
+    const name = uri.searchParams.get('emoji_name');
+    const id = basename(uri.pathname, extname(uri.pathname));
+    if (name) {
+      const emoji = app.client.emojis.resolve(id);
+      const serverName = emoji?.guild.name;
+      this.setProperty('toolTip', `<html><b>:${name}:</b><br />
+        ${serverName ?
+          `${__('EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION')} <b>${serverName}</b>` :
+          __('EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION')
+        }
+          </html>`);
+    }
   }
 
   setText(text: string) {

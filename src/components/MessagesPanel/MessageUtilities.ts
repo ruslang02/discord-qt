@@ -8,6 +8,7 @@ import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DLabel } from '../DLabel/DLabel';
+import { MessageItem } from './MessageItem';
 
 const MD = markdownIt({
   html: false,
@@ -95,7 +96,7 @@ export async function processEmojis(content: string): Promise<string> {
       if (!emojiPath) continue;
       // @ts-ignore
       const uri = new URL(app.client.rest.cdn.Emoji(id, format));
-      uri.searchParams.append('emojiname', name);
+      uri.searchParams.append('emoji_name', name);
 
       const pix = new QPixmap(emojiPath);
       const larger = pix.width() > pix.height() ? 'width' : 'height'
@@ -106,7 +107,7 @@ export async function processEmojis(content: string): Promise<string> {
   return content;
 }
 
-export function processEmbeds(message: Message): QWidget[] {
+export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
   return message.embeds.map(embed => {
     const container = new QWidget();
     const cLayout = new QBoxLayout(Direction.LeftToRight);
@@ -127,12 +128,11 @@ export function processEmbeds(message: Message): QWidget[] {
       const aulayout = new QBoxLayout(Direction.LeftToRight);
       aulayout.setContentsMargins(0, 0, 0, 0);
       aulayout.setSpacing(8);
-      // TODO: add author image
       if (embed.author.proxyIconURL) {
         const auimage = new QLabel(body);
         auimage.setFixedSize(24, 24);
         pictureWorker.loadImage(embed.author.proxyIconURL)
-          .then(path => path && auimage.setPixmap(new QPixmap(path).scaled(24, 24)));
+          .then(path => !item._destroyed && path && auimage.setPixmap(new QPixmap(path).scaled(24, 24)));
         aulayout.addWidget(auimage);
       }
       const auname = new DLabel(body);
@@ -158,10 +158,13 @@ export function processEmbeds(message: Message): QWidget[] {
     if (embed.description) {
       const descr = new DLabel(body);
       descr.setObjectName('EmbedDescription');
-      let description = embed.description;
+      let description = processMarkdown(embed.description)
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .trim();
       processMentions(description, message).then(pdescription => {
-        pdescription = processMarkdown(pdescription);
-        descr.setText(pdescription);
+        !item._destroyed && descr.setText(pdescription);
       })
       layout.addWidget(descr);
     }
@@ -198,6 +201,7 @@ export function processEmbeds(message: Message): QWidget[] {
       body.setMaximumSize(width + 32, MAX_QSIZE);
       // @ts-ignore
       container.loadImages = async function () {
+        if (item._destroyed) return;
         const path = await pictureWorker.loadImage(image.proxyURL);
         path && qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
         qImage.setInlineStyle('background-color: transparent');

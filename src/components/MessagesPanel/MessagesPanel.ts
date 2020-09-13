@@ -80,8 +80,8 @@ export class MessagesPanel extends QScrollArea {
       if (iy >= y - 100 && iy <= y + height + 100) item.renderImages();
     }
     if (!onlyLoadImages && y <= 50) {
-      const oldest = children.pop() as MessageItem;
-      if (oldest.message?.id) {
+      const oldest = children.pop();
+      if (oldest?.message?.id) {
         const scrollTo = () => this.ensureVisible(0, oldest.mapToParent(this.p0).y() + height - oldest.size().height());
         const scrollTimer = setInterval(scrollTo, 1);
         await this.loadMessages(oldest.message.id);
