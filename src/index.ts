@@ -87,4 +87,5 @@ class Application extends EventEmitter {
 }
 export const app = new Application();
 export const MAX_QSIZE = 16777215;
+export const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
 app.start();

@@ -96,14 +96,14 @@ export class ChannelsList extends QListWidget {
     for (const channel of channels.sort((a, b) => b.rawPosition - a.rawPosition).values()) {
       const btn = new ChannelButton(this);
       const item = new QListWidgetItem();
-      const parent = channel.parentID ? (this.findItems(channel.parentID, MatchFlag.MatchExactly) || [null])[0] : null;
+      const parentItems = channel.parentID ? this.findItems(channel.parentID, MatchFlag.MatchExactly) : [];
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
       btn.setMinimumSize(0, 32);
       btn.setMaximumSize(MAX_QSIZE, 32);
       item.setSizeHint(btn.size());
       item.setText(channel.id);
-      this.insertItem(parent ? this.row(parent) + 1 : 0, item);
+      this.insertItem(parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0, item);
       this.setItemWidget(item, btn);
       buttons.add(btn);
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));

@@ -3,7 +3,7 @@ import path, { basename, join, extname } from 'path';
 import { pathToFileURL, fileURLToPath, URL } from 'url';
 import { DMChannel, Client, Channel, TextChannel, User, Permissions, Emoji, Constants, MessageOptions } from "discord.js";
 import { DIconButton } from "../DIconButton/DIconButton";
-import { app, MAX_QSIZE } from "../..";
+import { app, MAX_QSIZE, PIXMAP_EXTS } from "../..";
 import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
 import { pictureWorker } from '../../utilities/PictureWorker';
@@ -11,9 +11,6 @@ import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
 import { Message } from 'discord.js';
 import { MessageEmbedOptions } from 'discord.js';
 import { __ } from "i18n";
-
-
-const PIXMAP_EXTS = ["BMP", "GIF", "JPG", "JPEG", "PNG", "PBM", "PGM", "PPM", "XBM", "XPM", "SVG"];
 
 export class InputPanel extends QWidget {
   channel?: TextChannel | DMChannel;

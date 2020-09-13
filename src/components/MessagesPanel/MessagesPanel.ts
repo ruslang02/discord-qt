@@ -31,7 +31,7 @@ export class MessagesPanel extends QScrollArea {
         this.initRoot();
         return;
       }
-      const channel = options.dm || options.channel || null;
+      const channel = options.dm || options.channel;
       if (!channel) return;
       await this.handleChannelOpen(channel);
     });

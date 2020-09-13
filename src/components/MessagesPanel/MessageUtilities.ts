@@ -1,15 +1,13 @@
 import { AlignmentFlag, CursorShape, Direction, QBoxLayout, QGridLayout, QLabel, QPixmap, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
-import { Collection, Message, MessageAttachment, MessageEmbedImage, MessageMentions, TextChannel } from 'discord.js';
+import { Collection, GuildChannel, Message, MessageAttachment, MessageEmbedImage, MessageMentions } from 'discord.js';
+import { __ } from 'i18n';
 import markdownIt from 'markdown-it';
+import { extname, join } from 'path';
 import { pathToFileURL } from 'url';
-import { app, MAX_QSIZE } from '../..';
-import { MarkdownStyles } from '../../structures/MarkdownStyles';
+import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
-import { __ } from 'i18n';
 import { DLabel } from '../DLabel/DLabel';
-import { GuildChannel } from 'discord.js';
-import { join } from 'path';
 
 const MD = markdownIt({
   html: false,
@@ -40,14 +38,14 @@ export async function processMentions(content: string, message: Message) {
         }
         newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${memberName}</a>`);
       } else {*/
-        let userName: string;
-        try {
-          const user = await app.client.users.fetch(id);
-          userName = user.username;
-        } catch (e) {
-          userName = 'unknown-user';
-        }
-        newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${userName}</a>`);
+      let userName: string;
+      try {
+        const user = await app.client.users.fetch(id);
+        userName = user.username;
+      } catch (e) {
+        userName = 'unknown-user';
+      }
+      newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${userName}</a>`);
       //}
     }),
     ...roleMatches.map(async (match) => {
@@ -268,18 +266,30 @@ export function processAttachments(attachments: Collection<string, MessageAttach
   return attachments.map(attach => {
     const { width, height } = getCorrectSize(attach.width, attach.height);
     const url = `${attach.proxyURL}?width=${width}&height=${height}`;
+    const isImage = PIXMAP_EXTS.includes(extname(attach.url).slice(1).toUpperCase());
     const qimage = new QLabel();
     qimage.setFixedSize(width, height);
-    qimage.setInlineStyle('background-color: #2f3136');
+    qimage.setInlineStyle('background-color: #2f3136; border-radius: 3px;');
     qimage.setCursor(CursorShape.PointingHandCursor);
+    qimage.setAlignment(AlignmentFlag.AlignCenter);
+    qimage.setProperty('toolTip', `
+    <html>${attach.name || attach.url}<br />
+    Size: ${attach.size} bytes
+    ${attach.width && attach.height ? `<br />Resolution: ${attach.width}x${attach.height}` : ''}</html>
+    `);
     qimage.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
       open(attach.url);
-    })
-    // @ts-ignore
-    qimage.loadImages = async function () {
-      const image = await pictureWorker.loadImage(url);
-      image && qimage.setPixmap(new QPixmap(image));
-      qimage.setInlineStyle('background-color: transparent');
+    });
+    if (!isImage) {
+      qimage.setPixmap(new QPixmap(join(__dirname, 'assets/icons/file.png')));
+    } else {
+      // @ts-ignore
+      qimage.loadImages = async function () {
+        if (!isImage) return;
+        const image = await pictureWorker.loadImage(url);
+        image && qimage.setPixmap(new QPixmap(image));
+        qimage.setInlineStyle('background-color: transparent');
+      }
     }
     return qimage;
   });
