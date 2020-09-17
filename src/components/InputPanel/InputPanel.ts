@@ -1,16 +1,14 @@
-import { QWidget, QBoxLayout, Direction, QSize, QLabel, QTextEdit, WidgetEventTypes, QKeyEvent, KeyboardModifier, Key, QFileDialog, FileMode, QPixmap, NativeElement, QDragMoveEvent, AlignmentFlag, QMouseEvent, MouseButton, QPoint, FocusReason } from "@nodegui/nodegui";
-import path, { basename, join, extname } from 'path';
-import { pathToFileURL, fileURLToPath, URL } from 'url';
-import { DMChannel, Client, Channel, TextChannel, User, Permissions, Emoji, Constants, MessageOptions } from "discord.js";
-import { DIconButton } from "../DIconButton/DIconButton";
-import { app, MAX_QSIZE, PIXMAP_EXTS } from "../..";
-import { ViewOptions } from '../../views/ViewOptions';
-import { Events } from "../../structures/Events";
-import { pictureWorker } from '../../utilities/PictureWorker';
-import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
-import { Message } from 'discord.js';
-import { MessageEmbedOptions } from 'discord.js';
+import { AlignmentFlag, Direction, FileMode, FocusReason, Key, KeyboardModifier, MouseButton, NativeElement, QBoxLayout, QDragMoveEvent, QFileDialog, QKeyEvent, QLabel, QMouseEvent, QPixmap, QPoint, QSize, QTextEdit, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
+import { Channel, Client, Constants, DMChannel, Emoji, Message, MessageEmbedOptions, MessageOptions, Permissions, TextChannel } from "discord.js";
 import { __ } from "i18n";
+import path, { basename, extname, join } from 'path';
+import { fileURLToPath, pathToFileURL, URL } from 'url';
+import { app, MAX_QSIZE, PIXMAP_EXTS } from "../..";
+import { Events as AppEvents } from "../../structures/Events";
+import { pictureWorker } from '../../utilities/PictureWorker';
+import { ViewOptions } from '../../views/ViewOptions';
+import { DIconButton } from "../DIconButton/DIconButton";
+import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
 
 export class InputPanel extends QWidget {
   channel?: TextChannel | DMChannel;
@@ -52,7 +50,7 @@ export class InputPanel extends QWidget {
 
   private setEvents() {
     const { input, typingLabel } = this;
-    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
       const channel = options?.dm || options?.channel || null;
       if (!channel) return input.setPlaceholderText('');
@@ -60,8 +58,7 @@ export class InputPanel extends QWidget {
       this.files.clear();
       this.renderAttachPanel();
       if (channel.type === 'text') {
-        const canEmbed = !!(channel as TextChannel).permissionsFor(app.client.user as User)?.has(Permissions.FLAGS.ATTACH_FILES)
-        this.addBtn.setEnabled(canEmbed);
+        this.addBtn.setEnabled(channel.can(Permissions.FLAGS.ATTACH_FILES));
       } else this.addBtn.setEnabled(true);
       input.setPlaceholderText(
         __('TEXTAREA_PLACEHOLDER', {
@@ -75,21 +72,21 @@ export class InputPanel extends QWidget {
       input.setFocus(FocusReason.TabFocusReason);
     });
 
-    app.on(Events.NEW_CLIENT, (client: Client) => {
-      const { Events: DEvents } = Constants;
-      client.on(DEvents.TYPING_START, (typingChannel: DMChannel | Channel, user) => {
+    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+      const { Events } = Constants;
+      client.on(Events.TYPING_START, (typingChannel, user) => {
         if (this.channel?.id !== typingChannel.id) return;
         typingLabel.setText(__('ONE_USER_TYPING', { a: user.username || '' })); // TODO: Multiple, guild typing indicators
         setTimeout(() => typingLabel.clear(), 2000);
       });
     });
 
-    app.on(Events.QUOTE_MESSAGE_NOEMBED, (message: Message) => {
+    app.on(AppEvents.QUOTE_MESSAGE_NOEMBED, (message: Message) => {
       input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
       input.setFocus(FocusReason.TabFocusReason);
       this.adjustInputSize();
     });
-    app.on(Events.QUOTE_MESSAGE_EMBED, (message: Message) => {
+    app.on(AppEvents.QUOTE_MESSAGE_EMBED, (message: Message) => {
       this.quoteEmbed = {
         description: message.cleanContent,
         author: {
@@ -263,7 +260,10 @@ export class InputPanel extends QWidget {
     }
     this.quoteEmbed = undefined;
     const message = input.toPlainText().trim();
-    setTimeout(() => input.clear(), 0);
+    setTimeout(() => {
+      input.clear();
+      this.adjustInputSize();
+    });
     if (this.channel) {
       const msgOptions = {
         files: [...this.files.values()].map(attachment => ({ attachment, name: basename(attachment) }))

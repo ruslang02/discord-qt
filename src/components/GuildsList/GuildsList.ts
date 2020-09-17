@@ -1,12 +1,11 @@
-import { QWidget, QIcon, QSize, QPushButton, QCursor, CursorShape, Shape, WidgetEventTypes, QPoint, QListWidget, QListWidgetItem, ItemFlag } from "@nodegui/nodegui";
-import path from "path";
-import { Guild, Client, Constants } from "discord.js";
-import { app, MAX_QSIZE } from "../..";
-import { ViewOptions } from '../../views/ViewOptions';
-import { Events } from "../../structures/Events";
-import { GuildButton } from './GuildButton';
+import { CursorShape, ItemFlag, QCursor, QIcon, QListWidget, QListWidgetItem, QPoint, QPushButton, QSize, QWidget, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { Client, Constants, Guild, DQConstants } from "discord.js";
 import { __ } from "i18n";
-
+import path from "path";
+import { app, MAX_QSIZE } from "../..";
+import { Events as AppEvents } from "../../structures/Events";
+import { ViewOptions } from '../../views/ViewOptions';
+import { GuildButton } from './GuildButton';
 
 export class GuildsList extends QListWidget {
   private mpBtn = new QPushButton();
@@ -22,27 +21,29 @@ export class GuildsList extends QListWidget {
     this.setObjectName('GuildsList');
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
-    app.on(Events.NEW_CLIENT, (client: Client) => {
-      const { Events: DEvents } = Constants;
-      client.on(DEvents.CLIENT_READY, async () => {
+    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+      const { Events } = Constants as unknown as DQConstants;
+      client.on(Events.CLIENT_READY, async () => {
         await this.loadGuilds();
-        app.emit(Events.SWITCH_VIEW, 'dm');
+        app.emit(AppEvents.SWITCH_VIEW, 'dm');
       });
-      client.on(DEvents.GUILD_DELETE, (guild: Guild) => {
+      client.on(Events.GUILD_DELETE, guild => {
         this.guilds.get(guild)?.hide();
       });
-      client.on(DEvents.GUILD_CREATE, (guild: Guild) => {
+      client.on(Events.GUILD_CREATE, guild => {
         const btn = new GuildButton(guild, this);
         const item = new QListWidgetItem();
         item.setFlags(~ItemFlag.ItemIsEnabled);
         this.insertItem(2, item);
         this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
+        this.updateGuildAck(guild)
         btn.loadAvatar();
       });
+      client.on(Events.MESSAGE_ACK, channel => this.updateGuildAck(channel.guild))
     });
 
-    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
       this.mpBtn.setProperty('active', false)
       if (view === 'dm') {
@@ -64,6 +65,13 @@ export class GuildsList extends QListWidget {
     });
   }
 
+  private updateGuildAck(guild: Guild) {
+    const btn = this.guilds.get(guild);
+    if (!btn) return;
+    btn.setProperty('unread', !guild.acknowledged);
+    btn.repolish();
+  }
+
   private addMainPageButton() {
     const mpBtn = new QPushButton(this);
     const mpBtnItem = new QListWidgetItem();
@@ -73,7 +81,7 @@ export class GuildsList extends QListWidget {
     mpBtn.setFixedSize(72, 68);
     mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     mpBtn.setProperty('toolTip', __('DIRECT_MESSAGES'));
-    mpBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm'));
+    mpBtn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'dm'));
     mpBtn.setInlineStyle('margin-top: 12px;');
     mpBtnItem.setSizeHint(mpBtn.size());
     const hrItem = new QListWidgetItem();

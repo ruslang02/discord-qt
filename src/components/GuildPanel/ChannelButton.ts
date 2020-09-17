@@ -89,7 +89,7 @@ export class ChannelButton extends DChannelButton {
         break;
     }
     if (channel instanceof TextChannel) {
-      this.setUnread(channel.lastReadMessageID != channel.lastMessageID)
+      this.setUnread(!channel.acknowledged)
     }
     // channelMenu.setInlineStyle('background: #18191c');
     const copyId = new QAction();

@@ -1,6 +1,5 @@
-import { Constants, ClientUser, Guild, Snowflake, PresenceStatus, Util } from 'discord.js';
+import { Constants, ClientUser, DQConstants, Guild, Snowflake, PresenceStatus, Util } from 'discord.js';
 import { CustomStatus } from './CustomStatus';
-import { DQConstants } from '../patches/Constants';
 
 /**
  * A wrapper around the ClientUser's settings.
@@ -40,8 +39,8 @@ export class ClientUserSettings {
    * @private
    */
   _patch(data: any) {
-    for (const key of Object.keys((<DQConstants>Constants).UserSettingsMap)) {
-      const value = (<DQConstants>Constants).UserSettingsMap[key];
+    for (const key of Object.keys((Constants as unknown as DQConstants).UserSettingsMap)) {
+      const value = (Constants as unknown as DQConstants).UserSettingsMap[key];
       if (!(key in data)) continue;
       // @ts-ignore: Object assignment.
       if (typeof value === 'function') this[value.name] = value(data[key]); else this[value] = data[key];

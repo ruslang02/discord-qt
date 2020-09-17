@@ -1,11 +1,10 @@
 import { ContextMenuPolicy, CursorShape, Direction, QAction, QApplication, QBoxLayout, QClipboardMode, QCursor, QIcon, QLabel, QMenu, QPixmap, QPushButton, QSize, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
-import { Client, Constants } from "discord.js";
+import { Client, Constants, DQConstants } from "discord.js";
 import { __ } from "i18n";
 import path, { join } from 'path';
 import { app, MAX_QSIZE } from "../..";
-import { DQConstants } from '../../patches/Constants';
 import { CustomStatus } from '../../structures/CustomStatus';
-import { Events } from "../../structures/Events";
+import { Events as AppEvents } from "../../structures/Events";
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { pictureWorker } from "../../utilities/PictureWorker";
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
@@ -25,14 +24,14 @@ export class UserPanel extends QWidget {
     super();
 
     this.initComponent();
-    app.on(Events.NEW_CLIENT, this.bindEvents.bind(this));
-    app.on(Events.READY, () => {
+    app.on(AppEvents.NEW_CLIENT, this.bindEvents.bind(this));
+    app.on(AppEvents.READY, () => {
       if (!app.config.enableAvatars) this.avatar.hide();
     });
   }
 
-  bindEvents(client: Client) {
-    const { Events } = Constants as DQConstants;
+  private bindEvents(client: Client) {
+    const { Events } = Constants as unknown as DQConstants;
     this.nameLabel.setText(__('CONNECTION_STATUS_CONNECTING'));
     this.discLabel.setText('#0000');
     client.on(Events.CLIENT_READY, () => {
@@ -155,7 +154,7 @@ export class UserPanel extends QWidget {
       tooltipText: __('USER_SETTINGS')
     });
     setBtn.setFixedSize(32, 32);
-    setBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'settings'));
+    setBtn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'settings'));
     controls.addWidget(avatar, 0);
     controls.addLayout(layInfo, 1);
     controls.addWidget(statusBtn, 0);

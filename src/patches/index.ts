@@ -4,6 +4,7 @@ export const Patches = [
   require('./ClientUser'),
   require('./ClientPresence'),
   require('./Guild'),
+  require('./GuildChannel'),
   require('./WebSocketShard'),
   require('./Handlers'),
   require('./RESTManager'),

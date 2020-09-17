@@ -1,4 +1,14 @@
+import { Permissions } from 'discord.js';
+
 const Guild = require('discord.js/src/structures/Guild');
+
+Object.defineProperty(Guild.prototype, 'acknowledged', {
+  get: function () {
+    return this.channels.cache
+      .filter((channel: any) => ['news', 'text'].includes(channel.type) && channel.can(Permissions.FLAGS.VIEW_CHANNEL))
+      .every((channel: any) => channel.acknowledged);
+  }
+});
 
 Object.defineProperty(Guild.prototype, 'position', {
   get: function () {

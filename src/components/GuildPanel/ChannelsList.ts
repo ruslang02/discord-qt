@@ -1,13 +1,11 @@
 import { CursorShape, ItemFlag, MatchFlag, QLabel, QListWidget, QListWidgetItem, Shape, WidgetEventTypes } from "@nodegui/nodegui";
-import { CategoryChannel, Client, Collection, Guild, GuildChannel, Permissions, User } from "discord.js";
+import { Permissions } from 'discord.js';
+import { CategoryChannel, Client, Collection, Constants, DQConstants, Guild, GuildChannel, Message } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
 import { Events } from "../../structures/Events";
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
-import { Constants } from 'discord.js';
-import { DQConstants } from '../../patches/Constants';
-import { Message } from 'discord.js';
 
 const { debug } = createLogger('[ChannelsList]');
 export class ChannelsList extends QListWidget {
@@ -26,11 +24,11 @@ export class ChannelsList extends QListWidget {
   }
 
   private handleEvents(client: Client) {
-    const { Events: DEvents } = Constants as DQConstants;
-    client.on(DEvents.MESSAGE_ACK, (data: any) => {
+    const { Events } = Constants as unknown as DQConstants;
+    client.on(Events.MESSAGE_ACK, (data: any) => {
       [...this.buttons.values()].find(btn => btn.channel?.id === data.channel_id)?.setUnread(false);
     });
-    client.on('message', (message: Message) => {
+    client.on(Events.MESSAGE_CREATE, (message: Message) => {
       [...this.buttons.values()].find(btn => btn.channel?.id === message.channel.id)?.setUnread(true);
     })
   }
@@ -61,7 +59,7 @@ export class ChannelsList extends QListWidget {
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
     this.clear();
     const [categories, channels] = guild.channels.cache
-      .filter(c => (c.permissionsFor(client.user as User) as Permissions).has('VIEW_CHANNEL'))
+      .filter(c => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition(a => a.type === 'category') as [
       Collection<string, CategoryChannel>,
       Collection<string, GuildChannel>

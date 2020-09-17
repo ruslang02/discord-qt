@@ -1,7 +1,7 @@
 import { ItemFlag, MatchFlag, QListWidget, QListWidgetItem, QPoint, QSize, ScrollBarPolicy, Shape, WidgetEventTypes } from "@nodegui/nodegui";
 import { Client, Constants, DMChannel, SnowflakeUtil } from "discord.js";
 import { app } from "../..";
-import { Events } from "../../structures/Events";
+import { Events as AppEvents } from "../../structures/Events";
 import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from "../UserButton/UserButton";
 
@@ -17,10 +17,10 @@ export class DMUsersList extends QListWidget {
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
-    app.on(Events.NEW_CLIENT, (client: Client) => {
-      const { Events: DiscordEvents } = Constants;
-      client.on(DiscordEvents.CLIENT_READY, this.loadDMs.bind(this));
-      client.on(DiscordEvents.MESSAGE_CREATE, (message) => {
+    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+      const { Events } = Constants;
+      client.on(Events.CLIENT_READY, this.loadDMs.bind(this));
+      client.on(Events.MESSAGE_CREATE, (message) => {
         const dm = message.channel;
         if (dm.type !== 'dm') return;
         const btn = this.channels.get(dm);
@@ -37,7 +37,7 @@ export class DMUsersList extends QListWidget {
       })
     });
 
-    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view === 'guild') {
         this.active?.setActivated(false);
         this.active = undefined;
@@ -97,7 +97,7 @@ export class DMUsersList extends QListWidget {
           item.setSizeHint(new QSize(224, 44));
           item.setFlags(~ItemFlag.ItemIsEnabled);
           item.setText(dm.id);
-          btn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm', { dm }));
+          btn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm }));
           this.channels.set(dm, btn);
           this.addItem(item);
           this.setItemWidget(item, btn);

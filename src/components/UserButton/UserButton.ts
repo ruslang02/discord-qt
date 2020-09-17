@@ -1,25 +1,23 @@
-import { QLabel, QPixmap, QBoxLayout, Direction, WidgetEventTypes, AlignmentFlag } from "@nodegui/nodegui";
-import { User, GuildMember, Presence, Client, Constants } from "discord.js";
-import TWEmoji from 'twemoji';
-import { pictureWorker } from "../../utilities/PictureWorker";
-import { DChannelButton } from '../DChannelButton/DChannelButton';
-
-import { app, MAX_QSIZE } from '../..';
-import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-import { Events } from '../../structures/Events';
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, WidgetEventTypes } from "@nodegui/nodegui";
+import { Client, Constants, GuildMember, Presence, User } from "discord.js";
 import { __ } from "i18n";
+import { app, MAX_QSIZE } from '../..';
+import { Events as AppEvents } from '../../structures/Events';
+import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { pictureWorker } from "../../utilities/PictureWorker";
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { DChannelButton } from '../DChannelButton/DChannelButton';
 
 const buttons = new WeakMap<User | GuildMember, UserButton>();
 setTimeout(() => {
-  app.on(Events.NEW_CLIENT, (client: Client) => {
-    const { Events: DEvents } = Constants;
-    client.on(DEvents.PRESENCE_UPDATE, (_o, presence) => {
+  app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+    const { Events } = Constants;
+    client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
       if (!presence.user) return;
       const btn = buttons.get(presence.user);
       btn?.loadPresence(presence);
     });
-    client.on(DEvents.GUILD_MEMBER_UPDATE, (o, m) => {
+    client.on(Events.GUILD_MEMBER_UPDATE, (o, m) => {
       const oldMember = o as GuildMember;
       const member = m as GuildMember;
       const btn = buttons.get(member);
@@ -27,7 +25,7 @@ setTimeout(() => {
       if (btn.isGuildMember) btn.loadUser(member); else btn.loadUser(member.user);
       if (oldMember.user.avatar !== member.user.avatar) btn.loadAvatar();
     });
-    client.on(DEvents.USER_UPDATE, (o, u) => {
+    client.on(Events.USER_UPDATE, (o, u) => {
       const oldUser = o as User;
       const user = u as User;
       const btn = buttons.get(user);
@@ -36,7 +34,7 @@ setTimeout(() => {
       if (oldUser.avatar !== user.avatar) btn.loadAvatar();
     })
   });
-}, 0);
+});
 
 export class UserButton extends DChannelButton {
   private avatar = new QLabel(this);

@@ -1,5 +1,9 @@
 const Constants = require('discord.js/src/util/Constants');
-
+const EventsMap = {
+  ...Constants.Events,
+  MESSAGE_ACK: 'messageAck',
+  USER_SETTINGS_UPDATE: 'userSettingsUpdate'
+};
 const DQConstants = {
   ExplicitContentFilterTypes: ['DISABLED', 'NON_FRIENDS', 'FRIENDS_AND_NON_FRIENDS'],
   UserSettingsMap: {
@@ -148,18 +152,8 @@ const DQConstants = {
       };
     },
   },
-  Events: {
-    ...Constants.Events,
-    MESSAGE_ACK: 'messageAck',
-    USER_SETTINGS_UPDATE: 'userSettingsUpdate'
-  },
+  Events: EventsMap,
   UserAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.3.0 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
 }
 
 Object.assign(Constants, DQConstants);
-
-export type DQConstants = typeof Constants & {
-  ExplicitContentFilterTypes: string[];
-  Events: typeof Constants.Events & { MESSAGE_ACK: string, USER_SETTINGS_UPDATE: string };
-  UserSettingsMap: Record<string, string>;
-};

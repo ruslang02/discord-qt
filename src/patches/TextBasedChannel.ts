@@ -1,7 +1,11 @@
+import { Permissions } from 'discord.js';
+import { SnowflakeUtil } from 'discord.js';
+
 const TextBasedChannel = require('discord.js/src/structures/interfaces/TextBasedChannel');
 
 const props = [
   'lastReadMessageID',
+  'acknowledged',
   'acknowledge'
 ];
 
@@ -9,6 +13,12 @@ Object.defineProperty(TextBasedChannel.prototype, 'lastReadMessageID', {
   get: function () {
     const state = this.client.read_state.find((s: any) => s.id === this.id);
     return state?.last_message_id || null;
+  }
+});
+
+Object.defineProperty(TextBasedChannel.prototype, 'acknowledged', {
+  get: function () {
+    return this.lastReadMessageID === this.lastMessageID
   }
 });
 

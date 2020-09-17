@@ -1,15 +1,15 @@
-import path from 'path';
-import { QWidget, QLabel, QPixmap, QSize } from '@nodegui/nodegui';
-import { DMChannel, Client, TextChannel, Constants } from 'discord.js';
-import { app } from '../..';
-import { DTitleBar } from '../DTitleBar/DTitleBar';
-import { DLineEdit } from '../DLineEdit/DLineEdit';
-import { DIconButton } from '../DIconButton/DIconButton';
-import { ViewOptions } from '../../views/ViewOptions';
-import { Events } from '../../structures/Events';
-import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { QLabel, QPixmap, QSize, QWidget } from '@nodegui/nodegui';
+import { Client, Constants, DMChannel, TextChannel } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
+import path from 'path';
+import { app } from '../..';
+import { Events as AppEvents } from '../../structures/Events';
+import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { ViewOptions } from '../../views/ViewOptions';
+import { DIconButton } from '../DIconButton/DIconButton';
+import { DLineEdit } from '../DLineEdit/DLineEdit';
+import { DTitleBar } from '../DTitleBar/DTitleBar';
 
 const { repository } = require('../../../package.json');
 
@@ -25,7 +25,7 @@ export class MainTitleBar extends DTitleBar {
   constructor() {
     super();
     this.initComponent();
-    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
       if (view === 'dm' && options?.dm) this.handleDMOpen(options.dm);
       else if (view === 'guild' && options?.channel) this.handleGuildOpen(options.channel)
@@ -34,9 +34,9 @@ export class MainTitleBar extends DTitleBar {
         this.handleClear();
       }
     });
-    app.on(Events.NEW_CLIENT, (client: Client) => {
-      const { Events: DiscordEvents } = Constants;
-      client.on(DiscordEvents.PRESENCE_UPDATE, (_o, presence) => {
+    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+      const { Events } = Constants;
+      client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
         if(this.channel?.type === 'dm' && this.channel.recipient.id === presence.userID) {
           this.updateStatus();
         }
