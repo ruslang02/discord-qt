@@ -44,7 +44,7 @@ export class MessageItem extends QWidget {
       const action = new QAction(menu);
       action.setText(__('QUOTE') + ' (>)');
       action.addEventListener('triggered', () => {
-        app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
+        this.message && app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
       });
       menu.addAction(action);
     }
@@ -52,7 +52,7 @@ export class MessageItem extends QWidget {
       const action = new QAction(menu);
       action.setText(__('QUOTE') + ' (embed)');
       action.addEventListener('triggered', () => {
-        app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
+        this.message && app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
       });
       menu.addAction(action);
     }

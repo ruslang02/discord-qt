@@ -1,5 +1,5 @@
 import { AlignmentFlag, Direction, FileMode, FocusReason, Key, KeyboardModifier, MouseButton, NativeElement, QBoxLayout, QDragMoveEvent, QFileDialog, QKeyEvent, QLabel, QMouseEvent, QPixmap, QPoint, QSize, QTextEdit, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
-import { Channel, Client, Constants, DMChannel, Emoji, Message, MessageEmbedOptions, MessageOptions, Permissions, TextChannel } from "discord.js";
+import { Client, Constants, DMChannel, Emoji, Message, MessageEmbedOptions, MessageOptions, NewsChannel, Permissions, TextChannel } from 'discord.js';
 import { __ } from "i18n";
 import path, { basename, extname, join } from 'path';
 import { fileURLToPath, pathToFileURL, URL } from 'url';
@@ -11,7 +11,7 @@ import { DIconButton } from "../DIconButton/DIconButton";
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
 
 export class InputPanel extends QWidget {
-  channel?: TextChannel | DMChannel;
+  channel?: TextChannel | DMChannel | NewsChannel;
   root = new QWidget(this);
   rootLayout = new QBoxLayout(Direction.LeftToRight);
   private input = new QTextEdit(this);
@@ -52,7 +52,7 @@ export class InputPanel extends QWidget {
     const { input, typingLabel } = this;
     app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
-      const channel = options?.dm || options?.channel || null;
+      const channel = <DMChannel | undefined>options?.dm || <TextChannel | NewsChannel | undefined>options?.channel || undefined;
       if (!channel) return input.setPlaceholderText('');
       this.channel = channel;
       this.files.clear();

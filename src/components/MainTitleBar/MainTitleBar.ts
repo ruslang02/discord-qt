@@ -1,5 +1,5 @@
 import { QLabel, QPixmap, QSize, QWidget } from '@nodegui/nodegui';
-import { Client, Constants, DMChannel, TextChannel } from 'discord.js';
+import { Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
 import path from 'path';
@@ -14,7 +14,7 @@ import { DTitleBar } from '../DTitleBar/DTitleBar';
 const { repository } = require('../../../package.json');
 
 export class MainTitleBar extends DTitleBar {
-  private channel?: TextChannel | DMChannel;
+  private channel?: TextChannel | NewsChannel | DMChannel;
   private userNameLabel = new QLabel();
   private statusLabel = new QLabel();
   private nicknamesBar = new QWidget();
@@ -37,7 +37,7 @@ export class MainTitleBar extends DTitleBar {
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
       const { Events } = Constants;
       client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
-        if(this.channel?.type === 'dm' && this.channel.recipient.id === presence.userID) {
+        if (this.channel?.type === 'dm' && this.channel.recipient.id === presence.userID) {
           this.updateStatus();
         }
       })
@@ -83,9 +83,10 @@ export class MainTitleBar extends DTitleBar {
 
   private updateStatus() {
     const { channel, statusLabel } = this;
-    if (channel instanceof TextChannel) return;
-    statusLabel.setText(channel?.recipient.presence.status || "");
-    statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel?.recipient.presence.status || 'offline')}`);
+    if (channel instanceof DMChannel) {
+      statusLabel.setText(channel.recipient.presence.status || "");
+      statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel.recipient.presence.status || 'offline')}`);
+    }
   }
 
   private handleClear() {
@@ -105,9 +106,10 @@ export class MainTitleBar extends DTitleBar {
     this.updateStatus();
   }
 
-  private handleGuildOpen(channel: TextChannel) {
+  private handleGuildOpen(channel: GuildChannel) {
     const { userNameLabel, statusLabel, iconLabel, poundPixmap } = this;
-    this.channel = channel;
+    if (channel.type !== 'text' && channel.type !== 'news') return;
+    this.channel = channel as TextChannel | NewsChannel;
     iconLabel.setPixmap(poundPixmap);
     iconLabel.show();
     userNameLabel.setText(channel.name);

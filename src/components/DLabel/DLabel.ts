@@ -1,11 +1,11 @@
-import { CursorShape, QLabel, TextInteractionFlag, WidgetEventTypes } from "@nodegui/nodegui";
-import { TextChannel } from "discord.js";
+import { CursorShape, QLabel, TextInteractionFlag } from "@nodegui/nodegui";
+import { DMChannel, Guild, GuildChannel, TextChannel } from "discord.js";
+import { __ } from "i18n";
+import open from "open";
+import { basename, extname } from "path";
 import { app } from "../..";
 import { Events } from "../../structures/Events";
 import { MarkdownStyles } from "../../structures/MarkdownStyles";
-import open from "open";
-import { basename, extname } from "path";
-import { __ } from "i18n";
 
 export class DLabel extends QLabel {
   constructor(parent?: any) {
@@ -36,9 +36,9 @@ export class DLabel extends QLabel {
     ) {
       const [path, guildId, channelId, messageId] = url.pathname.slice(1).split('/');
       app.emit(Events.SWITCH_VIEW, guildId === '@me' ? 'dm' : 'guild', {
-        dm: app.client.channels.resolve(channelId),
-        guild: guildId === "@me" ? undefined : app.client.guilds.resolve(guildId),
-        channel: app.client.channels.resolve(channelId)
+        dm: <DMChannel>app.client.channels.resolve(channelId) || undefined,
+        guild: guildId === "@me" ? undefined : <Guild>app.client.guilds.resolve(guildId),
+        channel: <GuildChannel>app.client.channels.resolve(channelId)
       });
     }
     else open(link);

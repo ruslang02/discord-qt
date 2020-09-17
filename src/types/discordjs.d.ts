@@ -1,4 +1,3 @@
-import { Constants } from 'discord.js';
 import { ClientUserSettings } from '../structures/ClientUserSettings';
 import { CustomStatus } from '../structures/CustomStatus';
 
@@ -39,6 +38,11 @@ declare module 'discord.js' {
     can(flags: number, who?: User): boolean;
   }
   export interface TextChannel {
+    lastReadMessageID: string | null;
+    acknowledged: boolean;
+    acknowledge(): void;
+  }
+  export interface NewsChannel {
     lastReadMessageID: string | null;
     acknowledged: boolean;
     acknowledge(): void;

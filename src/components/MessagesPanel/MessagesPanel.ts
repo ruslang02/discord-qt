@@ -1,5 +1,5 @@
 import { AlignmentFlag, Direction, QBoxLayout, QPoint, QScrollArea, QWidget, ScrollBarPolicy, Shape, WidgetEventTypes } from "@nodegui/nodegui";
-import { Client, DMChannel, Message, Snowflake, TextChannel } from "discord.js";
+import { Client, DMChannel, GuildChannel, Message, NewsChannel, Snowflake, TextChannel } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
 import { Events } from "../../structures/Events";
 import { createLogger } from '../../utilities/Console';
@@ -9,7 +9,7 @@ import { MessageItem } from "./MessageItem";
 const { debug } = createLogger('[MessagesPanel]');
 
 export class MessagesPanel extends QScrollArea {
-  private channel?: DMChannel | TextChannel;
+  private channel?: DMChannel | TextChannel | NewsChannel;
   private rootControls = new QBoxLayout(Direction.BottomToTop);
   private root = new QWidget();
 
@@ -24,7 +24,7 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initEvents() {
-    app.on(Events.SWITCH_VIEW, async (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, async (view, options) => {
       if (!['dm', 'guild'].includes(view)) return;
       if (!options || !options.dm && !options.channel) {
         this.channel = undefined;
@@ -104,8 +104,12 @@ export class MessagesPanel extends QScrollArea {
   private ratelimit = false;
   private rateTimer?: NodeJS.Timer;
   private ackTimer?: NodeJS.Timer;
-  private async handleChannelOpen(channel: DMChannel | TextChannel) {
-    if (this.ratelimit || this.isLoading || this.channel === channel) return;
+  private async handleChannelOpen(channel: DMChannel | GuildChannel) {
+    if (this.ratelimit ||
+      this.isLoading ||
+      this.channel === channel ||
+      !['news', 'text', 'dm'].includes(channel.type)
+    ) return;
 
     this.isLoading = this.ratelimit = true;
     this.hide();
@@ -114,10 +118,13 @@ export class MessagesPanel extends QScrollArea {
     this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
     debug(`Opening channel ${channel.id}...`);
     this.initRoot();
-    this.channel = channel;
-    if (channel.messages.cache.size < 30) await channel.messages.fetch({ limit: 30 });
-    debug(`Total of ${channel.messages.cache.size} messages are available.`);
-    const messages = channel.messages.cache.array()
+
+    const textChannel = channel as TextChannel | NewsChannel | DMChannel;
+    this.channel = textChannel;
+
+    if (textChannel.messages.cache.size < 30) await textChannel.messages.fetch({ limit: 30 });
+    debug(`Total of ${textChannel.messages.cache.size} messages are available.`);
+    const messages = textChannel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
     messages.length = Math.min(messages.length, 30);
