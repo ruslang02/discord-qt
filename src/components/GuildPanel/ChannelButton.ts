@@ -1,12 +1,12 @@
-import { DChannelButton } from '../DChannelButton/DChannelButton';
-import { QLabel, QIcon, QPixmap, WidgetEventTypes, ContextMenuPolicy, QMenu, QAction, QApplication, QClipboardMode, QPoint, QMessageBox, QPushButton, ButtonRole, QVariant } from '@nodegui/nodegui';
+import { ButtonRole, ContextMenuPolicy, QAction, QApplication, QClipboardMode, QLabel, QMenu, QMessageBox, QPixmap, QPoint, WidgetEventTypes } from '@nodegui/nodegui';
+import { GuildChannel, TextChannel } from 'discord.js';
+import { __ } from 'i18n';
+import open from 'open';
 import { join } from 'path';
-import { TextChannel, GuildChannel } from 'discord.js';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
-import open from 'open';
+import { DChannelButton } from '../DChannelButton/DChannelButton';
 import { DColorButton, DColorButtonColor } from '../DColorButton/DColorButton';
-
 export class ChannelButton extends DChannelButton {
   private static Icons = {
     pound: new QPixmap(join(__dirname, './assets/icons/pound.png')),
@@ -17,14 +17,14 @@ export class ChannelButton extends DChannelButton {
   private chlabel = new QLabel(this);
   private clipboard = QApplication.clipboard();
   private channelMenu = new QMenu(this);
-  private isDestroyed = false;
+  private unreadIcon = new QLabel(this);
   channel?: GuildChannel;
 
   constructor(parent?: any) {
     super(parent);
     this.initComponent();
     this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
-    this.addEventListener('clicked', this.handleClick.bind(this))
+    this.addEventListener('clicked', this.handleClick.bind(this));
   }
 
   private handleClick() {
@@ -37,14 +37,14 @@ export class ChannelButton extends DChannelButton {
         break;
       case 'voice':
         const msgBox = new QMessageBox(this);
-        msgBox.setText('Voice support is not implemented yet.\r\nOpen in the browser?');
+        msgBox.setText(__('VOICE_NOT_SUPPORTED'));
         msgBox.setWindowTitle('DiscordQt');
         msgBox.setProperty('icon', 4);
         const noBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
-        noBtn.setText('No')
+        noBtn.setText(__('NO_TEXT'));
         msgBox.addButton(noBtn, ButtonRole.NoRole);
         const yesBtn = new DColorButton(DColorButtonColor.BLURPLE);
-        yesBtn.setText('Yes')
+        yesBtn.setText(__('YES_TEXT'));
         msgBox.addButton(yesBtn, ButtonRole.YesRole);
         yesBtn.addEventListener('clicked', () => {
           open(`https://discord.com/channels/${channel.guild.id}/${channel.id}`);
@@ -55,12 +55,22 @@ export class ChannelButton extends DChannelButton {
   }
 
   private initComponent() {
-    const { chicon, chlabel, layout } = this;
+    const { chicon, chlabel, layout, unreadIcon } = this;
     layout.setSpacing(6);
     chlabel.setInlineStyle('font-size: 16px; line-height: 20px;');
     this.labels.push(chlabel);
     layout.addWidget(chicon);
     layout.addWidget(chlabel, 1);
+
+    unreadIcon.setText('●');
+    unreadIcon.setObjectName('Indicator');
+    unreadIcon.hide();
+    layout.addWidget(unreadIcon);
+  }
+
+  setUnread(value: boolean) {
+    super.setUnread(value);
+    !!value ? this.unreadIcon.show() : this.unreadIcon.hide();
   }
 
   loadChannel(channel: GuildChannel) {
@@ -78,9 +88,12 @@ export class ChannelButton extends DChannelButton {
         chicon.setPixmap(ChannelButton.Icons.bullhorn);
         break;
     }
+    if (channel instanceof TextChannel) {
+      this.setUnread(!channel.acknowledged)
+    }
     // channelMenu.setInlineStyle('background: #18191c');
     const copyId = new QAction();
-    copyId.setText('Copy ID');
+    copyId.setText(__('COPY_ID'));
     copyId.addEventListener('triggered', () => {
       this.clipboard.setText(channel.id, QClipboardMode.Clipboard);
     });

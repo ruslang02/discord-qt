@@ -1,6 +1,7 @@
 import { DLineEdit } from "../DLineEdit/DLineEdit";
 import { DTitleBar } from "../DTitleBar/DTitleBar";
 import { DMUsersList } from './DMUsersList';
+import { __ } from "i18n";
 
 export class DMTitleBar extends DTitleBar {
   filterInput = new DLineEdit();
@@ -9,7 +10,7 @@ export class DMTitleBar extends DTitleBar {
     super();
     this.setProperty('type', 'search');
     this.controls.setContentsMargins(10, 10, 10, 10);
-    this.filterInput.setPlaceholderText('Find or start a conversation');
+    this.filterInput.setPlaceholderText(__('DM_SEARCH_PLACEHOLDER'));
     this.filterInput.addEventListener('textEdited', (text) => {
       usersList.filter(text);
     });

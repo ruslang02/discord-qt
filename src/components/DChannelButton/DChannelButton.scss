@@ -1,7 +1,8 @@
-
-
 #DChannelButton {
   border-radius: 4px;
+  #Indicator {
+    color: $interactive-active;
+  }
   *, QLabel {
     color: $channels-default;
     background: none;
@@ -14,6 +15,11 @@
   }
   &[active=true] {
     background-color: $background-modifier-selected;
+    *, QLabel {
+      color: $interactive-active;
+    }
+  }
+  &[unread=true] {
     *, QLabel {
       color: $interactive-active;
     }

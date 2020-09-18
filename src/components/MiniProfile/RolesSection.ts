@@ -2,6 +2,7 @@ import { QBoxLayout, Direction, QLabel, QListWidget, QWidget, Shape, QListWidget
 import { GuildMemberRoleManager } from 'discord.js';
 import { MAX_QSIZE } from '../..';
 import { ScrollMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
+import { __ } from 'i18n';
 
 export class RolesSection extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -42,8 +43,8 @@ export class RolesSection extends QWidget {
   private isOpened = false;
   setOpened(value: boolean) {
     const { label, rolesList, topRole } = this;
-    if (label.text() === 'No roles' && value !== false) return;
-    label.setText(`Roles&nbsp;<font size=2>${value ? '▲' : '▼'}</font>`);
+    if (label.text() === __('NO_ROLES') && value !== false) return;
+    label.setText(`${__('ROLES')}&nbsp;<font size=2>${value ? '▲' : '▼'}</font>`);
     value ? rolesList.show() : rolesList.hide();
     this.isOpened = value;
   }
@@ -53,7 +54,7 @@ export class RolesSection extends QWidget {
     !!roles ? this.show() : this.hide();
     this.setOpened(false);
     rolesList.clear();
-    if (!roles) return label.setText('No roles');
+    if (!roles) return label.setText(__('NO_ROLES'));
 
     if (roles.highest.name !== '@everyone') {
       topRole.setText(`<font color='${roles.highest.hexColor}'>⬤</font>&nbsp;&nbsp;${roles.highest.name}`);

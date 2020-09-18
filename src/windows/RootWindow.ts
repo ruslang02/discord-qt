@@ -9,7 +9,7 @@ import { MiniProfile } from '../components/MiniProfile/MiniProfile';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { Account } from "../structures/Account";
-import { Events } from "../structures/Events";
+import { Events as AppEvents } from "../structures/Events";
 import { clientOptions } from '../structures/ClientOptions';
 import { MainView } from '../views/MainView/MainView';
 import { SettingsView } from "../views/SettingsView/SettingsView";
@@ -30,7 +30,7 @@ export class RootWindow extends QMainWindow {
     this.loadIcon();
     this.initializeWindow();
 
-    app.on(Events.SWITCH_VIEW, (view: string) => {
+    app.on(AppEvents.SWITCH_VIEW, (view: string) => {
       switch (view) {
         case 'main':
           this.root.setCurrentWidget(this.mainView);
@@ -41,7 +41,7 @@ export class RootWindow extends QMainWindow {
       }
     });
 
-    app.on(Events.READY, () => {
+    app.on(AppEvents.READY, () => {
       const autoAccount = app.config.accounts?.find(a => a.autoLogin);
       if (autoAccount) this.loadClient(autoAccount);
       this.loadStyles();
@@ -73,18 +73,18 @@ export class RootWindow extends QMainWindow {
   }
 
   public async loadClient(account: Account): Promise<void> {
-    const { Events: DiscordEvents } = Constants;
+    const { Events } = Constants;
     if (app.client) await app.client.destroy();
     app.client = new Client(clientOptions);
-    app.client.on(DiscordEvents.ERROR, console.error)
+    app.client.on(Events.ERROR, console.error)
     if (app.config.debug) {
-      app.client.on(DiscordEvents.DEBUG, console.debug);
-      app.client.on(DiscordEvents.RAW, console.debug);
+      app.client.on(Events.DEBUG, console.debug);
+      app.client.on(Events.RAW, console.debug);
     }
-    app.client.on(DiscordEvents.WARN, console.warn);
+    app.client.on(Events.WARN, console.warn);
     try {
       await app.client.login(account.token);
-      app.emit(Events.SWITCH_VIEW, 'dm');
+      app.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
       console.error('Couldn\'t log in', e);
     }

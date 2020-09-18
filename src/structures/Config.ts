@@ -1,9 +1,11 @@
-import { IConfig } from './IConfig';
+import { existsSync, promises } from 'fs';
 import { dirname, join } from 'path';
-import fs, { existsSync } from 'fs';
+import { IConfig } from './IConfig';
 
-const { mkdir, readFile, writeFile } = fs.promises;
+const { mkdir, readFile, writeFile } = promises;
 export class Config extends IConfig {
+  isLoaded = false;
+
   constructor(
     private file: string,
   ) {
@@ -12,42 +14,38 @@ export class Config extends IConfig {
 
   async load() {
     const { file } = this;
-    await mkdir(dirname(file), {recursive: true});
+    await mkdir(dirname(file), { recursive: true });
+    this.isLoaded = false;
+    let config: IConfig = {};
     try {
-      const {accounts, roundifyAvatars, fastLaunch, debug, enableAvatars, processMarkDown, recentEmojis, theme} = 
-        JSON.parse(await readFile(file, 'utf8'));
-      const appConfig = {
-        accounts: accounts || [],
-        roundifyAvatars: roundifyAvatars ?? true,
-        fastLaunch: fastLaunch ?? false,
-        debug: debug ?? false,
-        enableAvatars: enableAvatars ?? true,
-        processMarkDown: processMarkDown ?? true,
-        theme: theme ?? 'dark',
-        recentEmojis: recentEmojis ?? [],
-      } as IConfig;
-      Object.assign(this, appConfig);
-      if (appConfig.debug === true) console.log('Loaded config:', appConfig);
-    } catch(err) {
-      if (!existsSync(file))
-        await writeFile(file, '{}', 'utf8');
+      config = JSON.parse(await readFile(file, 'utf8'));
+    } catch (err) {
+      if (!existsSync(file)) writeFile(file, '{}', 'utf8');
       else console.error('Config file could not be used, returning to default values...');
-      Object.assign(this, {
-        accounts: [],
-        roundifyAvatars: true,
-        fastLaunch: false,
-        debug: false,
-        enableAvatars: true,
-        processMarkDown: true,
-        theme: 'dark',
-        recentEmojis: [],
-      });
     }
+    Object.assign(this, {
+      accounts: config.accounts ?? [],
+      roundifyAvatars: config.roundifyAvatars ?? true,
+      fastLaunch: config.fastLaunch ?? false,
+      debug: config.debug ?? false,
+      enableAvatars: config.enableAvatars ?? true,
+      processMarkDown: config.processMarkDown ?? true,
+      theme: config.theme ?? 'dark',
+      locale: config.locale ?? 'en-US',
+      recentEmojis: config.recentEmojis ?? [],
+    } as IConfig);
+    if (config.debug === true)
+      console.log('Loaded config:', this);
+    this.isLoaded = true;
   }
   async save() {
     try {
-      await writeFile(join(this.file), JSON.stringify(this))
-    } catch(e) {
+      let obj = { ...this };
+      delete obj.file;
+      delete obj.isLoaded;
+
+      await writeFile(join(this.file), JSON.stringify(obj))
+    } catch (e) {
       console.error(e);
     }
   }

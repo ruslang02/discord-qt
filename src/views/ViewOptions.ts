@@ -1,7 +1,7 @@
-import { DMChannel, TextChannel, Guild } from 'discord.js';
+import { DMChannel, Guild, GuildChannel } from 'discord.js';
 
 export type ViewOptions = {
   dm?: DMChannel,
-  channel?: TextChannel,
+  channel?: GuildChannel,
   guild?: Guild,
 };

@@ -1,29 +1,39 @@
-import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, Shape, QListWidget, QListWidgetItem, ItemFlag, QVariant, QSize, CursorShape, MatchFlag, WidgetEventTypes } from "@nodegui/nodegui";
+import { CursorShape, ItemFlag, MatchFlag, QLabel, QListWidget, QListWidgetItem, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { Permissions } from 'discord.js';
+import { CategoryChannel, Client, Collection, Constants, DQConstants, Guild, GuildChannel, Message } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
-import { Guild, TextChannel, CategoryChannel, Channel, Permissions, User, Collection, GuildChannel } from "discord.js";
-import { UserButton } from "../UserButton/UserButton";
-import { ChannelButton } from './ChannelButton';
-import { ViewOptions } from '../../views/ViewOptions';
 import { Events } from "../../structures/Events";
-import { ScrollMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
-import { GuildsList } from '../GuildsList/GuildsList';
 import { createLogger } from '../../utilities/Console';
+import { ViewOptions } from '../../views/ViewOptions';
+import { ChannelButton } from './ChannelButton';
 
 const { debug } = createLogger('[ChannelsList]');
 export class ChannelsList extends QListWidget {
   private guild?: Guild;
   private active?: ChannelButton;
+  private buttons: Set<ChannelButton> = new Set();
 
   constructor() {
     super();
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('ChannelsList');
-    this.setVerticalScrollMode(ScrollMode.ScrollPerPixel);
+    this.setVerticalScrollMode(1);
     this.setSpacing(2);
     app.on(Events.SWITCH_VIEW, this.handleSwitchView.bind(this));
+    app.on(Events.NEW_CLIENT, this.handleEvents.bind(this));
   }
 
-  async handleSwitchView(view: string, options?: ViewOptions) {
+  private handleEvents(client: Client) {
+    const { Events } = Constants as unknown as DQConstants;
+    client.on(Events.MESSAGE_ACK, (data: any) => {
+      [...this.buttons.values()].find(btn => btn.channel?.id === data.channel_id)?.setUnread(false);
+    });
+    client.on(Events.MESSAGE_CREATE, (message: Message) => {
+      [...this.buttons.values()].find(btn => btn.channel?.id === message.channel.id)?.setUnread(true);
+    })
+  }
+
+  private async handleSwitchView(view: string, options?: ViewOptions) {
     if (view !== 'guild' || !options) return;
     let newGuild;
     if (options.guild) newGuild = options.guild;
@@ -42,14 +52,14 @@ export class ChannelsList extends QListWidget {
   }
 
   async loadChannels() {
-    const { guild } = this;
+    const { guild, buttons } = this;
     const { client } = app;
     if (!guild) return;
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
     this.clear();
     const [categories, channels] = guild.channels.cache
-      .filter(c => (c.permissionsFor(client.user as User) as Permissions).has('VIEW_CHANNEL'))
+      .filter(c => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition(a => a.type === 'category') as [
       Collection<string, CategoryChannel>,
       Collection<string, GuildChannel>
@@ -84,15 +94,17 @@ export class ChannelsList extends QListWidget {
     for (const channel of channels.sort((a, b) => b.rawPosition - a.rawPosition).values()) {
       const btn = new ChannelButton(this);
       const item = new QListWidgetItem();
-      const parent = channel.parentID ? (this.findItems(channel.parentID, MatchFlag.MatchExactly) || [null])[0] : null;
+      const parentItems = channel.parentID ? this.findItems(channel.parentID, MatchFlag.MatchExactly) : [];
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
       btn.setMinimumSize(0, 32);
       btn.setMaximumSize(MAX_QSIZE, 32);
       item.setSizeHint(btn.size());
       item.setText(channel.id);
-      this.insertItem(parent ? this.row(parent) + 1 : 0, item);
+      this.insertItem(parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0, item);
       this.setItemWidget(item, btn);
+      buttons.add(btn);
+      btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
     }
   }
 }

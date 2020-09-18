@@ -3,14 +3,16 @@ import { Guild } from 'discord.js';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { __ } from 'i18n';
 
 export class GuildButton extends QLabel {
   constructor(private guild: Guild, parent?: any) {
-    super();
+    super(parent);
     this.setObjectName("PageButton");
     this.setFixedSize(72, 56);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    this.setProperty('toolTip', guild.available ? guild.name : 'This guild is unavailable.');
+    this.setProperty('unread', !guild.acknowledged);
+    this.setProperty('toolTip', guild.available ? guild.name : __('GUILD_UNAVAILABLE_HEADER'));
     this.setText(guild.available ? guild.nameAcronym : '!');
     if (!guild.available) this.setInlineStyle('border: 1px solid red');
     this.setAlignment(AlignmentFlag.AlignCenter);

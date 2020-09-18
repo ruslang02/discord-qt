@@ -1,10 +1,9 @@
-import { QWidget, QScrollArea, QLabel, QBoxLayout, Direction, WidgetEventTypes, Shape, QPoint, ScrollBarPolicy, QListWidget, QListWidgetItem, QSize, ItemFlag, QScrollBar, QVariant, MatchFlag } from "@nodegui/nodegui";
+import { ItemFlag, MatchFlag, QListWidget, QListWidgetItem, QPoint, QSize, ScrollBarPolicy, Shape, WidgetEventTypes } from "@nodegui/nodegui";
+import { Client, Constants, DMChannel, SnowflakeUtil } from "discord.js";
 import { app } from "../..";
-import { Client, DMChannel, SnowflakeUtil, Constants } from "discord.js";
-import { UserButton } from "../UserButton/UserButton";
+import { Events as AppEvents } from "../../structures/Events";
 import { ViewOptions } from '../../views/ViewOptions';
-import { Events } from "../../structures/Events";
-import { ScrollMode, SelectionMode } from '@nodegui/nodegui/dist/lib/QtWidgets/QAbstractItemView';
+import { UserButton } from "../UserButton/UserButton";
 
 export class DMUsersList extends QListWidget {
   channels = new Map<DMChannel, UserButton>();
@@ -18,10 +17,10 @@ export class DMUsersList extends QListWidget {
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
-    app.on(Events.NEW_CLIENT, (client: Client) => {
-      const { Events: DiscordEvents } = Constants;
-      client.on(DiscordEvents.CLIENT_READY, this.loadDMs.bind(this));
-      client.on(DiscordEvents.MESSAGE_CREATE, (message) => {
+    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+      const { Events } = Constants;
+      client.on(Events.CLIENT_READY, this.loadDMs.bind(this));
+      client.on(Events.MESSAGE_CREATE, (message) => {
         const dm = message.channel;
         if (dm.type !== 'dm') return;
         const btn = this.channels.get(dm);
@@ -38,7 +37,7 @@ export class DMUsersList extends QListWidget {
       })
     });
 
-    app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
+    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view === 'guild') {
         this.active?.setActivated(false);
         this.active = undefined;
@@ -51,16 +50,6 @@ export class DMUsersList extends QListWidget {
     });
   }
 
-  private addDMLabel() {
-    const dmLabel = new QLabel(this);
-    const dmItem = new QListWidgetItem();
-    dmLabel.setText('Direct Messages');
-    dmLabel.setObjectName('DMLabel');
-    dmItem.setSizeHint(new QSize(0, 30));
-    dmItem.setFlags(0)
-    this.addItem(dmItem);
-    this.setItemWidget(dmItem, dmLabel);
-  }
 
   private p0 = new QPoint(0, 0);
   private isLoading = false;
@@ -108,7 +97,7 @@ export class DMUsersList extends QListWidget {
           item.setSizeHint(new QSize(224, 44));
           item.setFlags(~ItemFlag.ItemIsEnabled);
           item.setText(dm.id);
-          btn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'dm', { dm }));
+          btn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm }));
           this.channels.set(dm, btn);
           this.addItem(item);
           this.setItemWidget(item, btn);

@@ -3,6 +3,7 @@ import { MAX_QSIZE, app } from "../..";
 import { Element, Divider, SettingsView } from "./SettingsView";
 import { Page } from "./pages/Page";
 import { Events } from "../../structures/Events";
+import { __ } from "i18n";
 
 
 export class SectionList extends QScrollArea {
@@ -33,7 +34,7 @@ export class SectionList extends QScrollArea {
       this.active?.setProperty('active', true);
       this.active?.repolish();
     });
-    app.emit(Events.OPEN_SETTINGS_PAGE, 'Accounts');
+    app.emit(Events.OPEN_SETTINGS_PAGE, __('ACCOUNTS'));
   }
 
   private initComponent() {

@@ -1,12 +1,12 @@
-import { QBoxLayout, Direction, QWidget, QDropEvent, WidgetEventTypes, NativeElement, QUrl } from "@nodegui/nodegui";
-import { MessagesPanel } from "../MessagesPanel/MessagesPanel";
+import { Direction, QBoxLayout, QWidget } from "@nodegui/nodegui";
 import { InputPanel } from "../InputPanel/InputPanel";
 import { MembersList } from '../MembersList/MembersList';
+import { MessagesPanel } from "../MessagesPanel/MessagesPanel";
 
 export class MainPanel extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);
   channelLayout = new QBoxLayout(Direction.TopToBottom);
-  messages = new MessagesPanel();
+  messages = new MessagesPanel(this);
   inputPanel = new InputPanel();
   membersList = new MembersList();
 
@@ -23,7 +23,11 @@ export class MainPanel extends QWidget {
     layout.setSpacing(0);
     channelLayout.setContentsMargins(0, 0, 0, 0);
     channelLayout.setSpacing(0);
-    channelLayout.addWidget(messages, 1);
+    const widget = new QWidget(this);
+    widget.setLayout(new QBoxLayout(Direction.TopToBottom))
+    widget.layout?.setContentsMargins(0, 0, 0, 0);
+    widget.layout?.addWidget(messages, 1);
+    channelLayout.addWidget(widget, 1);
     channelLayout.addWidget(inputPanel);
     layout.addLayout(channelLayout, 1);
     layout.addWidget(membersList);

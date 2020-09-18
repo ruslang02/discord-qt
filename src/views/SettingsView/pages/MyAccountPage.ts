@@ -7,9 +7,11 @@ import { Client, Constants } from 'discord.js';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { Events } from '../../../structures/Events';
 import { MarkdownStyles } from '../../../structures/MarkdownStyles';
+import { __ } from 'i18n';
+import { DLabel } from '../../../components/DLabel/DLabel';
 
 export class MyAccountPage extends Page {
-  title = "My Account";
+  title = __('ACCOUNT');
 
   constructor() {
     super();
@@ -28,9 +30,9 @@ export class MyAccountPage extends Page {
     ).then(path => path && this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
   }
 
-  unabel = new QLabel(this);
-  emabel = new QLabel(this);
-  avatar = new QLabel(this);
+  private unabel = new QLabel(this);
+  private emabel = new QLabel(this);
+  private avatar = new QLabel(this);
 
   private initPage() {
     const { layout, title, avatar, unabel, emabel } = this;
@@ -51,11 +53,11 @@ export class MyAccountPage extends Page {
     infout.setSpacing(0);
     info.setLayout(infout);
     const unbold = new QLabel();
-    unbold.setText('Username');
+    unbold.setText(__('USERNAME'));
     unbold.setObjectName('Bold');
     unabel.setObjectName('Normal');
     const embold = new QLabel();
-    embold.setText('Email');
+    embold.setText(__('EMAIL'));
     embold.setObjectName('Bold');
     emabel.setObjectName('Normal');
     infout.addWidget(unbold);
@@ -66,7 +68,7 @@ export class MyAccountPage extends Page {
     const editet = new QWidget();
     editet.setLayout(new QBoxLayout(Direction.TopToBottom));
     const editbn = new DColorButton();
-    editbn.setText('Edit');
+    editbn.setText(__('EDIT'));
     editbn.setMinimumSize(60, 32)
     editbn.setMinimumSize(MAX_QSIZE, 32);
     (editet.layout as QBoxLayout).addWidget(editbn);
@@ -77,12 +79,12 @@ export class MyAccountPage extends Page {
 
     const twoFAHeader = new QLabel();
     twoFAHeader.setObjectName('Header2');
-    twoFAHeader.setText('Two-factor authentication');
+    twoFAHeader.setText(__('TWO_FA'));
 
-    const twoFAHelper = new QLabel();
-    twoFAHelper.setText(MarkdownStyles + `This app cannot manage 2FA-authentication, however the official <a href='https://discord.com/channels/@me'>web app</a> can!`);
-    twoFAHelper.setObjectName('TextLabel');
-    twoFAHelper.setOpenExternalLinks(true);
+    const twoFAHelper = new DLabel(this);
+    twoFAHelper.setText(__('TWO_FA_UNAVAILABLE', {
+      tfaURL: 'https://discord.com/channels/@me/settings'
+    }));
 
     layout.addWidget(header);
     layout.addWidget(card, 0);

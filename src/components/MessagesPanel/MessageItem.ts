@@ -1,38 +1,29 @@
-import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, TextInteractionFlag, WidgetEventTypes, QGridLayout } from "@nodegui/nodegui";
-import { Collection, Message, MessageAttachment, Snowflake } from "discord.js";
-import open from 'open';
-import { URL } from 'url';
-import { app, MAX_QSIZE } from '../..';
+import { AlignmentFlag, ContextMenuPolicy, CursorShape, Direction, MouseButton, NativeElement, QAction, QApplication, QBoxLayout, QClipboardMode, QLabel, QMenu, QMouseEvent, QPixmap, QPoint, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
+import { Message, Snowflake } from "discord.js";
+import { __ } from "i18n";
+import { app } from '../..';
 import { Events } from '../../structures/Events';
 import { CancelToken } from '../../utilities/CancelToken';
 import { pictureWorker } from "../../utilities/PictureWorker";
-import { processEmojis, processMarkdown, processMentions, processEmbeds, processAttachments, processInvites } from './MessageUtilities';
-import { MessageType } from 'discord.js';
-import { MarkdownStyles } from '../../structures/MarkdownStyles';
-import { TextChannel } from 'discord.js';
+import { DLabel } from "../DLabel/DLabel";
+import { processAttachments, processEmbeds, processEmojiPlaceholders, processEmojis, processInvites, processMarkdown, processMentions } from './MessageUtilities';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
-
-const MessageTypeText: Map<MessageType, string> = new Map([
-  ['GUILD_MEMBER_JOIN', 'joined the server.'],
-  ['RECIPIENT_ADD', 'was added to the group DM.'],
-  ['RECIPIENT_REMOVE', 'was removed from the group DM.'],
-  ['CALL', 'called.'],
-  ['PINS_ADD', 'pinned a message to this channel.']
-]);
 
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
   private avatar = new QLabel(this);
   private userNameLabel = new QLabel(this);
-  private dateLabel = new QLabel(this);
-  private contentLabel = new QLabel(this);
+  private dateLabel = new DLabel(this);
+  private contentLabel = new DLabel(this);
 
   private msgLayout = new QBoxLayout(Direction.TopToBottom);
   private infoLayout = new QBoxLayout(Direction.LeftToRight);
 
   private menu = new QMenu(this);
   private clipboard = QApplication.clipboard();
+  private contentNoEmojis?: string;
+  public _destroyed = false;
 
   message?: Message;
 
@@ -43,6 +34,7 @@ export class MessageItem extends QWidget {
     this.setLayout(this.controls);
     this.initComponent();
     this.initMenu();
+    this.addEventListener(WidgetEventTypes.DeferredDelete, () => this._destroyed = true);
   }
 
   private initMenu() {
@@ -50,24 +42,24 @@ export class MessageItem extends QWidget {
     menu.setCursor(CursorShape.PointingHandCursor);
     {
       const action = new QAction(menu);
-      action.setText('Quote (>)');
+      action.setText(__('QUOTE') + ' (>)');
       action.addEventListener('triggered', () => {
-        app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
+        this.message && app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
       });
       menu.addAction(action);
     }
     {
       const action = new QAction(menu);
-      action.setText('Quote (embed)');
+      action.setText(__('QUOTE') + ' (embed)');
       action.addEventListener('triggered', () => {
-        app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
+        this.message && app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
       });
       menu.addAction(action);
     }
     menu.addSeparator();
     {
       const action = new QAction(menu);
-      action.setText('Copy Message');
+      action.setText(__('COPY_TEXT'));
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
       });
@@ -75,7 +67,7 @@ export class MessageItem extends QWidget {
     }
     {
       const action = new QAction(menu);
-      action.setText('Copy Message (source)');
+      action.setText(__('COPY_TEXT') + ' (source)');
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
       });
@@ -83,7 +75,15 @@ export class MessageItem extends QWidget {
     }
     {
       const action = new QAction(menu);
-      action.setText('Copy ID');
+      action.setText(__('COPY_MESSAGE_LINK'));
+      action.addEventListener('triggered', () => {
+        clipboard.setText(`https://discord.com/channels/${this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id}/${this.message?.channel.id}/${this.message?.id}`, QClipboardMode.Clipboard);
+      });
+      menu.addAction(action);
+    }
+    {
+      const action = new QAction(menu);
+      action.setText(__('COPY_ID'));
       action.addEventListener('triggered', () => {
         clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
       });
@@ -106,14 +106,7 @@ export class MessageItem extends QWidget {
     avatar.setMinimumSize(48, 0);
     avatar.setAlignment(AlignmentFlag.AlignTop);
     avatar.setCursor(CursorShape.PointingHandCursor);
-    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      if (!this.message) return;
-      const { miniProfile } = app.window.dialogs;
-      const map = avatar.mapToGlobal(this.p0);
-      map.setX(map.x() + avatar.size().width());
-      miniProfile.loadProfile(this.message.member || this.message.author)
-      miniProfile.popup(map);
-    })
+    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, this.handleUserClick.bind(this));
     if (!app.config.enableAvatars) avatar.hide();
 
     infoLayout.setSpacing(8);
@@ -123,35 +116,14 @@ export class MessageItem extends QWidget {
     msgLayout.setSpacing(2);
 
     userNameLabel.setObjectName('UserNameLabel');
+    userNameLabel.setCursor(CursorShape.PointingHandCursor);
+    userNameLabel.addEventListener(WidgetEventTypes.MouseButtonPress, this.handleUserClick.bind(this));
     dateLabel.setObjectName('DateLabel');
+    dateLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
 
     contentLabel.setObjectName('Content');
-    contentLabel.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    contentLabel.setWordWrap(true);
-    contentLabel.setCursor(CursorShape.IBeamCursor);
     contentLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
-    contentLabel.addEventListener(WidgetEventTypes.HoverLeave, () => contentLabel.setProperty('toolTip', ''));
-    contentLabel.addEventListener('linkActivated', async (link) => {
-      const url = new URL(link);
-      if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname);
-      else if (url.protocol === 'dq-channel:') {
-        const channel = await app.client.channels.fetch(url.hostname) as TextChannel;
-        app.emit(Events.SWITCH_VIEW, 'guild', {
-          guild: channel.guild,
-          channel
-        });
-      }
-      else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
-      else open(link);
-    })
-    contentLabel.addEventListener('linkHovered', (link: string) => {
-      try {
-        const uri = new URL(link);
-        const name = uri.searchParams.get('emojiname');
-        if (name) contentLabel.setProperty('toolTip', `:${name}:`);
-      } catch (e) { }
-    });
 
     infoLayout.addWidget(userNameLabel);
     infoLayout.addWidget(dateLabel, 1);
@@ -161,6 +133,16 @@ export class MessageItem extends QWidget {
 
     controls.addWidget(avatar);
     controls.addLayout(msgLayout, 1);
+  }
+
+  private handleUserClick() {
+    if (!this.message) return;
+    const { avatar } = this;
+    const { miniProfile } = app.window.dialogs;
+    const map = avatar.mapToGlobal(this.p0);
+    map.setX(map.x() + avatar.size().width());
+    miniProfile.loadProfile(this.message.member || this.message.author)
+    miniProfile.popup(map);
   }
 
   private alreadyRendered = false;
@@ -181,6 +163,7 @@ export class MessageItem extends QWidget {
     })();
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach(w => w.loadImages && w.loadImages());
+    if (this.contentNoEmojis) processEmojis(this.contentNoEmojis).then(content => this.contentLabel.setText(content));
     this.alreadyRendered = true;
   }
 
@@ -205,19 +188,21 @@ export class MessageItem extends QWidget {
         .replace(/&gt;/g, '>')
         .trim();
       content = await processMentions(content, message);
-      content = await processEmojis(content);
-      contentLabel.setText(MarkdownStyles + content);
+      this.contentNoEmojis = content;
+      content = await processEmojiPlaceholders(content);
+      contentLabel.setText(content);
     }
     if (token?.cancelled) return;
     [
       ...processAttachments(message.attachments),
-      ...processEmbeds(message),
+      ...processEmbeds(message, this),
       ...await processInvites(message)
-    ].forEach(w => this.msgLayout.addWidget(w));
+    ].forEach(w => !this._destroyed && this.msgLayout.addWidget(w));
+    return message;
   }
 
   private loadSystemMessage(message: Message) {
-    let content = MessageTypeText.get(message.type) || message.type;
+    let content = __(`MESSAGE_${message.type}`) || message.type;
     this.dateLabel.hide();
     this.contentLabel.setText('<i>&nbsp;</i>' + content);
     this.msgLayout.setDirection(Direction.LeftToRight);

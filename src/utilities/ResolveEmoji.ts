@@ -13,9 +13,7 @@ export async function resolveEmoji(status: CustomStatus): Promise<string | null>
   const url = await getEmojiURL(status);
   if (!url) return null;
   if (fname === '') fname = `tw/${basename(url).split('.')[0]}`;
-  const filePath = await pictureWorker.loadImage(url, { roundify: false })
-  if (!filePath) return null;
-  return filePath;
+  return pictureWorker.loadImage(url, { roundify: false });
 }
 
 export function getEmojiURL(status: CustomStatus): Promise<string | null> {

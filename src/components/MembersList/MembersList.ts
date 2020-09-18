@@ -1,5 +1,6 @@
 import { BrushStyle, ContextMenuPolicy, QAction, QApplication, QBrush, QClipboardMode, QColor, QListWidget, QListWidgetItem, QMenu, QPoint, QSize, ScrollBarPolicy, Shape } from '@nodegui/nodegui';
-import { TextChannel } from 'discord.js';
+import { GuildChannel, NewsChannel, TextChannel } from 'discord.js';
+import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../structures/Events';
 import { CancelToken } from '../../utilities/CancelToken';
@@ -10,7 +11,7 @@ import { UserButton } from '../UserButton/UserButton';
 const { debug } = createLogger('[MembersList]');
 export class MembersList extends QListWidget {
   private cancelToken?: CancelToken;
-  private channel?: TextChannel;
+  private channel?: TextChannel | NewsChannel;
 
   private menu = new QMenu(this);
   private p0 = new QPoint(0, 0);
@@ -53,7 +54,7 @@ export class MembersList extends QListWidget {
     menu.addSeparator();
     {
       const item = new QAction();
-      item.setText('Copy ID');
+      item.setText(__('COPY_ID'));
       item.addEventListener('triggered', async () => {
         if (!this.active || !this.active.user) return;
         clipboard.setText(this.active.user.id, QClipboardMode.Clipboard);
@@ -63,7 +64,7 @@ export class MembersList extends QListWidget {
   }
   private ratelimit = false;
   private rateTimer?: NodeJS.Timer;
-  private async loadList(channel: TextChannel, token: CancelToken) {
+  private async loadList(channel: GuildChannel, token: CancelToken) {
     const { menu } = this;
 
     if (this.ratelimit || this.channel === channel) return;
@@ -71,7 +72,8 @@ export class MembersList extends QListWidget {
     if (this.rateTimer) clearTimeout(this.rateTimer);
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
-    this.channel = channel;
+    if (channel.type !== 'text' && channel.type !== 'news') return;
+    this.channel = channel as TextChannel | NewsChannel;
     this.clear();
     for (const member of channel.members.values()) {
       const btn = new UserButton(this);

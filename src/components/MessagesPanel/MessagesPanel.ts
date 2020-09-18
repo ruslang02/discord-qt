@@ -1,8 +1,7 @@
 import { AlignmentFlag, Direction, QBoxLayout, QPoint, QScrollArea, QWidget, ScrollBarPolicy, Shape, WidgetEventTypes } from "@nodegui/nodegui";
-import { Client, DMChannel, Message, Snowflake, TextChannel } from "discord.js";
+import { Client, DMChannel, GuildChannel, Message, NewsChannel, Snowflake, TextChannel } from "discord.js";
 import { app, MAX_QSIZE } from "../..";
 import { Events } from "../../structures/Events";
-import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { MessageItem } from "./MessageItem";
@@ -10,13 +9,12 @@ import { MessageItem } from "./MessageItem";
 const { debug } = createLogger('[MessagesPanel]');
 
 export class MessagesPanel extends QScrollArea {
-  private channel?: DMChannel | TextChannel;
+  private channel?: DMChannel | TextChannel | NewsChannel;
   private rootControls = new QBoxLayout(Direction.BottomToTop);
   private root = new QWidget();
-  private cancelToken?: CancelToken;
 
-  constructor() {
-    super();
+  constructor(parent?: any) {
+    super(parent);
     this.setObjectName('MessagesPanel');
     this.setAlignment(AlignmentFlag.AlignBottom + AlignmentFlag.AlignHCenter);
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
@@ -26,18 +24,16 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initEvents() {
-    app.on(Events.SWITCH_VIEW, async (view: string, options?: ViewOptions) => {
+    app.on(Events.SWITCH_VIEW, async (view, options) => {
       if (!['dm', 'guild'].includes(view)) return;
       if (!options || !options.dm && !options.channel) {
         this.channel = undefined;
         this.initRoot();
         return;
       }
-      const channel = options.dm || options.channel || null;
+      const channel = options.dm || options.channel;
       if (!channel) return;
-      if (this.cancelToken) this.cancelToken.cancel();
-      this.cancelToken = new CancelToken();
-      await this.handleChannelOpen(channel, this.cancelToken);
+      await this.handleChannelOpen(channel);
     });
 
     app.on(Events.NEW_CLIENT, (client: Client) => {
@@ -45,9 +41,13 @@ export class MessagesPanel extends QScrollArea {
         if (message.channel.id === this.channel?.id) {
           const widget = new MessageItem(this);
           (this.root.layout as QBoxLayout).addWidget(widget);
-          const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
           await widget.loadMessage(message);
-          setTimeout(() => clearInterval(scrollTimer), 50);
+          setTimeout(() => this.ensureVisible(0, MAX_QSIZE), 100);
+          if (this.ackTimer) return;
+          this.ackTimer = setTimeout(() => {
+            if (this.channel) this.channel.acknowledge();
+            this.ackTimer = undefined;
+          }, 1000);
         }
       })
     })
@@ -65,12 +65,6 @@ export class MessagesPanel extends QScrollArea {
     this.setWidget(this.root);
   }
 
-  private scrollDown() {
-    this.ensureVisible(0, MAX_QSIZE);
-    this.lower();
-    this.root.lower();
-  }
-
   private p0 = new QPoint(0, 0);
   private isLoading = false;
   private async handleWheel(onlyLoadImages = false) {
@@ -86,8 +80,8 @@ export class MessagesPanel extends QScrollArea {
       if (iy >= y - 100 && iy <= y + height + 100) item.renderImages();
     }
     if (!onlyLoadImages && y <= 50) {
-      const oldest = children.pop() as MessageItem;
-      if (oldest.message?.id) {
+      const oldest = children.pop();
+      if (oldest?.message?.id) {
         const scrollTo = () => this.ensureVisible(0, oldest.mapToParent(this.p0).y() + height - oldest.size().height());
         const scrollTimer = setInterval(scrollTo, 1);
         await this.loadMessages(oldest.message.id);
@@ -109,37 +103,50 @@ export class MessagesPanel extends QScrollArea {
   }
   private ratelimit = false;
   private rateTimer?: NodeJS.Timer;
-  private async handleChannelOpen(channel: DMChannel | TextChannel, token: CancelToken) {
-    if (this.ratelimit || this.isLoading || this.channel === channel) return;
+  private ackTimer?: NodeJS.Timer;
+  private async handleChannelOpen(channel: DMChannel | GuildChannel) {
+    if (this.ratelimit ||
+      this.isLoading ||
+      this.channel === channel ||
+      !['news', 'text', 'dm'].includes(channel.type)
+    ) return;
 
     this.isLoading = this.ratelimit = true;
+    this.hide();
     if (this.rateTimer) clearTimeout(this.rateTimer);
+    if (this.ackTimer) clearTimeout(this.ackTimer);
     this.rateTimer = setTimeout(() => this.ratelimit = false, 1000);
     debug(`Opening channel ${channel.id}...`);
     this.initRoot();
-    this.channel = channel;
-    if (token.cancelled) return this.isLoading = false;
-    if (channel.messages.cache.size < 30) await channel.messages.fetch({ limit: 30 });
-    if (token.cancelled) return this.isLoading = false;
-    debug(`Total of ${channel.messages.cache.size} messages are available.`);
-    const messages = channel.messages.cache.array()
+
+    const textChannel = channel as TextChannel | NewsChannel | DMChannel;
+    this.channel = textChannel;
+
+    if (textChannel.messages.cache.size < 30) await textChannel.messages.fetch({ limit: 30 });
+    debug(`Total of ${textChannel.messages.cache.size} messages are available.`);
+    const messages = textChannel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
-    if (token.cancelled) return this.isLoading = false;
     messages.length = Math.min(messages.length, 30);
-    const scrollTimer = setInterval(this.scrollDown.bind(this), 1);
+    const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
     const promises = messages.map(message => {
       const widget = new MessageItem();
       (this.root.layout as QBoxLayout).insertWidget(0, widget);
-      return widget.loadMessage(message, token);
+      return widget.loadMessage(message);
     });
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
     await Promise.all(promises);
     debug(`Widgets finished loading.`);
+    this.isLoading = false;
+    this.show();
     setTimeout(() => {
-      this.isLoading = false;
-      clearInterval(scrollTimer);
+      //this.ensureVisible(0, MAX_QSIZE);
       this.handleWheel(true);
+      clearInterval(scrollTimer);
     }, 300);
+    this.ackTimer = setTimeout(() => {
+      if (this.channel) this.channel.acknowledge();
+      this.ackTimer = undefined;
+    }, 3000);
   }
 }
