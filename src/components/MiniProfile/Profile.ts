@@ -1,14 +1,19 @@
-import { QWidget, QLabel, QBoxLayout, Direction, AlignmentFlag, QPixmap } from '@nodegui/nodegui';
-import { CustomStatusLabel } from './CustomStatusLabel';
-import { User, GuildMember } from 'discord.js';
+import {
+  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget,
+} from '@nodegui/nodegui';
+import { GuildMember, User } from 'discord.js';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { CustomStatusLabel } from './CustomStatusLabel';
 
 export class Profile extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
 
   private avatar = new QLabel(this);
+
   private nickname = new QLabel(this);
+
   private username = new QLabel(this);
+
   private custom = new CustomStatusLabel();
 
   constructor(parent?: any) {
@@ -18,7 +23,9 @@ export class Profile extends QWidget {
   }
 
   private initComponent() {
-    const { layout, avatar, nickname, username, custom } = this;
+    const {
+      layout, avatar, nickname, username, custom,
+    } = this;
 
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(0);
@@ -32,7 +39,7 @@ export class Profile extends QWidget {
     nickname.setAlignment(AlignmentFlag.AlignHCenter);
     username.setAlignment(AlignmentFlag.AlignHCenter);
 
-    avatar.setMinimumSize(0, 80)
+    avatar.setMinimumSize(0, 80);
     nickname.setObjectName('Nickname');
     nickname.setWordWrap(true);
     username.setObjectName('Username');
@@ -46,14 +53,16 @@ export class Profile extends QWidget {
   }
 
   async loadProfile(someone: User | GuildMember) {
-    const { avatar, username, nickname, custom } = this;
+    const {
+      avatar, username, nickname, custom,
+    } = this;
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;
     if (!user) return;
     this.setMinimumSize(250, 0);
     avatar.clear();
     pictureWorker.loadImage(user.avatarURL({ format: 'png', size: 256 }))
-      .then(path => path && avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)))
+      .then((path) => path && avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)));
     if (member?.nickname) {
       username.show();
       nickname.setText(member.nickname);

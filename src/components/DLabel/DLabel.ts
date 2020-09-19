@@ -1,11 +1,13 @@
-import { CursorShape, QLabel, TextInteractionFlag } from "@nodegui/nodegui";
-import { DMChannel, Guild, GuildChannel, TextChannel } from "discord.js";
-import { __ } from "i18n";
-import open from "open";
-import { basename, extname } from "path";
-import { app } from "../..";
-import { Events } from "../../structures/Events";
-import { MarkdownStyles } from "../../structures/MarkdownStyles";
+import { CursorShape, QLabel, TextInteractionFlag } from '@nodegui/nodegui';
+import {
+  DMChannel, Guild, GuildChannel, TextChannel,
+} from 'discord.js';
+import { __ } from 'i18n';
+import open from 'open';
+import { basename, extname } from 'path';
+import { app } from '../..';
+import { Events } from '../../structures/Events';
+import { MarkdownStyles } from '../../structures/MarkdownStyles';
 
 export class DLabel extends QLabel {
   constructor(parent?: any) {
@@ -13,11 +15,11 @@ export class DLabel extends QLabel {
     this.setWordWrap(true);
     this.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     this.setCursor(CursorShape.IBeamCursor);
-    this.addEventListener('linkActivated', this.handleLinkActivated.bind(this));
+    this.addEventListener('linkActivated', DLabel.handleLinkActivated.bind(this));
     this.addEventListener('linkHovered', this.handleLinkHovered.bind(this));
   }
 
-  private async handleLinkActivated(link: string) {
+  private static async handleLinkActivated(link: string) {
     if (!link) return;
     const url = new URL(link);
     if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname);
@@ -25,27 +27,28 @@ export class DLabel extends QLabel {
       const channel = await app.client.channels.fetch(url.hostname) as TextChannel;
       app.emit(Events.SWITCH_VIEW, 'guild', {
         guild: channel.guild,
-        channel
+        channel,
       });
-    }
-    else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link)
+    } else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link);
     else if (
-      /discord(app)?\.com/g.test(url.hostname) &&
-      url.pathname.startsWith('/channels') &&
-      !url.pathname.includes('settings')
+      /discord(app)?\.com/g.test(url.hostname)
+      && url.pathname.startsWith('/channels')
+      && !url.pathname.includes('settings')
     ) {
-      const [path, guildId, channelId, messageId] = url.pathname.slice(1).split('/');
+      const [, guildId, channelId] = url.pathname.slice(1).split('/');
       app.emit(Events.SWITCH_VIEW, guildId === '@me' ? 'dm' : 'guild', {
         dm: <DMChannel>app.client.channels.resolve(channelId) || undefined,
-        guild: guildId === "@me" ? undefined : <Guild>app.client.guilds.resolve(guildId),
-        channel: <GuildChannel>app.client.channels.resolve(channelId)
+        guild: guildId === '@me' ? undefined : <Guild>app.client.guilds.resolve(guildId),
+        channel: <GuildChannel>app.client.channels.resolve(channelId),
       });
-    }
-    else open(link);
+    } else open(link);
   }
 
   private handleLinkHovered(link: string) {
-    if (!link) return this.setProperty('toolTip', '');
+    if (!link) {
+      this.setProperty('toolTip', '');
+      return;
+    }
     const uri = new URL(link);
     const name = uri.searchParams.get('emoji_name');
     const id = basename(uri.pathname, extname(uri.pathname));
@@ -53,10 +56,10 @@ export class DLabel extends QLabel {
       const emoji = app.client.emojis.resolve(id);
       const serverName = emoji?.guild.name;
       this.setProperty('toolTip', `<html><b>:${name}:</b><br />
-        ${serverName ?
-          `${__('EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION')} <b>${serverName}</b>` :
-          __('EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION')
-        }
+        ${serverName
+    ? `${__('EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION')} <b>${serverName}</b>`
+    : __('EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION')
+}
           </html>`);
     }
   }

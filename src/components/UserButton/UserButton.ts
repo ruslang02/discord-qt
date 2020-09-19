@@ -1,51 +1,45 @@
-import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, WidgetEventTypes } from "@nodegui/nodegui";
-import { Client, Constants, GuildMember, Presence, User } from "discord.js";
-import { __ } from "i18n";
+import {
+  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, WidgetEventTypes,
+} from '@nodegui/nodegui';
+import {
+  ActivityType, Client, Constants, GuildMember, Presence, User,
+} from 'discord.js';
+import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-import { pictureWorker } from "../../utilities/PictureWorker";
+import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
-const buttons = new WeakMap<User | GuildMember, UserButton>();
-setTimeout(() => {
-  app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-    const { Events } = Constants;
-    client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
-      if (!presence.user) return;
-      const btn = buttons.get(presence.user);
-      btn?.loadPresence(presence);
-    });
-    client.on(Events.GUILD_MEMBER_UPDATE, (o, m) => {
-      const oldMember = o as GuildMember;
-      const member = m as GuildMember;
-      const btn = buttons.get(member);
-      if (!btn) return;
-      if (btn.isGuildMember) btn.loadUser(member); else btn.loadUser(member.user);
-      if (oldMember.user.avatar !== member.user.avatar) btn.loadAvatar();
-    });
-    client.on(Events.USER_UPDATE, (o, u) => {
-      const oldUser = o as User;
-      const user = u as User;
-      const btn = buttons.get(user);
-      if (!btn || btn.isGuildMember) return;
-      btn.loadUser(user);
-      if (oldUser.avatar !== user.avatar) btn.loadAvatar();
-    })
-  });
-});
-
 export class UserButton extends DChannelButton {
+  private static ActivityTypeText: Map<ActivityType, string> = new Map([
+    ['LISTENING', 'LISTENING_TO'],
+    ['PLAYING', 'PLAYING_GAME'],
+    ['WATCHING', 'WATCHING'],
+    ['STREAMING', 'STREAMING'],
+  ]);
+
+  private static buttons = new WeakMap<User | GuildMember, UserButton>();
+
   private avatar = new QLabel(this);
+
   private nameLabel = new QLabel(this);
+
   private statusInd = new QLabel(this);
+
   private nameLayout = new QBoxLayout(Direction.LeftToRight);
+
   private statusIcon = new QLabel(this);
+
   private statusLabel = new QLabel(this);
+
   private statusLayout = new QBoxLayout(Direction.LeftToRight);
+
   private infoControls = new QBoxLayout(Direction.TopToBottom);
+
   user?: User;
+
   isGuildMember = false;
 
   constructor(parent?: any) {
@@ -56,8 +50,45 @@ export class UserButton extends DChannelButton {
     this.initComponent();
   }
 
+  static init() {
+    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
+      const { Events } = Constants;
+      client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
+        if (!presence.user) return;
+        const btn = UserButton.buttons.get(presence.user);
+        btn?.loadPresence(presence);
+      });
+      client.on(Events.GUILD_MEMBER_UPDATE, (o, m) => {
+        const oldMember = o as GuildMember;
+        const member = m as GuildMember;
+        const btn = UserButton.buttons.get(member);
+        if (!btn) return;
+        if (btn.isGuildMember) btn.loadUser(member); else btn.loadUser(member.user);
+        if (oldMember.user.avatar !== member.user.avatar) btn.loadAvatar();
+      });
+      client.on(Events.USER_UPDATE, (o, u) => {
+        const oldUser = o as User;
+        const user = u as User;
+        const btn = UserButton.buttons.get(user);
+        if (!btn || btn.isGuildMember) return;
+        btn.loadUser(user);
+        if (oldUser.avatar !== user.avatar) btn.loadAvatar();
+      });
+    });
+  }
+
   initComponent() {
-    const { avatar, nameLabel, nameLayout, layout, infoControls, statusLayout, statusLabel, statusIcon, statusInd } = this;
+    const {
+      avatar,
+      nameLabel,
+      nameLayout,
+      layout,
+      infoControls,
+      statusLayout,
+      statusLabel,
+      statusIcon,
+      statusInd,
+    } = this;
 
     if (!app.config.enableAvatars) avatar.hide();
     avatar.setFixedSize(32, 32);
@@ -89,14 +120,16 @@ export class UserButton extends DChannelButton {
     this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setHovered(true));
     this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setHovered(false));
   }
+
   private hasPixmap = false;
+
   async loadAvatar() {
     if (!app.config.enableAvatars || !this.user || this.hasPixmap) return;
     this.hasPixmap = true;
     const path = await pictureWorker.loadImage(
-      this.user.avatarURL({ format: "png", size: 256 }) || this.user.defaultAvatarURL
+      this.user.avatarURL({ format: 'png', size: 256 }) || this.user.defaultAvatarURL,
     );
-    path && this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    if (path) this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }
 
   async loadPresence(presence: Presence) {
@@ -106,37 +139,25 @@ export class UserButton extends DChannelButton {
 
     if (presence.activities.length) {
       const { type, name, state } = presence.activities[0];
-      [this.statusLabel, this.statusIcon].forEach(w => w.setMaximumSize(MAX_QSIZE, MAX_QSIZE));
+      [this.statusLabel, this.statusIcon].forEach((w) => w.setMaximumSize(MAX_QSIZE, MAX_QSIZE));
       let status = '';
-
-      switch (type) {
-        case 'LISTENING':
-          status = __('LISTENING_TO', { name });
-          break;
-        case 'PLAYING':
-          status = __('PLAYING_GAME', { game: name });
-          break;
-        case 'STREAMING':
-          status = __('STREAMING', { name });
-          break;
-        case 'WATCHING':
-          status = __('WATCHING', { name });
-          break;
-        case 'CUSTOM_STATUS':
-          status = state || '';
-      }
+      if (type === 'CUSTOM_STATUS') status = state || '';
+      else status = __(UserButton.ActivityTypeText.get(type) || '', { name, game: name });
       this.statusLabel.setText(status);
     } else {
-      [this.statusLabel, this.statusIcon].forEach(w => w.setMaximumSize(MAX_QSIZE, 0));
+      [this.statusLabel, this.statusIcon].forEach((w) => w.setMaximumSize(MAX_QSIZE, 0));
     }
   }
 
   async loadStatusEmoji(presence: Presence) {
     this.statusIcon.hide();
-    const activity = presence.activities.find(a => !!a.emoji);
-    if (!activity || !activity.emoji) return;
+    const activity = presence.activities.find((a) => !!a.emoji);
+    if (!activity || !activity.emoji || !activity.emoji.id) return;
     // @ts-ignore
-    const emojiPath = await resolveEmoji({ emoji_id: activity.emoji.id, emoji_name: activity.emoji.name });
+    const emojiPath = await resolveEmoji({
+      emoji_id: activity.emoji.id,
+      emoji_name: activity.emoji.name,
+    });
     if (!emojiPath) return;
     const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
@@ -152,7 +173,8 @@ export class UserButton extends DChannelButton {
 
     this.nameLabel.setText(member?.nickname ?? user.username);
     this.loadPresence(user.presence);
-    buttons.set(user, this);
-    if (member) buttons.set(member, this);
+    UserButton.buttons.set(user, this);
+    if (member) UserButton.buttons.set(member, this);
   }
 }
+setTimeout(UserButton.init);

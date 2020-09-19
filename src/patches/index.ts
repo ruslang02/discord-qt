@@ -1,3 +1,5 @@
+import { createLogger } from "../utilities/Console";
+
 export const Patches = [
   require('./Constants'),
   require('./TextBasedChannel'),
@@ -10,3 +12,5 @@ export const Patches = [
   require('./RESTManager'),
   require('./ActionsManager'),
 ];
+
+createLogger('[dqt]').log(`Applied ${Patches.length} patches.`);

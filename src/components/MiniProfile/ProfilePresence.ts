@@ -1,16 +1,29 @@
-import { QWidget, QLabel, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
-import { Presence } from 'discord.js';
+import {
+  Direction, QBoxLayout, QLabel, QPixmap, QWidget,
+} from '@nodegui/nodegui';
+import { ActivityType, Presence } from 'discord.js';
+import { __ } from 'i18n';
 import { MAX_QSIZE } from '../..';
 import { pictureWorker } from '../../utilities/PictureWorker';
-import { __ } from 'i18n';
 
 export class ProfilePresence extends QWidget {
+  private static ActivityTypeText: Map<ActivityType, string> = new Map([
+    ['LISTENING', 'USER_ACTIVITY_HEADER_LISTENING'],
+    ['PLAYING', 'USER_ACTIVITY_HEADER_PLAYING'],
+    ['WATCHING', 'USER_ACTIVITY_HEADER_WATCHING'],
+    ['STREAMING', 'USER_ACTIVITY_HEADER_LIVE_ON_PLATFORM'],
+  ]);
+
   layout = new QBoxLayout(Direction.TopToBottom);
 
   private header = new QLabel(this);
+
   private label1 = new QLabel(this);
+
   private label2 = new QLabel(this);
+
   private label3 = new QLabel(this);
+
   private lImage = new QLabel(this);
 
   constructor(parent?: any) {
@@ -21,11 +34,13 @@ export class ProfilePresence extends QWidget {
   }
 
   private initComponent() {
-    const { layout, header, label1, label2, label3, lImage } = this;
+    const {
+      layout, header, label1, label2, label3, lImage,
+    } = this;
     header.setObjectName('Header');
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(8);
-    [label1, label2, label3].forEach(label => label.setObjectName('Label'));
+    [label1, label2, label3].forEach((label) => label.setObjectName('Label'));
     const dLayout = new QBoxLayout(Direction.LeftToRight);
     dLayout.setContentsMargins(0, 0, 0, 0);
     dLayout.setSpacing(10);
@@ -37,7 +52,7 @@ export class ProfilePresence extends QWidget {
     lLayout.setSpacing(0);
 
     lLayout.addStretch(1);
-    [label1, label2, label3].forEach(label => lLayout.addWidget(label));
+    [label1, label2, label3].forEach((label) => lLayout.addWidget(label));
     lLayout.addStretch(1);
     dLayout.addWidget(lImage);
     dLayout.addLayout(lLayout, 1);
@@ -48,42 +63,37 @@ export class ProfilePresence extends QWidget {
   }
 
   load(presence: Presence) {
-    const { header, label1, label2, label3, lImage } = this;
-    const activity = presence.activities.find(a => a.type !== 'CUSTOM_STATUS');
+    const {
+      header, label1, label2, label3, lImage,
+    } = this;
+    const activity = presence.activities.find((a) => a.type !== 'CUSTOM_STATUS');
     if (!activity) {
       this.hide();
       return false;
     }
-    switch (activity.type) {
-      case 'LISTENING':
-        header.setText(__('USER_ACTIVITY_HEADER_LISTENING', { name: activity.name }));
-        break;
-      case 'PLAYING':
-        header.setText(__('USER_ACTIVITY_HEADER_PLAYING'));
-        break;
-      case 'WATCHING':
-        header.setText(__('USER_ACTIVITY_HEADER_WATCHING', { name: activity.name }));
-        break;
-      case 'STREAMING':
-        header.setText(__('USER_ACTIVITY_HEADER_LIVE_ON_PLATFORM', { platform: activity.name }));
-        break;
-    }
+    header.setText(__(
+      ProfilePresence.ActivityTypeText.get(activity.type) || '',
+      {
+        name: activity.name,
+        platform: activity.name,
+      },
+    ));
     if (activity.type === 'PLAYING') {
       label1.setText(`<b>${activity.name}</b>`);
       label1.show();
-      activity.details ? label2.show() : label2.hide();
+      if (activity.details) label2.show(); else label2.hide();
       label2.setText(activity.details || '');
     } else {
-      activity.details ? label1.show() : label1.hide();
+      if (activity.details) label1.show(); else label1.hide();
       label1.setText(`<b>${activity.details}</b>`);
     }
-    activity.state ? label3.show() : label3.hide();
+    if (activity.state) label3.show(); else label3.hide();
     label3.setText(activity.state || '');
 
-    const lImageUrl = activity.assets?.largeImageURL({size: 256, format: 'png'});
+    const lImageUrl = activity.assets?.largeImageURL({ size: 256, format: 'png' });
     if (lImageUrl) {
-      pictureWorker.loadImage(lImageUrl, {roundify: false})
-        .then(path => path && lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)))
+      pictureWorker.loadImage(lImageUrl, { roundify: false })
+        .then((path) => path && lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)));
     } else {
       lImage.setText('');
       lImage.hide();

@@ -1,7 +1,10 @@
-import { QWidget, QBoxLayout, Direction, QGraphicsDropShadowEffect, QColor } from '@nodegui/nodegui';
+import {
+  Direction, QBoxLayout, QColor, QGraphicsDropShadowEffect, QWidget,
+} from '@nodegui/nodegui';
 
 export class DTitleBar extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
+
   private shadow = new QGraphicsDropShadowEffect();
 
   constructor() {
@@ -11,6 +14,7 @@ export class DTitleBar extends QWidget {
     this.setLayout(this.controls);
     this.initShadow();
   }
+
   initShadow() {
     const { shadow } = this;
     shadow.setBlurRadius(5);

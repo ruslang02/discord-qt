@@ -1,20 +1,22 @@
-import {  QWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
-import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
+import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 import { GuildsList } from '../../components/GuildsList/GuildsList';
-import { MainTitleBar } from '../../components/MainTitleBar/MainTitleBar';
+import { LeftPanel } from '../../components/LeftPanel/LeftPanel';
 import { MainPanel } from '../../components/MainPanel/MainPanel';
-
+import { MainTitleBar } from '../../components/MainTitleBar/MainTitleBar';
 
 export class MainView extends QWidget {
   private controls = new QBoxLayout(Direction.LeftToRight);
 
   private guildsList = new GuildsList();
+
   private leftPanel = new LeftPanel();
 
   private main = new QWidget();
+
   private mainLayout = new QBoxLayout(Direction.TopToBottom);
 
   private titlebar = new MainTitleBar();
+
   private mainPanel = new MainPanel();
 
   constructor() {
@@ -34,7 +36,7 @@ export class MainView extends QWidget {
     this.mainLayout.addWidget(this.titlebar);
     this.mainLayout.addWidget(this.mainPanel, 1);
     [this.guildsList, this.leftPanel]
-      .forEach(w => this.controls.addWidget(w));
+      .forEach((w) => this.controls.addWidget(w));
     this.controls.addWidget(this.main, 1);
   }
 }

@@ -1,21 +1,47 @@
-import { QWidget, QBoxLayout, Direction, QLineEdit, QMenu, WidgetAttribute, QListWidget, QSize, ScrollBarPolicy, QLabel, ListViewMode, ResizeMode, Flow, QListWidgetItem, QIcon, AlignmentFlag, QVariant, WidgetEventTypes, FocusReason, QKeyEvent, NativeElement, Key, QBrush, QColor, BrushStyle, Movement } from '@nodegui/nodegui';
+import {
+  AlignmentFlag,
+  Direction,
+  Flow,
+  FocusReason,
+  Key,
+  ListViewMode,
+  Movement,
+  NativeElement,
+  QBoxLayout,
+  QIcon,
+  QKeyEvent,
+  QLineEdit,
+  QListWidget,
+  QListWidgetItem,
+  QMenu,
+  QSize,
+  QVariant,
+  QWidget,
+  ResizeMode,
+  ScrollBarPolicy,
+  WidgetAttribute,
+  WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
-import { app } from '../..';
-
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { __ } from 'i18n';
+import { app } from '../..';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class EmojiPicker extends QMenu {
   events = new EventEmitter();
-  controls = new QBoxLayout(this.dir);
+
+  controls: QBoxLayout;
+
   private root = new QWidget(this);
+
   private emojiView = new QListWidget(this);
+
   private textInput = new QLineEdit(this);
 
-  constructor(parent?: any, private dir = Direction.TopToBottom) {
+  constructor(parent?: any, dir = Direction.TopToBottom) {
     super(parent);
-
+    this.controls = new QBoxLayout(dir);
     this.setInlineStyle('background: transparent;');
     this.setFixedSize(392, 350);
     this.setLayout(new QBoxLayout(Direction.TopToBottom));
@@ -41,7 +67,9 @@ export class EmojiPicker extends QMenu {
   }
 
   private initComponent() {
-    const { controls, root, emojiView, textInput } = this;
+    const {
+      controls, root, emojiView, textInput,
+    } = this;
     root.setLayout(controls);
     root.setObjectName('EmojiPicker');
     root.setFixedSize(392, 350);
@@ -62,7 +90,7 @@ export class EmojiPicker extends QMenu {
     });
     textLayout.addWidget(textInput);
     controls.addLayout(textLayout);
-    emojiView.setObjectName("EmojiView");
+    emojiView.setObjectName('EmojiView');
     emojiView.setGridSize(new QSize(40, 40));
     emojiView.setUniformItemSizes(true);
     emojiView.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
@@ -82,9 +110,10 @@ export class EmojiPicker extends QMenu {
     if (!emoji) return;
     if (app.config.recentEmojis) {
       let add = true;
-      app.config.recentEmojis = app.config.recentEmojis.map(obj => {
-        if (obj[0] === emojiId) {
-          obj[1] += 1;
+      app.config.recentEmojis = app.config.recentEmojis.map((obj) => {
+        const o = obj;
+        if (o[0] === emojiId) {
+          o[1] += 1;
           add = false;
         }
         return obj;
@@ -103,17 +132,13 @@ export class EmojiPicker extends QMenu {
     emojiView.clear();
     if (emojiName === '' && config.recentEmojis) {
       const recents = config.recentEmojis.sort((a, b) => a[1] - b[1]);
-
       for (const item of recents) {
         const emoji = client.emojis.resolve(item[0]);
-        if (!emoji) continue;
-        this.insertEmoji(emoji);
+        if (emoji) this.insertEmoji(emoji);
       }
       return;
     }
-    const emojis = client.emojis.cache.filter(emoji => {
-      return emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase());
-    }).array()
+    const emojis = client.emojis.cache.filter((emoji) => emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase())).array();
     emojis.length = Math.min(emojis.length, 100);
     for (const emoji of emojis) this.insertEmoji(emoji);
   }

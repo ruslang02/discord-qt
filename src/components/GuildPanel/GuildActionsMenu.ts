@@ -1,13 +1,15 @@
-import { QWidget, QBoxLayout, Direction, QPushButton } from '@nodegui/nodegui';
-import { DColorButton, DColorButtonColor } from '../DColorButton/DColorButton';
-import { app } from '../..';
-import { ViewOptions } from '../../views/ViewOptions';
+import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
-import { Events } from '../../structures/Events';
 import { __ } from 'i18n';
+import { app } from '../..';
+import { Events } from '../../structures/Events';
+import { ViewOptions } from '../../views/ViewOptions';
+import { DColorButton } from '../DColorButton/DColorButton';
+import { DColorButtonColor } from '../DColorButton/DColorButtonColor';
 
 export class GuildActionsMenu extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
+
   guild?: Guild;
 
   constructor() {
@@ -17,9 +19,9 @@ export class GuildActionsMenu extends QWidget {
     this.setLayout(this.layout);
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view !== 'guild' || !options) return;
-      if (options.guild) this.guild = options.guild
+      if (options.guild) this.guild = options.guild;
       else if (options.channel) this.guild = options.channel.guild;
-    })
+    });
   }
 
   private initComponent() {
@@ -31,7 +33,7 @@ export class GuildActionsMenu extends QWidget {
     leavebtn.addEventListener('clicked', () => {
       this.guild?.leave();
       app.emit(Events.SWITCH_VIEW, 'dm');
-    })
+    });
     layout.addWidget(leavebtn);
   }
 }

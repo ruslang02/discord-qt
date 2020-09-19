@@ -1,6 +1,5 @@
 import { QLabel, WidgetEventTypes } from '@nodegui/nodegui';
 
-
 export class DErrorMessage extends QLabel {
   constructor(parent?: any) {
     super(parent);
