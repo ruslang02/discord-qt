@@ -17,7 +17,7 @@ import { Events } from '../../structures/Events';
 import { createLogger } from '../../utilities/Console';
 import { MessageItem } from './MessageItem';
 
-const { debug } = createLogger('[MessagesPanel]');
+const { debug } = createLogger('MessagesPanel');
 
 export class MessagesPanel extends QScrollArea {
   private channel?: DMChannel | TextChannel | NewsChannel;

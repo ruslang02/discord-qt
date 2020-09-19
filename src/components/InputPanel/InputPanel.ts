@@ -190,7 +190,6 @@ export class InputPanel extends QWidget {
       if (!PIXMAP_EXTS.includes(ext)) attach.setPixmap(fileIcon);
       else {
         pictureWorker.loadImage(url.href, { roundify: false }).then((path) => {
-          if (!path) return;
           const pix = new QPixmap(path);
           if (pix.width() < 1) attach.setPixmap(fileIcon);
           else attach.setPixmap(pix.scaled(120, 60, 1, 1));

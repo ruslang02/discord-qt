@@ -13,4 +13,4 @@ export const Patches = [
   require('./ActionsManager'),
 ];
 
-createLogger('[dqt]').log(`Applied ${Patches.length} patches.`);
+createLogger('Patches').log(`Applied ${Patches.length} patches.`);

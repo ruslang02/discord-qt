@@ -207,15 +207,14 @@ export class UserPanel extends QWidget {
     const { client } = app;
     if (!client.user) return;
     const path = await pictureWorker.loadImage(
-      client.user.avatarURL({ format: 'png', size: 256 }) || client.user.defaultAvatarURL,
+      client.user.displayAvatarURL({ format: 'png', size: 256 }),
     );
-    if (path) avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }
 
   async loadStatusEmoji(status: CustomStatus) {
     this.statusIcon.hide();
     const emojiPath = await resolveEmoji(status);
-    if (!emojiPath) return;
     const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();

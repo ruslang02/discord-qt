@@ -61,8 +61,8 @@ export class Profile extends QWidget {
     if (!user) return;
     this.setMinimumSize(250, 0);
     avatar.clear();
-    pictureWorker.loadImage(user.avatarURL({ format: 'png', size: 256 }))
-      .then((path) => path && avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)));
+    pictureWorker.loadImage(user.displayAvatarURL({ format: 'png', size: 256 }))
+      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)));
     if (member?.nickname) {
       username.show();
       nickname.setText(member.nickname);

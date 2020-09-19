@@ -28,7 +28,7 @@ export function getEmojiURL(status: CustomStatus): Promise<string> {
   });
 }
 
-export async function resolveEmoji(status: CustomStatus): Promise<string | null> {
+export async function resolveEmoji(status: CustomStatus): Promise<string> {
   const st = status;
   st.emoji_id = (status.emoji_id || '').toString();
   st.emoji_name = (status.emoji_name || '').toString();

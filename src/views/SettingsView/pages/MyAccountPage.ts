@@ -22,12 +22,12 @@ export class MyAccountPage extends Page {
   }
 
   private loadUser() {
-    this.unabel.setText(app.client.user?.tag || '');
-    this.emabel.setText(app.client.user?.email || '');
+    if (!app.client.user) return;
+    this.unabel.setText(app.client.user.tag || '');
+    this.emabel.setText(app.client.user.email || '');
     pictureWorker.loadImage(
-      app.client.user?.avatarURL({ size: 256, format: 'png' })
-      || app.client.user?.defaultAvatarURL,
-    ).then((path) => path && this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
+      app.client.user.displayAvatarURL({ size: 256, format: 'png' }),
+    ).then((path) => this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
   }
 
   private unabel = new QLabel(this);

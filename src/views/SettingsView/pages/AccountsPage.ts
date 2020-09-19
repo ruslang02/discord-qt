@@ -89,7 +89,7 @@ export class AccountsPage extends Page {
 
     const avatar = new QLabel(accWidget);
     pictureWorker.loadImage(account.avatar, { roundify: true })
-      .then((path) => path && avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)));
+      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)));
     const uname = new QLabel(accWidget);
     uname.setObjectName('UserName');
     uname.setText(`<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`);

@@ -4,7 +4,7 @@ import { createLogger } from '../utilities/Console';
 import { IConfig } from './IConfig';
 
 const { mkdir, readFile, writeFile } = promises;
-const { log, error } = createLogger('[config]');
+const { log, error } = createLogger('Config');
 
 export class Config extends IConfig {
   isLoaded = false;

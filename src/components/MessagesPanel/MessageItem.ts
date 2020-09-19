@@ -197,11 +197,9 @@ export class MessageItem extends QWidget {
       const image = await pictureWorker.loadImage(
         message.author.displayAvatarURL({ format: 'png', size: 256 }),
       );
-      if (image) {
-        const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
-        avatar.setPixmap(pixmap);
-        avatarCache.set(message.author.id, pixmap);
-      }
+      const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
+      avatar.setPixmap(pixmap);
+      avatarCache.set(message.author.id, pixmap);
     })();
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());

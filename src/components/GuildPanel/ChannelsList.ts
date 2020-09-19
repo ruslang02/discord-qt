@@ -25,7 +25,8 @@ import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
 
-const { debug } = createLogger('[ChannelsList]');
+const { debug } = createLogger('ChannelsList');
+
 export class ChannelsList extends QListWidget {
   private guild?: Guild;
 

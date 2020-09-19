@@ -2,10 +2,12 @@ import { extname, join } from 'path';
 import { URL } from 'url';
 import { Worker } from 'worker_threads';
 import { app } from '..';
+import { createLogger } from './Console';
 
 type Options = {
   roundify?: boolean
 };
+const { debug } = createLogger('PictureWorker');
 
 class PictureWorker {
   worker: Worker;
@@ -17,10 +19,12 @@ class PictureWorker {
     this.worker.on('message', this.resolveImage.bind(this));
   }
 
-  loadImage(url?: string | null, options?: Options): Promise<string | null> {
+  loadImage(url: string, options?: Options): Promise<string> {
     const { callbacks, worker } = this;
-    if (!url || (url || '').toString().trim() === '') return Promise.resolve(null);
-
+    if ((url || '').toString().trim() === '') {
+      debug('An empty URL was requested.');
+      return Promise.reject(new Error('URL was empty or null.'));
+    }
     const opts = { roundify: app.config.roundifyAvatars, ...(options || {}) };
 
     const uri = new URL(url);
@@ -31,29 +35,30 @@ class PictureWorker {
     uri.searchParams.append('roundify', opts.roundify ? 'true' : 'false');
     const urlHref = uri.href;
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const cb = callbacks.get(urlHref);
       if (cb !== undefined) {
         callbacks.set(urlHref, (b: any) => {
           cb(b);
+          if (!b) reject(b);
           resolve(b);
         });
         return;
       }
       worker.postMessage({ url: urlHref });
-      callbacks.set(urlHref, resolve);
+      callbacks.set(urlHref, { resolve, reject });
     });
   }
 
   private resolveImage(result: any) {
     const { url, path } = result as { url: string, path: string };
     if (typeof url !== 'string') return;
-    const callback = this.callbacks.get(url);
-    if (!callback) return;
-    if (!path || !path.length) callback(null);
+    const { resolve, reject } = this.callbacks.get(url);
+    if (!resolve || !reject) return;
+    if (!path || !path.length) reject('Couldn\'t get path.');
     else {
       this.callbacks.delete(url);
-      callback(path);
+      resolve(path);
     }
   }
 }

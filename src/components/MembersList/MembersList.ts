@@ -22,7 +22,7 @@ import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from '../UserButton/UserButton';
 
-const { debug } = createLogger('[MembersList]');
+const { debug } = createLogger('MembersList');
 export class MembersList extends QListWidget {
   private channel?: TextChannel | NewsChannel;
 

@@ -93,7 +93,7 @@ export class ProfilePresence extends QWidget {
     const lImageUrl = activity.assets?.largeImageURL({ size: 256, format: 'png' });
     if (lImageUrl) {
       pictureWorker.loadImage(lImageUrl, { roundify: false })
-        .then((path) => path && lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)));
+        .then((path) => lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)));
     } else {
       lImage.setText('');
       lImage.hide();

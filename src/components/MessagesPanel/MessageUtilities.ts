@@ -126,7 +126,6 @@ export async function processEmojis(content: string): Promise<string> {
     const format = type === 'a' ? 'gif' : 'png';
     return resolveEmoji({ emoji_id: id, emoji_name: name })
       .then((emojiPath) => {
-        if (!emojiPath) return;
         // @ts-ignore
         const uri = new URL(app.client.rest.cdn.Emoji(id, format));
         uri.searchParams.append('emoji_name', name);
@@ -167,7 +166,6 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         auimage.setFixedSize(24, 24);
         pictureWorker.loadImage(embed.author.proxyIconURL)
           .then((path) => !item._destroyed
-            && path
             && auimage.setPixmap(new QPixmap(path).scaled(24, 24)));
         aulayout.addWidget(auimage);
       }
@@ -237,7 +235,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       body.setMaximumSize(width + 32, MAX_QSIZE);
       // @ts-ignore
       container.loadImages = async function loadImages() {
-        if (item._destroyed) return;
+        if (item._destroyed || !image.proxyURL) return;
         const path = await pictureWorker.loadImage(image.proxyURL);
         if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
         qImage.setInlineStyle('background-color: transparent');
@@ -268,12 +266,12 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
       helperText.setObjectName('Helper');
       const mainLayout = new QBoxLayout(Direction.LeftToRight);
       const avatar = new QLabel(item);
+      const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
       // @ts-ignore
       item.loadImages = async function loadImages() {
-        pictureWorker.loadImage(invite.guild?.iconURL({ size: 256, format: 'png' }) || '')
-          .then((path) => {
-            if (path) avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
-          });
+        if (!iconUrl) return;
+        pictureWorker.loadImage(iconUrl)
+          .then((path) => avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1)));
       };
       const nameLabel = new QLabel(item);
       nameLabel.setText(`${invite.guild?.name} <span style='font-size: small; color: #72767d'>${__('TOTAL_MEMBERS')}: ${invite.memberCount}</span>`);
@@ -313,7 +311,7 @@ export function processAttachments(attachments: Collection<string, MessageAttach
       qimage.loadImages = async function loadImages() {
         if (!isImage) return;
         const image = await pictureWorker.loadImage(url);
-        if (image) qimage.setPixmap(new QPixmap(image));
+        qimage.setPixmap(new QPixmap(image));
         qimage.setInlineStyle('background-color: transparent');
       };
     }

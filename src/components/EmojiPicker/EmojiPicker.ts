@@ -149,7 +149,6 @@ export class EmojiPicker extends QMenu {
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
     const path = await resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name });
-    if (!path) return;
     item.setIcon(new QIcon(path));
     this.emojiView.addItem(item);
     this.emojiView.setCurrentRow(0);

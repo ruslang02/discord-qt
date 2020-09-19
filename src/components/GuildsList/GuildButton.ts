@@ -27,13 +27,12 @@ export class GuildButton extends QLabel {
 
   async loadAvatar() {
     if (this.hasPixmap) return;
-    this.hasPixmap = true;
-    pictureWorker.loadImage(this.guild.iconURL({ size: 256, format: 'png' }))
-      .then((path) => {
-        if (path) {
-          const guildImage = new QPixmap(path);
-          this.setPixmap(guildImage.scaled(48, 48, 1, 1));
-        }
-      });
+    const url = this.guild.iconURL({ size: 256, format: 'png' });
+    this.hasPixmap = !!url;
+    if (url) {
+      pictureWorker.loadImage(url)
+        .then((path) => this.setPixmap(new QPixmap(path).scaled(48, 48, 1, 1)))
+        .catch(() => { this.hasPixmap = false; });
+    }
   }
 }

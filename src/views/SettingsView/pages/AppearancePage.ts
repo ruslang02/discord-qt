@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
-import { join } from 'path';
+import { basename, join } from 'path';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../../../components/DColorButton/DColorButtonColor';
@@ -14,7 +14,7 @@ import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
 
 const { readdir, readFile } = promises;
-const { warn } = createLogger('[AppearancePage]');
+const { warn } = createLogger(basename(__filename, '.ts'));
 
 export class AppearancePage extends Page {
   title = __('APPEARANCE');
