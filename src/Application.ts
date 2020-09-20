@@ -1,6 +1,9 @@
 /* eslint-disable no-console */
 /* eslint-disable class-methods-use-this */
-import { QApplication, QFontDatabase, WidgetEventTypes } from '@nodegui/nodegui';
+import {
+  QAction,
+  QApplication, QFontDatabase, QIcon, QMenu, QSystemTrayIcon, WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { Client, Constants } from 'discord.js';
 import { existsSync, promises } from 'fs';
 import i18n from 'i18n';
@@ -23,9 +26,20 @@ export class Application extends ApplicationEventEmitter {
 
   application = QApplication.instance();
 
+  tray = new QSystemTrayIcon();
+
+  trayMenu = new QMenu();
+
+  accountsMenu = new QMenu();
+
+  tagAction = new QAction();
+
+  appIcon = new QIcon(join(__dirname, 'assets/icon.png'));
+
   constructor() {
     super();
     this.setMaxListeners(128);
+    this.initTray();
     this.application.setQuitOnLastWindowClosed(false);
     (global as any).config = this.config;
   }
@@ -35,6 +49,7 @@ export class Application extends ApplicationEventEmitter {
     await this.loadFonts();
     this.config = new Config(CONFIG_PATH);
     await this.config.load();
+    this.updateAccountsMenu();
     i18n.setLocale(this.config.locale as string);
     this.window = new RootWindow();
     this.window.show();
@@ -46,6 +61,68 @@ export class Application extends ApplicationEventEmitter {
     this.emit(AppEvents.READY);
   }
 
+  private initTray() {
+    const { tray, trayMenu, appIcon } = this;
+    this.initTrayMenu();
+    tray.setIcon(appIcon);
+    tray.addEventListener('activated', () => {
+      this.window.showNormal();
+      this.window.activateWindow();
+      this.window.raise();
+    });
+    tray.setContextMenu(trayMenu);
+    tray.setToolTip('DiscordQt');
+    tray.show();
+  }
+
+  private initTrayMenu() {
+    const {
+      trayMenu: menu, accountsMenu, appIcon, tagAction,
+    } = this;
+
+    tagAction.setEnabled(false);
+    tagAction.setIcon(appIcon);
+    menu.addAction(tagAction);
+
+    {
+      const item = new QAction(menu);
+      item.setText('Switch to...');
+      item.setMenu(accountsMenu);
+      menu.addAction(item);
+    }
+    menu.addSeparator();
+    {
+      const item = new QAction(menu);
+      item.setText('Open');
+      item.addEventListener('triggered', () => {
+        this.window.showNormal();
+        this.window.activateWindow();
+        this.window.raise();
+      });
+      menu.addAction(item);
+    }
+    {
+      const item = new QAction(menu);
+      item.setText('Quit');
+      item.addEventListener('triggered', () => this.application.exit(0));
+      menu.addAction(item);
+    }
+  }
+
+  private updateAccountsMenu() {
+    const { accountsMenu, config } = this;
+    if (!config.accounts) return;
+    accountsMenu.actions.forEach((a) => accountsMenu.removeAction(a));
+    for (const account of config.accounts) {
+      const item = new QAction();
+      item.setText(`${account.username}#${account.discriminator}`);
+      item.addEventListener('triggered', () => this.loadClient(account));
+      accountsMenu.addAction(item);
+    }
+    const tag = this.client?.user?.tag;
+    this.tagAction.setText(tag ? `Logged in as ${tag}` : 'Not logged in');
+  }
+
   private async loadFonts() {
     if (!existsSync(FONTS_PATH)) return;
     for (const file of await readdir(FONTS_PATH)) {
@@ -55,17 +132,19 @@ export class Application extends ApplicationEventEmitter {
 
   public async loadClient(account: Account): Promise<void> {
     const { Events } = Constants;
-    if (this.client) await this.client.destroy();
+    if (this.client) this.client.destroy();
     this.client = new Client(clientOptions);
     this.client.on(Events.ERROR, console.error);
-    if (this.config.debug) {
+    /* if (this.config.debug) {
       this.client.on(Events.DEBUG, console.debug);
       this.client.on(Events.RAW, console.debug);
     }
+    */
     this.client.on(Events.WARN, console.warn);
     try {
       await this.client.login(account.token);
       this.emit(AppEvents.SWITCH_VIEW, 'dm');
+      this.updateAccountsMenu();
     } catch (e) {
       console.error('Couldn\'t log in', e);
     }

@@ -3,18 +3,22 @@ import {
 } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
+import { notify } from 'node-notifier';
 import { basename, join } from 'path';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../../../components/DColorButton/DColorButtonColor';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
 import { Events } from '../../../structures/Events';
+import { paths } from '../../../structures/Paths';
 import { createLogger } from '../../../utilities/Console';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
 
-const { readdir, readFile } = promises;
+const { readdir, readFile, rmdir } = promises;
 const { warn } = createLogger(basename(__filename, '.ts'));
+// @ts-ignore
+global.notify = notify;
 
 export class AppearancePage extends Page {
   title = __('APPEARANCE');
@@ -100,10 +104,30 @@ export class AppearancePage extends Page {
       mbox.addButton(okBtn, ButtonRole.ApplyRole);
       mbox.open();
     });
+    const clearCacheBtn = new DColorButton();
+    clearCacheBtn.setText('Clear cache'); // TODO: i18n
+    clearCacheBtn.setMinimumSize(0, 36);
+    clearCacheBtn.addEventListener('clicked', () => {
+      rmdir(paths.cache, { recursive: true }).then(() => {
+        notify({
+          title: 'Cache cleared successfully.',
+          message: 'Yay! More hard drive space!',
+          icon: join(__dirname, 'assets/icon.png'),
+          // @ts-ignore
+          type: 'info',
+          category: 'im',
+          hint: 'string:desktop-entry:discord-qt',
+          'app-name': 'DiscordQt',
+        });
+      });
+    });
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);
     layout.addWidget(langLabel);
     layout.addWidget(langSel);
+    layout.addSpacing(10);
+    layout.addWidget(clearCacheBtn);
+    clearCacheBtn.setFlexNodeSizeControlled(false);
     layout.addStretch(1);
   }
 
