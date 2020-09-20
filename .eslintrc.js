@@ -20,13 +20,15 @@ module.exports = {
   ],
   rules: {
     '@typescript-eslint/no-shadow': ['error'],
+    '@typescript-eslint/no-unused-vars': ['error'],
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'no-bitwise': 'off',
     'no-empty': 'off',
     'no-shadow': 'off',
     'no-restricted-syntax': 'off',
-    'no-underscore-dangle': 'off'
+    'no-underscore-dangle': 'off',
+    'no-unused-vars': 'off'
   },
   settings: {
     'import/resolver': {

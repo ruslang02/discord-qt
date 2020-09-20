@@ -134,10 +134,10 @@ export async function processEmojis(content: string): Promise<string> {
         const larger = pix.width() > pix.height() ? 'width' : 'height';
 
         cnt = cnt.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-      }).catch(() => { });
+      }).catch(() => {});
   });
   await Promise.all(promises);
-  return content;
+  return cnt;
 }
 
 export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
@@ -266,19 +266,33 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
       helperText.setObjectName('Helper');
       const mainLayout = new QBoxLayout(Direction.LeftToRight);
       const avatar = new QLabel(item);
-      const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
+      avatar.setFixedSize(50, 50);
+      avatar.setObjectName('Icon');
+      avatar.setText(invite.guild?.nameAcronym || '');
+      avatar.setInlineStyle('font-size: 18px;');
+      avatar.setAlignment(AlignmentFlag.AlignCenter);
       // @ts-ignore
       item.loadImages = async function loadImages() {
+        const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
         if (!iconUrl) return;
-        pictureWorker.loadImage(iconUrl)
-          .then((path) => avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1)));
+        const path = await pictureWorker.loadImage(iconUrl);
+        avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
+        avatar.setObjectName('');
       };
+      const infoLayout = new QBoxLayout(Direction.TopToBottom);
       const nameLabel = new QLabel(item);
-      nameLabel.setText(`${invite.guild?.name} <span style='font-size: small; color: #72767d'>${__('TOTAL_MEMBERS')}: ${invite.memberCount}</span>`);
+      nameLabel.setText(invite.guild?.name || '');
       nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
       nameLabel.setObjectName('Name');
+      const infoLabel = new QLabel(item);
+      infoLabel.setText(`${__('TOTAL_MEMBERS')}: ${invite.memberCount}`);
+      infoLabel.setInlineStyle('font-size: small; color: #72767d;');
+      infoLayout.addStretch(1);
+      infoLayout.addWidget(nameLabel);
+      infoLayout.addWidget(infoLabel);
+      infoLayout.addStretch(1);
       mainLayout.addWidget(avatar);
-      mainLayout.addWidget(nameLabel, 1);
+      mainLayout.addLayout(infoLayout, 1);
       layout.addWidget(helperText);
       layout.addLayout(mainLayout, 1);
       widgets.push(item);

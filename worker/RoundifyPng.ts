@@ -14,7 +14,7 @@ export function roundifyPng(buf: Buffer): Promise<Buffer | null> {
           const idx = (that.width * y + x) << 2;
           const radius = that.height / 2;
           if (y >= Math.sqrt(radius ** 2 - (x - radius) ** 2) + radius
-            || y <= -(Math.sqrt(radius ** 2) - (x - radius) ** 2) + radius
+            || y <= -(Math.sqrt(radius ** 2 - (x - radius) ** 2)) + radius
           ) {
             that.data[idx + 3] = 0;
           }

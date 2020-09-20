@@ -12,7 +12,10 @@ const { debug } = createLogger('PictureWorker');
 class PictureWorker {
   worker: Worker;
 
-  callbacks = new Map<string, any>();
+  callbacks = new Map<string, {
+    resolve(value: any): void,
+    reject(error: any): void,
+  }>();
 
   constructor() {
     this.worker = new Worker(join(__dirname, 'worker.js'));
@@ -34,14 +37,16 @@ class PictureWorker {
 
     uri.searchParams.append('roundify', opts.roundify ? 'true' : 'false');
     const urlHref = uri.href;
-
+    debug(`Sending ${urlHref}...`);
     return new Promise((resolve, reject) => {
       const cb = callbacks.get(urlHref);
       if (cb !== undefined) {
-        callbacks.set(urlHref, (b: any) => {
-          cb(b);
-          if (!b) reject(b);
-          resolve(b);
+        callbacks.set(urlHref, {
+          reject,
+          resolve: (b: any) => {
+            cb.resolve(b);
+            resolve(b);
+          },
         });
         return;
       }
@@ -52,14 +57,15 @@ class PictureWorker {
 
   private resolveImage(result: any) {
     const { url, path } = result as { url: string, path: string };
-    if (typeof url !== 'string') return;
-    const { resolve, reject } = this.callbacks.get(url);
-    if (!resolve || !reject) return;
-    if (!path || !path.length) reject('Couldn\'t get path.');
-    else {
-      this.callbacks.delete(url);
-      resolve(path);
-    }
+    if (typeof url !== 'string') return debug('URL was strange:', url);
+    const cb = this.callbacks.get(url);
+    if (!cb) return debug('There was no callback for', url);
+    if (!path || !path.length) return cb.reject('Couldn\'t get path.');
+
+    this.callbacks.delete(url);
+    return cb.resolve(path);
   }
 }
 export const pictureWorker = new PictureWorker();
+// @ts-ignore
+global.pictureWorker = pictureWorker;
