@@ -1,22 +1,26 @@
-import { QScrollArea, QWidget, QBoxLayout, Direction, Shape, QPushButton, CursorShape } from "@nodegui/nodegui";
-import { MAX_QSIZE, app } from "../..";
-import { Element, Divider, SettingsView } from "./SettingsView";
-import { Page } from "./pages/Page";
-import { Events } from "../../structures/Events";
-import { __ } from "i18n";
-
+import {
+  CursorShape, Direction, QBoxLayout, QPushButton, QScrollArea, Shape,
+} from '@nodegui/nodegui';
+import { __ } from 'i18n';
+import { app, MAX_QSIZE } from '../..';
+import { Events } from '../../structures/Events';
+import { Page } from './pages/Page';
+import { Element } from './SettingsView';
 
 export class SectionList extends QScrollArea {
-  private root = new QWidget();
   private pageButtons = new Map<Page, QPushButton>();
+
   private active?: QPushButton;
+
+  private elements: Element[];
+
   layout = new QBoxLayout(Direction.TopToBottom);
 
   constructor(
-    private parent: SettingsView, 
-    private elements: Element[]
+    elements: Element[],
   ) {
     super();
+    this.elements = elements;
     this.setObjectName('SectionList');
     this.setFrameShape(Shape.NoFrame);
     this.setMinimumSize(218, 0);
@@ -28,7 +32,7 @@ export class SectionList extends QScrollArea {
     app.on(Events.OPEN_SETTINGS_PAGE, (pageTitle: string) => {
       this.active?.setProperty('active', false);
       this.active?.repolish();
-      const page = [...this.pageButtons.keys()].find(page => page.title === pageTitle);
+      const page = [...this.pageButtons.keys()].find((p) => p.title === pageTitle);
       if (!page) return;
       this.active = this.pageButtons.get(page);
       this.active?.setProperty('active', true);
@@ -38,15 +42,15 @@ export class SectionList extends QScrollArea {
   }
 
   private initComponent() {
-    const { root, layout } = this;
+    const { layout } = this;
     layout.setContentsMargins(20, 60, 15, 60);
     layout.setSpacing(0);
   }
 
   private initPages() {
-    const { root, layout, pageButtons } = this;
+    const { layout, pageButtons } = this;
     for (const elem of this.elements) {
-      if(elem instanceof Page) {
+      if (elem instanceof Page) {
         const btn = new QPushButton();
         btn.setText(elem.title);
         btn.setObjectName('PageButton');
@@ -54,7 +58,7 @@ export class SectionList extends QScrollArea {
         btn.addEventListener('clicked', () => app.emit('openSettingsPage', elem.title));
         layout.addWidget(btn);
         pageButtons.set(elem, btn);
-      } else layout.addWidget(elem)
+      } else layout.addWidget(elem);
     }
     layout.addStretch(1);
   }

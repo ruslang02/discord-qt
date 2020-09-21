@@ -1,7 +1,20 @@
-import { AlignmentFlag, CursorShape, Direction, QBoxLayout, QGridLayout, QLabel, QPixmap, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
-import { Collection, GuildChannel, Message, MessageAttachment, MessageEmbedImage, MessageMentions } from 'discord.js';
+import {
+  AlignmentFlag,
+  CursorShape,
+  Direction,
+  QBoxLayout,
+  QGridLayout,
+  QLabel,
+  QPixmap,
+  QWidget,
+  WidgetEventTypes,
+} from '@nodegui/nodegui';
+import {
+  Collection, GuildChannel, Message, MessageAttachment, MessageEmbedImage, MessageMentions,
+} from 'discord.js';
 import { __ } from 'i18n';
 import markdownIt from 'markdown-it';
+import open from 'open';
 import { extname, join } from 'path';
 import { pathToFileURL } from 'url';
 import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
@@ -13,15 +26,33 @@ import { MessageItem } from './MessageItem';
 const MD = markdownIt({
   html: false,
   linkify: true,
-  breaks: true
+  breaks: true,
 }).disable(['hr', 'blockquote', 'lheading']).enable('link');
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const EMOJI_PLACEHOLDER = join(__dirname, 'assets/icons/emoji-placeholder.png');
 
+function getCorrectSize(w?: number | null, h?: number | null) {
+  let width = w;
+  let height = h;
+  width = width || 0;
+  height = height || 0;
+  const ratio = width / height;
+
+  if (width > 400) {
+    width = 400;
+    height = width / ratio;
+  }
+  if (height > 300) {
+    height = 300;
+    width = height * ratio;
+  }
+  return { width: Math.ceil(width), height: Math.ceil(height) };
+}
+
 export async function processMentions(content: string, message: Message) {
-  const guild = message.guild;
+  // const { guild } = message;
   let newContent = content;
   const userMatches = content.match(MessageMentions.USERS_PATTERN) || [];
   const roleMatches = content.match(MessageMentions.ROLES_PATTERN) || [];
@@ -29,7 +60,7 @@ export async function processMentions(content: string, message: Message) {
   await Promise.all([
     ...userMatches.map(async (match) => {
       const id = match.replace(/<@!?/g, '').replace('>', '');
-      /*if (guild) {
+      /* if (guild) {
         let memberName: string;
         try {
           const member = await guild.members.fetch(id);
@@ -38,7 +69,7 @@ export async function processMentions(content: string, message: Message) {
           memberName = 'unknown-member';
         }
         newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${memberName}</a>`);
-      } else {*/
+      } else { */
       let userName: string;
       try {
         const user = await app.client.users.fetch(id);
@@ -47,75 +78,77 @@ export async function processMentions(content: string, message: Message) {
         userName = 'unknown-user';
       }
       newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${userName}</a>`);
-      //}
+      // }
     }),
     ...roleMatches.map(async (match) => {
       const id = match.replace(/<@&/g, '').replace('>', '');
       const role = await message.guild?.roles.fetch(id);
-      if (role)
-        newContent = newContent.replace(match, `<span style='color: ${role.hexColor}'>@${role.name}</span>`);
+      if (role) newContent = newContent.replace(match, `<span style='color: ${role.hexColor}'>@${role.name}</span>`);
     }),
     ...channelMatches.map(async (match) => {
       const id = match.replace(/<#/g, '').replace('>', '');
       const channel = app.client.channels.resolve(id) as GuildChannel;
-      let channelName = channel?.name || 'invalid-channel';
+      const channelName = channel?.name || 'invalid-channel';
       newContent = newContent.replace(match, `<a href='dq-channel://${id}'>#${channelName}</a>`);
-    })
+    }),
   ]);
   return newContent;
 }
 
 export function processMarkdown(content: string) {
-  if (!app.config.processMarkDown) return content.replace(/\n/g, '<br/>');
-  content = content
+  let c = content;
+  if (!app.config.processMarkDown) return c.replace(/\n/g, '<br/>');
+  c = c
     .replace(/<\/?p>/g, '')
     .split('\n')
-    .map(line => line.startsWith("> ") ? line.replace("> ", "<span>▎</span>") : line)
+    .map((line) => (line.startsWith('> ') ? line.replace('> ', '<span>▎</span>') : line))
     .join('\n')
     .trim();
-  return MD.render(content);
+  return MD.render(c);
 }
 
 export async function processEmojiPlaceholders(content: string): Promise<string> {
-  const emoIds = content.match(EMOJI_REGEX) || [];
-  const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
+  let c = content;
+  const emoIds = c.match(EMOJI_REGEX) || [];
+  const size = c.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
   for (const emo of emoIds) {
-    content = content.replace(emo, `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`);
+    c = c.replace(emo, `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`);
   }
-  return content;
+  return c;
 }
 
 export async function processEmojis(content: string): Promise<string> {
   const emoIds = content.match(EMOJI_REGEX) || [];
   const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
-  for (const emo of emoIds) {
+  let cnt = content;
+  const promises: Promise<any>[] = emoIds.map((emo) => {
     const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
     const format = type === 'a' ? 'gif' : 'png';
-    try {
-      const emojiPath = await resolveEmoji({ emoji_id: id, emoji_name: name });
-      if (!emojiPath) continue;
-      // @ts-ignore
-      const uri = new URL(app.client.rest.cdn.Emoji(id, format));
-      uri.searchParams.append('emoji_name', name);
+    return resolveEmoji({ emoji_id: id, emoji_name: name })
+      .then((emojiPath) => {
+        // @ts-ignore
+        const uri = new URL(app.client.rest.cdn.Emoji(id, format));
+        uri.searchParams.append('emoji_name', name);
 
-      const pix = new QPixmap(emojiPath);
-      const larger = pix.width() > pix.height() ? 'width' : 'height'
+        const pix = new QPixmap(emojiPath);
+        const larger = pix.width() > pix.height() ? 'width' : 'height';
 
-      content = content.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-    } catch (e) { }
-  }
-  return content;
+        cnt = cnt.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
+      }).catch(() => {});
+  });
+  await Promise.all(promises);
+  return cnt;
 }
 
 export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
-  return message.embeds.map(embed => {
+  return message.embeds.map((embed) => {
     const container = new QWidget();
     const cLayout = new QBoxLayout(Direction.LeftToRight);
     const body = new QWidget();
     cLayout.addWidget(body);
     cLayout.addStretch(1);
     cLayout.setContentsMargins(0, 0, 0, 0);
-    container.setLayout(cLayout)
+    container.setLayout(cLayout);
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
     layout.setContentsMargins(16, 16, 16, 16);
@@ -123,7 +156,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
     body.setFlexNodeSizeControlled(false);
     body.setMaximumSize(520, MAX_QSIZE);
     body.setLayout(layout);
-    body.setInlineStyle(`border-left: 4px solid ${embed.hexColor || 'rgba(0, 0, 0, 0.3)'};`)
+    body.setInlineStyle(`border-left: 4px solid ${embed.hexColor || 'rgba(0, 0, 0, 0.3)'};`);
     if (embed.author) {
       const aulayout = new QBoxLayout(Direction.LeftToRight);
       aulayout.setContentsMargins(0, 0, 0, 0);
@@ -132,7 +165,8 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         const auimage = new QLabel(body);
         auimage.setFixedSize(24, 24);
         pictureWorker.loadImage(embed.author.proxyIconURL)
-          .then(path => !item._destroyed && path && auimage.setPixmap(new QPixmap(path).scaled(24, 24)));
+          .then((path) => !item._destroyed
+            && auimage.setPixmap(new QPixmap(path).scaled(24, 24)));
         aulayout.addWidget(auimage);
       }
       const auname = new DLabel(body);
@@ -158,14 +192,14 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
     if (embed.description) {
       const descr = new DLabel(body);
       descr.setObjectName('EmbedDescription');
-      let description = processMarkdown(embed.description)
+      const description = processMarkdown(embed.description)
         .replace(/&amp;/g, '&')
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .trim();
-      processMentions(description, message).then(pdescription => {
-        !item._destroyed && descr.setText(pdescription);
-      })
+      processMentions(description, message).then((pdescription) => {
+        if (!item._destroyed) descr.setText(pdescription);
+      });
       layout.addWidget(descr);
     }
     const grid = new QGridLayout(); // TODO: QGridLayout::addLayout
@@ -186,7 +220,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
 
       flayout.addWidget(fTitle);
       flayout.addWidget(fValue);
-      fieldWidget.setLayout(flayout)
+      fieldWidget.setLayout(flayout);
       grid.addWidget(fieldWidget, grid.rowCount(), 0, 1, field.inline ? 1 : 2);
     }
     layout.addLayout(grid);
@@ -200,12 +234,12 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       qImage.setInlineStyle('background-color: #2f3136');
       body.setMaximumSize(width + 32, MAX_QSIZE);
       // @ts-ignore
-      container.loadImages = async function () {
-        if (item._destroyed) return;
+      container.loadImages = async function loadImages() {
+        if (item._destroyed || !image.proxyURL) return;
         const path = await pictureWorker.loadImage(image.proxyURL);
-        path && qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
+        if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
         qImage.setInlineStyle('background-color: transparent');
-      }
+      };
       layout.addWidget(qImage);
     }
     return container;
@@ -217,16 +251,12 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
   const widgets: QWidget[] = [];
   for (const inviteLink of invites) {
     try {
+      // eslint-disable-next-line no-await-in-loop
       const invite = await app.client.fetchInvite(inviteLink);
       const item = new QWidget();
       item.setObjectName('InviteContainer');
       item.setMinimumSize(432, 0);
       item.setMaximumSize(432, MAX_QSIZE);
-      // @ts-ignore
-      item.loadImages = async function () {
-        pictureWorker.loadImage(invite.guild?.iconURL({ size: 256, format: 'png' }) || '')
-          .then(path => path && avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1)));
-      }
       const layout = new QBoxLayout(Direction.TopToBottom);
       item.setLayout(layout);
       layout.setContentsMargins(16, 16, 16, 16);
@@ -236,12 +266,33 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
       helperText.setObjectName('Helper');
       const mainLayout = new QBoxLayout(Direction.LeftToRight);
       const avatar = new QLabel(item);
+      avatar.setFixedSize(50, 50);
+      avatar.setObjectName('Icon');
+      avatar.setText(invite.guild?.nameAcronym || '');
+      avatar.setInlineStyle('font-size: 18px;');
+      avatar.setAlignment(AlignmentFlag.AlignCenter);
+      // @ts-ignore
+      item.loadImages = async function loadImages() {
+        const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
+        if (!iconUrl) return;
+        const path = await pictureWorker.loadImage(iconUrl);
+        avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
+        avatar.setObjectName('');
+      };
+      const infoLayout = new QBoxLayout(Direction.TopToBottom);
       const nameLabel = new QLabel(item);
-      nameLabel.setText(`${invite.guild?.name} <span style='font-size: small; color: #72767d'>${__('TOTAL_MEMBERS')}: ${invite.memberCount}</span>`);
+      nameLabel.setText(invite.guild?.name || '');
       nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
       nameLabel.setObjectName('Name');
+      const infoLabel = new QLabel(item);
+      infoLabel.setText(`${__('TOTAL_MEMBERS')}: ${invite.memberCount}`);
+      infoLabel.setInlineStyle('font-size: small; color: #72767d;');
+      infoLayout.addStretch(1);
+      infoLayout.addWidget(nameLabel);
+      infoLayout.addWidget(infoLabel);
+      infoLayout.addStretch(1);
       mainLayout.addWidget(avatar);
-      mainLayout.addWidget(nameLabel, 1);
+      mainLayout.addLayout(infoLayout, 1);
       layout.addWidget(helperText);
       layout.addLayout(mainLayout, 1);
       widgets.push(item);
@@ -250,50 +301,33 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
   return widgets;
 }
 
-function getCorrectSize(width?: number | null, height?: number | null) {
-  width = width || 0;
-  height = height || 0;
-  const ratio = width / height;
-
-  if (width > 400) {
-    width = 400;
-    height = width / ratio;
-  }
-  if (height > 300) {
-    height = 300;
-    width = height * ratio;
-  }
-  return { width: Math.ceil(width), height: Math.ceil(height) };
-}
-
 export function processAttachments(attachments: Collection<string, MessageAttachment>): QLabel[] {
-  return attachments.map(attach => {
+  return attachments.map((attach) => {
     const { width, height } = getCorrectSize(attach.width, attach.height);
     const url = `${attach.proxyURL}?width=${width}&height=${height}`;
     const isImage = PIXMAP_EXTS.includes(extname(attach.url).slice(1).toUpperCase());
-    const qimage = new QLabel();
+    const qimage = new DLabel();
     qimage.setFixedSize(width, height);
     qimage.setInlineStyle('background-color: #2f3136; border-radius: 3px;');
     qimage.setCursor(CursorShape.PointingHandCursor);
     qimage.setAlignment(AlignmentFlag.AlignCenter);
-    qimage.setProperty('toolTip', `
-    <html>${attach.name || attach.url}<br />
+    qimage.setProperty('toolTip', `${attach.name || attach.url}<br />
     Size: ${attach.size} bytes
-    ${attach.width && attach.height ? `<br />Resolution: ${attach.width}x${attach.height}` : ''}</html>
+    ${attach.width && attach.height ? `<br />Resolution: ${attach.width}x${attach.height}` : ''}
     `);
-    qimage.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
+    qimage.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       open(attach.url);
     });
     if (!isImage) {
       qimage.setPixmap(new QPixmap(join(__dirname, 'assets/icons/file.png')));
     } else {
       // @ts-ignore
-      qimage.loadImages = async function () {
+      qimage.loadImages = async function loadImages() {
         if (!isImage) return;
         const image = await pictureWorker.loadImage(url);
-        image && qimage.setPixmap(new QPixmap(image));
+        qimage.setPixmap(new QPixmap(image));
         qimage.setInlineStyle('background-color: transparent');
-      }
+      };
     }
     return qimage;
   });

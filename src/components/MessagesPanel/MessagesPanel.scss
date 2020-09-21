@@ -57,6 +57,10 @@
       font-size: 14px;
       color: $text-normal;
     }
+    #Icon {
+      background: $background-primary;
+      border-radius: 15px;
+    }
   }
   #EmbedBody {
     background-color: $background-secondary;

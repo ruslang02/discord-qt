@@ -1,9 +1,10 @@
-import { QWidget, Direction, QBoxLayout } from "@nodegui/nodegui";
-
+import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 
 export abstract class Page extends QWidget {
   abstract title: string;
+
   layout = new QBoxLayout(Direction.TopToBottom);
+
   constructor() {
     super();
     this.setObjectName('Page');

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 export type CustomStatus = {
   text?: string;
   expires_at?: string;

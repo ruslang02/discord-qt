@@ -1,17 +1,25 @@
-import { QMenu, Direction, QBoxLayout, QWidget, WidgetAttribute, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
-import { MAX_QSIZE, app } from '../..';
+import {
+  Direction, QBoxLayout, QMenu, QPoint, QWidget, WidgetAttribute, WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { GuildMember, User } from 'discord.js';
-import { ProfilePresence } from './ProfilePresence';
+import { app, MAX_QSIZE } from '../..';
 import { Profile } from './Profile';
+import { ProfilePresence } from './ProfilePresence';
 import { RolesSection } from './RolesSection';
 
 export class MiniProfile extends QMenu {
   private controls = new QBoxLayout(Direction.TopToBottom);
+
   private root = new QWidget(this);
+
   private profile = new Profile(this);
+
   private presence = new ProfilePresence(this);
+
   private rolesSection = new RolesSection(this);
-  private adjustTimer?: NodeJS.Timer;
+
+  private adjustTimer?: any;
+
   private p0 = new QPoint(0, 0);
 
   constructor(parent?: any) {
@@ -27,13 +35,15 @@ export class MiniProfile extends QMenu {
       if (this.adjustTimer) clearInterval(this.adjustTimer);
       this.adjustTimer = setInterval(() => this.adjustSize(), 10);
     });
-    this.addEventListener(WidgetEventTypes.Close, () => this.adjustTimer && clearInterval(this.adjustTimer));
+    this.addEventListener(WidgetEventTypes.Close, () => { clearInterval(this.adjustTimer); });
   }
 
-  popup(point: QPoint) {
-    if(point.y() + this.size().height() > app.window.mapToGlobal(this.p0).y() + app.window.size().height())
-      point.setY(point.y() - this.size().height());
-    super.popup(point);
+  popup(p: QPoint) {
+    const tsize = this.size();
+    if (p.y() + tsize.height() > app.window.mapToGlobal(this.p0).y() + app.window.size().height()) {
+      p.setY(p.y() - tsize.height());
+    }
+    super.popup(p);
   }
 
   async loadProfile(someone: User | GuildMember) {
@@ -42,12 +52,14 @@ export class MiniProfile extends QMenu {
     const isPlaying = this.presence.load(user.presence);
     this.profile.setPlaying(isPlaying);
     this.profile.loadProfile(someone);
-    this.rolesSection.loadRoles(member?.roles)
+    this.rolesSection.loadRoles(member?.roles);
   }
 
   private initComponent() {
-    const { controls, root, profile, presence, rolesSection } = this;
-    
+    const {
+      controls, root, profile, presence, rolesSection,
+    } = this;
+
     root.setLayout(controls);
     root.setMinimumSize(250, 0);
     root.setMaximumSize(250, MAX_QSIZE);

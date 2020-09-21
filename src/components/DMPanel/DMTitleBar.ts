@@ -1,7 +1,7 @@
-import { DLineEdit } from "../DLineEdit/DLineEdit";
-import { DTitleBar } from "../DTitleBar/DTitleBar";
+import { __ } from 'i18n';
+import { DLineEdit } from '../DLineEdit/DLineEdit';
+import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DMUsersList } from './DMUsersList';
-import { __ } from "i18n";
 
 export class DMTitleBar extends DTitleBar {
   filterInput = new DLineEdit();

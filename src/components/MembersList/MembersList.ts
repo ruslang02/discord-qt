@@ -1,21 +1,37 @@
-import { BrushStyle, ContextMenuPolicy, QAction, QApplication, QBrush, QClipboardMode, QColor, QListWidget, QListWidgetItem, QMenu, QPoint, QSize, ScrollBarPolicy, Shape } from '@nodegui/nodegui';
+import {
+  BrushStyle,
+  ContextMenuPolicy,
+  QAction,
+  QApplication,
+  QBrush,
+  QClipboardMode,
+  QColor,
+  QListWidget,
+  QListWidgetItem,
+  QMenu,
+  QPoint,
+  QSize,
+  ScrollBarPolicy,
+  Shape,
+} from '@nodegui/nodegui';
 import { GuildChannel, NewsChannel, TextChannel } from 'discord.js';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../structures/Events';
-import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from '../UserButton/UserButton';
 
-const { debug } = createLogger('[MembersList]');
+const { debug } = createLogger('MembersList');
 export class MembersList extends QListWidget {
-  private cancelToken?: CancelToken;
   private channel?: TextChannel | NewsChannel;
 
   private menu = new QMenu(this);
+
   private p0 = new QPoint(0, 0);
+
   private active?: UserButton;
+
   private clipboard = QApplication.clipboard();
 
   constructor() {
@@ -29,15 +45,15 @@ export class MembersList extends QListWidget {
     this.initMenu();
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (view === 'dm' || view === 'guild' && !options?.channel) return this.hide();
-      if (view !== 'guild' || !options?.channel) return;
-      if (this.cancelToken) this.cancelToken.cancel();
-      const cancel = new CancelToken();
-      if (options.channel !== this.channel)
-        this.loadList(options.channel, cancel);
-      this.cancelToken = cancel;
-      this.show()
-    })
+      if (view === 'dm' || (view === 'guild' || options?.channel)) {
+        this.hide();
+        return;
+      }
+      if (view === 'guild' && options?.channel) {
+        if (options.channel !== this.channel) this.loadList(options.channel);
+        this.show();
+      }
+    });
   }
 
   private initMenu() {
@@ -47,7 +63,7 @@ export class MembersList extends QListWidget {
       item.setText('Message');
       item.addEventListener('triggered', async () => {
         if (!this.active) return;
-        app.emit(Events.SWITCH_VIEW, 'dm', { dm: await this.active.user?.createDM() })
+        app.emit(Events.SWITCH_VIEW, 'dm', { dm: await this.active.user?.createDM() });
       });
       menu.addAction(item);
     }
@@ -62,9 +78,12 @@ export class MembersList extends QListWidget {
       menu.addAction(item);
     }
   }
+
   private ratelimit = false;
-  private rateTimer?: NodeJS.Timer;
-  private async loadList(channel: GuildChannel, token: CancelToken) {
+
+  private rateTimer?: any;
+
+  private async loadList(channel: GuildChannel) {
     const { menu } = this;
 
     if (this.ratelimit || this.channel === channel) return;
@@ -87,7 +106,7 @@ export class MembersList extends QListWidget {
         const { miniProfile } = app.window.dialogs;
         const map = btn.mapToGlobal(this.p0);
         map.setX(map.x() - 250);
-        miniProfile.loadProfile(member)
+        miniProfile.loadProfile(member);
         miniProfile.popup(map);
       });
 
@@ -99,7 +118,7 @@ export class MembersList extends QListWidget {
       this.addItem(item);
       this.setItemWidget(item, btn);
     }
-    debug(`Finished loading members list.`);
-    this.rateTimer = setTimeout(() => this.ratelimit = false, 500);
+    debug('Finished loading members list.');
+    this.rateTimer = setTimeout(() => { this.ratelimit = false; }, 500);
   }
 }

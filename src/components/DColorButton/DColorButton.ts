@@ -1,12 +1,6 @@
-import { QPushButton, CursorShape } from '@nodegui/nodegui';
+import { CursorShape, QPushButton } from '@nodegui/nodegui';
+import { DColorButtonColor } from './DColorButtonColor';
 
-
-export enum DColorButtonColor {
-  BLURPLE = 0,
-  RED = 1,
-  RED_TEXT = 2,
-  WHITE_TEXT = 3,
-}
 export class DColorButton extends QPushButton {
   constructor(color = DColorButtonColor.BLURPLE) {
     super();

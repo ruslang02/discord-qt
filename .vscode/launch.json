@@ -21,7 +21,7 @@
       "sourceMapPathOverrides": {
           "webpack:///*": "${workspaceRoot}/*"
       },
-      "console": "internalConsole"
+      "console": "integratedTerminal"
     }
   ]
 }

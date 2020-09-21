@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { ClientUserSettings } from '../structures/ClientUserSettings';
 import { CustomStatus } from '../structures/CustomStatus';
 

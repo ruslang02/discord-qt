@@ -1,34 +1,43 @@
-import { QWidget, QStackedWidget, QBoxLayout, Direction } from "@nodegui/nodegui";
-import { UserPanel } from "../UserPanel/UserPanel";
-import { GuildPanel } from "../GuildPanel/GuildPanel";
-import { DMPanel } from "../DMPanel/DMPanel";
-import { MAX_QSIZE, app } from "../..";
-import { Events } from "../../structures/Events";
-
+import {
+  Direction, QBoxLayout, QStackedWidget, QWidget,
+} from '@nodegui/nodegui';
+import { app, MAX_QSIZE } from '../..';
+import { Events } from '../../structures/Events';
+import { DMPanel } from '../DMPanel/DMPanel';
+import { GuildPanel } from '../GuildPanel/GuildPanel';
+import { UserPanel } from '../UserPanel/UserPanel';
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();
+
   private guildPanel = new GuildPanel();
+
   private dmPanel = new DMPanel();
+
   private userPanel = new UserPanel();
+
   private controls = new QBoxLayout(Direction.TopToBottom);
 
   constructor() {
     super();
     this.initLeftPanel();
     app.on(Events.SWITCH_VIEW, (view: string) => {
-      switch(view) {
+      switch (view) {
         case 'dm':
           this.container.setCurrentWidget(this.dmPanel);
           break;
         case 'guild':
           this.container.setCurrentWidget(this.guildPanel);
           break;
+        default:
       }
-    })
+    });
   }
+
   private initLeftPanel() {
-    const { guildPanel, dmPanel, userPanel, container, controls } = this;
+    const {
+      guildPanel, dmPanel, userPanel, container, controls,
+    } = this;
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
     this.setMaximumSize(240, MAX_QSIZE);

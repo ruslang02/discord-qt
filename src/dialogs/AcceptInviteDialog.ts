@@ -1,15 +1,20 @@
-import { Dialog } from './Dialog';
-import { QBoxLayout, QWidget, Direction, QLabel } from '@nodegui/nodegui';
+import {
+  Direction, QBoxLayout, QLabel, QWidget,
+} from '@nodegui/nodegui';
+import { __ } from 'i18n';
 import { URL } from 'url';
 import { app } from '..';
-import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
+import { DColorButton } from '../components/DColorButton/DColorButton';
+import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';
 import { DTextEdit } from '../components/DTextEdit/DTextEdit';
-import { __ } from 'i18n';
+import { Dialog } from './Dialog';
 
 export class AcceptInviteDialog extends Dialog {
   private urlLabel = new QLabel(this);
+
   private urlInput = new DTextEdit(this);
+
   private errMsg = new DErrorMessage(this);
 
   constructor(parent?: any) {
@@ -20,7 +25,9 @@ export class AcceptInviteDialog extends Dialog {
   }
 
   private init() {
-    const { header, urlLabel, urlInput, errMsg } = this;
+    const {
+      header, urlLabel, urlInput, errMsg,
+    } = this;
     header.setText(__('INSTANT_INVITE_ACCEPT'));
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
@@ -54,6 +61,7 @@ export class AcceptInviteDialog extends Dialog {
     footer.setLayout(footLayout);
     this.controls.addWidget(footer);
   }
+
   async checkInvite(url?: string) {
     if (url) {
       this.urlInput.setText(url);
@@ -61,8 +69,7 @@ export class AcceptInviteDialog extends Dialog {
       this.raise();
     }
     let code = this.urlInput.text();
-    if (code.includes('//'))
-      code = new URL(code).pathname.replace(/\//g, '');
+    if (code.includes('//')) code = new URL(code).pathname.replace(/\//g, '');
     try {
       await app.client.user?.acceptInvite(code);
     } catch (e) {

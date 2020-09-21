@@ -1,20 +1,28 @@
-import { Dialog } from './Dialog';
-import { QLabel, QLineEdit, QComboBox, QBoxLayout, Direction, QWidget, CursorShape, QPixmap, WidgetEventTypes, QPoint } from '@nodegui/nodegui';
-import { app } from '..';
-import { DColorButton, DColorButtonColor } from '../components/DColorButton/DColorButton';
-import { resolveEmoji } from '../utilities/ResolveEmoji';
+import {
+  CursorShape, Direction, QBoxLayout, QLabel, QPixmap, QPoint, QWidget, WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { Emoji } from 'discord.js';
-import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
+import { __ } from 'i18n';
+import { app } from '..';
+import { DColorButton } from '../components/DColorButton/DColorButton';
+import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
 import { DComboBox } from '../components/DComboBox/DComboBox';
 import { DTextEdit } from '../components/DTextEdit/DTextEdit';
-import { __ } from 'i18n';
+import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
+import { resolveEmoji } from '../utilities/ResolveEmoji';
+import { Dialog } from './Dialog';
 
 export class CustomStatusDialog extends Dialog {
   private statusLabel = new QLabel(this);
+
   private emojiInput = new QLabel(this);
+
   private statusInput = new DTextEdit(this);
+
   private clearLabel = new QLabel(this);
+
   private clearInput = new DComboBox(this);
+
   private emoji?: Emoji;
 
   constructor(parent?: any) {
@@ -37,14 +45,18 @@ export class CustomStatusDialog extends Dialog {
   }
 
   private async loadEmoji(emoji: Emoji) {
-    const emojiFile = await resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name });
-    if (!emojiFile) return;
+    const emojiFile = await resolveEmoji({
+      emoji_id: emoji.id || undefined,
+      emoji_name: emoji.name,
+    });
     this.emoji = emoji;
     this.emojiInput.setPixmap(new QPixmap(emojiFile).scaled(32, 32, 1, 1));
   }
 
   private init() {
-    const { statusLabel, emojiInput, statusInput, clearLabel, clearInput } = this;
+    const {
+      statusLabel, emojiInput, statusInput, clearLabel, clearInput,
+    } = this;
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
@@ -60,7 +72,7 @@ export class CustomStatusDialog extends Dialog {
       emojiPicker.events.once('emoji', async (emoji: Emoji) => {
         await this.loadEmoji(emoji);
         emojiPicker.hide();
-      })
+      });
     });
     statusInput.setPlaceholderText(__('CUSTOM_STATUS_MODAL_PLACEHOLDER'));
     const resetButton = new DColorButton(DColorButtonColor.RED_TEXT);
@@ -81,14 +93,14 @@ export class CustomStatusDialog extends Dialog {
       __('CUSTOM_STATUS_TODAY'),
       __('CUSTOM_STATUS_HOURS', { hours: '4' }),
       __('CUSTOM_STATUS_HOURS', { hours: '1' }),
-      __('CUSTOM_STATUS_MINUTES', { minutes: '30'})
+      __('CUSTOM_STATUS_MINUTES', { minutes: '30' }),
     ]);
     clearLabel.setText(__('CUSTOM_STATUS_CLEAR_AFTER'));
     clearLabel.setBuddy(clearInput);
     layout.addWidget(statusLabel);
     layout.addLayout(statusLayout);
     layout.addSpacing(8);
-    [clearLabel, clearInput].forEach(w => layout.addWidget(w));
+    [clearLabel, clearInput].forEach((w) => layout.addWidget(w));
     this.controls.addLayout(layout);
   }
 
@@ -125,10 +137,10 @@ export class CustomStatusDialog extends Dialog {
         emoji_id: this.emoji?.id || undefined,
         emoji_name: this.emoji?.name,
         expires_at: date?.toISOString(),
-        text: this.statusInput.text() || undefined
+        text: this.statusInput.text() || undefined,
       });
       this.hide();
-    })
+    });
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
     cancelBtn.setText(__('CANCEL'));
     cancelBtn.setFixedSize(80, 38);

@@ -1,14 +1,14 @@
-import { Page } from './Page';
-import { app, MAX_QSIZE } from '../../..';
-import { QLabel, QWidget, QBoxLayout, Direction, QPixmap } from '@nodegui/nodegui';
-import { pictureWorker } from '../../../utilities/PictureWorker';
+import {
+  Direction, QBoxLayout, QLabel, QPixmap, QWidget,
+} from '@nodegui/nodegui';
 import { Client, Constants } from 'discord.js';
-
-import { DColorButton } from '../../../components/DColorButton/DColorButton';
-import { Events } from '../../../structures/Events';
-import { MarkdownStyles } from '../../../structures/MarkdownStyles';
 import { __ } from 'i18n';
+import { app, MAX_QSIZE } from '../../..';
+import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DLabel } from '../../../components/DLabel/DLabel';
+import { Events } from '../../../structures/Events';
+import { pictureWorker } from '../../../utilities/PictureWorker';
+import { Page } from './Page';
 
 export class MyAccountPage extends Page {
   title = __('ACCOUNT');
@@ -22,20 +22,24 @@ export class MyAccountPage extends Page {
   }
 
   private loadUser() {
-    this.unabel.setText(app.client.user?.tag || '');
-    this.emabel.setText(app.client.user?.email || "");
+    if (!app.client.user) return;
+    this.unabel.setText(app.client.user.tag || '');
+    this.emabel.setText(app.client.user.email || '');
     pictureWorker.loadImage(
-      app.client.user?.avatarURL({ size: 256, format: 'png' }) ||
-      app.client.user?.defaultAvatarURL
-    ).then(path => path && this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
+      app.client.user.displayAvatarURL({ size: 256, format: 'png' }),
+    ).then((path) => this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
   }
 
   private unabel = new QLabel(this);
+
   private emabel = new QLabel(this);
+
   private avatar = new QLabel(this);
 
   private initPage() {
-    const { layout, title, avatar, unabel, emabel } = this;
+    const {
+      layout, title, avatar, unabel, emabel,
+    } = this;
     const header = new QLabel();
     header.setObjectName('Header2');
     header.setText(title);
@@ -69,7 +73,7 @@ export class MyAccountPage extends Page {
     editet.setLayout(new QBoxLayout(Direction.TopToBottom));
     const editbn = new DColorButton();
     editbn.setText(__('EDIT'));
-    editbn.setMinimumSize(60, 32)
+    editbn.setMinimumSize(60, 32);
     editbn.setMinimumSize(MAX_QSIZE, 32);
     (editet.layout as QBoxLayout).addWidget(editbn);
     (editet.layout as QBoxLayout).addStretch(1);
@@ -83,7 +87,7 @@ export class MyAccountPage extends Page {
 
     const twoFAHelper = new DLabel(this);
     twoFAHelper.setText(__('TWO_FA_UNAVAILABLE', {
-      tfaURL: 'https://discord.com/channels/@me/settings'
+      tfaURL: 'https://discord.com/channels/@me/settings',
     }));
 
     layout.addWidget(header);

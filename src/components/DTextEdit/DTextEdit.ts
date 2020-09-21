@@ -1,4 +1,4 @@
-import { QLineEdit, CursorShape } from '@nodegui/nodegui';
+import { QLineEdit } from '@nodegui/nodegui';
 
 export class DTextEdit extends QLineEdit {
   constructor(parent?: any) {

@@ -1,62 +1,71 @@
+import { extname, join } from 'path';
+import { URL } from 'url';
 import { Worker } from 'worker_threads';
 import { app } from '..';
-import path, { extname } from 'path';
 import { createLogger } from './Console';
-import { URL } from 'url';
 
 type Options = {
   roundify?: boolean
 };
-
-const logger = createLogger('[PW]');
+const { debug } = createLogger('PictureWorker');
 
 class PictureWorker {
   worker: Worker;
 
-  callbacks = new Map<string, (path: string | null) => void>();
+  callbacks = new Map<string, {
+    resolve(value: any): void,
+    reject(error: any): void,
+  }>();
 
   constructor() {
-    this.worker = new Worker(path.join(__dirname, 'worker.js'));
+    this.worker = new Worker(join(__dirname, 'worker.js'));
     this.worker.on('message', this.resolveImage.bind(this));
   }
 
-  loadImage(url?: string | null, options?: Options): Promise<string | null> {
+  loadImage(url: string, options?: Options): Promise<string> {
     const { callbacks, worker } = this;
-    if (!url || (url || '').toString().trim() === '') return Promise.resolve(null);
-
-    options = { roundify: app.config.roundifyAvatars, ...(options || {}) };
+    if ((url || '').toString().trim() === '') {
+      debug('An empty URL was requested.');
+      return Promise.reject(new Error('URL was empty or null.'));
+    }
+    const opts = { roundify: app.config.roundifyAvatars, ...(options || {}) };
 
     const uri = new URL(url);
     if (uri.hostname === 'cdn.discordapp.com') {
-      if (extname(uri.pathname).toLowerCase() !== '.png') options.roundify = false;
-    } else if (uri.protocol !== 'file:') options.roundify = false;
+      if (extname(uri.pathname).toLowerCase() !== '.png') opts.roundify = false;
+    } else if (uri.protocol !== 'file:') opts.roundify = false;
 
-    uri.searchParams.append('roundify', options.roundify ? 'true' : 'false');
-    url = uri.href;
-
-    return new Promise(resolve => {
-      if (!url) return;
-      const cb = callbacks.get(url);
+    uri.searchParams.append('roundify', opts.roundify ? 'true' : 'false');
+    const urlHref = uri.href;
+    debug(`Sending ${urlHref}...`);
+    return new Promise((resolve, reject) => {
+      const cb = callbacks.get(urlHref);
       if (cb !== undefined) {
-        callbacks.set(url, (b) => {
-          cb(b);
-          resolve(b);
+        callbacks.set(urlHref, {
+          reject,
+          resolve: (b: any) => {
+            cb.resolve(b);
+            resolve(b);
+          },
         });
         return;
       }
-      worker.postMessage({ url });
-      callbacks.set(url, resolve);
-    })
+      worker.postMessage({ url: urlHref });
+      callbacks.set(urlHref, { resolve, reject });
+    });
   }
 
   private resolveImage(result: any) {
-    const { url, path } = result as {url: string, path: string};
-    if (typeof url !== 'string') return;
-    const callback = this.callbacks.get(url);
-    if (!callback) return;
-    if (!path || !path.length) return callback(null);
+    const { url, path } = result as { url: string, path: string };
+    if (typeof url !== 'string') return debug('URL was strange:', url);
+    const cb = this.callbacks.get(url);
+    if (!cb) return debug('There was no callback for', url);
+    if (!path || !path.length) return cb.reject('Couldn\'t get path.');
+
     this.callbacks.delete(url);
-    return callback(path);
+    return cb.resolve(path);
   }
 }
 export const pictureWorker = new PictureWorker();
+// @ts-ignore
+global.pictureWorker = pictureWorker;

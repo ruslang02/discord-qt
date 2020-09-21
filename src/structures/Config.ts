@@ -1,15 +1,19 @@
 import { existsSync, promises } from 'fs';
 import { dirname, join } from 'path';
+import { createLogger } from '../utilities/Console';
 import { IConfig } from './IConfig';
 
 const { mkdir, readFile, writeFile } = promises;
+const { log, error } = createLogger('Config');
+
 export class Config extends IConfig {
   isLoaded = false;
 
-  constructor(
-    private file: string,
-  ) {
+  private file: string;
+
+  constructor(file: string) {
     super();
+    this.file = file;
   }
 
   async load() {
@@ -21,7 +25,7 @@ export class Config extends IConfig {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
       if (!existsSync(file)) writeFile(file, '{}', 'utf8');
-      else console.error('Config file could not be used, returning to default values...');
+      else error('Config file could not be used, returning to default values...');
     }
     Object.assign(this, {
       accounts: config.accounts ?? [],
@@ -34,19 +38,21 @@ export class Config extends IConfig {
       locale: config.locale ?? 'en-US',
       recentEmojis: config.recentEmojis ?? [],
     } as IConfig);
-    if (config.debug === true)
-      console.log('Loaded config:', this);
+    if (config.debug === true) log('Loaded config:', this);
     this.isLoaded = true;
   }
+
   async save() {
     try {
-      let obj = { ...this };
+      const obj = { ...this };
+      // @ts-ignore
       delete obj.file;
+      // @ts-ignore
       delete obj.isLoaded;
 
-      await writeFile(join(this.file), JSON.stringify(obj))
+      await writeFile(join(this.file), JSON.stringify(obj));
     } catch (e) {
-      console.error(e);
+      error(e);
     }
   }
 }

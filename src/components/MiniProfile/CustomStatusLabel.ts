@@ -1,12 +1,16 @@
-import { QBoxLayout, Direction, QWidget, QLabel, QPixmap, AlignmentFlag } from '@nodegui/nodegui';
+import {
+  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget,
+} from '@nodegui/nodegui';
 import { User } from 'discord.js';
-import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { app } from '../..';
 import { CustomStatus } from '../../structures/CustomStatus';
+import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 export class CustomStatusLabel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
+
   private statusIcon = new QLabel(this);
+
   private statusLabel = new QLabel(this);
 
   constructor() {
@@ -34,30 +38,33 @@ export class CustomStatusLabel extends QWidget {
   }
 
   async loadStatus(user: User) {
-    const { layout, statusIcon, statusLabel } = this;
-    let emojiId: string, emojiName: string, statusText: string;
+    const { statusIcon, statusLabel } = this;
+    let emojiId: string; let emojiName: string; let
+      statusText: string;
     if (user === app.client.user && app.client.user.customStatus) {
-      const { emoji_id, emoji_name, text } = app.client.user.customStatus;
-      emojiId = emoji_id || '';
-      emojiName = emoji_name || '';
+      const { emoji_id: eId, emoji_name: eName, text } = app.client.user.customStatus;
+      emojiId = eId || '';
+      emojiName = eName || '';
       statusText = text || '';
     } else {
-      const activity = user.presence.activities.find(p => p.type === 'CUSTOM_STATUS');
+      const activity = user.presence.activities.find((p) => p.type === 'CUSTOM_STATUS');
       emojiId = activity?.emoji?.id || '';
       emojiName = activity?.emoji?.name || '';
       statusText = activity?.state || '';
     }
-    if (!statusText && !emojiName) return this.hide();
+    if (!statusText && !emojiName) {
+      this.hide();
+      return;
+    }
     if (!statusText) statusLabel.hide(); else statusLabel.show();
     if (!emojiName) statusIcon.hide(); else statusIcon.show();
     statusLabel.setText(statusText);
-    
+
     const status = { emoji_id: emojiId, emoji_name: emojiName } as CustomStatus;
     this.show();
     const emojiPath = await resolveEmoji(status);
-    if (!emojiPath) return;
     const pix = new QPixmap(emojiPath);
-    const size = !!statusText ? 24 : 48;
+    const size = statusText ? 24 : 48;
     statusIcon.setPixmap(pix.scaled(size, size, 1, 1));
     statusIcon.setProperty('toolTip', `:${emojiName}:`);
     statusIcon.show();

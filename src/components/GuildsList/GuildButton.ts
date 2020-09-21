@@ -1,14 +1,16 @@
-import { QLabel, QCursor, CursorShape, AlignmentFlag, WidgetEventTypes, QPixmap } from '@nodegui/nodegui';
+import {
+  AlignmentFlag, CursorShape, QCursor, QLabel, QPixmap, WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
+import { __ } from 'i18n';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
-import { __ } from 'i18n';
 
 export class GuildButton extends QLabel {
   constructor(private guild: Guild, parent?: any) {
     super(parent);
-    this.setObjectName("PageButton");
+    this.setObjectName('PageButton');
     this.setFixedSize(72, 56);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.setProperty('unread', !guild.acknowledged);
@@ -20,16 +22,17 @@ export class GuildButton extends QLabel {
       app.emit(Events.SWITCH_VIEW, 'guild', { guild });
     });
   }
+
   hasPixmap = false;
+
   async loadAvatar() {
     if (this.hasPixmap) return;
-    this.hasPixmap = true;
-    pictureWorker.loadImage(this.guild.iconURL({size: 256, format: 'png'}))
-      .then(path => {
-        if (path) {
-          const guildImage = new QPixmap(path);
-          this.setPixmap(guildImage.scaled(48, 48, 1, 1));
-        }
-      });
+    const url = this.guild.iconURL({ size: 256, format: 'png' });
+    this.hasPixmap = !!url;
+    if (url) {
+      pictureWorker.loadImage(url)
+        .then((path) => this.setPixmap(new QPixmap(path).scaled(48, 48, 1, 1)))
+        .catch(() => { this.hasPixmap = false; });
+    }
   }
 }

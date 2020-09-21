@@ -1,23 +1,47 @@
-import { ContextMenuPolicy, CursorShape, Direction, QAction, QApplication, QBoxLayout, QClipboardMode, QCursor, QIcon, QLabel, QMenu, QPixmap, QPushButton, QSize, QWidget, WidgetEventTypes } from "@nodegui/nodegui";
-import { Client, Constants, DQConstants } from "discord.js";
-import { __ } from "i18n";
-import path, { join } from 'path';
-import { app, MAX_QSIZE } from "../..";
+import {
+  ContextMenuPolicy,
+  CursorShape,
+  Direction,
+  QAction,
+  QApplication,
+  QBoxLayout,
+  QClipboardMode,
+  QCursor,
+  QIcon,
+  QLabel,
+  QMenu,
+  QPixmap,
+  QPushButton,
+  QSize,
+  QWidget,
+  WidgetEventTypes,
+} from '@nodegui/nodegui';
+import { Client, Constants, DQConstants } from 'discord.js';
+import { __ } from 'i18n';
+import { join } from 'path';
+import { app, MAX_QSIZE } from '../..';
 import { CustomStatus } from '../../structures/CustomStatus';
-import { Events as AppEvents } from "../../structures/Events";
+import { Events as AppEvents } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
-import { pictureWorker } from "../../utilities/PictureWorker";
+import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
-import { DIconButton } from "../DIconButton/DIconButton";
+import { DIconButton } from '../DIconButton/DIconButton';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
+
   private nameLabel = new QLabel(this);
+
   private discLabel = new QLabel(this);
+
   private statusIcon = new QLabel(this);
+
   private statusText = new QLabel(this);
+
   private statusBtn = new QPushButton(this);
+
   private controls = new QBoxLayout(Direction.LeftToRight);
+
   private clipboard = QApplication.clipboard();
 
   constructor() {
@@ -44,21 +68,23 @@ export class UserPanel extends QWidget {
       if (prev.avatar !== cur.avatar) this.updateAvatar();
     });
     client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
-      if (presence.userID === client.user?.id)
-        this.updatePresence();
+      if (presence.userID === client.user?.id) this.updatePresence();
     });
     client.on(Events.USER_SETTINGS_UPDATE, () => {
       this.updatePresence();
     });
   }
-  private copiedTimer?: NodeJS.Timer;
+
+  private copiedTimer?: any;
+
   private copiedAmount = 0;
+
   private copyUserInfo() {
     const { clipboard, discLabel, statusText } = this;
     if (this.copiedTimer) clearTimeout(this.copiedTimer);
-    this.copiedAmount++;
+    this.copiedAmount += 1;
     clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
-    [discLabel, statusText].forEach(w => w.setText(__('ACCOUNT_USERNAME_COPY_SUCCESS_' + Math.min(this.copiedAmount, 11))));
+    [discLabel, statusText].forEach((w) => w.setText(__(`ACCOUNT_USERNAME_COPY_SUCCESS_${Math.min(this.copiedAmount, 11)}`)));
     this.copiedTimer = setTimeout(() => {
       this.updateData();
       this.updatePresence();
@@ -67,13 +93,15 @@ export class UserPanel extends QWidget {
   }
 
   private initComponent() {
-    const { avatar, nameLabel, discLabel, controls, statusBtn, statusIcon, statusText } = this;
+    const {
+      avatar, nameLabel, discLabel, controls, statusBtn, statusIcon, statusText,
+    } = this;
     this.setLayout(controls);
     this.setObjectName('UserPanel');
     this.setMinimumSize(0, 52);
     this.setMaximumSize(MAX_QSIZE, 52);
 
-    controls.setContentsMargins(8, 8, 8, 8)
+    controls.setContentsMargins(8, 8, 8, 8);
     controls.setSpacing(0);
 
     avatar.setObjectName('UserAvatar');
@@ -92,11 +120,10 @@ export class UserPanel extends QWidget {
     discLabel.setText('#0000');
     discLabel.setObjectName('DiscLabel');
     statusText.setObjectName('DiscLabel');
-    [nameLabel, discLabel, statusText].forEach(f => {
+    [nameLabel, discLabel, statusText].forEach((f) => {
       f.setCursor(CursorShape.PointingHandCursor);
       f.addEventListener(WidgetEventTypes.MouseButtonPress, this.copyUserInfo.bind(this));
     });
-
 
     layStat.addWidget(discLabel, 1);
     layStat.addWidget(statusIcon);
@@ -111,11 +138,11 @@ export class UserPanel extends QWidget {
     const statusMenu = new QMenu(this);
     statusMenu.setObjectName('StatusMenu');
     // TODO: Localization
-    ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach(text => {
+    ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach((text) => {
       const action = new QAction();
       action.addEventListener('triggered', async () => {
         // if (!app.client) return;
-        const status = text === 'Do Not Disturb' ? 'dnd': text?.toLowerCase();
+        const status = text === 'Do Not Disturb' ? 'dnd' : text?.toLowerCase();
         if (text === 'Custom Status...') {
           app.window.dialogs.customStatus.show();
           return;
@@ -123,7 +150,7 @@ export class UserPanel extends QWidget {
         // @ts-ignore
         await app.client.user?.setPresence({ status });
         this.updatePresence();
-      })
+      });
       if (text === null) action.setSeparator(true);
       else {
         action.setText(text);
@@ -141,17 +168,17 @@ export class UserPanel extends QWidget {
     statusBtn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
 
     const iBtn = new DIconButton({
-      iconPath: path.join(__dirname, './assets/icons/invite.png'),
+      iconPath: join(__dirname, './assets/icons/invite.png'),
       iconQSize: new QSize(20, 20),
-      tooltipText: __('INSTANT_INVITE_INVITE_CODE')
+      tooltipText: __('INSTANT_INVITE_INVITE_CODE'),
     });
     iBtn.setFixedSize(32, 32);
     iBtn.addEventListener('clicked', () => app.window.dialogs.acceptInvite.show());
 
     const setBtn = new DIconButton({
-      iconPath: path.join(__dirname, './assets/icons/cog.png'),
+      iconPath: join(__dirname, './assets/icons/cog.png'),
       iconQSize: new QSize(20, 20),
-      tooltipText: __('USER_SETTINGS')
+      tooltipText: __('USER_SETTINGS'),
     });
     setBtn.setFixedSize(32, 32);
     setBtn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'settings'));
@@ -179,23 +206,24 @@ export class UserPanel extends QWidget {
     const { avatar } = this;
     const { client } = app;
     if (!client.user) return;
-    let path = await pictureWorker.loadImage(
-      client.user.avatarURL({ format: 'png', size: 256 }) || client.user.defaultAvatarURL
+    const path = await pictureWorker.loadImage(
+      client.user.displayAvatarURL({ format: 'png', size: 256 }),
     );
-    path && avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
   }
 
   async loadStatusEmoji(status: CustomStatus) {
     this.statusIcon.hide();
     const emojiPath = await resolveEmoji(status);
-    if (!emojiPath) return;
     const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();
   }
 
   async updatePresence() {
-    const { discLabel, statusBtn, statusIcon, statusText } = this;
+    const {
+      discLabel, statusBtn, statusIcon, statusText,
+    } = this;
     if (!app.client.user) return;
     const { customStatus, presence } = app.client.user;
 

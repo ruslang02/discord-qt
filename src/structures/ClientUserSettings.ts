@@ -1,34 +1,59 @@
-import { Constants, ClientUser, DQConstants, Guild, Snowflake, PresenceStatus, Util } from 'discord.js';
+import {
+  ClientUser, Constants, DQConstants, Guild, PresenceStatus, Snowflake, Util,
+} from 'discord.js';
 import { CustomStatus } from './CustomStatus';
+
+type FriendsSources = { all: boolean, mutualGuilds: boolean, mutualFriends: boolean };
 
 /**
  * A wrapper around the ClientUser's settings.
  */
 export class ClientUserSettings {
   public convertEmoticons: boolean = false;
+
   public customStatus: CustomStatus | null = null;
+
   public defaultGuildsRestricted: boolean = false;
+
   public detectPlatformAccounts: boolean = false;
+
   public developerMode: boolean = false;
+
   public enableTTSCommand: boolean = false;
+
   public explicitContentFilter: 'DISABLED' | 'NON_FRIENDS' | 'FRIENDS_AND_NON_FRIENDS' | string = 'DISABLED';
-  public friendsSources: { all: boolean, mutualGuilds: boolean, mutualFriends: boolean } = { all: false, mutualFriends: false, mutualGuilds: false };
+
+  public friendsSources: FriendsSources = { all: false, mutualFriends: false, mutualGuilds: false };
+
   public guildFolders: Snowflake[] = [];
+
   public guildPositions: Snowflake[] = [];
+
   public inlineAttachmentMedia: boolean = false;
+
   public inlineEmbedMedia: boolean = false;
+
   public locale: string = '';
+
   public messageDisplayCompact: boolean = false;
+
   public renderReactions: boolean = false;
+
   public restrictedGuilds: Snowflake[] = [];
+
   public showCurrentGame: boolean = false;
+
   public status: PresenceStatus = 'offline';
+
   public theme: string = 'dark';
 
+  private user: ClientUser;
+
   constructor(
-    private user: ClientUser,
-    data: any
+    user: ClientUser,
+    data: any,
   ) {
+    this.user = user;
     this._patch(data);
   }
 
@@ -41,9 +66,8 @@ export class ClientUserSettings {
   _patch(data: any) {
     for (const key of Object.keys((Constants as unknown as DQConstants).UserSettingsMap)) {
       const value = (Constants as unknown as DQConstants).UserSettingsMap[key];
-      if (!(key in data)) continue;
       // @ts-ignore: Object assignment.
-      if (typeof value === 'function') this[value.name] = value(data[key]); else this[value] = data[key];
+      if (key in data && typeof value === 'function') this[value.name] = value(data[key]); else this[value] = data[key];
     }
   }
 
