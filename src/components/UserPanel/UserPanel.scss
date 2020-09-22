@@ -1,5 +1,3 @@
-
-
 #UserPanel {
   #NameLabel {
     color: $header-primary;
@@ -21,11 +19,17 @@
     &:hover {
       background: $background-modifier-selected;
     }
-    &::menu-indicator{ width:0px; }
+    &::menu-indicator {
+      width: 0px;
+    }
   }
-  #StatusMenu {
+  #UserMenu {
     &::item {
       padding: 6px 25px 6px 15px;
     }
+  }
+  #StatusCircle {
+    border: 3px solid $background-secondary-alt;
+    border-radius: 8px;
   }
 }

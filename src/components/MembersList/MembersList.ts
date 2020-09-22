@@ -45,7 +45,7 @@ export class MembersList extends QListWidget {
     this.initMenu();
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (view === 'dm' || (view === 'guild' || options?.channel)) {
+      if (view === 'dm' || (view === 'guild' && !options?.channel)) {
         this.hide();
         return;
       }

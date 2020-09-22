@@ -26,7 +26,7 @@ export class UserButton extends DChannelButton {
 
   private nameLabel = new QLabel(this);
 
-  private statusInd = new QLabel(this);
+  private statusInd = new QLabel(this.avatar);
 
   private nameLayout = new QBoxLayout(Direction.LeftToRight);
 
@@ -101,10 +101,12 @@ export class UserButton extends DChannelButton {
     statusLabel.setAlignment(AlignmentFlag.AlignVCenter);
     statusLabel.setObjectName('StatusLabel');
     statusIcon.setMinimumSize(0, 0);
-    statusInd.setText('●');
+    statusInd.setObjectName('StatusIndicator');
+    statusInd.setFixedSize(16, 16);
+    statusInd.setProperty('tooltip', 'Offline');
+    statusInd.move(19, 19);
     nameLayout.setSpacing(6);
     nameLayout.addWidget(nameLabel);
-    nameLayout.addWidget(statusInd, 1);
     statusLayout.setSpacing(4);
     statusLayout.addWidget(statusIcon);
     statusLayout.addWidget(statusLabel, 1);
@@ -134,7 +136,8 @@ export class UserButton extends DChannelButton {
 
   async loadPresence(presence: Presence) {
     if (this._destroyed) return;
-    this.statusInd.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)}`);
+    this.statusInd.setProperty('tooltip', presence.status);
+    this.statusInd.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)}`);
     this.loadStatusEmoji(presence);
 
     if (presence.activities.length) {

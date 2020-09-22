@@ -88,10 +88,10 @@ export class ChannelButton extends DChannelButton {
     layout.addWidget(chicon);
     layout.addWidget(chlabel, 1);
 
-    unreadIcon.setText('●');
-    unreadIcon.setObjectName('Indicator');
+    unreadIcon.setObjectName('UnreadIndicator');
+    unreadIcon.move(-4, 12);
+    unreadIcon.setFixedSize(8, 8);
     unreadIcon.hide();
-    layout.addWidget(unreadIcon);
   }
 
   setUnread(value: boolean) {

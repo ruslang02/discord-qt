@@ -13,6 +13,10 @@
       outline: none;
     }
   }
+  #UnreadIndicator {
+    border-radius: 4px;
+    background: $header-primary;
+  }
   QMenu {
     background: $background-floating;
   }
