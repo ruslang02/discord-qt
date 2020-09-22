@@ -21,6 +21,7 @@ export class Tray extends QSystemTrayIcon {
       client.on(Events.USER_UPDATE, this.update.bind(this));
       client.on(Events.CLIENT_READY, this.update.bind(this));
     });
+    app.on(AppEvents.READY, this.update.bind(this));
   }
 
   private initTray() {
@@ -31,6 +32,7 @@ export class Tray extends QSystemTrayIcon {
     this.setContextMenu(menu);
     this.setToolTip('DiscordQt');
     this.show();
+    this.update();
   }
 
   private static handleShowApp(reason?: QSystemTrayIconActivationReason) {
@@ -44,7 +46,7 @@ export class Tray extends QSystemTrayIcon {
     const {
       menu, accMenu, tagAction,
     } = this;
-
+    tagAction.setText('Not logged in');
     tagAction.setEnabled(false);
     tagAction.setIcon(app.icon);
     menu.addAction(tagAction);

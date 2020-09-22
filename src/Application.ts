@@ -38,7 +38,6 @@ export class Application extends ApplicationEventEmitter {
   }
 
   public async start() {
-    const { application } = this;
     this.tray = new Tray();
     await this.loadFonts();
     this.config = new Config(CONFIG_PATH);
@@ -46,12 +45,15 @@ export class Application extends ApplicationEventEmitter {
     i18n.setLocale(this.config.locale as string);
     this.window = new RootWindow();
     this.window.show();
-    this.window.addEventListener(WidgetEventTypes.Close, async () => {
-      console.log('Bye.');
-      if (this.client) this.client.destroy();
-      application.quit();
-    });
+    this.window.addEventListener(WidgetEventTypes.Close, this.quit.bind(this));
     this.emit(AppEvents.READY);
+  }
+
+  public quit() {
+    console.log('Bye.');
+    this.tray?.hide();
+    if (this.client) this.client.destroy();
+    this.application.quit();
   }
 
   private async loadFonts() {

@@ -4,10 +4,6 @@
     {
       "type": "npm",
       "script": "build:prod",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
       "problemMatcher": [],
       "label": "npm: build production",
       "detail": "webpack -p"
@@ -24,12 +20,9 @@
       "detail": "webpack"
     },
     {
+      "type": "npm",
       "label": "watch",
-      "command": "npx",
-      "args": [
-        "webpack",
-        "-w"
-      ],
+      "script": "watch",
       "problemMatcher": [
         {
           "fileLocation": "absolute",

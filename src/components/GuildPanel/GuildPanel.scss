@@ -7,9 +7,10 @@
   }
   #ChannelsList {
     &::item {
-      padding: 6px 4px;
+      padding: 6px 6px 6px 0;
       color: transparent;
-      background: none;
+      background: $background-secondary;
+      border: none;
       outline: none;
     }
   }

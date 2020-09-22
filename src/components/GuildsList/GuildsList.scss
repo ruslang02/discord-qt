@@ -2,7 +2,11 @@
 
 #GuildsList {
   background: $background-tertiary;
-
+  &::item {
+    background-color: $background-tertiary;
+    border: none;
+    color: transparent;
+  }
   QScrollBar:vertical {
     width: 0px;
   }
