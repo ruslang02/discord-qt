@@ -155,13 +155,11 @@ export class UserButton extends DChannelButton {
   async loadStatusEmoji(presence: Presence) {
     this.statusIcon.hide();
     const activity = presence.activities.find((a) => !!a.emoji);
-    if (!activity || !activity.emoji || !activity.emoji.id) return;
-    // @ts-ignore
+    if (!activity || !activity.emoji || !activity.emoji.name) return;
     const emojiPath = await resolveEmoji({
-      emoji_id: activity.emoji.id,
+      emoji_id: activity.emoji.id || undefined,
       emoji_name: activity.emoji.name,
     });
-    if (!emojiPath) return;
     const pix = new QPixmap(emojiPath);
     this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
     this.statusIcon.show();
