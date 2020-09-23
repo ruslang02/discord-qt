@@ -7,7 +7,7 @@ import { Application } from './Application';
 
 i18n.configure({
   directory: join(__dirname, 'locales'),
-  locales: ['en-US', 'ru-RU'],
+  locales: ['de-DE', 'en-US', 'ru-RU'],
   defaultLocale: 'en-US',
 
   logDebugFn() { },
