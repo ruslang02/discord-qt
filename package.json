@@ -1,14 +1,14 @@
 {
   "name": "discord-qt",
-  "version": "0.4.0",
-  "main": "dist/index.js",
+  "version": "0.4.1",
+  "main": "launch.js",
   "author": "Ruslan Garifullin",
   "repository": {
     "url": "https://github.com/ruslang02/discord-qt"
   },
   "license": "GPL-3.0",
   "bin": {
-    "discord-qt": "./index.js"
+    "discord-qt": "./launch.js"
   },
   "scripts": {
     "build": "webpack",
@@ -24,12 +24,13 @@
   },
   "files": [
     "/assets",
+    "/locales",
     "/src",
     "/worker",
     ".npmrc",
     "assets.d.ts",
     "downloadNodeGui.js",
-    "index.js",
+    "launch.js",
     "tsconfig.json",
     "webpack.config.js"
   ],
