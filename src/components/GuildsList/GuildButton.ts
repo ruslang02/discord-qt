@@ -8,6 +8,8 @@ import { Events } from '../../structures/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 
 export class GuildButton extends QLabel {
+  unreadInd = new QLabel(this);
+
   constructor(private guild: Guild, parent?: any) {
     super(parent);
     this.setObjectName('PageButton');
@@ -21,9 +23,18 @@ export class GuildButton extends QLabel {
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       app.emit(Events.SWITCH_VIEW, 'guild', { guild });
     });
+
+    this.unreadInd.setFixedSize(8, 8);
+    this.unreadInd.setObjectName('UnreadIndicator');
+    this.unreadInd.move(-4, 20);
+    this.setUnread(false);
   }
 
   hasPixmap = false;
+
+  setUnread(value: boolean) {
+    if (value === true) this.unreadInd.show(); else this.unreadInd.hide();
+  }
 
   async loadAvatar() {
     if (this.hasPixmap) return;

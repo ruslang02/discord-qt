@@ -54,7 +54,7 @@ export class MyAccountPage extends Page {
     const info = new QWidget();
     const infout = new QBoxLayout(Direction.TopToBottom);
     infout.setContentsMargins(0, 2, 0, 2);
-    infout.setSpacing(0);
+    infout.setSpacing(4);
     info.setLayout(infout);
     const unbold = new QLabel();
     unbold.setText(__('USERNAME'));

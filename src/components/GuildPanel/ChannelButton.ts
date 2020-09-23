@@ -9,6 +9,7 @@ import {
   QMessageBox,
   QPixmap,
   QPoint,
+  QPushButton,
 } from '@nodegui/nodegui';
 import { GuildChannel, TextChannel, VoiceChannel } from 'discord.js';
 import { __ } from 'i18n';
@@ -17,8 +18,6 @@ import { join } from 'path';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
-import { DColorButton } from '../DColorButton/DColorButton';
-import { DColorButtonColor } from '../DColorButton/DColorButtonColor';
 
 export class ChannelButton extends DChannelButton {
   private static Icons = new Map([
@@ -44,6 +43,8 @@ export class ChannelButton extends DChannelButton {
     this.initComponent();
     this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     this.addEventListener('clicked', this.handleClick.bind(this));
+    this.setInlineStyle('margin-left: 8px');
+    this.layout.setContentsMargins(12, 4, 12, 4);
   }
 
   private handleClick() {
@@ -55,21 +56,21 @@ export class ChannelButton extends DChannelButton {
         app.emit(Events.SWITCH_VIEW, 'guild', { channel });
         break;
       case 'voice':
-        this.openVoiceChannel(channel as VoiceChannel);
+        ChannelButton.openVoiceChannel(channel as VoiceChannel);
         break;
       default:
     }
   }
 
-  private openVoiceChannel(channel: VoiceChannel) {
-    const msgBox = new QMessageBox(this);
+  private static openVoiceChannel(channel: VoiceChannel) {
+    const msgBox = new QMessageBox();
     msgBox.setText(__('VOICE_NOT_SUPPORTED'));
     msgBox.setWindowTitle('DiscordQt');
     msgBox.setProperty('icon', 4);
-    const noBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
+    const noBtn = new QPushButton();
     noBtn.setText(__('NO_TEXT'));
     msgBox.addButton(noBtn, ButtonRole.NoRole);
-    const yesBtn = new DColorButton(DColorButtonColor.BLURPLE);
+    const yesBtn = new QPushButton();
     yesBtn.setText(__('YES_TEXT'));
     msgBox.addButton(yesBtn, ButtonRole.YesRole);
     yesBtn.addEventListener('clicked', () => {
@@ -88,10 +89,10 @@ export class ChannelButton extends DChannelButton {
     layout.addWidget(chicon);
     layout.addWidget(chlabel, 1);
 
-    unreadIcon.setText('●');
-    unreadIcon.setObjectName('Indicator');
+    unreadIcon.setObjectName('UnreadIndicator');
+    unreadIcon.move(-4, 12);
+    unreadIcon.setFixedSize(8, 8);
     unreadIcon.hide();
-    layout.addWidget(unreadIcon);
   }
 
   setUnread(value: boolean) {

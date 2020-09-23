@@ -2,7 +2,11 @@
 
 #GuildsList {
   background: $background-tertiary;
-
+  &::item {
+    background-color: $background-tertiary;
+    border: none;
+    color: transparent;
+  }
   QScrollBar:vertical {
     width: 0px;
   }
@@ -18,9 +22,10 @@
       background-color: $blurple;
       border-radius: 15px;
     }
-    &[unread="true"] {
-      border-left: 1px solid $header-primary;
-    }
+  }
+  #UnreadIndicator {
+    border-radius: 4px;
+    background: $header-primary;
   }
   #Separator {
     height: 2px;

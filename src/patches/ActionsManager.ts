@@ -24,6 +24,9 @@ export class MessageAcknowledgedAction extends Action {
 export class UserSettingsUpdateAction extends Action {
   handle(settings: any) {
     const client = this.client;
+    if ('status' in settings) {
+      client.presence.status = settings.status;
+    }
     /**
      * Emitted whenever a user's details (e.g. username) are changed.
      * @event Client#userSettingsUpdate

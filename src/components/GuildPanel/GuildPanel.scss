@@ -7,11 +7,16 @@
   }
   #ChannelsList {
     &::item {
-      padding: 6px 4px;
+      padding: 6px 6px 6px 0;
       color: transparent;
-      background: none;
+      background: $background-secondary;
+      border: none;
       outline: none;
     }
+  }
+  #UnreadIndicator {
+    border-radius: 4px;
+    background: $header-primary;
   }
   QMenu {
     background: $background-floating;

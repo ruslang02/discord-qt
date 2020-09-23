@@ -86,8 +86,7 @@ export class GuildsList extends QListWidget {
   private updateGuildAck(guild: Guild) {
     const btn = this.guilds.get(guild);
     if (!btn) return;
-    btn.setProperty('unread', !guild.acknowledged);
-    btn.repolish();
+    btn.setUnread(!guild.acknowledged);
   }
 
   private addMainPageButton() {
@@ -131,6 +130,7 @@ export class GuildsList extends QListWidget {
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setSizeHint(btn.size());
         this.addItem(item);
+        btn.setUnread(!guild.acknowledged);
         this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
       });

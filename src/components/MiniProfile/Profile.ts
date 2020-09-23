@@ -14,6 +14,8 @@ export class Profile extends QWidget {
 
   private username = new QLabel(this);
 
+  private unreadInd = new QLabel(this.avatar);
+
   private custom = new CustomStatusLabel();
 
   constructor(parent?: any) {
@@ -24,7 +26,7 @@ export class Profile extends QWidget {
 
   private initComponent() {
     const {
-      layout, avatar, nickname, username, custom,
+      layout, avatar, nickname, username, custom, unreadInd,
     } = this;
 
     layout.setContentsMargins(16, 16, 16, 16);
@@ -34,6 +36,11 @@ export class Profile extends QWidget {
     layout.addWidget(nickname);
     layout.addWidget(username);
     layout.addWidget(custom);
+
+    unreadInd.setObjectName('StatusIndicator');
+    unreadInd.setFixedSize(28, 28);
+    unreadInd.setProperty('tooltip', 'Offline');
+    unreadInd.move(124, 54);
 
     avatar.setAlignment(AlignmentFlag.AlignHCenter);
     nickname.setAlignment(AlignmentFlag.AlignHCenter);
@@ -54,21 +61,23 @@ export class Profile extends QWidget {
 
   async loadProfile(someone: User | GuildMember) {
     const {
-      avatar, username, nickname, custom,
+      avatar, username, nickname, custom, unreadInd,
     } = this;
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;
     if (!user) return;
     this.setMinimumSize(250, 0);
+    unreadInd.setProperty('color', user.presence.status);
+    unreadInd.repolish();
     avatar.clear();
     pictureWorker.loadImage(user.displayAvatarURL({ format: 'png', size: 256 }))
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)));
     if (member?.nickname) {
       username.show();
-      nickname.setText(member.nickname);
+      nickname.setText(`<span style='font-weight:600'>${member.nickname}</span>`);
       username.setText(user.tag);
     } else {
-      nickname.setText(user.tag);
+      nickname.setText(`<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`);
       username.hide();
     }
     this.repolish();

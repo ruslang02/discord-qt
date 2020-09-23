@@ -11,7 +11,7 @@ export function getEmojiURL(status: CustomStatus): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!status.emoji_id) {
       if (!status.emoji_name) {
-        reject(new Error('Incorrect input data.'));
+        reject(new Error('No emoji in the status.'));
         return;
       }
       TWEmoji.parse(status.emoji_name, {

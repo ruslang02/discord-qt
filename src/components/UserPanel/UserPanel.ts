@@ -1,17 +1,13 @@
 import {
-  ContextMenuPolicy,
   CursorShape,
   Direction,
-  QAction,
   QApplication,
   QBoxLayout,
   QClipboardMode,
   QCursor,
-  QIcon,
   QLabel,
-  QMenu,
   QPixmap,
-  QPushButton,
+  QPoint,
   QSize,
   QWidget,
   WidgetEventTypes,
@@ -26,6 +22,7 @@ import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DIconButton } from '../DIconButton/DIconButton';
+import { UserMenu } from './UserMenu';
 
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
@@ -38,7 +35,7 @@ export class UserPanel extends QWidget {
 
   private statusText = new QLabel(this);
 
-  private statusBtn = new QPushButton(this);
+  private statusCircle = new QLabel(this.avatar);
 
   private controls = new QBoxLayout(Direction.LeftToRight);
 
@@ -94,7 +91,7 @@ export class UserPanel extends QWidget {
 
   private initComponent() {
     const {
-      avatar, nameLabel, discLabel, controls, statusBtn, statusIcon, statusText,
+      avatar, nameLabel, discLabel, controls, statusCircle, statusIcon, statusText,
     } = this;
     this.setLayout(controls);
     this.setObjectName('UserPanel');
@@ -106,6 +103,13 @@ export class UserPanel extends QWidget {
 
     avatar.setObjectName('UserAvatar');
     avatar.setFixedSize(32, 32);
+    avatar.setCursor(new QCursor(CursorShape.PointingHandCursor));
+
+    statusCircle.setObjectName('StatusCircle');
+    statusCircle.setFixedSize(16, 16);
+    statusCircle.setProperty('tooltip', 'Offline');
+    statusCircle.move(18, 18);
+    statusCircle.hide();
 
     const layInfo = new QBoxLayout(Direction.TopToBottom);
     layInfo.setSpacing(0);
@@ -135,37 +139,18 @@ export class UserPanel extends QWidget {
     layInfo.addWidget(nameLabel);
     layInfo.addLayout(layStat);
 
-    const statusMenu = new QMenu(this);
-    statusMenu.setObjectName('StatusMenu');
-    // TODO: Localization
-    ['Custom Status...', null, 'Online', 'Idle', 'Do Not Disturb', 'Invisible'].forEach((text) => {
-      const action = new QAction();
-      action.addEventListener('triggered', async () => {
-        // if (!app.client) return;
-        const status = text === 'Do Not Disturb' ? 'dnd' : text?.toLowerCase();
-        if (text === 'Custom Status...') {
-          app.window.dialogs.customStatus.show();
-          return;
-        }
-        // @ts-ignore
-        await app.client.user?.setPresence({ status });
-        this.updatePresence();
-      });
-      if (text === null) action.setSeparator(true);
-      else {
-        action.setText(text);
-        action.setIcon(new QIcon(join(__dirname, 'assets', 'icons', `status-${text.toLowerCase().replace(/ /g, '-')}.png`)));
-      }
-      statusMenu.addAction(action);
+    const userMenu = new UserMenu(this);
+    userMenu.setObjectName('UserMenu');
+    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+      userMenu.adjustSize();
+      const point = this.mapToGlobal(new QPoint(0, 0));
+      point.setY(point.y() - userMenu.size().height() - 10);
+      point.setX(point.x() + 10);
+      userMenu.popup(point);
     });
-    statusBtn.setText('●');
-    statusBtn.setObjectName('DIconButton');
-    statusBtn.setProperty('tooltip', 'Offline');
-    statusBtn.setFixedSize(32, 32);
-    statusBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    statusBtn.addEventListener('clicked', () => statusBtn.showMenu());
-    statusBtn.setMenu(statusMenu);
-    statusBtn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    userMenu.addEventListener(WidgetEventTypes.Close, () => {
+      setTimeout(this.updatePresence.bind(this), 500);
+    });
 
     const iBtn = new DIconButton({
       iconPath: join(__dirname, './assets/icons/invite.png'),
@@ -184,18 +169,17 @@ export class UserPanel extends QWidget {
     setBtn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'settings'));
     controls.addWidget(avatar, 0);
     controls.addLayout(layInfo, 1);
-    controls.addWidget(statusBtn, 0);
     controls.addWidget(iBtn, 0);
     controls.addWidget(setBtn, 0);
   }
 
   async updateData(): Promise<void> {
-    const { nameLabel, discLabel, statusBtn } = this;
+    const { nameLabel, discLabel, statusCircle } = this;
     const { client } = app;
     if (!client.user) {
       nameLabel.setText(__('NO_ACCOUNT'));
       discLabel.setText('#0000');
-      statusBtn.setInlineStyle('');
+      statusCircle.hide();
       return;
     }
     nameLabel.setText(client.user.username);
@@ -213,22 +197,25 @@ export class UserPanel extends QWidget {
   }
 
   async loadStatusEmoji(status: CustomStatus) {
-    this.statusIcon.hide();
-    const emojiPath = await resolveEmoji(status);
-    const pix = new QPixmap(emojiPath);
-    this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
-    this.statusIcon.show();
+    try {
+      const emojiPath = await resolveEmoji(status);
+      const pix = new QPixmap(emojiPath);
+      this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
+      this.statusIcon.show();
+    } catch (e) {
+      this.statusIcon.hide();
+    }
   }
 
   async updatePresence() {
     const {
-      discLabel, statusBtn, statusIcon, statusText,
+      discLabel, statusCircle, statusIcon, statusText,
     } = this;
-    if (!app.client.user) return;
+    if (!app.client?.user) return;
     const { customStatus, presence } = app.client.user;
-
-    statusBtn.setInlineStyle(`color: ${PresenceStatusColor.get(presence.status)};`);
-    statusBtn.setProperty('toolTip', presence.status);
+    statusCircle.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)};`);
+    statusCircle.setProperty('toolTip', presence.status);
+    statusCircle.show();
 
     if (!customStatus) {
       statusIcon.hide();

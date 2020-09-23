@@ -1,5 +1,5 @@
 import {
-  ButtonRole, QLabel, QMessageBox, QMessageBoxIcon, QVariant, WidgetEventTypes,
+  ButtonRole, QLabel, QMessageBox, QMessageBoxIcon, QPushButton, QVariant, WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
@@ -7,7 +7,6 @@ import { notify } from 'node-notifier';
 import { basename, join } from 'path';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
-import { DColorButtonColor } from '../../../components/DColorButton/DColorButtonColor';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
 import { Events } from '../../../structures/Events';
 import { paths } from '../../../structures/Paths';
@@ -42,6 +41,7 @@ export class AppearancePage extends Page {
   constructor() {
     super();
     this.initPage();
+    this.layout.setSpacing(5);
     app.on(Events.READY, this.loadConfig.bind(this));
   }
 
@@ -95,11 +95,11 @@ export class AppearancePage extends Page {
       app.config.locale = locale;
       await app.config.save();
       setLocale(locale);
-      const mbox = new QMessageBox(this);
+      const mbox = new QMessageBox();
       mbox.setText(__('LANGUAGE_RESTART_REQUIRED'));
       mbox.setWindowTitle('DiscordQt');
       mbox.setProperty('icon', QMessageBoxIcon.Information);
-      const okBtn = new DColorButton(DColorButtonColor.BLURPLE);
+      const okBtn = new QPushButton();
       okBtn.setText(__('OKAY'));
       mbox.addButton(okBtn, ButtonRole.ApplyRole);
       mbox.open();

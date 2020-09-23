@@ -5,12 +5,12 @@
   border-radius: 5px;
   border: 1px solid $deprecated-text-input-border;
   #Profile {
-    background-color: $background-secondary;
+    background-color: $background-tertiary;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
     margin-right: 2px;
     #Nickname {
-      font-weight: 500;
+      font-weight: 400;
       line-height: 18px;
       color: $header-primary;
       font-size: 16px;
@@ -29,9 +29,29 @@
         font-size: 14px;
       }
     }
+    #StatusIndicator {
+      border: 6px solid $background-tertiary;
+      border-radius: 14px;
+      &[color="online"] {
+        background-color: #43b581;
+      }
+      &[color="idle"] {
+        background-color: #faa61a;
+      }
+      &[color="dnd"] {
+        background-color: #f04747;
+      }
+      &[color="offline"],
+      &[color="invisible"] {
+        background-color: #747f8d;
+      }
+    }
     &[isPlaying="true"] {
       background-color: $blurple;
-
+      #StatusIndicator {
+        border-color: $blurple;
+        background-color: white;
+      }
       #Nickname {
         color: white;
       }
@@ -39,6 +59,8 @@
   }
   #ProfilePresence {
     background-color: darken($blurple, 2);
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
     #Header {
       text-transform: uppercase;
       color: $header-primary;
@@ -53,20 +75,25 @@
 
   #SectionHeader {
     color: $header-secondary;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
+    font-size: 12px;
     border: none;
     background: none;
   }
 
   #RolesSection {
     #RoleBadge {
-      padding: 0px 2px;
       border: 1px solid;
       border-radius: 11px;
-      font-size: 12px;
       border-color: #bbbe99;
-      color: $header-primary;
+      #Circle {
+        border-radius: 6px;
+      }
+      #RoleName {
+        font-size: 12px;
+        color: $header-primary;
+      }
     }
     QListWidget {
       outline: none;

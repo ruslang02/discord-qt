@@ -18,7 +18,11 @@ export class RolesSection extends QWidget {
 
   private label = new QLabel(this);
 
-  private topRole = new QLabel(this);
+  private topRole = new QWidget(this);
+
+  private topRoleCircle = new QWidget(this);
+
+  private topRoleLabel = new QLabel(this);
 
   private rolesList = new QListWidget(this);
 
@@ -30,7 +34,7 @@ export class RolesSection extends QWidget {
 
   private initComponent() {
     const {
-      label, rolesList, topRole, layout,
+      label, rolesList, topRole, layout, topRoleCircle, topRoleLabel,
     } = this;
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(8);
@@ -43,12 +47,23 @@ export class RolesSection extends QWidget {
     rolesList.setMaximumSize(MAX_QSIZE, 150);
     rolesList.setFrameShape(Shape.NoFrame);
     rolesList.setVerticalScrollMode(1);
-
+    const mainRolesLayout = new QBoxLayout(Direction.LeftToRight);
+    const topRoleLayout = new QBoxLayout(Direction.LeftToRight);
     topRole.setObjectName('RoleBadge');
     topRole.setMinimumSize(0, 22);
     topRole.setMaximumSize(MAX_QSIZE, 22);
+    topRole.setLayout(topRoleLayout);
+    topRoleLayout.setContentsMargins(5, 2, 9, 2);
+    topRoleLayout.setSpacing(4);
+    topRoleLayout.addWidget(topRoleCircle);
+    topRoleLayout.addWidget(topRoleLabel, 1);
+    topRoleCircle.setFixedSize(12, 12);
+    topRoleCircle.setObjectName('Circle');
+    topRoleLabel.setObjectName('RoleName');
+    mainRolesLayout.addWidget(topRole);
+    mainRolesLayout.addStretch(1);
     layout.addWidget(label);
-    layout.addWidget(topRole);
+    layout.addLayout(mainRolesLayout);
     layout.addWidget(rolesList);
     rolesList.hide();
     this.setLayout(layout);
@@ -65,7 +80,9 @@ export class RolesSection extends QWidget {
   }
 
   loadRoles(roles: GuildMemberRoleManager | undefined) {
-    const { label, rolesList, topRole } = this;
+    const {
+      label, rolesList, topRole, topRoleCircle, topRoleLabel,
+    } = this;
     if (roles) this.show(); else {
       label.setText(__('NO_ROLES'));
       this.hide();
@@ -75,8 +92,8 @@ export class RolesSection extends QWidget {
     if (!roles) return;
 
     if (roles.highest.name !== '@everyone') {
-      topRole.setText(`<font color='${roles.highest.hexColor}'>⬤</font>&nbsp;&nbsp;${roles.highest.name}`);
-      topRole.setMaximumSize(MAX_QSIZE, 22);
+      topRoleCircle.setInlineStyle(`background-color: ${roles.highest.hexColor};`);
+      topRoleLabel.setText(roles.highest.name);
       topRole.setInlineStyle(`border-color: ${roles.highest.hexColor}`);
       topRole.show();
     } else topRole.hide();

@@ -1,4 +1,8 @@
-# DiscordQt ![npm](https://img.shields.io/npm/v/discord-qt) ![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg) ![David](https://img.shields.io/david/ruslang02/discord-qt)
+# DiscordQt
+[![npm](https://img.shields.io/npm/v/discord-qt)](https://www.npmjs.com/package/discord-qt)
+![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg)
+![David](https://img.shields.io/david/ruslang02/discord-qt)
+
 A Discord desktop client powered by Node.JS and [NodeGui](https://github.com/nodegui).
 It offers a significantly less resource-consuming experience comparing to the official Electron-based desktop client thanks to native UI rendering instead of a Chromium rendering engine.
 
@@ -7,7 +11,7 @@ It offers a significantly less resource-consuming experience comparing to the of
 Node.JS v12+ is required to build.
 
 ## Running the binary release
-Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows and Linux (AppImage, Debian package).
+Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows, macOS and Linux (AppImage, Debian package).
 
 ## Installing from npm
 Windows (macOS should work as well, however not tested):

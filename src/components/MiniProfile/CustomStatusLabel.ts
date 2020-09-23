@@ -59,9 +59,9 @@ export class CustomStatusLabel extends QWidget {
     if (!statusText) statusLabel.hide(); else statusLabel.show();
     if (!emojiName) statusIcon.hide(); else statusIcon.show();
     statusLabel.setText(statusText);
+    if (!emojiId && !emojiName) return;
 
     const status = { emoji_id: emojiId, emoji_name: emojiName } as CustomStatus;
-    this.show();
     const emojiPath = await resolveEmoji(status);
     const pix = new QPixmap(emojiPath);
     const size = statusText ? 24 : 48;

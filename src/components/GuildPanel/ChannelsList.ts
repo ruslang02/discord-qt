@@ -7,6 +7,7 @@ import {
   QListWidgetItem,
   Shape,
   WidgetEventTypes,
+  QSize,
 } from '@nodegui/nodegui';
 import {
   CategoryChannel,
@@ -39,7 +40,7 @@ export class ChannelsList extends QListWidget {
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('ChannelsList');
     this.setVerticalScrollMode(1);
-    this.setSpacing(2);
+    this.setSpacing(0);
     app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
     app.on(AppEvents.NEW_CLIENT, this.handleEvents.bind(this));
   }
@@ -76,6 +77,8 @@ export class ChannelsList extends QListWidget {
       this.active = chan;
     } else this.active = undefined;
   }
+
+  private minSize = new QSize(150, 36);
 
   async loadChannels() {
     const { guild, buttons } = this;
@@ -126,7 +129,7 @@ export class ChannelsList extends QListWidget {
       btn.loadChannel(channel);
       btn.setMinimumSize(0, 32);
       btn.setMaximumSize(MAX_QSIZE, 32);
-      item.setSizeHint(btn.size());
+      item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0, item);
       this.setItemWidget(item, btn);
