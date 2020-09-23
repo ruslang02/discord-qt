@@ -134,9 +134,11 @@ export async function processEmojis(content: string): Promise<string> {
         const larger = pix.width() > pix.height() ? 'width' : 'height';
 
         cnt = cnt.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-      }).catch(() => {});
+      }).catch(() => { });
   });
-  await Promise.all(promises);
+  try {
+    await Promise.all(promises);
+  } catch (e) { }
   return cnt;
 }
 
@@ -320,6 +322,7 @@ export function processAttachments(attachments: Collection<string, MessageAttach
     });
     if (!isImage) {
       qimage.setPixmap(new QPixmap(join(__dirname, 'assets/icons/file.png')));
+      qimage.setFixedSize(160, 80);
     } else {
       // @ts-ignore
       qimage.loadImages = async function loadImages() {

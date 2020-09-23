@@ -74,10 +74,10 @@ export class Profile extends QWidget {
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)));
     if (member?.nickname) {
       username.show();
-      nickname.setText(member.nickname);
+      nickname.setText(`<span style='font-weight:600'>${member.nickname}</span>`);
       username.setText(user.tag);
     } else {
-      nickname.setText(user.tag);
+      nickname.setText(`<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`);
       username.hide();
     }
     this.repolish();

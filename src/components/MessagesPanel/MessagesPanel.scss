@@ -25,6 +25,11 @@
   &:hover {
     background-color: $background-message-hover;
   }
+  QLabel, QLabel:selected, QLabel:active {
+    background-color: transparent;
+    border: none;
+    outline: none;
+  }
   #UserNameLabel {
     font-size: 16px;
     color: $header-primary;

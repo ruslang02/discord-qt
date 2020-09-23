@@ -10,7 +10,7 @@
     border-top-right-radius: 5px;
     margin-right: 2px;
     #Nickname {
-      font-weight: 500;
+      font-weight: 400;
       line-height: 18px;
       color: $header-primary;
       font-size: 16px;
@@ -75,20 +75,25 @@
 
   #SectionHeader {
     color: $header-secondary;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
+    font-size: 12px;
     border: none;
     background: none;
   }
 
   #RolesSection {
     #RoleBadge {
-      padding: 0px 2px;
       border: 1px solid;
       border-radius: 11px;
-      font-size: 12px;
       border-color: #bbbe99;
-      color: $header-primary;
+      #Circle {
+        border-radius: 6px;
+      }
+      #RoleName {
+        font-size: 12px;
+        color: $header-primary;
+      }
     }
     QListWidget {
       outline: none;

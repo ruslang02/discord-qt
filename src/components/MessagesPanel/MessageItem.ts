@@ -6,7 +6,6 @@ import {
   MouseButton,
   NativeElement,
   QAction,
-  QApplication,
   QBoxLayout,
   QClipboardMode,
   QLabel,
@@ -52,8 +51,6 @@ export class MessageItem extends QWidget {
 
   private menu = new QMenu(this);
 
-  private clipboard = QApplication.clipboard();
-
   private contentNoEmojis?: string;
 
   public _destroyed = false;
@@ -71,7 +68,7 @@ export class MessageItem extends QWidget {
   }
 
   private initMenu() {
-    const { menu, clipboard } = this;
+    const { menu } = this;
     menu.setCursor(CursorShape.PointingHandCursor);
     {
       const action = new QAction(menu);
@@ -94,7 +91,7 @@ export class MessageItem extends QWidget {
       const action = new QAction(menu);
       action.setText(__('COPY_TEXT'));
       action.addEventListener('triggered', () => {
-        clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
+        app.clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
       });
       menu.addAction(action);
     }
@@ -102,7 +99,7 @@ export class MessageItem extends QWidget {
       const action = new QAction(menu);
       action.setText(`${__('COPY_TEXT')} (source)`);
       action.addEventListener('triggered', () => {
-        clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
+        app.clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
       });
       menu.addAction(action);
     }
@@ -110,7 +107,7 @@ export class MessageItem extends QWidget {
       const action = new QAction(menu);
       action.setText(__('COPY_MESSAGE_LINK'));
       action.addEventListener('triggered', () => {
-        clipboard.setText(`https://discord.com/channels/${this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id}/${this.message?.channel.id}/${this.message?.id}`, QClipboardMode.Clipboard);
+        app.clipboard.setText(`https://discord.com/channels/${this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id}/${this.message?.channel.id}/${this.message?.id}`, QClipboardMode.Clipboard);
       });
       menu.addAction(action);
     }
@@ -118,7 +115,7 @@ export class MessageItem extends QWidget {
       const action = new QAction(menu);
       action.setText(__('COPY_ID'));
       action.addEventListener('triggered', () => {
-        clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
+        app.clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
       });
       menu.addAction(action);
     }
@@ -151,7 +148,7 @@ export class MessageItem extends QWidget {
     infoLayout.setContentsMargins(0, 0, 0, 0);
 
     msgLayout.setContentsMargins(0, 0, 0, 0);
-    msgLayout.setSpacing(2);
+    msgLayout.setSpacing(1);
 
     unameLabel.setObjectName('UserNameLabel');
     unameLabel.setCursor(CursorShape.PointingHandCursor);
@@ -217,7 +214,7 @@ export class MessageItem extends QWidget {
     userNameLabel.setText(member?.nickname || user.username);
     dateLabel.setText(message.createdAt.toLocaleString());
     if (message.system) this.loadSystemMessage(message);
-    if (message.content.trim() === '') contentLabel.hide();
+    else if (message.content.trim() === '') contentLabel.hide();
     else {
       let { content } = message;
       content = await processMarkdown(content);
@@ -241,7 +238,7 @@ export class MessageItem extends QWidget {
   private loadSystemMessage(message: Message) {
     const content = __(`MESSAGE_${message.type}`) || message.type;
     this.dateLabel.hide();
-    this.contentLabel.setText(`<i>&nbsp;</i>${content}`);
+    this.contentLabel.setPlainText(`<i>&nbsp;</i>${content}`);
     this.msgLayout.setDirection(Direction.LeftToRight);
   }
 }

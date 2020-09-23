@@ -41,6 +41,7 @@ export class AppearancePage extends Page {
   constructor() {
     super();
     this.initPage();
+    this.layout.setSpacing(5);
     app.on(Events.READY, this.loadConfig.bind(this));
   }
 

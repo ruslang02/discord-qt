@@ -28,3 +28,6 @@ app.start();
 
 process.on('beforeExit', () => app.quit());
 process.on('exit', () => app.quit());
+
+// @ts-ignore
+global.app = app;

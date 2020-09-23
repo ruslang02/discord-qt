@@ -67,4 +67,8 @@ export class DLabel extends QLabel {
   setText(text: string) {
     super.setText(`<html>${MarkdownStyles}${text}</html>`);
   }
+
+  setPlainText(text: string) {
+    super.setText(text);
+  }
 }

@@ -26,6 +26,8 @@ export class Application extends ApplicationEventEmitter {
 
   application = QApplication.instance();
 
+  clipboard = QApplication.clipboard();
+
   icon = new QIcon(join(__dirname, 'assets/icon.png'));
 
   tray?: Tray;
