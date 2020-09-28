@@ -9,9 +9,15 @@ import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor'
 import { DComboBox } from '../components/DComboBox/DComboBox';
 import { DTextEdit } from '../components/DTextEdit/DTextEdit';
 import { EmojiPicker } from '../components/EmojiPicker/EmojiPicker';
+import { createLogger } from '../utilities/Console';
 import { resolveEmoji } from '../utilities/ResolveEmoji';
 import { Dialog } from './Dialog';
 
+const { error } = createLogger('CustomStatusDialog');
+
+/**
+ * Represents a dialog is used for changing current user's custom status.
+ */
 export class CustomStatusDialog extends Dialog {
   private statusLabel = new QLabel(this);
 
@@ -32,6 +38,9 @@ export class CustomStatusDialog extends Dialog {
     this.initFooter();
   }
 
+  /**
+   * Displays the dialog.
+   */
   show() {
     if (!app.client?.user) return;
     super.show();
@@ -44,13 +53,21 @@ export class CustomStatusDialog extends Dialog {
     this.loadEmoji(emoji);
   }
 
+  /**
+   * Renders the emoji in the square input.
+   * @param emoji Emoji to render.
+   */
   private async loadEmoji(emoji: Emoji) {
-    const emojiFile = await resolveEmoji({
-      emoji_id: emoji.id || undefined,
-      emoji_name: emoji.name,
-    });
-    this.emoji = emoji;
-    this.emojiInput.setPixmap(new QPixmap(emojiFile).scaled(32, 32, 1, 1));
+    try {
+      const emojiFile = await resolveEmoji({
+        emoji_id: emoji.id || undefined,
+        emoji_name: emoji.name,
+      });
+      this.emoji = emoji;
+      this.emojiInput.setPixmap(new QPixmap(emojiFile).scaled(32, 32, 1, 1));
+    } catch (e) {
+      error(`Couldn't load status emoji ${emoji}`);
+    }
   }
 
   private init() {

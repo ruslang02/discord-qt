@@ -13,7 +13,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}",
+      "program": "${workspaceFolder}/dist/index.js",
       "outFiles": [
         "${workspaceFolder}/src/**/*.ts"
       ],

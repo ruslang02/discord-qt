@@ -4,8 +4,14 @@ import {
 import { ActivityType, Presence } from 'discord.js';
 import { __ } from 'i18n';
 import { MAX_QSIZE } from '../..';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 
+const { error } = createLogger('ProfilePresence');
+
+/**
+ * Represents currently playing section in the profile popup.
+ */
 export class ProfilePresence extends QWidget {
   private static ActivityTypeText: Map<ActivityType, string> = new Map([
     ['LISTENING', 'USER_ACTIVITY_HEADER_LISTENING'],
@@ -62,6 +68,10 @@ export class ProfilePresence extends QWidget {
     layout.addLayout(dLayout);
   }
 
+  /**
+   * Displays currently playing game by the user.
+   * @param presence User presence to render.
+   */
   load(presence: Presence) {
     const {
       header, label1, label2, label3, lImage,
@@ -93,7 +103,8 @@ export class ProfilePresence extends QWidget {
     const lImageUrl = activity.assets?.largeImageURL({ size: 256, format: 'png' });
     if (lImageUrl) {
       pictureWorker.loadImage(lImageUrl, { roundify: false })
-        .then((path) => lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)));
+        .then((path) => lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)))
+        .catch(() => error(`Assets for ${activity.name} could not be loaded.`));
     } else {
       lImage.setText('');
       lImage.hide();

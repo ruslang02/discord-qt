@@ -26,8 +26,14 @@ import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
 import { __ } from 'i18n';
 import { app } from '../..';
+import { createLogger } from '../../utilities/Console';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
+const { error } = createLogger('EmojiPicker');
+
+/**
+ * Emoji picker widget.
+ */
 export class EmojiPicker extends QMenu {
   events = new EventEmitter();
 
@@ -124,6 +130,9 @@ export class EmojiPicker extends QMenu {
     this.events.emit('emoji', emoji);
   }
 
+  /**
+   * Updates emojis displayed on the screen according to the search input.
+   */
   private updateView() {
     const { emojiView, textInput } = this;
     const { client, config } = app;
@@ -143,13 +152,22 @@ export class EmojiPicker extends QMenu {
     for (const emoji of emojis) this.insertEmoji(emoji);
   }
 
+  /**
+   * Inserts emoji into the view.
+   * @param emoji Emoji to render.
+   */
   private async insertEmoji(emoji: Emoji) {
     const item = new QListWidgetItem();
     item.setToolTip(`:${emoji.name}:`);
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
-    const path = await resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name });
-    item.setIcon(new QIcon(path));
+    try {
+      const path = await resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name });
+      item.setIcon(new QIcon(path));
+    } catch (e) {
+      error(`Couldn't retrieve emoji ${emoji}`);
+      item.setText(emoji.name);
+    }
     this.emojiView.addItem(item);
     this.emojiView.setCurrentRow(0);
   }

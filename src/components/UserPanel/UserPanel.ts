@@ -19,11 +19,17 @@ import { app, MAX_QSIZE } from '../..';
 import { CustomStatus } from '../../structures/CustomStatus';
 import { Events as AppEvents } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { UserMenu } from './UserMenu';
 
+const { error } = createLogger('UserPanel');
+
+/**
+ * Represents current user's data panel in the bottom right of the UI.
+ */
 export class UserPanel extends QWidget {
   private avatar = new QLabel(this);
 
@@ -51,6 +57,10 @@ export class UserPanel extends QWidget {
     });
   }
 
+  /**
+   * Binds into discord.js to update user's info dynamically.
+   * @param client discord.js Client to bind into.
+   */
   private bindEvents(client: Client) {
     const { Events } = Constants as unknown as DQConstants;
     this.nameLabel.setText(__('CONNECTION_STATUS_CONNECTING'));
@@ -76,6 +86,9 @@ export class UserPanel extends QWidget {
 
   private copiedAmount = 0;
 
+  /**
+   * Copies user tag into the clipboard.
+   */
   private copyUserInfo() {
     const { clipboard, discLabel, statusText } = this;
     if (this.copiedTimer) clearTimeout(this.copiedTimer);
@@ -173,6 +186,9 @@ export class UserPanel extends QWidget {
     controls.addWidget(setBtn, 0);
   }
 
+  /**
+   * Updates user data shown on-screen.
+   */
   async updateData(): Promise<void> {
     const { nameLabel, discLabel, statusCircle } = this;
     const { client } = app;
@@ -186,16 +202,27 @@ export class UserPanel extends QWidget {
     discLabel.setText(`#${client.user.discriminator}`);
   }
 
+  /**
+   * Updates user's avatar.
+   */
   async updateAvatar(): Promise<void> {
     const { avatar } = this;
     const { client } = app;
     if (!client.user) return;
-    const path = await pictureWorker.loadImage(
-      client.user.displayAvatarURL({ format: 'png', size: 256 }),
-    );
-    avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    try {
+      const path = await pictureWorker.loadImage(
+        client.user.displayAvatarURL({ format: 'png', size: 256 }),
+      );
+      avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    } catch (e) {
+      error('User\'s avatar could not be updated.');
+    }
   }
 
+  /**
+   * Renders user's custom status emoji if it is set.
+   * @param status User's custom status.
+   */
   async loadStatusEmoji(status: CustomStatus) {
     try {
       const emojiPath = await resolveEmoji(status);
@@ -207,6 +234,9 @@ export class UserPanel extends QWidget {
     }
   }
 
+  /**
+   * Updates user's custom status text and the status circle.
+   */
   async updatePresence() {
     const {
       discLabel, statusCircle, statusIcon, statusText,

@@ -4,8 +4,14 @@ import {
 import { User } from 'discord.js';
 import { app } from '../..';
 import { CustomStatus } from '../../structures/CustomStatus';
+import { createLogger } from '../../utilities/Console';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
+const { error } = createLogger('CustomStatusLabel');
+
+/**
+ * Renders a custom status widget in the profile popup.
+ */
 export class CustomStatusLabel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
 
@@ -37,6 +43,10 @@ export class CustomStatusLabel extends QWidget {
     statusLabel.setWordWrap(true);
   }
 
+  /**
+   * Renders the status.
+   * @param user User to retrieve status from.
+   */
   async loadStatus(user: User) {
     const { statusIcon, statusLabel } = this;
     let emojiId: string; let emojiName: string; let
@@ -62,10 +72,14 @@ export class CustomStatusLabel extends QWidget {
     if (!emojiId && !emojiName) return;
 
     const status = { emoji_id: emojiId, emoji_name: emojiName } as CustomStatus;
-    const emojiPath = await resolveEmoji(status);
-    const pix = new QPixmap(emojiPath);
-    const size = statusText ? 24 : 48;
-    statusIcon.setPixmap(pix.scaled(size, size, 1, 1));
+    try {
+      const emojiPath = await resolveEmoji(status);
+      const pix = new QPixmap(emojiPath);
+      const size = statusText ? 24 : 48;
+      statusIcon.setPixmap(pix.scaled(size, size, 1, 1));
+    } catch (e) {
+      error(`Couldn't retrieve emoji ${emojiName}#${emojiId}`);
+    }
     statusIcon.setProperty('toolTip', `:${emojiName}:`);
     statusIcon.show();
     this.show();

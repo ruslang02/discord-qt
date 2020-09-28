@@ -7,9 +7,15 @@ import { app, MAX_QSIZE } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DLabel } from '../../../components/DLabel/DLabel';
 import { Events } from '../../../structures/Events';
+import { createLogger } from '../../../utilities/Console';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Page } from './Page';
 
+const { error } = createLogger('MyAccountPage');
+
+/**
+ * Represents the My Account page in the settings view.
+ */
 export class MyAccountPage extends Page {
   title = __('ACCOUNT');
 
@@ -25,9 +31,9 @@ export class MyAccountPage extends Page {
     if (!app.client.user) return;
     this.unabel.setText(app.client.user.tag || '');
     this.emabel.setText(app.client.user.email || '');
-    pictureWorker.loadImage(
-      app.client.user.displayAvatarURL({ size: 256, format: 'png' }),
-    ).then((path) => this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)));
+    pictureWorker.loadImage(app.client.user.displayAvatarURL({ size: 256, format: 'png' }))
+      .then((path) => this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)))
+      .catch(() => error('Could not load user\'s avatar.'));
   }
 
   private unabel = new QLabel(this);
