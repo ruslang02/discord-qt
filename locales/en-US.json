@@ -22,6 +22,9 @@
   "MESSAGE_CALL": "made a call.",
   "MESSAGE_PINS_ADD": "pinned a message in this channel.",
   "LANGUAGE_RESTART_REQUIRED": "You need to restart the app to apply language changes.",
+  "CLEAR_CACHE": "Clear cache",
+  "CLEAR_CACHE_SUCCESS": "Cache cleared successfully.",
+  "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Yay! More hard drive space!",
 
   "SEARCH_FOR_EMOJI": "Find the perfect emoji",
   "CONNECTION_STATUS_CONNECTING": "Connecting",

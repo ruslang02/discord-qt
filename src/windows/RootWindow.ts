@@ -52,7 +52,7 @@ export class RootWindow extends QMainWindow {
   }
 
   protected initializeWindow() {
-    this.setWindowTitle('DiscordQt');
+    this.setWindowTitle(app.name);
     this.setObjectName('RootWindow');
     this.setMinimumSize(1000, 500);
     this.resize(1200, 600);

@@ -5,9 +5,9 @@ import {
   QLabel,
   QListWidget,
   QListWidgetItem,
+  QSize,
   Shape,
   WidgetEventTypes,
-  QSize,
 } from '@nodegui/nodegui';
 import {
   CategoryChannel,
@@ -17,7 +17,6 @@ import {
   DQConstants,
   Guild,
   GuildChannel,
-  Message,
   Permissions,
 } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
@@ -47,12 +46,12 @@ export class ChannelsList extends QListWidget {
 
   private handleEvents(client: Client) {
     const { Events } = Constants as unknown as DQConstants;
-    client.on(Events.MESSAGE_ACK, (data: any) => {
+    client.on(Events.MESSAGE_ACK, (channel) => {
       const button = [...this.buttons.values()]
-        .find((btn) => btn.channel?.id === data.channel_id);
+        .find((btn) => btn.channel?.id === channel.id);
       if (button) button.setUnread(false);
     });
-    client.on(Events.MESSAGE_CREATE, (message: Message) => {
+    client.on(Events.MESSAGE_CREATE, (message) => {
       const button = [...this.buttons.values()]
         .find((btn) => btn.channel?.id === message.channel.id);
       if (button) button.setUnread(true);

@@ -65,7 +65,7 @@ export class ChannelButton extends DChannelButton {
   private static openVoiceChannel(channel: VoiceChannel) {
     const msgBox = new QMessageBox();
     msgBox.setText(__('VOICE_NOT_SUPPORTED'));
-    msgBox.setWindowTitle('DiscordQt');
+    msgBox.setWindowTitle(app.name);
     msgBox.setProperty('icon', 4);
     const noBtn = new QPushButton();
     noBtn.setText(__('NO_TEXT'));

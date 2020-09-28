@@ -8,14 +8,13 @@ declare module 'discord.js' {
   }
   export interface ClientEvents {
     messageAck: [GuildChannel, Message];
-    userSettingsUpdate: [GuildChannel, Message];
+    userSettingsUpdate: [ClientUserSettings];
   }
-  export interface RConstants {
+  export interface Constants {
     ExplicitContentFilterTypes: string[];
     Events: { MESSAGE_ACK: 'messageAck', USER_SETTINGS_UPDATE: 'userSettingsUpdate' } & typeof Constants['Events'];
     UserSettingsMap: Record<string, string>;
   }
-  export interface Constants extends RConstants {}
   export interface DQConstants extends Constants {}
   export interface ClientUser {
     email: string | null;

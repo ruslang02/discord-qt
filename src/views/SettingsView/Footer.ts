@@ -3,6 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import open from 'open';
 import { join } from 'path';
+import { app } from '../..';
 import { DIconButton } from '../../components/DIconButton/DIconButton';
 
 export class Footer extends QWidget {
@@ -26,7 +27,7 @@ export class Footer extends QWidget {
     const me = await import('../../../package.json') as { version: string; repository: { url: string; }; };
     github.addEventListener('clicked', () => open(me.repository.url));
     // @ts-ignore
-    label.setText(`DiscordQt ${me.version}${__BUILDNUM__ !== 0 ? ` (build ${__BUILDNUM__})` : ''}<br>node ${process.versions.node}<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`);
+    label.setText(`${app.name} ${me.version}${__BUILDNUM__ !== 0 ? ` (build ${__BUILDNUM__})` : ''}<br>node ${process.versions.node}<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`);
     label.setOpenExternalLinks(true);
     label.setObjectName('Footer');
     label.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);

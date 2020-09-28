@@ -30,7 +30,7 @@ export class Tray extends QSystemTrayIcon {
     this.setIcon(app.icon);
     this.addEventListener('activated', Tray.handleShowApp);
     this.setContextMenu(menu);
-    this.setToolTip('DiscordQt');
+    this.setToolTip(app.name);
     this.show();
     this.update();
   }

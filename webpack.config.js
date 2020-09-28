@@ -1,12 +1,11 @@
-const path = require("path");
+const path = require('path');
 const childProcess = require('child_process');
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { IgnorePlugin, DefinePlugin, ProvidePlugin } = require("webpack");
+const { IgnorePlugin, DefinePlugin, ProvidePlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const globImporter = require('node-sass-glob-importer');
-const StringReplaceLoader = require('string-replace-loader');
 
 let __BUILDNUM__;
 try {
@@ -17,10 +16,10 @@ try {
 module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
   return {
-    mode: isDev ? "development" : "production",
+    mode: isDev ? 'development' : 'production',
     entry: {
-      "index.js": "./src",
-      "worker.js": "./worker",
+      'index.js': './src',
+      'worker.js': './worker',
       'light.theme': './src/themes/light.theme.scss',
       'dark.theme': './src/themes/dark.theme.scss',
       'amoled.theme': './src/themes/amoled.theme.scss',
@@ -33,15 +32,16 @@ module.exports = (_env, argv) => {
         }
       })],
     },
-    target: "node",
+    target: 'node',
     node: {
       __dirname: false,
       __filename: false,
-      fs: "empty",
+      fs: 'empty',
     },
     output: {
-      path: path.resolve(__dirname, "dist"),
-      filename: "[name]",
+      filename: '[name]',
+      path: path.resolve(__dirname, 'dist'),
+      pathinfo: false,
     },
     module: {
       exprContextCritical: false,
@@ -50,10 +50,13 @@ module.exports = (_env, argv) => {
           test: /\.tsx?$/,
           exclude: /discord-qt\/node_modules/g,
           use: [
+            'thread-loader',
             {
               loader: 'ts-loader',
               options: {
-                transpileOnly: true
+                transpileOnly: true,
+                happyPackMode: true,
+                experimentalWatchApi: true,
               }
             }
           ]
@@ -62,8 +65,8 @@ module.exports = (_env, argv) => {
           test: /\.(png|jpe?g|gif|svg)$/i,
           use: [
             {
-              loader: "file-loader",
-              options: { publicPath: "dist" },
+              loader: 'file-loader',
+              options: { publicPath: 'dist' },
             },
           ],
         },
@@ -88,16 +91,16 @@ module.exports = (_env, argv) => {
           test: /\.node$/,
           use: [
             {
-              loader: "native-addon-loader",
-              options: { name: "[name]-[hash].[ext]" },
+              loader: 'native-addon-loader',
+              options: { name: '[name].[ext]' },
             },
           ],
         },
       ],
     },
     resolve: {
-      extensions: [".tsx", ".ts", ".js", ".jsx", ".json"],
-      mainFields: ["main"],
+      extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
+      mainFields: ['main'],
       alias: {
         'fetch': path.join(__dirname, '../node_modules', 'whatwg-fetch', 'fetch.js'),
       }

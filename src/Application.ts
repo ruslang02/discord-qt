@@ -37,6 +37,8 @@ export class Application extends ApplicationEventEmitter {
 
   icon = new QIcon(join(__dirname, 'assets/icon.png'));
 
+  readonly name = 'DiscordQt';
+
   tray?: Tray;
 
   constructor() {

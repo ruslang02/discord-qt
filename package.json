@@ -54,7 +54,6 @@
     "pngjs": "^5.0.0",
     "sass": "^1.26.11",
     "sass-loader": "^8.0.2",
-    "string-replace-loader": "^2.3.0",
     "terser-webpack-plugin": "^4.2.2",
     "ts-loader": "^8.0.4",
     "twemoji": "^13.0.1",
@@ -76,6 +75,7 @@
     "@typescript-eslint/parser": "^4.2.0",
     "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-plugin-import": "^2.22.0"
+    "eslint-plugin-import": "^2.22.0",
+    "thread-loader": "^3.0.0"
   }
 }
