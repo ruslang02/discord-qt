@@ -1,0 +1,16 @@
+#VoicePanel {
+  background-color: $background-secondary-alt;
+  #DIconButton {
+    background: none;
+    border: none;
+    border-radius: 5px;
+    font-size: 24px;
+    color: rgb(116, 127, 141);
+    &:hover {
+      background: $background-modifier-selected;
+    }
+    &::menu-indicator {
+      width: 0px;
+    }
+  }
+}

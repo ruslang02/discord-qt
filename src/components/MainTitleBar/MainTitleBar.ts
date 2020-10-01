@@ -52,7 +52,6 @@ export class MainTitleBar extends DTitleBar {
         }
       });
     });
-    setInterval(() => this.raise(), 100);
   }
 
   private initComponent() {

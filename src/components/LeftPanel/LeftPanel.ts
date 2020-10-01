@@ -6,6 +6,7 @@ import { Events } from '../../structures/Events';
 import { DMPanel } from '../DMPanel/DMPanel';
 import { GuildPanel } from '../GuildPanel/GuildPanel';
 import { UserPanel } from '../UserPanel/UserPanel';
+import { VoicePanel } from '../VoicePanel/VoicePanel';
 
 export class LeftPanel extends QWidget {
   private container = new QStackedWidget();
@@ -13,6 +14,8 @@ export class LeftPanel extends QWidget {
   private guildPanel = new GuildPanel();
 
   private dmPanel = new DMPanel();
+
+  private voicePanel = new VoicePanel();
 
   private userPanel = new UserPanel();
 
@@ -36,7 +39,7 @@ export class LeftPanel extends QWidget {
 
   private initLeftPanel() {
     const {
-      guildPanel, dmPanel, userPanel, container, controls,
+      guildPanel, dmPanel, userPanel, voicePanel, container, controls,
     } = this;
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
@@ -48,6 +51,7 @@ export class LeftPanel extends QWidget {
     controls.setSpacing(0);
     controls.setContentsMargins(0, 0, 0, 0);
     controls.addWidget(container, 1);
+    controls.addWidget(voicePanel, 0);
     controls.addWidget(userPanel, 0);
   }
 }

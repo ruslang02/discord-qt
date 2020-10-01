@@ -17,13 +17,14 @@ import {
   DQConstants,
   Guild,
   GuildChannel,
-  Permissions,
+  Permissions, VoiceChannel,
 } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
+import { ChannelMembers } from './ChannelMembers';
 
 const { debug } = createLogger('ChannelsList');
 
@@ -124,16 +125,27 @@ export class ChannelsList extends QListWidget {
       const btn = new ChannelButton(this);
       const item = new QListWidgetItem();
       const parentItems = channel.parentID ? this.findItems(channel.parentID, 0) : [];
+      const row = parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0;
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
       btn.setMinimumSize(0, 32);
       btn.setMaximumSize(MAX_QSIZE, 32);
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
-      this.insertItem(parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0, item);
+      this.insertItem(row, item);
       this.setItemWidget(item, btn);
       buttons.add(btn);
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
+      if (channel.type === 'voice') {
+        const members = new ChannelMembers(this);
+        if (members.loadChannel(channel as VoiceChannel)) {
+          members.adjustSize();
+          const memitem = new QListWidgetItem();
+          memitem.setSizeHint(members.size());
+          this.insertItem(row + 1, memitem);
+          this.setItemWidget(memitem, members);
+        }
+      }
     }
   }
 }
