@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug DQt",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/qode",
-
+      "runtimeArgs": ["--inspect"],
       "skipFiles": [
         "<node_internals>/**"
       ],
@@ -19,7 +19,9 @@
       ],
       "sourceMaps": true,
       "sourceMapPathOverrides": {
-          "webpack:///*": "${workspaceRoot}/*"
+        "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+        "webpack:///./*": "${workspaceRoot}/*",
+        "webpack:///*": "*"
       },
       "console": "internalConsole"
     }

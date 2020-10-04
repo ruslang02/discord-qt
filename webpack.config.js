@@ -2,9 +2,10 @@ const path = require('path');
 const childProcess = require('child_process');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { IgnorePlugin, DefinePlugin, ProvidePlugin } = require('webpack');
+const { IgnorePlugin, DefinePlugin, ProvidePlugin, NormalModuleReplacementPlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const nodeExternals = require('webpack-node-externals');
 const globImporter = require('node-sass-glob-importer');
 
 let __BUILDNUM__;
@@ -99,7 +100,7 @@ module.exports = (_env, argv) => {
       ],
     },
     resolve: {
-      extensions: ['.tsx', '.ts', '.js', '.jsx', '.json'],
+      extensions: ['.tsx', '.ts', '.js', '.jsx', '.json', '.wasm'],
       mainFields: ['main'],
       alias: {
         'fetch': path.join(__dirname, '../node_modules', 'whatwg-fetch', 'fetch.js'),
@@ -107,24 +108,27 @@ module.exports = (_env, argv) => {
     },
     plugins: [
       new CleanWebpackPlugin(),
-      new IgnorePlugin({ resourceRegExp: /node-opus|@discordjs\/opus|opusscript|ffmpeg-static/g }),
+      // new IgnorePlugin({ resourceRegExp: /node-opus|opusscript|ffmpeg-static/g }),
       new DefinePlugin({ __BUILDNUM__ }),
-      new ProvidePlugin({
-        'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
-      }),
+      //new ProvidePlugin({
+      //  'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
+      //}),
+      new NormalModuleReplacementPlugin(
+        /^bindings$/,
+        require.resolve("./bindings")
+      ),
       new MiniCssExtractPlugin({
         filename: 'themes/[name].css',
       }),
       new CopyPlugin({
         patterns: [
           { from: 'assets', to: 'assets' },
-          { from: 'locales', to: 'locales'}
+          { from: 'locales', to: 'locales' },
+          { from: 'node_modules/opusscript/build/opusscript_native_wasm.wasm' }
         ]
       })
     ],
     stats: {
-      warnings: false,
-      children: false
     },
   }
 };

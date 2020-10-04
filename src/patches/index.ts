@@ -1,6 +1,8 @@
 import { createLogger } from "../utilities/Console";
 
 export const Patches = [
+  require('./Prism'),
+  require('./SecretBox'),
   require('./Constants'),
   require('./TextBasedChannel'),
   require('./ClientUser'),

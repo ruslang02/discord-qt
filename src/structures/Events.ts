@@ -1,9 +1,10 @@
-import { Client, Message } from 'discord.js';
+import { Client, Message, VoiceChannel } from 'discord.js';
 import { ViewOptions } from '../views/ViewOptions';
 
 type ValueOf<T> = T[keyof T];
 
 export const Events = {
+  JOIN_VOICE_CHANNEL: 'joinVoiceChannel',
   NEW_CLIENT: 'newClient',
   OPEN_SETTINGS_PAGE: 'openSettingsPage',
   OPEN_USER_PROFILE: 'openUserProfile',
@@ -14,6 +15,7 @@ export const Events = {
 } as const;
 
 export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
+  joinVoiceChannel: [VoiceChannel],
   newClient: [Client],
   openSettingsPage: [string],
   openUserProfile: [string],
