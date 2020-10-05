@@ -55,6 +55,11 @@ export class UserPanel extends QWidget {
     app.on(AppEvents.READY, () => {
       if (!app.config.enableAvatars) this.avatar.hide();
     });
+    app.on(AppEvents.LOGIN_FAILED, () => {
+      this.nameLabel.setText(__('ERROR'));
+      this.discLabel.setText(__('NETWORK_ERROR_CONNECTION'));
+      this.nameLabel.setInlineStyle('color: red');
+    });
   }
 
   /**
@@ -65,6 +70,7 @@ export class UserPanel extends QWidget {
     const { Events } = Constants as unknown as DQConstants;
     this.nameLabel.setText(__('CONNECTION_STATUS_CONNECTING'));
     this.discLabel.setText('#0000');
+    this.nameLabel.setInlineStyle('');
     client.on(Events.CLIENT_READY, () => {
       this.updateData();
       this.updateAvatar();

@@ -112,7 +112,7 @@ export class AppearancePage extends Page {
         notify({
           title: __('CLEAR_CACHE_SUCCESS'),
           message: __('CLEAR_CACHE_MOTIVATIONAL_MESSAGE'),
-          icon: join(__dirname, 'assets/icon.png'),
+          icon: app.iconPath,
           // @ts-ignore
           type: 'info',
           category: 'im',

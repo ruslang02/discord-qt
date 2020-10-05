@@ -2,10 +2,12 @@
 import {
   QApplication, QFontDatabase, QIcon,
 } from '@nodegui/nodegui';
-import { Client, Constants } from 'discord.js';
+import { Client, Constants, HTTPError } from 'discord.js';
 import { existsSync, promises } from 'fs';
-import i18n from 'i18n';
+import i18n, { __ } from 'i18n';
+import { notify } from 'node-notifier';
 import { join } from 'path';
+import { app } from '.';
 import { ApplicationEventEmitter } from './ApplicationEventEmitter';
 import { Account } from './structures/Account';
 import { clientOptions } from './structures/ClientOptions';
@@ -35,7 +37,9 @@ export class Application extends ApplicationEventEmitter {
 
   clipboard = QApplication.clipboard();
 
-  icon = new QIcon(join(__dirname, 'assets/icon.png'));
+  iconPath = join(__dirname, 'assets/icon.png');
+
+  icon = new QIcon(this.iconPath);
 
   readonly name = 'DiscordQt';
 
@@ -91,7 +95,20 @@ export class Application extends ApplicationEventEmitter {
       await this.client.login(account.token);
       this.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
-      error('Couldn\'t log in', e);
+      if (e instanceof HTTPError) {
+        this.emit(AppEvents.LOGIN_FAILED);
+        notify({
+          title: __('NETWORK_ERROR_REST_REQUEST'),
+          message: __('NETWORK_ERROR_CONNECTION'),
+          // @ts-ignore
+          type: 'error',
+          icon: this.iconPath,
+          category: 'im',
+          hint: 'string:desktop-entry:discord-qt',
+          'app-name': app.name,
+        });
+      }
+      debug('Couldn\'t log in', e);
     }
   }
 

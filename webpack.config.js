@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const childProcess = require('child_process');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -7,6 +8,7 @@ const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const nodeExternals = require('webpack-node-externals');
 const globImporter = require('node-sass-glob-importer');
+const { readdirSync } = fs;
 
 let __BUILDNUM__;
 try {
@@ -16,14 +18,17 @@ try {
 }
 module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
+  const themes = Object.fromEntries(readdirSync('./src/themes').map(value => [
+    value.replace('.scss', ''),
+    './src/themes/' + value
+  ]));
+  console.log(themes);
   return {
     mode: isDev ? 'development' : 'production',
     entry: {
       'index.js': './src',
       'worker.js': './worker',
-      'light.theme': './src/themes/light.theme.scss',
-      'dark.theme': './src/themes/dark.theme.scss',
-      'amoled.theme': './src/themes/amoled.theme.scss',
+      ...themes
     },
     optimization: {
       minimize: !isDev,

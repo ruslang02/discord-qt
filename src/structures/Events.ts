@@ -5,6 +5,7 @@ type ValueOf<T> = T[keyof T];
 
 export const Events = {
   JOIN_VOICE_CHANNEL: 'joinVoiceChannel',
+  LOGIN_FAILED: 'loginFailed',
   NEW_CLIENT: 'newClient',
   OPEN_SETTINGS_PAGE: 'openSettingsPage',
   OPEN_USER_PROFILE: 'openUserProfile',
@@ -16,6 +17,7 @@ export const Events = {
 
 export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
   joinVoiceChannel: [VoiceChannel],
+  loginFailed: [],
   newClient: [Client],
   openSettingsPage: [string],
   openUserProfile: [string],
