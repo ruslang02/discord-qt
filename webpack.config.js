@@ -129,7 +129,8 @@ module.exports = (_env, argv) => {
         patterns: [
           { from: 'assets', to: 'assets' },
           { from: 'locales', to: 'locales' },
-          { from: 'node_modules/opusscript/build/opusscript_native_wasm.wasm' }
+          { from: 'node_modules/opusscript/build/opusscript_native_wasm.wasm' },
+          { from: 'node_modules/ffmpeg-static/ffmpeg' }
         ]
       })
     ],

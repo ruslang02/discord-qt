@@ -6,10 +6,16 @@
     background-color: $background-secondary;
   }
   #ChannelsList {
+    margin-bottom: 8px;
     &::item {
       padding: 6px 6px 6px 0;
       color: transparent;
       background: $background-secondary;
+      border: none;
+      outline: none;
+    }
+    *::item {
+      color: transparent;
       border: none;
       outline: none;
     }

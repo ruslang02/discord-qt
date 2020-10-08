@@ -1,26 +1,25 @@
 import {
   Direction, QBoxLayout, QLabel, QSize, QWidget,
 } from '@nodegui/nodegui';
-import { Client } from 'discord.js';
-import { Constants, DQConstants, VoiceChannel } from 'discord.js';
+import {
+  Client, Constants, DQConstants, VoiceChannel,
+} from 'discord.js';
+import merge from 'merge-stream';
 import { join } from 'path';
-import Speaker from 'speaker';
-import { PassThrough, Stream } from 'stream';
+import PulseAudio, { PlaybackStream, RecordStream } from 'pulseaudio2';
 import { app } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { DIconButton } from '../DIconButton/DIconButton';
 
-const merge = (...streams: Stream[]) => {
-  let pass = new PassThrough();
-  // let waiting = streams.length;
-  for (const stream of streams) {
-    pass = stream.pipe(pass, { end: false });
-    // stream.once('end', () => --waiting === 0 && pass.emit('end'));
-  }
-  return pass;
-};
+type MergedStream = ReturnType<typeof merge>;
 
-const mic = require('mic');
+let pulse: PulseAudio;
+setTimeout(() => {
+  pulse = new PulseAudio({
+    client: app.name,
+    flags: 'noflags|noautospawn|nofail',
+  });
+});
 
 export class VoicePanel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -33,9 +32,11 @@ export class VoicePanel extends QWidget {
     tooltipText: 'Disconnect',
   });
 
-  private pass?: PassThrough;
+  private merged?: MergedStream;
 
-  private speaker?: Speaker;
+  private playbackStream?: PlaybackStream;
+
+  private recordStream?: RecordStream;
 
   constructor() {
     super();
@@ -64,35 +65,32 @@ export class VoicePanel extends QWidget {
     infoLayout.addWidget(discntBtn, 0);
     layout.addLayout(infoLayout);
     discntBtn.addEventListener('clicked', this.handleDisconnectButton.bind(this));
+    discntBtn.setFixedSize(32, 32);
     this.setLayout(layout);
   }
 
   private handleDisconnectButton() {
     app.client.voice?.connections.first()?.disconnect();
-    this.speaker?.close(false);
+    this.recordStream?.end();
+    this.playbackStream?.stop();
     this.hide();
   }
 
   private async joinChannel(channel: VoiceChannel) {
     this.infoLabel.setText(channel.name);
     const connection = await channel.join();
-    this.speaker = new Speaker({
-      channels: 2, // 2 channels
-      bitDepth: 16, // 16-bit samples
-      sampleRate: 48000, // 44,100 Hz sample rate
+    this.playbackStream = pulse.createPlaybackStream({
+      latency: 0,
     });
     const streams = channel.members
       .filter((m) => m.user !== app.client.user)
       .map((member) => connection.receiver.createStream(member.user, { mode: 'pcm', end: 'manual' }));
-    this.pass = merge(...streams);
-    this.pass.pipe(this.speaker);
+    this.merged = merge(...streams);
+    this.merged.pipe(this.playbackStream);
     this.show();
-    /*
-      const mi = mic({
-        rate: '48000',
-        channels: '2',
-      });
-      console.log({ mic, connection });
-      connection.play(mi.getAudioStream()); */
+    this.recordStream = pulse.createRecordStream({
+      latency: 0,
+    });
+    connection.play(this.recordStream, { bitrate: 384, type: 'converted' });
   }
 }

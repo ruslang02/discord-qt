@@ -6,6 +6,7 @@ import {
   QListWidget,
   QListWidgetItem,
   QSize,
+  ScrollBarPolicy,
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
@@ -41,6 +42,7 @@ export class ChannelsList extends QListWidget {
     this.setObjectName('ChannelsList');
     this.setVerticalScrollMode(1);
     this.setSpacing(0);
+    this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
     app.on(AppEvents.NEW_CLIENT, this.handleEvents.bind(this));
   }
@@ -86,6 +88,8 @@ export class ChannelsList extends QListWidget {
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
     this.clear();
+    this.nodeChildren.clear();
+    this.items.clear();
     const [categories, channels] = guild.channels.cache
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition((a) => a.type === 'category') as [
@@ -106,8 +110,9 @@ export class ChannelsList extends QListWidget {
           .filter((a) => a.parentID === category.id)
           .map((a) => a.id);
         for (const id of channelIds) {
-          const chItem = this.findItems(id, MatchFlag.MatchExactly)[0];
-          this.setRowHidden(this.row(chItem), !isOpened);
+          this.findItems(id, MatchFlag.MatchExactly)
+            // eslint-disable-next-line no-loop-func
+            .forEach((i) => this.setRowHidden(this.row(i), !isOpened));
         }
       });
       label.setMinimumSize(0, 30);
@@ -138,13 +143,12 @@ export class ChannelsList extends QListWidget {
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
       if (channel.type === 'voice') {
         const members = new ChannelMembers(this);
-        if (members.loadChannel(channel as VoiceChannel)) {
-          members.adjustSize();
-          const memitem = new QListWidgetItem();
-          memitem.setSizeHint(members.size());
-          this.insertItem(row + 1, memitem);
-          this.setItemWidget(memitem, members);
-        }
+        members.loadChannel(channel as VoiceChannel);
+        const memitem = new QListWidgetItem();
+        memitem.setText(channel.id);
+        this.insertItem(row + 1, memitem);
+        this.setItemWidget(memitem, members);
+        members.setItem(memitem);
       }
     }
   }

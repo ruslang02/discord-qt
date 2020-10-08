@@ -94,6 +94,8 @@ export class MembersList extends QListWidget {
     if (channel.type !== 'text' && channel.type !== 'news') return;
     this.channel = channel as TextChannel | NewsChannel;
     this.clear();
+    this.nodeChildren.clear();
+    this.items.clear();
     for (const member of channel.members.values()) {
       const btn = new UserButton(this);
       const item = new QListWidgetItem();
