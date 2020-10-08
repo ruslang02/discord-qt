@@ -3,10 +3,9 @@ const fs = require('fs');
 const childProcess = require('child_process');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { IgnorePlugin, DefinePlugin, ProvidePlugin, NormalModuleReplacementPlugin } = require('webpack');
+const { DefinePlugin, NormalModuleReplacementPlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const nodeExternals = require('webpack-node-externals');
 const globImporter = require('node-sass-glob-importer');
 const { readdirSync } = fs;
 
@@ -22,7 +21,6 @@ module.exports = (_env, argv) => {
     value.replace('.scss', ''),
     './src/themes/' + value
   ]));
-  console.log(themes);
   return {
     mode: isDev ? 'development' : 'production',
     entry: {
@@ -113,11 +111,7 @@ module.exports = (_env, argv) => {
     },
     plugins: [
       new CleanWebpackPlugin(),
-      // new IgnorePlugin({ resourceRegExp: /node-opus|opusscript|ffmpeg-static/g }),
       new DefinePlugin({ __BUILDNUM__ }),
-      //new ProvidePlugin({
-      //  'fetch': 'imports?this=>global!exports?global.fetch!whatwg-fetch'
-      //}),
       new NormalModuleReplacementPlugin(
         /^bindings$/,
         require.resolve("./bindings")
@@ -134,7 +128,5 @@ module.exports = (_env, argv) => {
         ]
       })
     ],
-    stats: {
-    },
   }
 };
