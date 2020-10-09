@@ -50,9 +50,9 @@
     "open": "^7.2.1",
     "opusscript": "0.0.7",
     "pngjs": "^5.0.0",
+    "tweetnacl": "^1.0.3",
     "twemoji": "^13.0.1",
-    "whatwg-fetch": "^3.4.1",
-    "zlib-sync": "^0.1.7"
+    "whatwg-fetch": "^3.4.1"
   },
   "devDependencies": {
     "@nodegui/packer": "^1.4.1",

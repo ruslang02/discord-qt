@@ -21,7 +21,7 @@ declare module 'pulseaudio2' {
 
   export type ContextState = 'connecting' | 'authorizing' | 'setting_name' | 'ready' | 'terminated';
 
-  export default class Context extends EventEmitter {
+  export class Context extends EventEmitter {
     constructor(opts: ContextOptions);
     on(event: 'state', listener: (state: ContextState) => void): this;
     on(event: 'error', listener: (error: string) => void): this;
@@ -49,4 +49,6 @@ declare module 'pulseaudio2' {
     play(): this;
     discard(): void;
   }
+
+  export default Context;
 }

@@ -1,26 +1,38 @@
 import {
-  Direction, QBoxLayout, QLabel, QSize, QWidget,
+  ButtonRole,
+  Direction, QBoxLayout, QLabel, QMessageBox, QPushButton, QSize, QWidget,
 } from '@nodegui/nodegui';
 import {
   Client, Constants, DQConstants, VoiceChannel,
 } from 'discord.js';
+import { __ } from 'i18n';
 import merge from 'merge-stream';
+import open from 'open';
 import { join } from 'path';
-import PulseAudio, { PlaybackStream, RecordStream } from 'pulseaudio2';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { Context, PlaybackStream, RecordStream } from 'pulseaudio2';
 import { app } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
+import { createLogger } from '../../utilities/Console';
 import { DIconButton } from '../DIconButton/DIconButton';
 
 type MergedStream = ReturnType<typeof merge>;
 
-let pulse: PulseAudio;
-setTimeout(() => {
-  pulse = new PulseAudio({
-    client: app.name,
-    flags: 'noflags|noautospawn|nofail',
-  });
-});
+const { error } = createLogger('VoicePanel');
 
+let pulse: Context | undefined;
+setTimeout(() => {
+  try {
+    // eslint-disable-next-line global-require, import/no-extraneous-dependencies
+    const PulseAudio = require('pulseaudio2');
+    pulse = new PulseAudio({
+      client: app.name,
+      flags: 'noflags|noautospawn|nofail',
+    });
+  } catch (e) {
+    error('Voice capabilities are not available on this platform.');
+  }
+});
 export class VoicePanel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
 
@@ -76,7 +88,28 @@ export class VoicePanel extends QWidget {
     this.hide();
   }
 
+  private static openVoiceNotSupportedDialog(channel: VoiceChannel) {
+    const msgBox = new QMessageBox();
+    msgBox.setText(__('VOICE_NOT_SUPPORTED'));
+    msgBox.setWindowTitle('DiscordQt');
+    msgBox.setProperty('icon', 4);
+    const noBtn = new QPushButton();
+    noBtn.setText(__('NO_TEXT'));
+    msgBox.addButton(noBtn, ButtonRole.NoRole);
+    const yesBtn = new QPushButton();
+    yesBtn.setText(__('YES_TEXT'));
+    msgBox.addButton(yesBtn, ButtonRole.YesRole);
+    yesBtn.addEventListener('clicked', () => {
+      open(`https://discord.com/channels/${channel.guild.id}/${channel.id}`);
+    });
+    msgBox.open();
+  }
+
   private async joinChannel(channel: VoiceChannel) {
+    if (!pulse) {
+      VoicePanel.openVoiceNotSupportedDialog(channel);
+      return;
+    }
     this.infoLabel.setText(channel.name);
     const connection = await channel.join();
     this.playbackStream = pulse.createPlaybackStream({

@@ -113,8 +113,7 @@ module.exports = (_env, argv) => {
       new CleanWebpackPlugin(),
       new DefinePlugin({ __BUILDNUM__ }),
       new NormalModuleReplacementPlugin(
-        /^bindings$/,
-        require.resolve("./bindings")
+        /^bindings$/, require.resolve('./bindings')
       ),
       new MiniCssExtractPlugin({
         filename: 'themes/[name].css',
