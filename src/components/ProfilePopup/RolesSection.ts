@@ -36,7 +36,7 @@ export class RolesSection extends QWidget {
     const {
       label, rolesList, topRole, layout, topRoleCircle, topRoleLabel,
     } = this;
-    layout.setContentsMargins(16, 16, 16, 16);
+    layout.setContentsMargins(16, 8, 16, 8);
     layout.setSpacing(8);
     label.setObjectName('SectionHeader');
     label.setCursor(CursorShape.PointingHandCursor);

@@ -7,6 +7,7 @@ export const Patches = [
   require('./TextBasedChannel'),
   require('./ClientUser'),
   require('./ClientPresence'),
+  require('./User'),
   require('./Guild'),
   require('./GuildChannel'),
   require('./WebSocketShard'),

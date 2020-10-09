@@ -116,5 +116,8 @@
   "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "This emoji is from",
   "NETWORK_ERROR_REST_REQUEST": "A network error has occurred.",
   "NETWORK_ERROR_CONNECTION": "A network error has occurred. Please check your connection and try again.",
-  "ERROR": "Error"
+  "ERROR": "Error",
+  "NOTE": "Note",
+  "NOTE_PLACEHOLDER": "Click to add a note",
+  "ADD_NOTE": "Add Note"
 }

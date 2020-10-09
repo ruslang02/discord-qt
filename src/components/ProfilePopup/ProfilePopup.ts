@@ -2,12 +2,13 @@ import {
   Direction, QBoxLayout, QMenu, QPoint, QWidget, WidgetAttribute, WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { GuildMember, User } from 'discord.js';
-import { MAX_QSIZE } from '../..';
+import { app, MAX_QSIZE } from '../..';
+import { NoteSection } from './NoteSection';
 import { Profile } from './Profile';
 import { ProfilePresence } from './ProfilePresence';
 import { RolesSection } from './RolesSection';
 
-export class MiniProfile extends QMenu {
+export class ProfilePopup extends QMenu {
   private controls = new QBoxLayout(Direction.TopToBottom);
 
   private root = new QWidget(this);
@@ -17,6 +18,8 @@ export class MiniProfile extends QMenu {
   private presence = new ProfilePresence(this);
 
   private rolesSection = new RolesSection(this);
+
+  private noteSection = new NoteSection(this);
 
   private adjustTimer?: any;
 
@@ -38,16 +41,14 @@ export class MiniProfile extends QMenu {
     this.addEventListener(WidgetEventTypes.Close, () => { clearInterval(this.adjustTimer); });
   }
 
-  /* Aligns menu to be opened up when there is no space in the bottom.
-    popup(p: QPoint) {
-      const { window } = app;
-      const tsize = this.size();
-      if (p.y() + tsize.height() > window.mapToGlobal(this.p0).y() + window.size().height()) {
-        p.setY(p.y() - tsize.height());
-      }
-      super.popup(p);
+  popup(p: QPoint) {
+    const { window } = app;
+    const tsize = this.size();
+    if (p.y() + tsize.height() > window.mapToGlobal(this.p0).y() + window.size().height()) {
+      p.setY(p.y() - tsize.height());
     }
-  */
+    super.popup(p);
+  }
 
   async loadProfile(someone: User | GuildMember) {
     const user = someone instanceof GuildMember ? someone.user : someone;
@@ -56,11 +57,12 @@ export class MiniProfile extends QMenu {
     this.profile.setPlaying(isPlaying);
     this.profile.loadProfile(someone);
     this.rolesSection.loadRoles(member?.roles);
+    this.noteSection.loadNote(user);
   }
 
   private initComponent() {
     const {
-      controls, root, profile, presence, rolesSection,
+      controls, root, profile, presence, rolesSection, noteSection,
     } = this;
 
     root.setLayout(controls);
@@ -72,6 +74,8 @@ export class MiniProfile extends QMenu {
 
     controls.addWidget(profile);
     controls.addWidget(presence);
+    controls.addSpacing(8);
     controls.addWidget(rolesSection);
+    controls.addWidget(noteSection);
   }
 }

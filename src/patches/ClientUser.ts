@@ -1,5 +1,5 @@
+import { Collection, Constants } from 'discord.js';
 import { CustomStatus } from '../structures/CustomStatus';
-import { Constants } from 'discord.js';
 
 const ClientUser = require('discord.js/src/structures/ClientUser');
 Object.defineProperty(ClientUser.prototype, 'email', {
@@ -13,6 +13,10 @@ Object.defineProperty(ClientUser.prototype, 'premium', {
 Object.defineProperty(ClientUser.prototype, 'settings', {
   value: null,
   writable: true,
+});
+Object.defineProperty(ClientUser.prototype, 'notes', {
+  value: new Collection(),
+  writable: true
 });
 const _patch = ClientUser.prototype._patch;
 ClientUser.prototype._patch = function _newPatch(data: any) {

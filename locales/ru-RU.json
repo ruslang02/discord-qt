@@ -115,5 +115,8 @@
   "EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION": "Этот эмодзи с приватного или недоступного сервера.",
   "NETWORK_ERROR_REST_REQUEST": "Произошла сетевая ошибка.",
   "NETWORK_ERROR_CONNECTION": "Произошла сетевая ошибка. Пожалуйста, проверьте подключение и повторите попытку.",
-  "ERROR": "Ошибка"
+  "ERROR": "Ошибка",
+  "NOTE": "Заметка",
+  "NOTE_PLACEHOLDER": "Нажмите, чтобы добавить заметку",
+  "ADD_NOTE": "Добавить заметку"
 }
