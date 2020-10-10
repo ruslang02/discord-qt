@@ -1,6 +1,7 @@
 import { createLogger } from "../utilities/Console";
 
 export const Patches = [
+  require('./QWidget'),
   require('./Prism'),
   require('./SecretBox'),
   require('./Constants'),

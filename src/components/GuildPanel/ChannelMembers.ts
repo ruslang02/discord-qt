@@ -1,11 +1,10 @@
 import {
-  Direction, ItemFlag, MatchFlag, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap,
+  Direction, ItemFlag, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, WidgetEventTypes,
 } from '@nodegui/nodegui';
 import {
-  Constants, DQConstants, GuildMember, Snowflake, VoiceChannel,
+  Constants, DQConstants, GuildMember, Snowflake, VoiceChannel, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
-// import { Events as AppEvents } from '../../structures/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
@@ -27,27 +26,33 @@ export class ChannelMembers extends QListWidget {
     this.setFrameShape(0);
     this.setHorizontalScrollBarPolicy(1);
     this.setInlineStyle('margin-left: 32px;margin-bottom:8px;background-color: transparent;');
-    app.client.on(Events.VOICE_STATE_UPDATE, (o, n) => {
-      if (!o.member) return;
-      if (o.channel === this.channel && n.channel !== this.channel) {
-        try {
-          const item = this.findItems(o.member.id, MatchFlag.MatchExactly)[0];
-          this.buttons.get(o.member.user.id)?.hide();
-          this.buttons.delete(o.member.user.id);
-          this.takeItem(this.row(item));
-        } catch (e) { }
-      }
-      if (o.channel !== this.channel && n.channel === this.channel) {
-        const item = new QListWidgetItem();
-        const btn = this.buttons.get(o.member.user.id) || this.createButton(o.member);
-        this.layout.addWidget(btn);
-        item.setSizeHint(btn.size());
-        this.addItem(item);
-        this.setItemWidget(item, btn);
-        this.buttons.set(o.member.user.id, btn);
-      }
-      this.adjustSize();
+    this.addEventListener(WidgetEventTypes.DeferredDelete, () => {
+      app.client.off(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
     });
+    app.client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
+  }
+
+  private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
+    // @ts-ignore
+    if (this.native._destroyed || !o.member) return;
+    if (o.channel === this.channel && n.channel !== this.channel) {
+      try {
+        const item = this.findItems(o.member.id, 0)[0];
+        this.buttons.get(o.member.user.id)?.hide();
+        this.buttons.delete(o.member.user.id);
+        this.takeItem(this.row(item));
+      } catch (e) { }
+    }
+    if (o.channel !== this.channel && n.channel === this.channel) {
+      const item = new QListWidgetItem();
+      const btn = this.buttons.get(o.member.user.id) || this.createButton(o.member);
+      this.layout.addWidget(btn);
+      item.setSizeHint(btn.size());
+      this.addItem(item);
+      this.setItemWidget(item, btn);
+      this.buttons.set(o.member.user.id, btn);
+    }
+    this.adjustSize();
   }
 
   setItem(item: QListWidgetItem) {
