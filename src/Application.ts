@@ -2,7 +2,9 @@
 import {
   QApplication, QFontDatabase, QIcon,
 } from '@nodegui/nodegui';
-import { Client, Constants, HTTPError } from 'discord.js';
+import {
+  Client, Constants, HTTPError, Snowflake,
+} from 'discord.js';
 import { existsSync, promises } from 'fs';
 import i18n, { __ } from 'i18n';
 import { notify } from 'node-notifier';
@@ -31,6 +33,10 @@ const {
  * Application instance manager.
  */
 export class Application extends ApplicationEventEmitter {
+  readonly name = 'DiscordQt';
+
+  currentGuildId?: Snowflake;
+
   config = new Config(CONFIG_PATH);
 
   application = QApplication.instance();
@@ -41,14 +47,23 @@ export class Application extends ApplicationEventEmitter {
 
   icon = new QIcon(this.iconPath);
 
-  readonly name = 'DiscordQt';
-
   tray?: Tray;
 
   constructor() {
     super();
     this.setMaxListeners(128);
     this.application.setQuitOnLastWindowClosed(false);
+    this.on(AppEvents.SWITCH_VIEW, (view, options) => {
+      switch (view) {
+        case 'dm':
+          this.currentGuildId = undefined;
+          break;
+        case 'guild':
+          this.currentGuildId = options?.guild?.id;
+          break;
+        default:
+      }
+    });
     (global as any).config = this.config;
   }
 

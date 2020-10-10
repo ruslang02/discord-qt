@@ -156,7 +156,7 @@ export class UserButton extends DChannelButton {
    * @param presence User presence.
    */
   async loadPresence(presence: Presence) {
-    if (this._destroyed) return;
+    if (this.native.destroyed) return;
     this.statusInd.setProperty('tooltip', presence.status);
     this.statusInd.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)}`);
     this.loadStatusEmoji(presence);

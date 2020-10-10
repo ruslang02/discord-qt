@@ -39,6 +39,7 @@ import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { getEmojiURL } from '../../utilities/ResolveEmoji';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
@@ -244,8 +245,18 @@ export class InputPanel extends QWidget {
       this.renderAttachPanel();
     });
     input.setObjectName('Input');
-    emojiPicker.events.on('emoji', (emoji: Emoji) => {
-      input.insertPlainText(emoji.toString());
+    emojiPicker.events.on('emoji', async (emoji: Emoji, special: boolean) => {
+      if (special) {
+        try {
+          const url = await getEmojiURL({
+            emoji_id: emoji.id || undefined,
+            emoji_name: emoji.name,
+          });
+          const path = await pictureWorker.loadImage(url, { roundify: false });
+          this.files.add(path);
+          this.renderAttachPanel();
+        } catch (e) { error(e); }
+      } else input.insertPlainText(emoji.toString());
       emojiPicker.close();
       input.setFocus(FocusReason.TabFocusReason);
     });
@@ -307,7 +318,7 @@ export class InputPanel extends QWidget {
     if (
       event.key() === Key.Key_Return
       && (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier
-      && message.trim() !== ''
+      && (message.trim() !== '' || this.files.size !== 0)
     ) this.sendMessage();
     else if (
       event.key() === Key.Key_E

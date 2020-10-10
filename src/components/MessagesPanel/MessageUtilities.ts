@@ -202,7 +202,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         const auimage = new QLabel(body);
         auimage.setFixedSize(24, 24);
         pictureWorker.loadImage(embed.author.proxyIconURL)
-          .then((path) => !item._destroyed
+          .then((path) => !item.native.destroyed
             && auimage.setPixmap(new QPixmap(path).scaled(24, 24)))
           .catch(() => {
             error(`Couldn't load avatar picture of embed ${embed.title}.`);
@@ -238,7 +238,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         .replace(/&gt;/g, '>')
         .trim();
       processMentions(description, message).then((pdescription) => {
-        if (!item._destroyed) descr.setText(pdescription);
+        if (!item.native.destroyed) descr.setText(pdescription);
       });
       layout.addWidget(descr);
     }
@@ -275,7 +275,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       body.setMaximumSize(width + 32, MAX_QSIZE);
       // @ts-ignore
       container.loadImages = async function loadImages() {
-        if (item._destroyed || !image.proxyURL) return;
+        if (item.native.destroyed || !image.proxyURL) return;
         try {
           const path = await pictureWorker.loadImage(image.proxyURL);
           if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));

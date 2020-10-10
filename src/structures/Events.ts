@@ -1,3 +1,4 @@
+import { QPoint } from '@nodegui/nodegui';
 import { Client, Message, VoiceChannel } from 'discord.js';
 import { ViewOptions } from '../views/ViewOptions';
 
@@ -20,7 +21,7 @@ export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
   loginFailed: [],
   newClient: [Client],
   openSettingsPage: [string],
-  openUserProfile: [string],
+  openUserProfile: [string, string | undefined, QPoint],
   quoteMessageNoEmbed: [Message],
   quoteMessageEmbed: [Message],
   ready: [],

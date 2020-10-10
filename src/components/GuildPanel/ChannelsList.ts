@@ -20,7 +20,7 @@ import {
   GuildChannel,
   Permissions, VoiceChannel,
 } from 'discord.js';
-import { app, MAX_QSIZE } from '../..';
+import { app } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
@@ -133,8 +133,7 @@ export class ChannelsList extends QListWidget {
       const row = parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0;
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
-      btn.setMinimumSize(0, 32);
-      btn.setMaximumSize(MAX_QSIZE, 32);
+      btn.setFixedSize(232, 32);
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(row, item);

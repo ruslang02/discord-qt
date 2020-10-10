@@ -58,8 +58,6 @@ export class MessageItem extends QWidget {
 
   private contentNoEmojis?: string;
 
-  public _destroyed = false;
-
   message?: Message;
 
   constructor(parent?: any) {
@@ -69,7 +67,6 @@ export class MessageItem extends QWidget {
     this.setLayout(this.controls);
     this.initComponent();
     this.initMenu();
-    this.addEventListener(WidgetEventTypes.DeferredDelete, () => { this._destroyed = true; });
   }
 
   /**
@@ -184,11 +181,9 @@ export class MessageItem extends QWidget {
   private handleUserClick() {
     if (!this.message) return;
     const { avatar } = this;
-    const { miniProfile } = app.window.dialogs;
     const map = avatar.mapToGlobal(this.p0);
     map.setX(map.x() + avatar.size().width());
-    miniProfile.loadProfile(this.message.member || this.message.author);
-    miniProfile.popup(map);
+    app.emit(Events.OPEN_USER_PROFILE, this.message.author.id, this.message.guild?.id, map);
   }
 
   private alreadyRendered = false;
@@ -254,7 +249,7 @@ export class MessageItem extends QWidget {
       ...processAttachments(message),
       ...processEmbeds(message, this),
       ...await processInvites(message),
-    ].forEach((w) => !this._destroyed && this.msgLayout.addWidget(w));
+    ].forEach((w) => !this.native.destroyed && this.msgLayout.addWidget(w));
   }
 
   /**

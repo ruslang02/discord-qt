@@ -1,10 +1,11 @@
 import {
-  Direction, ItemFlag, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, WidgetEventTypes,
+  Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint, WidgetEventTypes,
 } from '@nodegui/nodegui';
 import {
   Constants, DQConstants, GuildMember, Snowflake, VoiceChannel, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
+import { Events as AppEvents } from '../../structures/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
@@ -18,6 +19,8 @@ export class ChannelMembers extends QListWidget {
   private asItem?: QListWidgetItem;
 
   private channel?: VoiceChannel;
+
+  private p0 = new QPoint(0, 0);
 
   constructor(parent?: any) {
     super(parent);
@@ -33,8 +36,7 @@ export class ChannelMembers extends QListWidget {
   }
 
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
-    // @ts-ignore
-    if (this.native._destroyed || !o.member) return;
+    if (this.native.destroyed || !o.member) return;
     if (o.channel === this.channel && n.channel !== this.channel) {
       try {
         const item = this.findItems(o.member.id, 0)[0];
@@ -69,7 +71,12 @@ export class ChannelMembers extends QListWidget {
     const avatar = new QLabel(btn);
     avatar.setFixedSize(24, 24);
     btn.layout.setSpacing(8);
-    btn.setFixedSize(240, 30);
+    btn.setFixedSize(200, 30);
+    btn.addEventListener('clicked', () => {
+      const map = btn.mapToGlobal(this.p0);
+      map.setX(map.x() + 200);
+      app.emit(AppEvents.OPEN_USER_PROFILE, member.id, member.guild.id, map);
+    });
     btn.layout.setContentsMargins(8, 0, 0, 0);
     const memberName = new QLabel(btn);
     btn.labels.push(memberName);
@@ -91,7 +98,7 @@ export class ChannelMembers extends QListWidget {
     this.buttons.clear();
     for (const member of channel.members.values()) {
       const item = new QListWidgetItem();
-      item.setFlags(~ItemFlag.ItemIsEnabled);
+      item.setFlags(~32);
       item.setText(member.id);
       const btn = this.createButton(member);
       this.layout.addWidget(btn);

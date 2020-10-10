@@ -1,4 +1,6 @@
-import { CursorShape, QLabel, TextInteractionFlag } from '@nodegui/nodegui';
+import {
+  CursorShape, QLabel, QPoint, TextInteractionFlag,
+} from '@nodegui/nodegui';
 import {
   DMChannel, Guild, GuildChannel, TextChannel,
 } from 'discord.js';
@@ -10,19 +12,21 @@ import { Events } from '../../structures/Events';
 import { MarkdownStyles } from '../../structures/MarkdownStyles';
 
 export class DLabel extends QLabel {
+  private p0 = new QPoint(0, 0);
+
   constructor(parent?: any) {
     super(parent);
     this.setWordWrap(true);
     this.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);
     this.setCursor(CursorShape.IBeamCursor);
-    this.addEventListener('linkActivated', DLabel.handleLinkActivated.bind(this));
+    this.addEventListener('linkActivated', this.handleLinkActivated.bind(this));
     this.addEventListener('linkHovered', this.handleLinkHovered.bind(this));
   }
 
-  private static async handleLinkActivated(link: string) {
+  private async handleLinkActivated(link: string) {
     if (!link) return;
     const url = new URL(link);
-    if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname);
+    if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname, app.currentGuildId, this.mapToGlobal(this.p0));
     else if (url.protocol === 'dq-channel:') {
       const channel = await app.client.channels.fetch(url.hostname) as TextChannel;
       app.emit(Events.SWITCH_VIEW, 'guild', {
