@@ -95,7 +95,7 @@ export class MainTitleBar extends DTitleBar {
   private updateStatus() {
     const { channel, statusLabel } = this;
     if (channel instanceof DMChannel) {
-      statusLabel.setText(channel.recipient.presence.status || '');
+      statusLabel.setText('●');
       statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel.recipient.presence.status || 'offline')}`);
     }
   }

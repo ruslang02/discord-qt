@@ -1,6 +1,6 @@
 {
   "name": "discord-qt",
-  "version": "0.4.1",
+  "version": "0.4.5",
   "main": "launch.js",
   "author": "Ruslan Garifullin",
   "repository": {

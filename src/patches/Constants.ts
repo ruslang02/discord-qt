@@ -153,7 +153,7 @@ const DQConstants = {
     },
   },
   Events: { ...Constants.Events, ...UserEventsMap },
-  UserAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.4.0 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
+  UserAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.4.5 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
 }
 
 Object.assign(Constants, DQConstants);
