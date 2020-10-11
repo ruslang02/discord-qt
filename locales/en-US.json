@@ -22,6 +22,9 @@
   "MESSAGE_CALL": "made a call.",
   "MESSAGE_PINS_ADD": "pinned a message in this channel.",
   "LANGUAGE_RESTART_REQUIRED": "You need to restart the app to apply language changes.",
+  "CLEAR_CACHE": "Clear cache",
+  "CLEAR_CACHE_SUCCESS": "Cache cleared successfully.",
+  "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Yay! More hard drive space!",
 
   "SEARCH_FOR_EMOJI": "Find the perfect emoji",
   "CONNECTION_STATUS_CONNECTING": "Connecting",
@@ -110,5 +113,11 @@
   "LANGUAGE": "Language",
   "COPY_MESSAGE_LINK": "Copy Message Link",
   "EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION": "This emoji is from a server that is either private or unavailable.",
-  "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "This emoji is from"
+  "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "This emoji is from",
+  "NETWORK_ERROR_REST_REQUEST": "A network error has occurred.",
+  "NETWORK_ERROR_CONNECTION": "A network error has occurred. Please check your connection and try again.",
+  "ERROR": "Error",
+  "NOTE": "Note",
+  "NOTE_PLACEHOLDER": "Click to add a note",
+  "ADD_NOTE": "Add Note"
 }

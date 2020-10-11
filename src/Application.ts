@@ -1,12 +1,15 @@
-/* eslint-disable no-console */
 /* eslint-disable class-methods-use-this */
 import {
-  QApplication, QFontDatabase, QIcon, WidgetEventTypes,
+  QApplication, QFontDatabase, QIcon,
 } from '@nodegui/nodegui';
-import { Client, Constants } from 'discord.js';
+import {
+  Client, Constants, HTTPError, Snowflake,
+} from 'discord.js';
 import { existsSync, promises } from 'fs';
-import i18n from 'i18n';
+import i18n, { __ } from 'i18n';
+import { notify } from 'node-notifier';
 import { join } from 'path';
+import { app } from '.';
 import { ApplicationEventEmitter } from './ApplicationEventEmitter';
 import { Account } from './structures/Account';
 import { clientOptions } from './structures/ClientOptions';
@@ -14,6 +17,7 @@ import { Config } from './structures/Config';
 import { Events as AppEvents } from './structures/Events';
 import { paths } from './structures/Paths';
 import { Tray } from './Tray';
+import { createLogger } from './utilities/Console';
 import { RootWindow } from './windows/RootWindow';
 
 const { readdir } = promises;
@@ -21,14 +25,27 @@ const { readdir } = promises;
 const FONTS_PATH = join(__dirname, './assets/fonts');
 const CONFIG_PATH = join(paths.config, 'config.json');
 
+const {
+  log, debug, warn, error,
+} = createLogger('Application');
+
+/**
+ * Application instance manager.
+ */
 export class Application extends ApplicationEventEmitter {
+  readonly name = 'DiscordQt';
+
+  currentGuildId?: Snowflake;
+
   config = new Config(CONFIG_PATH);
 
   application = QApplication.instance();
 
   clipboard = QApplication.clipboard();
 
-  icon = new QIcon(join(__dirname, 'assets/icon.png'));
+  iconPath = join(__dirname, 'assets/icon.png');
+
+  icon = new QIcon(this.iconPath);
 
   tray?: Tray;
 
@@ -36,6 +53,17 @@ export class Application extends ApplicationEventEmitter {
     super();
     this.setMaxListeners(128);
     this.application.setQuitOnLastWindowClosed(false);
+    this.on(AppEvents.SWITCH_VIEW, (view, options) => {
+      switch (view) {
+        case 'dm':
+          this.currentGuildId = undefined;
+          break;
+        case 'guild':
+          this.currentGuildId = options?.guild?.id;
+          break;
+        default:
+      }
+    });
     (global as any).config = this.config;
   }
 
@@ -47,12 +75,11 @@ export class Application extends ApplicationEventEmitter {
     i18n.setLocale(this.config.locale as string);
     this.window = new RootWindow();
     this.window.show();
-    this.window.addEventListener(WidgetEventTypes.Close, this.quit.bind(this));
     this.emit(AppEvents.READY);
   }
 
   public quit() {
-    console.log('Bye.');
+    log('Bye.');
     this.tray?.hide();
     if (this.client) this.client.destroy();
     this.application.quit();
@@ -65,21 +92,38 @@ export class Application extends ApplicationEventEmitter {
     }
   }
 
+  /**
+   * Initiates discord.js connection.
+   * @param account Account to connect.
+   */
   public async loadClient(account: Account): Promise<void> {
     const { Events } = Constants;
     if (this.client) this.client.destroy();
     this.client = new Client(clientOptions);
-    this.client.on(Events.ERROR, console.error);
+    this.client.on(Events.ERROR, error);
     if (this.config.debug) {
-      this.client.on(Events.DEBUG, console.debug);
-      this.client.on(Events.RAW, console.debug);
+      this.client.on(Events.DEBUG, debug);
+      this.client.on(Events.RAW, debug);
     }
-    this.client.on(Events.WARN, console.warn);
+    this.client.on(Events.WARN, warn);
     try {
       await this.client.login(account.token);
       this.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
-      console.error('Couldn\'t log in', e);
+      if (e instanceof HTTPError) {
+        this.emit(AppEvents.LOGIN_FAILED);
+        notify({
+          title: __('NETWORK_ERROR_REST_REQUEST'),
+          message: __('NETWORK_ERROR_CONNECTION'),
+          // @ts-ignore
+          type: 'error',
+          icon: this.iconPath,
+          category: 'im',
+          hint: 'string:desktop-entry:discord-qt',
+          'app-name': app.name,
+        });
+      }
+      debug('Couldn\'t log in', e);
     }
   }
 

@@ -9,17 +9,19 @@
       "request": "launch",
       "name": "Debug DQt",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/qode",
-      "runtimeArgs": ["--inspect"],
+      "runtimeArgs": ["--inspect", "--trace-warnings"],
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}",
+      "program": "${workspaceFolder}/dist/index.js",
       "outFiles": [
         "${workspaceFolder}/src/**/*.ts"
       ],
       "sourceMaps": true,
       "sourceMapPathOverrides": {
-          "webpack:///*": "${workspaceRoot}/*"
+        "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+        "webpack:///./*": "${workspaceRoot}/*",
+        "webpack:///*": "*"
       },
       "console": "integratedTerminal"
     }

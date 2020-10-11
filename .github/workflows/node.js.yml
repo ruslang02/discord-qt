@@ -24,7 +24,7 @@ jobs:
         run: sudo apt update
       - name: Install apt libs
         if: ${{ runner.os == 'Linux' }}
-        run: sudo apt install -y mesa-common-dev libglu1-mesa-dev libxkbcommon-x11-0
+        run: sudo apt install -y mesa-common-dev libglu1-mesa-dev libxkbcommon-x11-0 libpulse-dev
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2.1.1
         with:

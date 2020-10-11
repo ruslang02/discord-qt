@@ -37,11 +37,18 @@ import { basename, extname, join } from 'path';
 import { fileURLToPath, pathToFileURL, URL } from 'url';
 import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { getEmojiURL } from '../../utilities/ResolveEmoji';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
 
+const { error } = createLogger('InputPanel');
+
+/**
+ * Message input widget.
+ */
 export class InputPanel extends QWidget {
   channel?: TextChannel | DMChannel | NewsChannel;
 
@@ -149,6 +156,10 @@ export class InputPanel extends QWidget {
     });
   }
 
+  /**
+   * Adds attachments to the message.
+   * @param files Files to add.
+   */
   addFiles(files: string[]) {
     for (const file of files) this.files.add(file);
     this.renderAttachPanel();
@@ -189,11 +200,15 @@ export class InputPanel extends QWidget {
       const ext = extname(file).replace(/\./g, '').toUpperCase();
       if (!PIXMAP_EXTS.includes(ext)) attach.setPixmap(fileIcon);
       else {
-        pictureWorker.loadImage(url.href, { roundify: false }).then((path) => {
-          const pix = new QPixmap(path);
-          if (pix.width() < 1) attach.setPixmap(fileIcon);
-          else attach.setPixmap(pix.scaled(120, 60, 1, 1));
-        });
+        pictureWorker.loadImage(url.href, { roundify: false })
+          .then((path) => {
+            const pix = new QPixmap(path);
+            if (pix.width() < 1) attach.setPixmap(fileIcon);
+            else attach.setPixmap(pix.scaled(120, 60, 1, 1));
+          }).catch(() => {
+            error(`Couldn't access file ${file}.`);
+            attach.setPixmap(fileIcon);
+          });
       }
 
       attachLayout.insertWidget(attachLayout.nodeChildren.size, attach);
@@ -230,8 +245,18 @@ export class InputPanel extends QWidget {
       this.renderAttachPanel();
     });
     input.setObjectName('Input');
-    emojiPicker.events.on('emoji', (emoji: Emoji) => {
-      input.insertPlainText(emoji.toString());
+    emojiPicker.events.on('emoji', async (emoji: Emoji, special: boolean) => {
+      if (special) {
+        try {
+          const url = await getEmojiURL({
+            emoji_id: emoji.id || undefined,
+            emoji_name: emoji.name,
+          });
+          const path = await pictureWorker.loadImage(url, { roundify: false });
+          this.files.add(path);
+          this.renderAttachPanel();
+        } catch (e) { error(e); }
+      } else input.insertPlainText(emoji.toString());
       emojiPicker.close();
       input.setFocus(FocusReason.TabFocusReason);
     });
@@ -293,7 +318,7 @@ export class InputPanel extends QWidget {
     if (
       event.key() === Key.Key_Return
       && (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier
-      && message.trim() !== ''
+      && (message.trim() !== '' || this.files.size !== 0)
     ) this.sendMessage();
     else if (
       event.key() === Key.Key_E
@@ -302,6 +327,10 @@ export class InputPanel extends QWidget {
     else setTimeout(this.adjustInputSize.bind(this), 0);
   }
 
+  /**
+   * Adjusts input's height to match the content size.
+   * TODO: process wraps.
+   */
   private adjustInputSize() {
     const { input } = this;
     const textHeight = (input.toPlainText().split('\n').length || 1) * 24 + 18;
@@ -311,6 +340,9 @@ export class InputPanel extends QWidget {
     input.setMinimumSize(0, height);
   }
 
+  /**
+   * Sends the message.
+   */
   private async sendMessage() {
     const { input, statusLabel } = this;
     if (this.quoteEmbed) {
@@ -344,11 +376,16 @@ export class InputPanel extends QWidget {
     }
   }
 
-  private execCommand(message: string, msgOptions: MessageOptions) {
+  /**
+   * Executes a special command starting with /.
+   * @param content Command to process.
+   * @param msgOptions Extra data to add to the Message.
+   */
+  private execCommand(content: string, msgOptions: MessageOptions) {
     if (!this.channel) return;
     const { input } = this;
-    const command = message.toLowerCase().trim().slice(1).split(' ')[0];
-    const msg = message.replace(`/${command}`, '').trim();
+    const command = content.toLowerCase().trim().slice(1).split(' ')[0];
+    const msg = content.replace(`/${command}`, '').trim();
 
     switch (command) {
       case 'shrug':

@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import './patches';
-
+import 'opusscript';
 import i18n from 'i18n';
 import { join } from 'path';
 import { Application } from './Application';

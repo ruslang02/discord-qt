@@ -4,7 +4,7 @@ import {
 import { existsSync, promises } from 'fs';
 import path from 'path';
 import { app } from '..';
-import { MiniProfile } from '../components/MiniProfile/MiniProfile';
+import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { Events as AppEvents } from '../structures/Events';
@@ -19,7 +19,7 @@ export class RootWindow extends QMainWindow {
   dialogs = {
     customStatus: new CustomStatusDialog(this),
     acceptInvite: new AcceptInviteDialog(this),
-    miniProfile: new MiniProfile(this),
+    miniProfile: new ProfilePopup(this),
   };
 
   private mainView = new MainView();
@@ -52,7 +52,7 @@ export class RootWindow extends QMainWindow {
   }
 
   protected initializeWindow() {
-    this.setWindowTitle('DiscordQt');
+    this.setWindowTitle(app.name);
     this.setObjectName('RootWindow');
     this.setMinimumSize(1000, 500);
     this.resize(1200, 600);

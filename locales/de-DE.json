@@ -22,6 +22,9 @@
   "MESSAGE_CALL": "hat angerufen.",
   "MESSAGE_PINS_ADD": "hat eine Message and den Channel angeheftet.",
   "LANGUAGE_RESTART_REQUIRED": "Du musst die App neu starten um die Spracheinstellungen zu übernehmen.",
+  "CLEAR_CACHE": "Cache leeren",
+  "CLEAR_CACHE_SUCCESS": "Cache erfolgreich gelöscht.",
+  "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Yay! Mehr Festplattenspeicher!",
 
   "SEARCH_FOR_EMOJI": "Finde das perfekte emoji",
   "CONNECTION_STATUS_CONNECTING": "Verbinden",

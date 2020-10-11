@@ -13,8 +13,6 @@ export class DChannelButton extends QPushButton {
 
   private _unread = false;
 
-  protected _destroyed = false;
-
   constructor(parent: any) {
     super(parent);
     this.setObjectName('DChannelButton');
@@ -25,14 +23,12 @@ export class DChannelButton extends QPushButton {
       () => this.setHovered(true));
     this.addEventListener(WidgetEventTypes.HoverLeave,
       () => this.setHovered(false));
-    this.addEventListener(WidgetEventTypes.DeferredDelete,
-      () => { this._destroyed = true; });
   }
 
   private unread() { return this._unread; }
 
   setUnread(unread: boolean) {
-    if (this._destroyed) return;
+    if (this.native.destroyed) return;
     this._unread = unread;
     this.setProperty('unread', unread);
     [this, ...this.labels].forEach((w) => w.repolish());
@@ -41,7 +37,7 @@ export class DChannelButton extends QPushButton {
   private hovered() { return this._hovered; }
 
   setHovered(hovered: boolean) {
-    if (this._destroyed) return;
+    if (this.native.destroyed) return;
     this._hovered = hovered;
     this.setProperty('hover', hovered);
     [this, ...this.labels].forEach((w) => w.repolish());
@@ -50,7 +46,7 @@ export class DChannelButton extends QPushButton {
   activated() { return this._activated; }
 
   setActivated(activated: boolean) {
-    if (this._destroyed) return;
+    if (this.native.destroyed) return;
     this._activated = activated;
     this.setProperty('active', activated);
     [this, ...this.labels].forEach((w) => w.repolish());

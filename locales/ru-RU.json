@@ -22,6 +22,9 @@
   "MESSAGE_CALL": "позвонил.",
   "MESSAGE_PINS_ADD": "закрепил сообщение в этом канале.",
   "LANGUAGE_RESTART_REQUIRED": "Вам необходимо перезапустить приложение, чтобы изменения языка вошли в силу.",
+  "CLEAR_CACHE": "Очистить кэш",
+  "CLEAR_CACHE_SUCCESS": "Кэш был успешно освобожден.",
+  "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Ура! Больше места на диске!",
 
   "SEARCH_FOR_EMOJI": "Найдите идеальный эмодзи",
   "CONNECTION_STATUS_CONNECTING": "Подключение",
@@ -109,5 +112,11 @@
   "LANGUAGE": "Язык",
   "COPY_MESSAGE_LINK": "Скопировать ссылку на сообщение",
   "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "Этот эмодзи с",
-  "EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION": "Этот эмодзи с приватного или недоступного сервера."
+  "EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION": "Этот эмодзи с приватного или недоступного сервера.",
+  "NETWORK_ERROR_REST_REQUEST": "Произошла сетевая ошибка.",
+  "NETWORK_ERROR_CONNECTION": "Произошла сетевая ошибка. Пожалуйста, проверьте подключение и повторите попытку.",
+  "ERROR": "Ошибка",
+  "NOTE": "Заметка",
+  "NOTE_PLACEHOLDER": "Нажмите, чтобы добавить заметку",
+  "ADD_NOTE": "Добавить заметку"
 }

@@ -20,6 +20,7 @@ import { Message, Snowflake } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DLabel } from '../DLabel/DLabel';
 import {
@@ -33,7 +34,11 @@ import {
 } from './MessageUtilities';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
+const { error } = createLogger('MessageItem');
 
+/**
+ * Represents a widget that holds one message.
+ */
 export class MessageItem extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);
 
@@ -53,8 +58,6 @@ export class MessageItem extends QWidget {
 
   private contentNoEmojis?: string;
 
-  public _destroyed = false;
-
   message?: Message;
 
   constructor(parent?: any) {
@@ -64,9 +67,11 @@ export class MessageItem extends QWidget {
     this.setLayout(this.controls);
     this.initComponent();
     this.initMenu();
-    this.addEventListener(WidgetEventTypes.DeferredDelete, () => { this._destroyed = true; });
   }
 
+  /**
+   * Initializes the context menu of the message.
+   */
   private initMenu() {
     const { menu } = this;
     menu.setCursor(CursorShape.PointingHandCursor);
@@ -170,18 +175,22 @@ export class MessageItem extends QWidget {
     controls.addLayout(msgLayout, 1);
   }
 
+  /**
+   * Handles user clicking the avatar or username link.
+   */
   private handleUserClick() {
     if (!this.message) return;
     const { avatar } = this;
-    const { miniProfile } = app.window.dialogs;
     const map = avatar.mapToGlobal(this.p0);
     map.setX(map.x() + avatar.size().width());
-    miniProfile.loadProfile(this.message.member || this.message.author);
-    miniProfile.popup(map);
+    app.emit(Events.OPEN_USER_PROFILE, this.message.author.id, this.message.guild?.id, map);
   }
 
   private alreadyRendered = false;
 
+  /**
+   * Loads all images in the message.
+   */
   async renderImages() {
     const { message, avatar } = this;
     if (!message || this.alreadyRendered) return;
@@ -191,12 +200,16 @@ export class MessageItem extends QWidget {
         avatar.setPixmap(cachePixmap);
         return;
       }
-      const image = await pictureWorker.loadImage(
-        message.author.displayAvatarURL({ format: 'png', size: 256 }),
-      );
-      const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
-      avatar.setPixmap(pixmap);
-      avatarCache.set(message.author.id, pixmap);
+      try {
+        const image = await pictureWorker.loadImage(
+          message.author.displayAvatarURL({ format: 'png', size: 256 }),
+        );
+        const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
+        avatar.setPixmap(pixmap);
+        avatarCache.set(message.author.id, pixmap);
+      } catch (e) {
+        error(`Couldn't load avatar image for user ${message.author.tag}`);
+      }
     })();
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());
@@ -206,6 +219,10 @@ export class MessageItem extends QWidget {
     this.alreadyRendered = true;
   }
 
+  /**
+   * Populates the message widget with message data.
+   * @param message Message to process.
+   */
   async loadMessage(message: Message): Promise<void> {
     const { unameLabel: userNameLabel, dateLabel, contentLabel } = this;
     const user = message.author;
@@ -229,12 +246,16 @@ export class MessageItem extends QWidget {
       contentLabel.setText(content);
     }
     [
-      ...processAttachments(message.attachments),
+      ...processAttachments(message),
       ...processEmbeds(message, this),
       ...await processInvites(message),
-    ].forEach((w) => !this._destroyed && this.msgLayout.addWidget(w));
+    ].forEach((w) => !this.native.destroyed && this.msgLayout.addWidget(w));
   }
 
+  /**
+   * Populates the message widget for system messages.
+   * @param message Message to process.
+   */
   private loadSystemMessage(message: Message) {
     const content = __(`MESSAGE_${message.type}`) || message.type;
     this.dateLabel.hide();

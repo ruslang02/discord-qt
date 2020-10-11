@@ -94,6 +94,8 @@ export class MembersList extends QListWidget {
     if (channel.type !== 'text' && channel.type !== 'news') return;
     this.channel = channel as TextChannel | NewsChannel;
     this.clear();
+    this.nodeChildren.clear();
+    this.items.clear();
     for (const member of channel.members.values()) {
       const btn = new UserButton(this);
       const item = new QListWidgetItem();
@@ -103,11 +105,9 @@ export class MembersList extends QListWidget {
       btn.loadUser(member);
       btn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
       btn.addEventListener('clicked', async () => {
-        const { miniProfile } = app.window.dialogs;
         const map = btn.mapToGlobal(this.p0);
         map.setX(map.x() - 250);
-        miniProfile.loadProfile(member);
-        miniProfile.popup(map);
+        app.emit(Events.OPEN_USER_PROFILE, member.id, channel.guild.id, map);
       });
 
       btn.addEventListener('customContextMenuRequested', ({ x, y }) => {

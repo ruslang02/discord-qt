@@ -5,9 +5,10 @@ import {
   QLabel,
   QListWidget,
   QListWidgetItem,
+  QSize,
+  ScrollBarPolicy,
   Shape,
   WidgetEventTypes,
-  QSize,
 } from '@nodegui/nodegui';
 import {
   CategoryChannel,
@@ -17,14 +18,14 @@ import {
   DQConstants,
   Guild,
   GuildChannel,
-  Message,
-  Permissions,
+  Permissions, VoiceChannel,
 } from 'discord.js';
-import { app, MAX_QSIZE } from '../..';
+import { app } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
+import { ChannelMembers } from './ChannelMembers';
 
 const { debug } = createLogger('ChannelsList');
 
@@ -41,18 +42,19 @@ export class ChannelsList extends QListWidget {
     this.setObjectName('ChannelsList');
     this.setVerticalScrollMode(1);
     this.setSpacing(0);
+    this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
     app.on(AppEvents.NEW_CLIENT, this.handleEvents.bind(this));
   }
 
   private handleEvents(client: Client) {
     const { Events } = Constants as unknown as DQConstants;
-    client.on(Events.MESSAGE_ACK, (data: any) => {
+    client.on(Events.MESSAGE_ACK, (channel) => {
       const button = [...this.buttons.values()]
-        .find((btn) => btn.channel?.id === data.channel_id);
+        .find((btn) => btn.channel?.id === channel.id);
       if (button) button.setUnread(false);
     });
-    client.on(Events.MESSAGE_CREATE, (message: Message) => {
+    client.on(Events.MESSAGE_CREATE, (message) => {
       const button = [...this.buttons.values()]
         .find((btn) => btn.channel?.id === message.channel.id);
       if (button) button.setUnread(true);
@@ -86,6 +88,8 @@ export class ChannelsList extends QListWidget {
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
     this.clear();
+    this.nodeChildren.clear();
+    this.items.clear();
     const [categories, channels] = guild.channels.cache
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition((a) => a.type === 'category') as [
@@ -106,8 +110,9 @@ export class ChannelsList extends QListWidget {
           .filter((a) => a.parentID === category.id)
           .map((a) => a.id);
         for (const id of channelIds) {
-          const chItem = this.findItems(id, MatchFlag.MatchExactly)[0];
-          this.setRowHidden(this.row(chItem), !isOpened);
+          this.findItems(id, MatchFlag.MatchExactly)
+            // eslint-disable-next-line no-loop-func
+            .forEach((i) => this.setRowHidden(this.row(i), !isOpened));
         }
       });
       label.setMinimumSize(0, 30);
@@ -125,16 +130,25 @@ export class ChannelsList extends QListWidget {
       const btn = new ChannelButton(this);
       const item = new QListWidgetItem();
       const parentItems = channel.parentID ? this.findItems(channel.parentID, 0) : [];
+      const row = parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0;
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
-      btn.setMinimumSize(0, 32);
-      btn.setMaximumSize(MAX_QSIZE, 32);
+      btn.setFixedSize(232, 32);
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
-      this.insertItem(parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0, item);
+      this.insertItem(row, item);
       this.setItemWidget(item, btn);
       buttons.add(btn);
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
+      if (channel.type === 'voice') {
+        const members = new ChannelMembers(this);
+        members.loadChannel(channel as VoiceChannel);
+        const memitem = new QListWidgetItem();
+        memitem.setText(channel.id);
+        this.insertItem(row + 1, memitem);
+        this.setItemWidget(memitem, members);
+        members.setItem(memitem);
+      }
     }
   }
 }

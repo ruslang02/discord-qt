@@ -1,19 +1,15 @@
 import {
-  ButtonRole,
   ContextMenuPolicy,
   QAction,
   QApplication,
   QClipboardMode,
   QLabel,
   QMenu,
-  QMessageBox,
   QPixmap,
   QPoint,
-  QPushButton,
 } from '@nodegui/nodegui';
 import { GuildChannel, TextChannel, VoiceChannel } from 'discord.js';
 import { __ } from 'i18n';
-import open from 'open';
 import { join } from 'path';
 import { app } from '../..';
 import { Events } from '../../structures/Events';
@@ -56,27 +52,10 @@ export class ChannelButton extends DChannelButton {
         app.emit(Events.SWITCH_VIEW, 'guild', { channel });
         break;
       case 'voice':
-        ChannelButton.openVoiceChannel(channel as VoiceChannel);
+        app.emit(Events.JOIN_VOICE_CHANNEL, channel as VoiceChannel);
         break;
       default:
     }
-  }
-
-  private static openVoiceChannel(channel: VoiceChannel) {
-    const msgBox = new QMessageBox();
-    msgBox.setText(__('VOICE_NOT_SUPPORTED'));
-    msgBox.setWindowTitle('DiscordQt');
-    msgBox.setProperty('icon', 4);
-    const noBtn = new QPushButton();
-    noBtn.setText(__('NO_TEXT'));
-    msgBox.addButton(noBtn, ButtonRole.NoRole);
-    const yesBtn = new QPushButton();
-    yesBtn.setText(__('YES_TEXT'));
-    msgBox.addButton(yesBtn, ButtonRole.YesRole);
-    yesBtn.addEventListener('clicked', () => {
-      open(`https://discord.com/channels/${channel.guild.id}/${channel.id}`);
-    });
-    msgBox.open();
   }
 
   private initComponent() {

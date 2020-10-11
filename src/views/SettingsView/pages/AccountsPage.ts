@@ -20,11 +20,17 @@ import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
 import { Account } from '../../../structures/Account';
 import { clientOptions } from '../../../structures/ClientOptions';
 import { Events } from '../../../structures/Events';
+import { createLogger } from '../../../utilities/Console';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Divider } from '../Divider';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
 
+const { error } = createLogger('AccountsPage');
+
+/**
+ * Represents the Accounts section in the settings view.
+ */
 export class AccountsPage extends Page {
   title = __('ACCOUNTS');
 
@@ -73,6 +79,11 @@ export class AccountsPage extends Page {
 
   checkboxes: SettingsCheckBox[] = [];
 
+  /**
+   * Renders the account into the account picker.
+   * @param account Account to render.
+   * @param i Last index of the list.
+   */
   private processAccount(account: Account, i = 0) {
     const accWidget = new QWidget(this.accountsSection);
     const layout = new QBoxLayout(Direction.TopToBottom);
@@ -89,7 +100,8 @@ export class AccountsPage extends Page {
 
     const avatar = new QLabel(accWidget);
     pictureWorker.loadImage(account.avatar, { roundify: true })
-      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)));
+      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)))
+      .catch(() => error('Couldn\'t load account\'s avatar.'));
     const uname = new QLabel(accWidget);
     uname.setObjectName('UserName');
     uname.setText(`<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`);

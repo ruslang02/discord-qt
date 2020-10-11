@@ -1,3 +1,6 @@
+/**
+ * A set of functions to handle rendering of different parts of a message.
+ */
 import {
   AlignmentFlag,
   CursorShape,
@@ -10,7 +13,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import {
-  Collection, GuildChannel, Message, MessageAttachment, MessageEmbedImage, MessageMentions,
+  GuildChannel, Message, MessageEmbedImage, MessageMentions,
 } from 'discord.js';
 import { __ } from 'i18n';
 import markdownIt from 'markdown-it';
@@ -18,6 +21,7 @@ import open from 'open';
 import { extname, join } from 'path';
 import { pathToFileURL } from 'url';
 import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DLabel } from '../DLabel/DLabel';
@@ -27,12 +31,19 @@ const MD = markdownIt({
   html: false,
   linkify: true,
   breaks: true,
-}).disable(['hr', 'blockquote', 'lheading']).enable('link');
+}).disable(['hr', 'blockquote', 'lheading', 'list']).enable('link');
+
+const { debug, error } = createLogger('MessageUtilities');
 
 const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const EMOJI_PLACEHOLDER = join(__dirname, 'assets/icons/emoji-placeholder.png');
 
+/**
+ * Calculates the thumbnail size.
+ * @param w Original width.
+ * @param h Original height.
+ */
 function getCorrectSize(w?: number | null, h?: number | null) {
   let width = w;
   let height = h;
@@ -51,6 +62,11 @@ function getCorrectSize(w?: number | null, h?: number | null) {
   return { width: Math.ceil(width), height: Math.ceil(height) };
 }
 
+/**
+ * Processes user/role/channel mentions in the string.
+ * @param content String to process.
+ * @param message Message that is linked to the content.
+ */
 export async function processMentions(content: string, message: Message) {
   // const { guild } = message;
   let newContent = content;
@@ -95,6 +111,10 @@ export async function processMentions(content: string, message: Message) {
   return newContent;
 }
 
+/**
+ * Processes MarkDown in the string.
+ * @param content String to process.
+ */
 export function processMarkdown(content: string) {
   let c = content;
   if (!app.config.processMarkDown) return c.replace(/\n/g, '<br/>');
@@ -107,6 +127,10 @@ export function processMarkdown(content: string) {
   return MD.render(c);
 }
 
+/**
+ * Replaces emoji strings with placeholder squares.
+ * @param content String to process.
+ */
 export async function processEmojiPlaceholders(content: string): Promise<string> {
   let c = content;
   const emoIds = c.match(EMOJI_REGEX) || [];
@@ -117,6 +141,10 @@ export async function processEmojiPlaceholders(content: string): Promise<string>
   return c;
 }
 
+/**
+ * Replaces emoji strings with actual emoji images.
+ * @param content String to process.
+ */
 export async function processEmojis(content: string): Promise<string> {
   const emoIds = content.match(EMOJI_REGEX) || [];
   const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
@@ -134,7 +162,9 @@ export async function processEmojis(content: string): Promise<string> {
         const larger = pix.width() > pix.height() ? 'width' : 'height';
 
         cnt = cnt.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-      }).catch(() => { });
+      }).catch(() => {
+        debug(`Emoji <:${name}:${id}> was not resolved.`);
+      });
   });
   try {
     await Promise.all(promises);
@@ -142,6 +172,11 @@ export async function processEmojis(content: string): Promise<string> {
   return cnt;
 }
 
+/**
+ * Renders embeds in the message.
+ * @param message Message to process.
+ * @param item Parent widget to insert embeds into.
+ */
 export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
   return message.embeds.map((embed) => {
     const container = new QWidget();
@@ -167,8 +202,11 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         const auimage = new QLabel(body);
         auimage.setFixedSize(24, 24);
         pictureWorker.loadImage(embed.author.proxyIconURL)
-          .then((path) => !item._destroyed
-            && auimage.setPixmap(new QPixmap(path).scaled(24, 24)));
+          .then((path) => !item.native.destroyed
+            && auimage.setPixmap(new QPixmap(path).scaled(24, 24)))
+          .catch(() => {
+            error(`Couldn't load avatar picture of embed ${embed.title}.`);
+          });
         aulayout.addWidget(auimage);
       }
       const auname = new DLabel(body);
@@ -200,7 +238,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         .replace(/&gt;/g, '>')
         .trim();
       processMentions(description, message).then((pdescription) => {
-        if (!item._destroyed) descr.setText(pdescription);
+        if (!item.native.destroyed) descr.setText(pdescription);
       });
       layout.addWidget(descr);
     }
@@ -237,10 +275,14 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       body.setMaximumSize(width + 32, MAX_QSIZE);
       // @ts-ignore
       container.loadImages = async function loadImages() {
-        if (item._destroyed || !image.proxyURL) return;
-        const path = await pictureWorker.loadImage(image.proxyURL);
-        if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
-        qImage.setInlineStyle('background-color: transparent');
+        if (item.native.destroyed || !image.proxyURL) return;
+        try {
+          const path = await pictureWorker.loadImage(image.proxyURL);
+          if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
+          qImage.setInlineStyle('background-color: transparent');
+        } catch (e) {
+          error(`Image in embed ${embed.title} could not be downloaded.`);
+        }
       };
       layout.addWidget(qImage);
     }
@@ -248,6 +290,10 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
   });
 }
 
+/**
+ * Retrieves and displays information about invitation links.
+ * @param message Message to process.
+ */
 export async function processInvites(message: Message): Promise<QWidget[]> {
   const invites = message.content.match(INVITE_REGEX) || [];
   const widgets: QWidget[] = [];
@@ -277,9 +323,13 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
       item.loadImages = async function loadImages() {
         const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
         if (!iconUrl) return;
-        const path = await pictureWorker.loadImage(iconUrl);
-        avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
-        avatar.setObjectName('');
+        try {
+          const path = await pictureWorker.loadImage(iconUrl);
+          avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
+          avatar.setObjectName('');
+        } catch (e) {
+          error(`Guild image in invite to "${invite.guild?.name}" could not be loaded.`);
+        }
       };
       const infoLayout = new QBoxLayout(Direction.TopToBottom);
       const nameLabel = new QLabel(item);
@@ -303,7 +353,12 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
   return widgets;
 }
 
-export function processAttachments(attachments: Collection<string, MessageAttachment>): QLabel[] {
+/**
+ * Processes attachments in the message.
+ * @param message Message to process.
+ */
+export function processAttachments(message: Message): QLabel[] {
+  const { attachments } = message;
   return attachments.map((attach) => {
     const { width, height } = getCorrectSize(attach.width, attach.height);
     const url = `${attach.proxyURL}?width=${width}&height=${height}`;
@@ -327,9 +382,13 @@ export function processAttachments(attachments: Collection<string, MessageAttach
       // @ts-ignore
       qimage.loadImages = async function loadImages() {
         if (!isImage) return;
-        const image = await pictureWorker.loadImage(url);
-        qimage.setPixmap(new QPixmap(image));
-        qimage.setInlineStyle('background-color: transparent');
+        try {
+          const image = await pictureWorker.loadImage(url);
+          qimage.setPixmap(new QPixmap(image));
+          qimage.setInlineStyle('background-color: transparent');
+        } catch (e) {
+          error(`Image attachment in message ${message.id} could not be loaded.`);
+        }
       };
     }
     return qimage;

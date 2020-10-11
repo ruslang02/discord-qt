@@ -9,11 +9,21 @@ type Options = {
 };
 const { debug } = createLogger('PictureWorker');
 
+/**
+ * Controls the lifecycle of a picture-loading worker.
+ * It prevents image loading from blocking the main thread due to hundreds of requests.
+ */
 class PictureWorker {
+  /**
+   * Worker that is being managed.
+   */
   worker: Worker;
 
-  callbacks = new Map<string, {
-    resolve(value: any): void,
+  /**
+   * Callbacks that are awaiting their image file paths.
+   */
+  private callbacks = new Map<string, {
+    resolve(imagePath: string): void,
     reject(error: any): void,
   }>();
 
@@ -22,6 +32,11 @@ class PictureWorker {
     this.worker.on('message', this.resolveImage.bind(this));
   }
 
+  /**
+   * Sends a request to load the image and puts the promise into the list.
+   * @param url Image URL to process.
+   * @param options Extra options for further image processing.
+   */
   loadImage(url: string, options?: Options): Promise<string> {
     const { callbacks, worker } = this;
     if ((url || '').toString().trim() === '') {
@@ -55,13 +70,19 @@ class PictureWorker {
     });
   }
 
-  private resolveImage(result: any) {
-    const { url, path } = result as { url: string, path: string };
+  /**
+   * Retrieves download image's path and finishes the request.
+   * @param result The response from the worker with the image path.
+   */
+  private resolveImage(result: { url: string, path: string }) {
+    const { url, path } = result;
     if (typeof url !== 'string') return debug('URL was strange:', url);
     const cb = this.callbacks.get(url);
     if (!cb) return debug('There was no callback for', url);
-    if (!path || !path.length) return cb.reject('Couldn\'t get path.');
-
+    if (!path || !path.length) {
+      debug(`Couldn't load URL: ${url}, throwing error...`);
+      return cb.reject('Couldn\'t get path.');
+    }
     this.callbacks.delete(url);
     return cb.resolve(path);
   }

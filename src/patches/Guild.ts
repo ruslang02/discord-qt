@@ -17,3 +17,9 @@ Object.defineProperty(Guild.prototype, 'position', {
     return this.client.user.settings.guildPositions.indexOf(this.id);
   }
 });
+
+const _superPatch = Guild.prototype._patch;
+Guild.prototype._patch = function() {
+  _superPatch.apply(this, arguments);
+  setTimeout(() => this.shardID = 0);
+}

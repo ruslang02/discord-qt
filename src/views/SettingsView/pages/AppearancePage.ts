@@ -97,7 +97,7 @@ export class AppearancePage extends Page {
       setLocale(locale);
       const mbox = new QMessageBox();
       mbox.setText(__('LANGUAGE_RESTART_REQUIRED'));
-      mbox.setWindowTitle('DiscordQt');
+      mbox.setWindowTitle(app.name);
       mbox.setProperty('icon', QMessageBoxIcon.Information);
       const okBtn = new QPushButton();
       okBtn.setText(__('OKAY'));
@@ -105,19 +105,19 @@ export class AppearancePage extends Page {
       mbox.open();
     });
     const clearCacheBtn = new DColorButton();
-    clearCacheBtn.setText('Clear cache'); // TODO: i18n
+    clearCacheBtn.setText(__('CLEAR_CACHE')); // TODO: i18n
     clearCacheBtn.setMinimumSize(0, 36);
     clearCacheBtn.addEventListener('clicked', () => {
       rmdir(paths.cache, { recursive: true }).then(() => {
         notify({
-          title: 'Cache cleared successfully.',
-          message: 'Yay! More hard drive space!',
-          icon: join(__dirname, 'assets/icon.png'),
+          title: __('CLEAR_CACHE_SUCCESS'),
+          message: __('CLEAR_CACHE_MOTIVATIONAL_MESSAGE'),
+          icon: app.iconPath,
           // @ts-ignore
           type: 'info',
           category: 'im',
           hint: 'string:desktop-entry:discord-qt',
-          'app-name': 'DiscordQt',
+          'app-name': app.name,
         });
       });
     });

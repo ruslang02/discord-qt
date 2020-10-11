@@ -3,14 +3,14 @@ import { Client, Constants, DQConstants, TextChannel } from 'discord.js';
 const Action = require('discord.js/src/client/actions/Action');
 const ActionsManager = require('discord.js/src/client/actions/ActionsManager');
 const { Events } = Constants as unknown as DQConstants;
-export class MessageAcknowledgedAction extends Action {
-  handle(d: any) {
+class MessageAcknowledgedAction extends Action {
+  handle(data: any) {
     const client = this.client as Client;
-    const channel = client.channels.resolve(d.channel_id) as TextChannel;
-    const state = client.read_state.find((s: any) => s.id === d.channel_id);
-    const message = channel.messages.resolve(d.message_id);
+    const channel = client.channels.resolve(data.channel_id) as TextChannel;
+    const state = client.read_state.find((s: any) => s.id === data.channel_id);
+    const message = channel.messages.resolve(data.message_id);
     if (!state || !channel || !message) return;
-    state.last_message_id = d.message_id;
+    state.last_message_id = data.message_id;
     /**
      * Emitted whenever a channel/messages change their read state
      * @event Client#messageAck
@@ -18,10 +18,27 @@ export class MessageAcknowledgedAction extends Action {
      * @param {Message} message The most recent message read
      */
     client.emit(Events.MESSAGE_ACK, channel, message);
-    return d;
+    return data;
   }
 }
-export class UserSettingsUpdateAction extends Action {
+class UserNoteUpdateAction extends Action {
+  handle(data: any) {
+    const client = this.client;
+
+    const oldNote = client.user.notes.get(data.id);
+    const note = data.note.length ? data.note : null;
+
+    client.user.notes.set(data.id, note);
+
+    client.emit(Events.USER_NOTE_UPDATE, data.id, oldNote, note);
+
+    return {
+      old: oldNote,
+      updated: note,
+    };
+  }
+} 
+class UserSettingsUpdateAction extends Action {
   handle(settings: any) {
     const client = this.client;
     if ('status' in settings) {
@@ -46,6 +63,8 @@ ActionsManager.prototype.register = function register(action: any) {
   if (!this._imported) {
     // @ts-ignore
     this.MessageAcknowledged = new MessageAcknowledgedAction(this.client);
+    // @ts-ignore
+    this.UserNoteUpdate = new UserNoteUpdateAction(this.client);
     // @ts-ignore
     this.UserSettingsUpdate = new UserSettingsUpdateAction(this.client);
     this._imported = true;

@@ -8,10 +8,16 @@ import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
 import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
+const { error } = createLogger('UserButton');
+
+/**
+ * Represents a button with user's avatar, name and current status.
+ */
 export class UserButton extends DChannelButton {
   private static ActivityTypeText: Map<ActivityType, string> = new Map([
     ['LISTENING', 'LISTENING_TO'],
@@ -50,6 +56,9 @@ export class UserButton extends DChannelButton {
     this.initComponent();
   }
 
+  /**
+   * Binds discord.js events in order to update user infos dynamically.
+   */
   static init() {
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
       const { Events } = Constants;
@@ -77,7 +86,7 @@ export class UserButton extends DChannelButton {
     });
   }
 
-  initComponent() {
+  private initComponent() {
     const {
       avatar,
       nameLabel,
@@ -125,17 +134,29 @@ export class UserButton extends DChannelButton {
 
   private hasPixmap = false;
 
+  /**
+   * Loads the image in the avatar.
+   */
   async loadAvatar() {
     if (!app.config.enableAvatars || !this.user || this.hasPixmap) return;
     this.hasPixmap = true;
-    const path = await pictureWorker.loadImage(
-      this.user.displayAvatarURL({ format: 'png', size: 256 }),
-    );
-    this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    try {
+      const path = await pictureWorker.loadImage(
+        this.user.displayAvatarURL({ format: 'png', size: 256 }),
+      );
+      this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+    } catch (e) {
+      this.hasPixmap = false;
+      error(`Could not load avatar of user ${this.user.tag}`);
+    }
   }
 
+  /**
+   * Renders current user's presence.
+   * @param presence User presence.
+   */
   async loadPresence(presence: Presence) {
-    if (this._destroyed) return;
+    if (this.native.destroyed) return;
     this.statusInd.setProperty('tooltip', presence.status);
     this.statusInd.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)}`);
     this.loadStatusEmoji(presence);
@@ -152,19 +173,31 @@ export class UserButton extends DChannelButton {
     }
   }
 
+  /**
+   * Renders custom status's emoji if it is set.
+   * @param presence User's presence.
+   */
   async loadStatusEmoji(presence: Presence) {
     this.statusIcon.hide();
     const activity = presence.activities.find((a) => !!a.emoji);
     if (!activity || !activity.emoji || !activity.emoji.name) return;
-    const emojiPath = await resolveEmoji({
-      emoji_id: activity.emoji.id || undefined,
-      emoji_name: activity.emoji.name,
-    });
-    const pix = new QPixmap(emojiPath);
-    this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
+    try {
+      const emojiPath = await resolveEmoji({
+        emoji_id: activity.emoji.id || undefined,
+        emoji_name: activity.emoji.name,
+      });
+      const pix = new QPixmap(emojiPath);
+      this.statusIcon.setPixmap(pix.scaled(14, 14, 1, 1));
+    } catch (e) {
+      error(`Couldn't load status emoji for user ${this.user?.tag}, emoji ${activity.emoji}`);
+    }
     this.statusIcon.show();
   }
 
+  /**
+   * Loads user/member data into the button.
+   * @param someone User or member to render.
+   */
   async loadUser(someone: User | GuildMember) {
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;

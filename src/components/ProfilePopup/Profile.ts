@@ -2,9 +2,15 @@ import {
   AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget,
 } from '@nodegui/nodegui';
 import { GuildMember, User } from 'discord.js';
+import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { CustomStatusLabel } from './CustomStatusLabel';
 
+const { error } = createLogger('Profile');
+
+/**
+ * Represents the user info section in the profile popup.
+ */
 export class Profile extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
 
@@ -55,10 +61,18 @@ export class Profile extends QWidget {
     this.setLayout(layout);
   }
 
+  /**
+   * Styles the widget according to the user's playing state
+   * @param value Whether user is currently playing.
+   */
   setPlaying(value: boolean) {
     this.setProperty('isPlaying', value ? 'true' : 'false');
   }
 
+  /**
+   * Renders the widget according to the user.
+   * @param someone User or member to process.
+   */
   async loadProfile(someone: User | GuildMember) {
     const {
       avatar, username, nickname, custom, unreadInd,
@@ -71,7 +85,8 @@ export class Profile extends QWidget {
     unreadInd.repolish();
     avatar.clear();
     pictureWorker.loadImage(user.displayAvatarURL({ format: 'png', size: 256 }))
-      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)));
+      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)))
+      .catch(() => error(`Profile image for ${user.tag} could not be loaded.`));
     if (member?.nickname) {
       username.show();
       nickname.setText(`<span style='font-weight:600'>${member.nickname}</span>`);
