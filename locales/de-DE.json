@@ -113,5 +113,11 @@
   "LANGUAGE": "Sprache",
   "COPY_MESSAGE_LINK": "Nachrichtenlink kopieren",
   "EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION": "Das Emoji ist von einem privaten oder nicht verfügbaren Server.",
-  "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "Das Emoji ist von"
+  "EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION": "Das Emoji ist von",
+  "NETWORK_ERROR_REST_REQUEST": "Es ist ein Netzwerkfehler aufgetreten.",
+  "NETWORK_ERROR_CONNECTION": "Es ist ein Netzwerkfehler aufgetreten. Prüfe Deine Verbindung und versuche es nochmal.",
+  "ERROR": "Error",
+  "NOTE": "Note",
+  "NOTE_PLACEHOLDER": "Anklicken um eine Notiz hinzuzufügen",
+  "ADD_NOTE": "Notiz hinzufügen"
 }
