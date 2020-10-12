@@ -115,6 +115,12 @@ export class MessagesPanel extends QScrollArea {
     if (!channel) return;
     const messages = (await channel.messages.fetch({ before })).array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
+    if (channel?.type !== 'dm') {
+      channel.guild.members.fetch({
+        user: messages.map((m) => m.author.id),
+        withPresences: true,
+      });
+    }
     for (const message of messages) {
       const widget = new MessageItem();
       (this.root.layout as QBoxLayout).insertWidget(0, widget);

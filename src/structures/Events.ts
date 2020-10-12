@@ -10,8 +10,7 @@ export const Events = {
   NEW_CLIENT: 'newClient',
   OPEN_SETTINGS_PAGE: 'openSettingsPage',
   OPEN_USER_PROFILE: 'openUserProfile',
-  QUOTE_MESSAGE_NOEMBED: 'quoteMessageNoEmbed',
-  QUOTE_MESSAGE_EMBED: 'quoteMessageEmbed',
+  QUOTE_MESSAGE: 'quoteMessage',
   READY: 'ready',
   SWITCH_VIEW: 'switchView',
 } as const;
@@ -22,8 +21,7 @@ export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
   newClient: [Client],
   openSettingsPage: [string],
   openUserProfile: [string, string | undefined, QPoint],
-  quoteMessageNoEmbed: [Message],
-  quoteMessageEmbed: [Message],
+  quoteMessage: [Message],
   ready: [],
   switchView: [string, ViewOptions?],
 }

@@ -23,3 +23,10 @@ Guild.prototype._patch = function() {
   _superPatch.apply(this, arguments);
   setTimeout(() => this.shardID = 0);
 }
+
+Guild.prototype.subscribeToTypingEvent = function subscribeToTypingEvent() {
+  this.client.shard?.send({
+    op: 14,
+    d: { guild_id: this.id, typing: true, activities: true },
+  });
+}

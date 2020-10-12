@@ -35,6 +35,7 @@ export class GuildsList extends QListWidget {
     super();
 
     this.setFrameShape(Shape.NoFrame);
+    this.setMinimumSize(72, 0);
     this.setMaximumSize(72, MAX_QSIZE);
     this.setObjectName('GuildsList');
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));

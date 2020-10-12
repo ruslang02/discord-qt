@@ -59,7 +59,7 @@ export class Application extends ApplicationEventEmitter {
           this.currentGuildId = undefined;
           break;
         case 'guild':
-          this.currentGuildId = options?.guild?.id;
+          this.currentGuildId = options?.channel?.guild.id || options?.guild?.id;
           break;
         default:
       }
@@ -102,7 +102,7 @@ export class Application extends ApplicationEventEmitter {
     this.client = new Client(clientOptions);
     this.client.on(Events.ERROR, error);
     if (this.config.debug) {
-      this.client.on(Events.DEBUG, debug);
+      // this.client.on(Events.DEBUG, debug);
       this.client.on(Events.RAW, debug);
     }
     this.client.on(Events.WARN, warn);

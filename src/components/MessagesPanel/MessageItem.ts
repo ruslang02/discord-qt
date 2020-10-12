@@ -77,17 +77,9 @@ export class MessageItem extends QWidget {
     menu.setCursor(CursorShape.PointingHandCursor);
     {
       const action = new QAction(menu);
-      action.setText(`${__('QUOTE')} (>)`);
+      action.setText(__('QUOTE'));
       action.addEventListener('triggered', () => {
-        if (this.message) app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(`${__('QUOTE')} (embed)`);
-      action.addEventListener('triggered', () => {
-        if (this.message) app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
+        if (this.message) app.emit(Events.QUOTE_MESSAGE, this.message);
       });
       menu.addAction(action);
     }
@@ -226,7 +218,7 @@ export class MessageItem extends QWidget {
   async loadMessage(message: Message): Promise<void> {
     const { unameLabel: userNameLabel, dateLabel, contentLabel } = this;
     const user = message.author;
-    const member = message.guild?.member(user);// || await message.guild?.members.fetch({ user });
+    const member = message.guild?.members.cache.get(user.id);
     this.message = message;
     userNameLabel.setText(member?.nickname || user.username);
     dateLabel.setText(message.createdAt.toLocaleString());

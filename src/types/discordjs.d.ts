@@ -26,27 +26,38 @@ declare module 'discord.js' {
     UserSettingsMap: Record<string, string>;
   }
   export interface DMChannel {
+    _typing: Map<Snowflake, TypingEntity>;
     lastReadMessageID: string | null;
     acknowledged: boolean;
     acknowledge(): void;
   }
-  export interface DQConstants extends Constants {}
+  export interface DQConstants extends Constants { }
   export interface Guild {
     acknowledged: boolean;
     position: number | null;
+    subscribeToTypingEvent(): void;
   }
   export interface GuildChannel {
     can(flags: number, who?: User): boolean;
   }
   export interface NewsChannel {
+    _typing: Map<Snowflake, TypingEntity>;
     lastReadMessageID: string | null;
     acknowledged: boolean;
     acknowledge(): void;
   }
   export interface TextChannel {
+    _typing: Map<Snowflake, TypingEntity>;
     lastReadMessageID: string | null;
     acknowledged: boolean;
     acknowledge(): void;
+  }
+  export type TypingEntity = {
+    elapsedTime: number,
+    lastTimestamp: Date,
+    since: Date,
+    timeout: NodeJS.Timeout,
+    user: User
   }
   export interface User {
     note: string | null;

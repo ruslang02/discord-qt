@@ -21,6 +21,7 @@ export class GuildButton extends QLabel {
     if (!guild.available) this.setInlineStyle('border: 1px solid red');
     this.setAlignment(AlignmentFlag.AlignCenter);
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+      guild.subscribeToTypingEvent();
       app.emit(Events.SWITCH_VIEW, 'guild', { guild });
     });
 

@@ -12,6 +12,7 @@ for (const object of consts) {
       const newArgs = [...args].map(a => a.__isProxy ? a.__proto__ : a);
       if (newArgs.includes(noop)) return noop;
       const newNative = new target(...newArgs);
+      newNative.destroyed = false;
       const native = new Proxy(newNative, {
         get: function (target, prop) {
           if (prop === '__isProxy') return true;
@@ -42,7 +43,7 @@ NodeWidget.prototype.setNodeParent = function patchWidget() {
   if (this.native && !this._processed) {
     this._processed = true;
     if (!no.includes(this.constructor.name)) {
-      this.addEventListener('DeferredDelete', processDelete.bind(this))
+      this.addEventListener('DeferredDelete', processDelete.bind(this));
     }
   }
   return _setNodeParent.call(this, ...arguments);
