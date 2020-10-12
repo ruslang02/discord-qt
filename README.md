@@ -3,6 +3,8 @@
 ![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg)
 ![David](https://img.shields.io/david/ruslang02/discord-qt)
 
+[![discord](https://img.shields.io/discord/765296053410857000?color=%237289da&label=discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/tNNuUK4)
+
 A Discord desktop client powered by Node.JS and [NodeGui](https://github.com/nodegui).
 It offers a significantly less resource-consuming experience comparing to the official Electron-based desktop client thanks to native UI rendering instead of a Chromium rendering engine.
 
