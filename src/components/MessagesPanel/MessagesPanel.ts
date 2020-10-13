@@ -10,7 +10,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import {
-  Client, DMChannel, GuildChannel, Message, NewsChannel, Snowflake, TextChannel,
+  Client, DMChannel, GuildChannel, Message, NewsChannel, TextChannel,
 } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../structures/Events';
@@ -94,27 +94,27 @@ export class MessagesPanel extends QScrollArea {
     }
     for (const item of children) {
       const iy = item.mapToParent(this.p0).y();
-      if (iy >= y - 100 && iy <= y + height + 100) item.renderImages();
+      if (iy >= y - 400 && iy <= y + height + 100) item.renderImages();
     }
     if (!onlyLoadImages && y <= 50) {
       const oldest = children.pop();
-      if (oldest?.message?.id) {
-        const scrollTo = () => {
-          this.ensureVisible(0, oldest.mapToParent(this.p0).y() + height - oldest.size().height());
-        };
-        const scrollTimer = setInterval(scrollTo, 1);
-        await this.loadMessages(oldest.message.id);
-        setTimeout(() => clearInterval(scrollTimer), 200);
-      }
+      if (oldest?.message?.id) await this.loadMessages(oldest);
     }
     this.isLoading = false;
   }
 
-  private async loadMessages(before: Snowflake) {
+  private async loadMessages(before: MessageItem) {
     const { channel } = this;
+    const height = this.size().height();
     if (!channel) return;
-    const messages = (await channel.messages.fetch({ before })).array()
+    const messages = (await channel.messages.fetch({ before: before.message?.id })).array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
+    if (!messages.length) return;
+    const scrollTo = () => {
+      this.ensureVisible(0, before.mapToParent(this.p0).y() + height - before.size().height());
+    };
+    const scrollTimer = setInterval(scrollTo, 1);
+    setTimeout(() => clearInterval(scrollTimer), 200);
     if (channel?.type !== 'dm') {
       channel.guild.members.fetch({
         user: messages.map((m) => m.author.id),
@@ -168,16 +168,15 @@ export class MessagesPanel extends QScrollArea {
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
     await Promise.all(promises);
     debug('Widgets finished loading.');
-    this.isLoading = false;
     this.show();
     setTimeout(() => {
-      // this.ensureVisible(0, MAX_QSIZE);
+      this.isLoading = false;
       this.handleWheel(true);
       clearInterval(scrollTimer);
-    }, 300);
+    }, 200);
     this.ackTimer = setTimeout(() => {
       if (this.channel) this.channel.acknowledge();
       this.ackTimer = undefined;
-    }, 3000);
+    }, 1000);
   }
 }

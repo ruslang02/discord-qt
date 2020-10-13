@@ -7,6 +7,8 @@ import {
   KeyboardModifier,
   NativeElement,
   QBoxLayout,
+
+  QClipboardMode,
   QDragMoveEvent,
   QFileDialog,
   QKeyEvent,
@@ -19,10 +21,7 @@ import {
 } from '@nodegui/nodegui';
 import {
   Client,
-
-  DMChannel,
-  Emoji,
-  Message,
+  DMChannel, GuildEmoji, Message,
   MessageOptions,
   NewsChannel,
   Permissions,
@@ -33,6 +32,7 @@ import { join } from 'path';
 import { fileURLToPath, URL } from 'url';
 import { app, MAX_QSIZE } from '../..';
 import { Events as AppEvents } from '../../structures/Events';
+import { paths } from '../../structures/Paths';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { getEmojiURL } from '../../utilities/ResolveEmoji';
@@ -185,8 +185,14 @@ export class InputPanel extends QWidget {
       if (dialog.exec() === DialogCode.Accepted) this.attachments.addFiles(dialog.selectedFiles());
     });
     input.setObjectName('Input');
-    emojiPicker.events.on('emoji', async (emoji: Emoji, special: boolean) => {
-      if (special || app.client.user?.premium === false) {
+    emojiPicker.events.on('emoji', async (emoji: GuildEmoji, special: boolean) => {
+      if (special
+        || (app.client.user?.premium === false
+          && this.channel
+          && this.channel.type !== 'dm'
+          && emoji.guild.id !== (this.channel as TextChannel).guild.id
+        )
+      ) {
         try {
           let url = await getEmojiURL({
             emoji_id: emoji.id || undefined,
@@ -206,7 +212,9 @@ export class InputPanel extends QWidget {
     input.setMaximumSize(MAX_QSIZE, 42);
     input.setMinimumSize(0, 42);
     input.setAcceptDrops(true);
+    input.setAcceptRichText(false);
     input.addEventListener(WidgetEventTypes.DragEnter, this.handleDrag.bind(this));
+    input.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
     input.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyRelease.bind(this));
 
     rootLayout.addWidget(addBtn);
@@ -242,6 +250,21 @@ export class InputPanel extends QWidget {
       }
       ev.accept();
     } catch (ex) { }
+  }
+
+  private handleKeyPress(native?: any) {
+    if (!native) return;
+    const event = new QKeyEvent(native);
+    if (
+      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
+      && event.key() === Key.Key_V
+    ) {
+      const pixmap = app.clipboard.pixmap(QClipboardMode.Clipboard);
+      if (pixmap.width() === 0 && pixmap.height() === 0) return;
+      const tmp = join(paths.cache, `clipboard${Math.round(Math.random() * 10000)}.png`);
+      pixmap.save(tmp);
+      this.attachments.addFiles([tmp]);
+    }
   }
 
   private handleKeyRelease(native?: any) {

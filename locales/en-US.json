@@ -25,6 +25,7 @@
   "CLEAR_CACHE": "Clear cache",
   "CLEAR_CACHE_SUCCESS": "Cache cleared successfully.",
   "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Yay! More hard drive space!",
+  "EMOJI_PICKER_PRO_TIP_BODY": "Pressing <code>Ctrl</code> key adds the emoji as a file!",
 
   "SEARCH_FOR_EMOJI": "Find the perfect emoji",
   "CONNECTION_STATUS_CONNECTING": "Connecting",
@@ -107,6 +108,7 @@
   "EMAIL": "Email",
   "EDIT": "Edit",
   "PINNED_MESSAGES": "Pinned Messages",
+  "PINNED_MESSAGES_PRO_TIP": "PROTIP:",
   "SEARCH": "Search",
   "HELP": "Help",
   "QUOTE": "Quote",

@@ -25,6 +25,7 @@
   "CLEAR_CACHE": "Очистить кэш",
   "CLEAR_CACHE_SUCCESS": "Кэш был успешно освобожден.",
   "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Ура! Больше места на диске!",
+  "EMOJI_PICKER_PRO_TIP_BODY": "Вставляйте эмодзи как картинки при помощи <code>Ctrl</code>.",
 
   "SEARCH_FOR_EMOJI": "Найдите идеальный эмодзи",
   "CONNECTION_STATUS_CONNECTING": "Подключение",
@@ -106,6 +107,7 @@
   "EMAIL": "Электронная почта",
   "EDIT": "Изменить",
   "PINNED_MESSAGES": "Закреплённые сообщения",
+  "PINNED_MESSAGES_PRO_TIP": "ПОДСКАЗКА:",
   "SEARCH": "Поиск",
   "HELP": "Помощь",
   "QUOTE": "Цитировать",

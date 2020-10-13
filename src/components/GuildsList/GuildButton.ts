@@ -22,7 +22,13 @@ export class GuildButton extends QLabel {
     this.setAlignment(AlignmentFlag.AlignCenter);
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       guild.subscribeToTypingEvent();
-      app.emit(Events.SWITCH_VIEW, 'guild', { guild });
+      app.emit(Events.SWITCH_VIEW, 'guild', {
+        guild,
+        channel: guild.channels.cache
+          .filter((a) => ['text', 'news'].includes(a.type))
+          .sort((a, b) => a.rawPosition - b.rawPosition)
+          .first(),
+      });
     });
 
     this.unreadInd.setFixedSize(8, 8);

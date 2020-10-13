@@ -227,11 +227,6 @@ export class MessageItem extends QWidget {
     else {
       let { content } = message;
       content = await processMarkdown(content);
-      content = content
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .trim();
       content = await processMentions(content, message);
       this.contentNoEmojis = content;
       content = await processEmojiPlaceholders(content);

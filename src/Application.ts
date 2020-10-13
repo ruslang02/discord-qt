@@ -101,10 +101,7 @@ export class Application extends ApplicationEventEmitter {
     if (this.client) this.client.destroy();
     this.client = new Client(clientOptions);
     this.client.on(Events.ERROR, error);
-    if (this.config.debug) {
-      // this.client.on(Events.DEBUG, debug);
-      this.client.on(Events.RAW, debug);
-    }
+    this.client.on(Events.RAW, debug);
     this.client.on(Events.WARN, warn);
     try {
       await this.client.login(account.token);

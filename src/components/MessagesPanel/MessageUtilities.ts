@@ -39,6 +39,9 @@ const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const EMOJI_PLACEHOLDER = join(__dirname, 'assets/icons/emoji-placeholder.png');
 
+const unescape = (str: string) => str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const escape = (str: string) => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
 /**
  * Calculates the thumbnail size.
  * @param w Original width.
@@ -70,42 +73,46 @@ function getCorrectSize(w?: number | null, h?: number | null) {
 export async function processMentions(content: string, message: Message) {
   // const { guild } = message;
   let newContent = content;
-  const userMatches = content.match(MessageMentions.USERS_PATTERN) || [];
-  const roleMatches = content.match(MessageMentions.ROLES_PATTERN) || [];
-  const channelMatches = content.match(MessageMentions.CHANNELS_PATTERN) || [];
+  const uContent = unescape(content);
+  const userMatches = uContent.match(MessageMentions.USERS_PATTERN) || [];
+  const roleMatches = uContent.match(MessageMentions.ROLES_PATTERN) || [];
+  const channelMatches = uContent.match(MessageMentions.CHANNELS_PATTERN) || [];
+  const uIds = message.mentions.users.map((u) => u.id);
+  if (uIds.length) {
+    try {
+      await message.guild?.members.fetch({
+        user: uIds,
+      });
+    } catch (e) { }
+  }
   await Promise.all([
     ...userMatches.map(async (match) => {
-      const id = match.replace(/<@!?/g, '').replace('>', '');
-      /* if (guild) {
-        let memberName: string;
+      const id = match.replace(/<@!?/g, '').replace(/>/g, '');
+      if (message.guild) {
+        const member = message.guild.members.resolve(id);
+        const memberName = member?.nickname || member?.user.username || app.client.users.resolve(id)?.username || 'unknown-user';
+        newContent = newContent.replace(escape(match), `<a href='dq-user://${id}'>@${memberName}</a>`);
+      } else {
+        let userName: string;
         try {
-          const member = await guild.members.fetch(id);
-          memberName = member.nickname || member.user.username;
+          const user = await app.client.users.fetch(id);
+          userName = user.username;
         } catch (e) {
-          memberName = 'unknown-member';
+          userName = 'unknown-user';
         }
-        newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${memberName}</a>`);
-      } else { */
-      let userName: string;
-      try {
-        const user = await app.client.users.fetch(id);
-        userName = user.username;
-      } catch (e) {
-        userName = 'unknown-user';
+        newContent = newContent.replace(escape(match), `<a href='dq-user://${id}'>@${userName}</a>`);
       }
-      newContent = newContent.replace(match, `<a href='dq-user://${id}'>@${userName}</a>`);
-      // }
     }),
     ...roleMatches.map(async (match) => {
-      const id = match.replace(/<@&/g, '').replace('>', '');
+      const id = match.replace(/<@&/g, '').replace(/>/g, '');
       const role = await message.guild?.roles.fetch(id);
-      if (role) newContent = newContent.replace(match, `<span style='color: ${role.hexColor}'>@${role.name}</span>`);
+      if (role) newContent = newContent.replace(escape(match), `<span style='color: ${role.hexColor}'>@${role.name}</span>`);
     }),
     ...channelMatches.map(async (match) => {
-      const id = match.replace(/<#/g, '').replace('>', '');
+      const id = match.replace(/<#/g, '').replace(/>/g, '');
       const channel = app.client.channels.resolve(id) as GuildChannel;
       const channelName = channel?.name || 'invalid-channel';
-      newContent = newContent.replace(match, `<a href='dq-channel://${id}'>#${channelName}</a>`);
+      newContent = newContent.replace(escape(match), `<a href='dq-channel://${id}'>#${channelName}</a>`);
     }),
   ]);
   return newContent;
@@ -116,15 +123,12 @@ export async function processMentions(content: string, message: Message) {
  * @param content String to process.
  */
 export function processMarkdown(content: string) {
-  let c = content;
-  if (!app.config.processMarkDown) return c.replace(/\n/g, '<br/>');
-  c = c
+  if (!app.config.processMarkDown) return content.replace(/\n/g, '<br/>');
+  return MD.render(content)
     .replace(/<\/?p>/g, '')
-    .split('\n')
-    .map((line) => (line.startsWith('> ') ? line.replace('> ', '<span>▎</span>') : line))
+    .split('\n').map((line) => (line.startsWith('&gt; ') ? line.replace('&gt; ', '<span>▎</span>') : line))
     .join('\n')
     .trim();
-  return MD.render(c);
 }
 
 /**
@@ -132,13 +136,14 @@ export function processMarkdown(content: string) {
  * @param content String to process.
  */
 export async function processEmojiPlaceholders(content: string): Promise<string> {
-  let c = content;
-  const emoIds = c.match(EMOJI_REGEX) || [];
-  const size = c.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
+  let newContent = content;
+  const uContent = unescape(content);
+  const emoIds = uContent.match(EMOJI_REGEX) || [];
+  const size = uContent.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
   for (const emo of emoIds) {
-    c = c.replace(emo, `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`);
+    newContent = newContent.replace(escape(emo), `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`);
   }
-  return c;
+  return newContent;
 }
 
 /**
@@ -146,9 +151,10 @@ export async function processEmojiPlaceholders(content: string): Promise<string>
  * @param content String to process.
  */
 export async function processEmojis(content: string): Promise<string> {
-  const emoIds = content.match(EMOJI_REGEX) || [];
-  const size = content.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
-  let cnt = content;
+  let newContent = content;
+  const uContent = unescape(content);
+  const emoIds = uContent.match(EMOJI_REGEX) || [];
+  const size = uContent.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
   const promises: Promise<any>[] = emoIds.map((emo) => {
     const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
     const format = type === 'a' ? 'gif' : 'png';
@@ -161,7 +167,7 @@ export async function processEmojis(content: string): Promise<string> {
         const pix = new QPixmap(emojiPath);
         const larger = pix.width() > pix.height() ? 'width' : 'height';
 
-        cnt = cnt.replace(emo, `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
+        newContent = newContent.replace(escape(emo), `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
       }).catch(() => {
         debug(`Emoji <:${name}:${id}> was not resolved.`);
       });
@@ -169,7 +175,7 @@ export async function processEmojis(content: string): Promise<string> {
   try {
     await Promise.all(promises);
   } catch (e) { }
-  return cnt;
+  return newContent;
 }
 
 /**
