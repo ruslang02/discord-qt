@@ -186,12 +186,13 @@ export class InputPanel extends QWidget {
     });
     input.setObjectName('Input');
     emojiPicker.events.on('emoji', async (emoji: Emoji, special: boolean) => {
-      if (special) {
+      if (special || app.client.user?.premium === false) {
         try {
-          const url = await getEmojiURL({
+          let url = await getEmojiURL({
             emoji_id: emoji.id || undefined,
             emoji_name: emoji.name,
-          });
+          }, emoji.animated ? 'gif' : 'png');
+          url += '?size=128';
           const path = await pictureWorker.loadImage(url, { roundify: false });
           this.attachments.addFiles([path]);
         } catch (e) { error(e); }

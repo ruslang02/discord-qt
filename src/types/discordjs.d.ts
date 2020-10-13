@@ -13,7 +13,7 @@ declare module 'discord.js' {
   }
   export interface ClientUser {
     email: string | null;
-    premium: string | null;
+    premium: boolean | null;
     settings: ClientUserSettings | null;
 
     customStatus: CustomStatus | null;

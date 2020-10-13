@@ -7,7 +7,7 @@ import { pictureWorker } from './PictureWorker';
 
 export const EMOJI_PATH = join(paths.cache, 'emojis');
 
-export function getEmojiURL(status: CustomStatus): Promise<string> {
+export function getEmojiURL(status: CustomStatus, format = 'png'): Promise<string> {
   return new Promise((resolve, reject) => {
     if (!status.emoji_id) {
       if (!status.emoji_name) {
@@ -23,7 +23,7 @@ export function getEmojiURL(status: CustomStatus): Promise<string> {
       });
     }
     // @ts-ignore
-    const emojiUrl = app.client.rest.cdn.Emoji(status.emoji_id, 'png');
+    const emojiUrl = app.client.rest.cdn.Emoji(status.emoji_id, format);
     resolve(emojiUrl);
   });
 }
