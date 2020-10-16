@@ -24,4 +24,9 @@
       color: $interactive-active;
     }
   }
+  &[muted=true] {
+    *, QLabel {
+      color: $interactive-muted;
+    }
+  }
 }

@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { Snowflake, User } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { NoteSection } from './NoteSection';
 import { Profile } from './Profile';
 import { ProfilePresence } from './ProfilePresence';

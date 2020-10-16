@@ -1,5 +1,7 @@
+import { Constants, DQConstants } from 'discord.js';
 import { WebSocketShard } from 'discord.js';
-import { ClientUserSettings } from '../structures/ClientUserSettings';
+import { ClientUserGuildSettings } from './ClientUserGuildSettings';
+import { ClientUserSettings } from './ClientUserSettings';
 
 const handlers = require('discord.js/src/client/websocket/handlers/index');
 const READY = require('discord.js/src/client/websocket/handlers/READY');
@@ -12,6 +14,13 @@ Object.assign(handlers, {
     const { d: data } = packet;
     READY.apply(this, [client, packet, {checkReady: () => {}}]);
     client.user.settings = data.user_settings ? new ClientUserSettings(client.user, data.user_settings) : null;
+
+    if (data.user_guild_settings) {
+      for (const settings of data.user_guild_settings) {
+        client.user.guildSettings.set(settings.guild_id, new ClientUserGuildSettings(settings, client));
+      }
+    }
+
     for (const privateDM of data.private_channels) {
       client.channels.add(privateDM);
     }
@@ -26,6 +35,12 @@ Object.assign(handlers, {
     client.read_state = data.read_state;
     // @ts-ignore
     shard.checkReady();
+  },
+  USER_GUILD_SETTINGS_UPDATE: function UserGuildSettingsUpdate(client: any, packet: any) {
+    const settings = client.user.guildSettings.get(packet.d.guild_id);
+    if (settings) settings.patch(packet.d);
+    else client.user.guildSettings.set(packet.d.guild_id, new ClientUserGuildSettings(packet.d, client));
+    client.emit((Constants as unknown as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE, client.user.guildSettings.get(packet.d.guild_id));
   },
   USER_NOTE_UPDATE: function UserNoteUpdateHandler(client: any, packet: any) {
     client.actions.UserNoteUpdate.handle(packet.d);

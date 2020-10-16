@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { join } from 'path';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { ChannelsList } from './ChannelsList';

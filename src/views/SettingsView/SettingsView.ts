@@ -15,7 +15,7 @@ import {
 import { __ } from 'i18n';
 import { join } from 'path';
 import { app, MAX_QSIZE } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { CategoryHeader } from './CategoryHeader';
 import { Divider } from './Divider';
 import { Footer } from './Footer';

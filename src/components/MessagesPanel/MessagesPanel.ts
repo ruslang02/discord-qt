@@ -13,7 +13,7 @@ import {
   Client, DMChannel, GuildChannel, Message, NewsChannel, TextChannel,
 } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { MessageItem } from './MessageItem';
 

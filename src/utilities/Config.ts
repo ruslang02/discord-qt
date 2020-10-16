@@ -1,6 +1,6 @@
 import { existsSync, promises } from 'fs';
 import { dirname, join } from 'path';
-import { createLogger } from '../utilities/Console';
+import { createLogger } from './Console';
 import { IConfig } from './IConfig';
 
 const { mkdir, readFile, writeFile } = promises;

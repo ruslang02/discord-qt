@@ -4,7 +4,7 @@ import {
 import { Guild } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 
 export class GuildButton extends QLabel {
@@ -15,7 +15,6 @@ export class GuildButton extends QLabel {
     this.setObjectName('PageButton');
     this.setFixedSize(72, 56);
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
-    this.setProperty('unread', !guild.acknowledged);
     this.setProperty('toolTip', guild.available ? guild.name : __('GUILD_UNAVAILABLE_HEADER'));
     this.setText(guild.available ? guild.nameAcronym : '!');
     if (!guild.available) this.setInlineStyle('border: 1px solid red');
@@ -30,8 +29,15 @@ export class GuildButton extends QLabel {
           .first(),
       });
     });
+    this.addEventListener(WidgetEventTypes.HoverEnter, () => {
+      if (this._active === true) return;
+      this.unreadInd.move(-4, 14);
+      this.unreadInd.resize(8, 20);
+    });
+    this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setUnread(this._unread));
 
-    this.unreadInd.setFixedSize(8, 8);
+    this.unreadInd.setMinimumSize(8, 0);
+    this.unreadInd.resize(0, 0);
     this.unreadInd.setObjectName('UnreadIndicator');
     this.unreadInd.move(-4, 20);
     this.setUnread(false);
@@ -39,8 +45,29 @@ export class GuildButton extends QLabel {
 
   hasPixmap = false;
 
+  private _unread = false;
+
+  private _active = false;
+
   setUnread(value: boolean) {
-    if (value === true) this.unreadInd.show(); else this.unreadInd.hide();
+    let val = value;
+    if (this.guild.muted) val = false;
+    this._unread = val;
+    if (this._active === true) return;
+    this.unreadInd.move(-4, 20);
+    // this.unreadInd.resize(0, 0);
+    this.unreadInd.resize(8, val === true ? 8 : 0);
+    this.adjustSize();
+  }
+
+  setActive(value: boolean) {
+    this._active = value;
+    if (value === true) {
+      this.unreadInd.move(-4, 4);
+      this.unreadInd.resize(8, 40);
+    } else this.setUnread(this._unread);
+    this.setProperty('active', value);
+    this.repolish();
   }
 
   async loadAvatar() {

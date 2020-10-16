@@ -13,6 +13,8 @@ export class DChannelButton extends QPushButton {
 
   private _unread = false;
 
+  private _muted = false;
+
   constructor(parent: any) {
     super(parent);
     this.setObjectName('DChannelButton');
@@ -25,7 +27,16 @@ export class DChannelButton extends QPushButton {
       () => this.setHovered(false));
   }
 
-  private unread() { return this._unread; }
+  muted() { return this._muted; }
+
+  setMuted(muted: boolean) {
+    if (this.native.destroyed) return;
+    this._muted = muted;
+    this.setProperty('muted', muted);
+    [this, ...this.labels].forEach((w) => w.repolish());
+  }
+
+  unread() { return this._unread; }
 
   setUnread(unread: boolean) {
     if (this.native.destroyed) return;
@@ -34,7 +45,7 @@ export class DChannelButton extends QPushButton {
     [this, ...this.labels].forEach((w) => w.repolish());
   }
 
-  private hovered() { return this._hovered; }
+  hovered() { return this._hovered; }
 
   setHovered(hovered: boolean) {
     if (this.native.destroyed) return;

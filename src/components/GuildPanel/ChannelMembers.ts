@@ -5,7 +5,7 @@ import {
   Constants, DQConstants, GuildMember, Snowflake, VoiceChannel, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
+import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 

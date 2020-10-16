@@ -17,9 +17,9 @@ import { DColorButtonColor } from '../../../components/DColorButton/DColorButton
 import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 import { DLabel } from '../../../components/DLabel/DLabel';
 import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
-import { Account } from '../../../structures/Account';
-import { clientOptions } from '../../../structures/ClientOptions';
-import { Events } from '../../../structures/Events';
+import { Account } from '../../../utilities/Account';
+import { clientOptions } from '../../../utilities/ClientOptions';
+import { Events } from '../../../utilities/Events';
 import { createLogger } from '../../../utilities/Console';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Divider } from '../Divider';

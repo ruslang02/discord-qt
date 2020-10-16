@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { Constants } from 'discord.js';
 import { app } from '.';
-import { Events as AppEvents } from './structures/Events';
+import { Events as AppEvents } from './utilities/Events';
 
 export class Tray extends QSystemTrayIcon {
   private menu = new QMenu();

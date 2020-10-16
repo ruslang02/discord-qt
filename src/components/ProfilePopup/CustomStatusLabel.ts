@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { User } from 'discord.js';
 import { app } from '../..';
-import { CustomStatus } from '../../structures/CustomStatus';
+import { CustomStatus } from '../../utilities/CustomStatus';
 import { createLogger } from '../../utilities/Console';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 

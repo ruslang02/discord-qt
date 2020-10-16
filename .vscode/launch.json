@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug DQt",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/qode",
-      "runtimeArgs": ["--inspect", "--trace-warnings"],
+      "runtimeArgs": ["--inspect", "--inspect-brk", "--trace-warnings"],
       "skipFiles": [
         "<node_internals>/**"
       ],

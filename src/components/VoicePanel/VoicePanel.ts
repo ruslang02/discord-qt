@@ -12,7 +12,7 @@ import { join } from 'path';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Context, PlaybackStream, RecordStream } from 'pulseaudio2';
 import { app } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
+import { Events as AppEvents } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { DIconButton } from '../DIconButton/DIconButton';
 

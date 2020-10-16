@@ -8,8 +8,8 @@ import { __ } from 'i18n';
 import open from 'open';
 import { basename, extname } from 'path';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
-import { MarkdownStyles } from '../../structures/MarkdownStyles';
+import { Events } from '../../utilities/Events';
+import { MarkdownStyles } from '../../utilities/MarkdownStyles';
 
 export class DLabel extends QLabel {
   private p0 = new QPoint(0, 0);

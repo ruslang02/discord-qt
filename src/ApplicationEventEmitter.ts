@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { EventEmitter } from 'events';
-import { EventArgs, Events } from './structures/Events';
+import { EventArgs, Events } from './utilities/Events';
 
 type ValueOf<T> = T[keyof T];
 

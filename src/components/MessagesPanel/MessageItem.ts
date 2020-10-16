@@ -19,7 +19,7 @@ import {
 import { Message, Snowflake } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DLabel } from '../DLabel/DLabel';

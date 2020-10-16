@@ -1,8 +1,8 @@
 import { basename, join } from 'path';
 import TWEmoji from 'twemoji';
 import { app } from '..';
-import { CustomStatus } from '../structures/CustomStatus';
-import { paths } from '../structures/Paths';
+import { CustomStatus } from './CustomStatus';
+import { paths } from './Paths';
 import { pictureWorker } from './PictureWorker';
 
 export const EMOJI_PATH = join(paths.cache, 'emojis');

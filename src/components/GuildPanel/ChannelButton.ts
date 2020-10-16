@@ -12,7 +12,7 @@ import { GuildChannel, TextChannel, VoiceChannel } from 'discord.js';
 import { __ } from 'i18n';
 import { join } from 'path';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
 export class ChannelButton extends DChannelButton {
@@ -74,9 +74,14 @@ export class ChannelButton extends DChannelButton {
     unreadIcon.hide();
   }
 
+  setMuted(value: boolean) {
+    super.setMuted(value);
+    this.setUnread(this.unread());
+  }
+
   setUnread(value: boolean) {
     super.setUnread(value);
-    if (value) this.unreadIcon.show(); else this.unreadIcon.hide();
+    if (value && !this.muted()) this.unreadIcon.show(); else this.unreadIcon.hide();
   }
 
   loadChannel(channel: GuildChannel) {

@@ -1,5 +1,5 @@
 import { Collection, Constants } from 'discord.js';
-import { CustomStatus } from '../structures/CustomStatus';
+import { CustomStatus } from '../utilities/CustomStatus';
 
 const ClientUser = require('discord.js/src/structures/ClientUser');
 Object.defineProperty(ClientUser.prototype, 'email', {
@@ -15,6 +15,10 @@ Object.defineProperty(ClientUser.prototype, 'settings', {
   writable: true,
 });
 Object.defineProperty(ClientUser.prototype, 'notes', {
+  value: new Collection(),
+  writable: true
+});
+Object.defineProperty(ClientUser.prototype, 'guildSettings', {
   value: new Collection(),
   writable: true
 });

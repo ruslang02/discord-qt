@@ -21,7 +21,7 @@ import {
   Permissions, VoiceChannel,
 } from 'discord.js';
 import { app } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
+import { Events as AppEvents } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
@@ -134,6 +134,7 @@ export class ChannelsList extends QListWidget {
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
       btn.setFixedSize(232, 32);
+      btn.setMuted(!!channel.muted);
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(row, item);

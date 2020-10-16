@@ -1,7 +1,7 @@
-import { UserEventsMap } from '../patches/Constants';
+import { MessageNotificationTypes, UserEventsMap } from '../patches/Constants';
 /* eslint-disable */
-import { ClientUserSettings } from '../structures/ClientUserSettings';
-import { CustomStatus } from '../structures/CustomStatus';
+import { ClientUserSettings } from '../patches/ClientUserSettings';
+import { CustomStatus } from '../utilities/CustomStatus';
 
 declare module 'discord.js' {
   export interface Client {
@@ -23,7 +23,10 @@ declare module 'discord.js' {
   export interface Constants {
     ExplicitContentFilterTypes: string[];
     Events: typeof UserEventsMap & typeof Constants['Events'];
+    MessageNotificationTypes: string[];
     UserSettingsMap: Record<string, string>;
+    UserChannelOverrideMap: Record<string, string & ((type: string) => string)>;
+    UserGuildSettingsMap: Record<string, string & ((type: string) => string)>;
   }
   export interface DMChannel {
     _typing: Map<Snowflake, TypingEntity>;
@@ -36,9 +39,15 @@ declare module 'discord.js' {
     acknowledged: boolean;
     position: number | null;
     subscribeToTypingEvent(): void;
+    muted: boolean | null;
+    messageNotifications: typeof MessageNotificationTypes | null;
+    mobilePush: boolean | null;
+    suppressEveryone: boolean | null;
   }
   export interface GuildChannel {
     can(flags: number, who?: User): boolean;
+    muted: boolean | null;
+    messageNotifications: typeof MessageNotificationTypes | null;
   }
   export interface NewsChannel {
     _typing: Map<Snowflake, TypingEntity>;

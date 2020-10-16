@@ -1,5 +1,7 @@
 import {
-  QIcon, QMainWindow, QStackedWidget, WidgetAttribute,
+  KeyboardModifier,
+  NativeElement,
+  QIcon, QKeyEvent, QMainWindow, QStackedWidget, WidgetAttribute, WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import path from 'path';
@@ -7,7 +9,7 @@ import { app } from '..';
 import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
-import { Events as AppEvents } from '../structures/Events';
+import { Events as AppEvents } from '../utilities/Events';
 import { MainView } from '../views/MainView/MainView';
 import { SettingsView } from '../views/SettingsView/SettingsView';
 
@@ -25,6 +27,8 @@ export class RootWindow extends QMainWindow {
   private mainView = new MainView();
 
   private settingsView = new SettingsView();
+
+  shiftKeyPressed = false;
 
   constructor() {
     super();
@@ -62,6 +66,14 @@ export class RootWindow extends QMainWindow {
     this.root.addWidget(this.mainView);
     this.root.addWidget(this.settingsView);
     this.root.setCurrentWidget(this.mainView);
+    this.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
+    this.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyPress.bind(this));
+  }
+
+  private handleKeyPress(e: any) {
+    const event = new QKeyEvent(e as NativeElement);
+    this.shiftKeyPressed = (event.modifiers() & KeyboardModifier.ShiftModifier)
+      === KeyboardModifier.ShiftModifier;
   }
 
   async loadStyles() {

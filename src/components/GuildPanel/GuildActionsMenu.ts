@@ -2,7 +2,7 @@ import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DColorButton } from '../DColorButton/DColorButton';
 import { DColorButtonColor } from '../DColorButton/DColorButtonColor';
