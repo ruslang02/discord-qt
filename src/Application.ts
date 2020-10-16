@@ -3,21 +3,18 @@ import {
   QApplication, QFontDatabase, QIcon,
 } from '@nodegui/nodegui';
 import {
-  Client, Constants, HTTPError, Snowflake,
+  Client, Snowflake,
 } from 'discord.js';
 import { existsSync, promises } from 'fs';
-import i18n, { __ } from 'i18n';
-import { notify } from 'node-notifier';
+import i18n from 'i18n';
 import { join } from 'path';
-import { app } from '.';
 import { ApplicationEventEmitter } from './ApplicationEventEmitter';
-import { Account } from './utilities/Account';
-import { clientOptions } from './utilities/ClientOptions';
+import { Tray } from './Tray';
+import { ClientManager } from './utilities/ClientManager';
 import { Config } from './utilities/Config';
+import { createLogger } from './utilities/Console';
 import { Events as AppEvents } from './utilities/Events';
 import { paths } from './utilities/Paths';
-import { Tray } from './Tray';
-import { createLogger } from './utilities/Console';
 import { RootWindow } from './windows/RootWindow';
 
 const { readdir } = promises;
@@ -25,9 +22,7 @@ const { readdir } = promises;
 const FONTS_PATH = join(__dirname, './assets/fonts');
 const CONFIG_PATH = join(paths.config, 'config.json');
 
-const {
-  log, debug, warn, error,
-} = createLogger('Application');
+const { log } = createLogger('Application');
 
 /**
  * Application instance manager.
@@ -36,6 +31,8 @@ export class Application extends ApplicationEventEmitter {
   readonly name = 'DiscordQt';
 
   currentGuildId?: Snowflake;
+
+  clientManager = new ClientManager();
 
   config = new Config(CONFIG_PATH);
 
@@ -92,38 +89,6 @@ export class Application extends ApplicationEventEmitter {
     }
   }
 
-  /**
-   * Initiates discord.js connection.
-   * @param account Account to connect.
-   */
-  public async loadClient(account: Account): Promise<void> {
-    const { Events } = Constants;
-    if (this.client) this.client.destroy();
-    this.client = new Client(clientOptions);
-    this.client.on(Events.ERROR, error);
-    this.client.on(Events.RAW, debug);
-    this.client.on(Events.WARN, warn);
-    try {
-      await this.client.login(account.token);
-      this.emit(AppEvents.SWITCH_VIEW, 'dm');
-    } catch (e) {
-      if (e instanceof HTTPError) {
-        this.emit(AppEvents.LOGIN_FAILED);
-        notify({
-          title: __('NETWORK_ERROR_REST_REQUEST'),
-          message: __('NETWORK_ERROR_CONNECTION'),
-          // @ts-ignore
-          type: 'error',
-          icon: this.iconPath,
-          category: 'im',
-          hint: 'string:desktop-entry:discord-qt',
-          'app-name': app.name,
-        });
-      }
-      debug('Couldn\'t log in', e);
-    }
-  }
-
   public get window(): RootWindow {
     return (global as any).win;
   }
@@ -133,11 +98,6 @@ export class Application extends ApplicationEventEmitter {
   }
 
   public get client(): Client {
-    return (global as any).client;
-  }
-
-  public set client(v: Client) {
-    (global as any).client = v;
-    this.emit(AppEvents.NEW_CLIENT, v);
+    return this.clientManager.client as Client;
   }
 }

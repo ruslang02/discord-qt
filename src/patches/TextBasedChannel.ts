@@ -1,6 +1,3 @@
-import { Permissions } from 'discord.js';
-import { SnowflakeUtil } from 'discord.js';
-
 const TextBasedChannel = require('discord.js/src/structures/interfaces/TextBasedChannel');
 
 const props = [

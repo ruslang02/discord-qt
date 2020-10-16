@@ -2,7 +2,7 @@ import { MessageNotificationTypes, UserEventsMap } from '../patches/Constants';
 /* eslint-disable */
 import { ClientUserSettings } from '../patches/ClientUserSettings';
 import { CustomStatus } from '../utilities/CustomStatus';
-
+type ValueOf<T> = T[keyof T];
 declare module 'discord.js' {
   export interface Client {
     read_state: { mention_count: number, last_message_id: string, id: string }[]
@@ -40,14 +40,14 @@ declare module 'discord.js' {
     position: number | null;
     subscribeToTypingEvent(): void;
     muted: boolean | null;
-    messageNotifications: typeof MessageNotificationTypes | null;
+    messageNotifications: ValueOf<typeof MessageNotificationTypes> | null;
     mobilePush: boolean | null;
     suppressEveryone: boolean | null;
   }
   export interface GuildChannel {
     can(flags: number, who?: User): boolean;
     muted: boolean | null;
-    messageNotifications: typeof MessageNotificationTypes | null;
+    messageNotifications: ValueOf<typeof MessageNotificationTypes> | null;
   }
   export interface NewsChannel {
     _typing: Map<Snowflake, TypingEntity>;

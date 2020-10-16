@@ -79,7 +79,7 @@ export class Tray extends QSystemTrayIcon {
     for (const account of app.config.accounts) {
       const item = new QAction();
       item.setText(`${account.username}#${account.discriminator}`);
-      item.addEventListener('triggered', () => app.loadClient(account));
+      item.addEventListener('triggered', () => app.clientManager.load(account));
       accMenu.addAction(item);
     }
     const tag = app.client?.user?.tag;

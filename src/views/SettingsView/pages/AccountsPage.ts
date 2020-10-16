@@ -123,7 +123,7 @@ export class AccountsPage extends Page {
       if (isLoggingIn) return;
       isLoggingIn = true;
       loginBtn.setEnabled(false);
-      await app.loadClient(account);
+      await app.clientManager.load(account);
       loginBtn.setEnabled(true);
       isLoggingIn = false;
     });

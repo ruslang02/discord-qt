@@ -50,7 +50,7 @@ export class RootWindow extends QMainWindow {
 
     app.on(AppEvents.READY, () => {
       const autoAccount = app.config.accounts?.find((a) => a.autoLogin);
-      if (autoAccount) app.loadClient(autoAccount);
+      if (autoAccount) app.clientManager.load(autoAccount);
       this.loadStyles();
     });
   }
