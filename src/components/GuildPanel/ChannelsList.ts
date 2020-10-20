@@ -5,6 +5,7 @@ import {
   QLabel,
   QListWidget,
   QListWidgetItem,
+  QPoint,
   QSize,
   ScrollBarPolicy,
   Shape,
@@ -18,14 +19,15 @@ import {
   DQConstants,
   Guild,
   GuildChannel,
-  Permissions, VoiceChannel,
+  Permissions, VoiceChannel, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
-import { Events as AppEvents } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
+import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
 import { ChannelMembers } from './ChannelMembers';
+import { ChannelsListMenu } from './ChannelsListMenu';
 
 const { debug } = createLogger('ChannelsList');
 
@@ -35,6 +37,14 @@ export class ChannelsList extends QListWidget {
   private active?: ChannelButton;
 
   private buttons: Set<ChannelButton> = new Set();
+
+  private vcMembers = new Map<string, ChannelMembers>();
+
+  private menu = new ChannelsListMenu(this);
+
+  private ratelimit = false;
+
+  private rateTimer?: any;
 
   constructor() {
     super();
@@ -59,6 +69,14 @@ export class ChannelsList extends QListWidget {
         .find((btn) => btn.channel?.id === message.channel.id);
       if (button) button.setUnread(true);
     });
+    client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
+  }
+
+  private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
+    for (const state of [o, n]) {
+      const component = this.vcMembers.get(state.channelID || '');
+      if (component) component.handleVoiceStateUpdate(o, n);
+    }
   }
 
   private async handleSwitchView(view: string, options?: ViewOptions) {
@@ -68,11 +86,10 @@ export class ChannelsList extends QListWidget {
     else if (options.channel) newGuild = options.channel.guild;
     else return;
     if (newGuild.id !== this.guild?.id) {
-      this.guild = newGuild;
-      await this.loadChannels();
+      this.loadChannels(newGuild);
     }
     if (options.channel) {
-      const chan = ([...this.nodeChildren.values()] as ChannelButton[])
+      const chan = ([...this.buttons.values()] as ChannelButton[])
         .find((a) => a.channel === options.channel);
       this.active?.setActivated(false);
       chan?.setActivated(true);
@@ -82,14 +99,20 @@ export class ChannelsList extends QListWidget {
 
   private minSize = new QSize(150, 36);
 
-  async loadChannels() {
-    const { guild, buttons } = this;
+  private loadChannels(guild: Guild) {
+    this.guild = guild;
+    if (this.ratelimit) return;
+    this.ratelimit = true;
+    if (this.rateTimer) clearTimeout(this.rateTimer);
+    const { buttons } = this;
     if (!guild) return;
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
+
     this.clear();
-    this.nodeChildren.clear();
-    this.items.clear();
+    this.buttons.clear();
+    this.vcMembers.clear();
+
     const [categories, channels] = guild.channels.cache
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition((a) => a.type === 'category') as [
@@ -134,13 +157,17 @@ export class ChannelsList extends QListWidget {
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
       btn.setFixedSize(232, 32);
-      btn.setMuted(!!channel.muted);
+      if (channel.muted) btn.setMuted(true);
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(row, item);
       this.setItemWidget(item, btn);
       buttons.add(btn);
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
+      btn.addEventListener('customContextMenuRequested', (pos) => {
+        this.menu.setChannel(channel);
+        this.menu.popup(btn.mapToGlobal(new QPoint(pos.x, pos.y)));
+      });
       if (channel.type === 'voice') {
         const members = new ChannelMembers(this);
         members.loadChannel(channel as VoiceChannel);
@@ -148,8 +175,14 @@ export class ChannelsList extends QListWidget {
         memitem.setText(channel.id);
         this.insertItem(row + 1, memitem);
         this.setItemWidget(memitem, members);
+        this.vcMembers.set(channel.id, members);
         members.setItem(memitem);
       }
     }
+
+    this.rateTimer = setTimeout(() => {
+      this.ratelimit = false;
+      if (guild !== this.guild && this.guild) this.loadChannels(this.guild);
+    }, 500);
   }
 }

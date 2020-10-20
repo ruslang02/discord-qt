@@ -105,7 +105,7 @@ export class AppearancePage extends Page {
       mbox.open();
     });
     const clearCacheBtn = new DColorButton();
-    clearCacheBtn.setText(__('CLEAR_CACHE')); // TODO: i18n
+    clearCacheBtn.setText(__('CLEAR_CACHE'));
     clearCacheBtn.setMinimumSize(0, 36);
     clearCacheBtn.addEventListener('clicked', () => {
       rmdir(paths.cache, { recursive: true }).then(() => {

@@ -135,27 +135,22 @@ export class MessagesPanel extends QScrollArea {
   private ackTimer?: any;
 
   private async handleChannelOpen(channel: DMChannel | GuildChannel) {
+    this.channel = channel as TextChannel | NewsChannel | DMChannel;
     if (this.ratelimit
       || this.isLoading
-      || this.channel === channel
       || !['news', 'text', 'dm'].includes(channel.type)
     ) return;
 
     this.isLoading = true;
     this.ratelimit = true;
-    this.hide();
     if (this.rateTimer) clearTimeout(this.rateTimer);
     if (this.ackTimer) clearTimeout(this.ackTimer);
-    this.rateTimer = setTimeout(() => { this.ratelimit = false; }, 1000);
     debug(`Opening channel ${channel.id}...`);
     this.initRoot();
 
-    const textChannel = channel as TextChannel | NewsChannel | DMChannel;
-    this.channel = textChannel;
-
-    if (textChannel.messages.cache.size < 30) await textChannel.messages.fetch({ limit: 30 });
-    debug(`Total of ${textChannel.messages.cache.size} messages are available.`);
-    const messages = textChannel.messages.cache.array()
+    if (this.channel.messages.cache.size < 30) await this.channel.messages.fetch({ limit: 30 });
+    debug(`Total of ${this.channel.messages.cache.size} messages are available.`);
+    const messages = this.channel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
     messages.length = Math.min(messages.length, 30);
@@ -168,7 +163,6 @@ export class MessagesPanel extends QScrollArea {
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
     await Promise.all(promises);
     debug('Widgets finished loading.');
-    this.show();
     setTimeout(() => {
       this.isLoading = false;
       this.handleWheel(true);
@@ -177,6 +171,10 @@ export class MessagesPanel extends QScrollArea {
     this.ackTimer = setTimeout(() => {
       if (this.channel) this.channel.acknowledge();
       this.ackTimer = undefined;
-    }, 1000);
+    }, 2000);
+    this.rateTimer = setTimeout(() => {
+      this.ratelimit = false;
+      if (channel !== this.channel && this.channel) this.handleChannelOpen(this.channel);
+    }, 1500);
   }
 }

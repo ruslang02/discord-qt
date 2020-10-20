@@ -1,15 +1,13 @@
 import {
-  Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint, WidgetEventTypes,
+  Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint,
 } from '@nodegui/nodegui';
 import {
-  Constants, DQConstants, GuildMember, Snowflake, VoiceChannel, VoiceState,
+  GuildMember, Snowflake, VoiceChannel, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
 import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
-
-const { Events } = Constants as unknown as DQConstants;
 
 export class ChannelMembers extends QListWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -28,14 +26,10 @@ export class ChannelMembers extends QListWidget {
     this.setUniformItemSizes(true);
     this.setFrameShape(0);
     this.setHorizontalScrollBarPolicy(1);
-    this.setInlineStyle('margin-left: 32px;margin-bottom:8px;background-color: transparent;');
-    this.addEventListener(WidgetEventTypes.DeferredDelete, () => {
-      app.client.off(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
-    });
-    app.client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
+    this.setObjectName('ChannelMembers');
   }
 
-  private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
+  handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
     if (this.native.destroyed || !o.member) return;
     if (o.channel === this.channel && n.channel !== this.channel) {
       try {

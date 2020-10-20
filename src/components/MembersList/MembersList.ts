@@ -44,17 +44,16 @@ export class MembersList extends QListWidget {
 
   private rateTimer?: any;
 
-  private async loadList(channel: GuildChannel) {
-    if (this.ratelimit || this.channel === channel) return;
+  private loadList(channel: GuildChannel) {
+    this.channel = channel as TextChannel | NewsChannel;
+    if (this.ratelimit || !['text', 'news'].includes(channel.type)) return;
     this.ratelimit = true;
     if (this.rateTimer) clearTimeout(this.rateTimer);
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
-    if (channel.type !== 'text' && channel.type !== 'news') return;
-    this.channel = channel as TextChannel | NewsChannel;
+
     this.clear();
-    this.nodeChildren.clear();
-    this.items.clear();
+
     for (const member of channel.members.values()) {
       const btn = UserButton.createInstance(this, member);
       const item = new QListWidgetItem();
@@ -66,6 +65,9 @@ export class MembersList extends QListWidget {
       btn.loadAvatar();
     }
     debug('Finished loading members list.');
-    this.rateTimer = setTimeout(() => { this.ratelimit = false; }, 500);
+    this.rateTimer = setTimeout(() => {
+      this.ratelimit = false;
+      if (channel !== this.channel && this.channel) this.loadList(this.channel);
+    }, 500);
   }
 }
