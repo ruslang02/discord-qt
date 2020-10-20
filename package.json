@@ -39,7 +39,7 @@
     "pulseaudio2": "^0.3.3"
   },
   "dependencies": {
-    "@nodegui/nodegui": "^0.25.0",
+    "@nodegui/nodegui": "^0.26.0",
     "discord.js": "^12.3.1",
     "env-paths": "^2.2.0",
     "ffmpeg-static": "^4.2.7",
@@ -50,6 +50,7 @@
     "open": "^7.2.1",
     "opusscript": "0.0.7",
     "pngjs": "^5.0.0",
+    "prism-media": "^1.2.2",
     "tweetnacl": "^1.0.3",
     "twemoji": "^13.0.1",
     "whatwg-fetch": "^3.4.1"

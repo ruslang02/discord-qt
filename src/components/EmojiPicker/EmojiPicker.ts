@@ -31,6 +31,7 @@ import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
 import { __ } from 'i18n';
 import { app } from '../..';
+import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
@@ -225,6 +226,8 @@ export class EmojiPicker extends QMenu {
     this.events.emit('emoji', emoji, this.controlPressed);
   }
 
+  private token?: CancelToken;
+
   /**
    * Updates emojis displayed on the screen according to the search input.
    */
@@ -233,13 +236,15 @@ export class EmojiPicker extends QMenu {
     const { client, config } = app;
     const emojiName = textInput.placeholderText().trim();
     if (!client) return;
+    this.token?.cancel();
+    this.token = new CancelToken();
     emojiView.clear();
     emojiView.setCurrentRow(0);
     if (emojiName === __('SEARCH_FOR_EMOJI') && config.recentEmojis) {
       const recents = config.recentEmojis.sort((a, b) => a[1] - b[1]);
       for (const item of recents) {
         const emoji = client.emojis.resolve(item[0]);
-        if (emoji) this.insertEmoji(emoji);
+        if (emoji) this.insertEmoji(emoji, this.token);
       }
       return;
     }
@@ -260,7 +265,7 @@ export class EmojiPicker extends QMenu {
       // // eslint-disable-next-line no-await-in-loop
       this.insertEmoji(i < thisGuild.length
         ? thisGuild[i]
-        : otherGuilds[i - thisGuild.length]);
+        : otherGuilds[i - thisGuild.length], this.token);
     }
     emojiView.setCurrentRow(0);
   }
@@ -269,14 +274,15 @@ export class EmojiPicker extends QMenu {
    * Inserts emoji into the view.
    * @param emoji Emoji to render.
    */
-  private insertEmoji(emoji: Emoji) {
+  private insertEmoji(emoji: Emoji, cancel: CancelToken) {
     const item = new QListWidgetItem();
     item.setToolTip(`:${emoji.name}:`);
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
     resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name })
-      .then((path) => !item.isHidden() && item.setIcon(new QIcon(path)))
+      .then((path) => !cancel.cancelled && item.setIcon(new QIcon(path)))
       .catch((e) => {
+        if (cancel.cancelled) return;
         item.setText(emoji.name);
         error(`Couldn't retrieve emoji ${emoji}`, e);
       });
