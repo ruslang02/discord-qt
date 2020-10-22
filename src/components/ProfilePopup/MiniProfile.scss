@@ -69,6 +69,14 @@
     #Label {
       font-size: 14px;
     }
+    #LargeImage {
+      padding: 0 5px 5px 0;
+    }
+    #OverlayIcon {
+      border-radius: 12px;
+      border: 2px solid darken($blurple, 2);
+      background-color: darken($blurple, 2);
+    }
   }
 
   #SectionHeader {

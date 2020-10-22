@@ -13,11 +13,11 @@ i18n.configure({
   logDebugFn() { },
   logWarnFn() { },
   logErrorFn(msg) {
-    console.log('error', msg);
+    console.log('[i18n]', msg);
   },
   // @ts-ignore
   missingKeyFn(locale, value) {
-    console.error(`Translation missing for word "${value}" in locale "${locale}".`);
+    console.error('[i18n]', `Translation missing for word "${value}" in locale "${locale}".`);
     return value;
   },
 });

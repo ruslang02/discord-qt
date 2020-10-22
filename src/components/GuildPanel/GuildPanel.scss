@@ -6,9 +6,18 @@
     background-color: $background-secondary;
   }
   #ChannelsList {
-    padding: 8px 0;
     &::item {
-      padding: 6px 6px 6px 0;
+      padding: 0;
+      padding-top: 8px;
+      color: transparent;
+      background: $background-secondary;
+      border: none;
+      outline: none;
+    }
+  }
+  #ChannelMembers {
+    &::item {
+      padding: 0 6px;
       color: transparent;
       background: $background-secondary;
       border: none;
@@ -48,8 +57,12 @@
     border-bottom: 1px solid $background-floating;
   }
   #ChannelMembers {
-    margin-left: 32px;
+    margin-left: 24px;
     margin-bottom:8px;
+    padding: 0;
     background-color: transparent;
+    #DChannelButton {
+      margin-left: 0;
+    }
   }
 }

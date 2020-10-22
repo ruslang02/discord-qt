@@ -47,7 +47,6 @@ export class PluginManager {
     let tasks: Promise<any>[] = [];
     for (const dir of dirs) {
       const path = join(root, dir.name);
-      console.log(path);
       if (dir.isDirectory()) {
         const searcher = this.recursiveSearch(path);
         tasks = [...tasks, ...searcher];
@@ -61,7 +60,6 @@ export class PluginManager {
             const mainPath = join(root, pkg.main);
             try {
               const PluginClass = nodeRequire(mainPath);
-              console.log(PluginClass);
               const plugin = new PluginClass({
                 app,
                 Qt,

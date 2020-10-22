@@ -40,18 +40,16 @@ Object.defineProperty(ClientUser.prototype, 'customStatus', {
 ClientUser.prototype.setCustomStatus = async function setCustomStatus(data: CustomStatus) {
   if (!this.settings) return null;
   await this.client.presence.set({
-    activities: [
-      {
-        type: 4,
-        state: data.text || null,
-        name: 'Custom Status',
-        emoji: {
-          id: data.emoji_id || null,
-          name: data.emoji_name || null,
-          animated: false,
-        },
-      },
-    ],
+    customStatus: {
+      type: 4,
+      state: data.text || null,
+      name: 'Custom Status',
+      emoji: (data.emoji_id || data.emoji_name) ? {
+        id: data.emoji_id || null,
+        name: data.emoji_name || null,
+        animated: false,
+      } : null,
+    },
   });
   const newSettings = await this.settings.update('custom_status', data);
   this.settings._patch(newSettings);
