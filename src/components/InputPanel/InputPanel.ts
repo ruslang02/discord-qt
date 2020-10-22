@@ -186,13 +186,13 @@ export class InputPanel extends QWidget {
     });
     input.setObjectName('Input');
     emojiPicker.events.on('emoji', async (emoji: GuildEmoji, special: boolean) => {
-      if (special
-        || (app.client.user?.premium === false
-          && this.channel
-          && this.channel.type !== 'dm'
-          && emoji.guild.id !== (this.channel as TextChannel).guild.id
+      if (!this.channel) return;
+      if (special || (app.client.user?.premium === false
+        && (
+          (this.channel.type !== 'dm' && emoji.guild.id !== (this.channel as TextChannel).guild.id)
+          || this.channel.type === 'dm'
         )
-      ) {
+      )) {
         try {
           let url = await getEmojiURL({
             emoji_id: emoji.id || undefined,

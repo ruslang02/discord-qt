@@ -38,6 +38,10 @@ npm start
 In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
 You can configure your user accounts, as well as other settings in the Settings screen.
 
+## Plugins
+Plugins should be located in `~/.config/discord-qt/plugins` and represent itself as an npm-like package with `discord-qt` and `plugin` keywords placed in `package.json`. Currently available plugins:
+ - [mpris-dqt-plugin](https://github.com/ruslang02/mpris-dqt-plugin)
+
 ## Fonts
 By default, the application uses Source Sans Pro font. However, if you want an even more seamless experience, you need to obtain a copy of Whitney fonts (commercial fonts used by Discord) and put them into `/assets/fonts` folder. In order to activate them, uncomment line with Whitley font in `/src/windows/RootWindow.scss` and rebuild.
 

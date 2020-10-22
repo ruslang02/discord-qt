@@ -17,7 +17,7 @@ declare module 'discord.js' {
     settings: ClientUserSettings | null;
 
     customStatus: CustomStatus | null;
-    setCustomStatus(status: CustomStatus): Promise<ClientUserSettings | null>;
+    setCustomStatus(status?: CustomStatus): Promise<ClientUserSettings | null>;
     acceptInvite(code: Invite | string): Promise<Guild>;
   }
   export interface Constants {

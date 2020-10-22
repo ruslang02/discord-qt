@@ -2,7 +2,6 @@ import { Client, Constants, HTTPError } from 'discord.js';
 import { __ } from 'i18n';
 import { notify } from 'node-notifier';
 import { app } from '..';
-import { MessageNotificationTypes } from '../patches/Constants';
 import { Account } from './Account';
 import { clientOptions } from './ClientOptions';
 import { createLogger } from './Console';
@@ -28,6 +27,7 @@ export class ClientManager {
     app.emit(AppEvents.NEW_CLIENT, this.client);
     try {
       await this.client.login(account.token);
+      this.client.user?.setCustomStatus(this.client.user.settings?.customStatus || undefined);
       app.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
       if (e instanceof HTTPError) {

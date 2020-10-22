@@ -96,7 +96,9 @@ export class CustomStatusDialog extends Dialog {
     resetButton.setText('×');
     resetButton.setFixedSize(38, 38);
     resetButton.setInlineStyle('font-size: 32px; padding: 0');
-    resetButton.addEventListener('clicked', () => app.client.user?.setCustomStatus({ text: undefined }));
+    resetButton.addEventListener('clicked', () => {
+      app.client.user?.setCustomStatus(undefined);
+    });
     statusLayout.setSpacing(5);
     statusLayout.setContentsMargins(0, 0, 0, 0);
     statusLayout.addWidget(emojiInput);
@@ -154,7 +156,7 @@ export class CustomStatusDialog extends Dialog {
         emoji_id: this.emoji?.id || undefined,
         emoji_name: this.emoji?.name,
         expires_at: date?.toISOString(),
-        text: this.statusInput.text() || undefined,
+        text: this.statusInput.text(),
       });
       this.hide();
     });

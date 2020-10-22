@@ -37,21 +37,28 @@ Object.defineProperty(ClientUser.prototype, 'customStatus', {
     return this.settings.customStatus;
   }
 });
-ClientUser.prototype.setCustomStatus = async function setCustomStatus(data: CustomStatus) {
+ClientUser.prototype.setCustomStatus = async function setCustomStatus(data?: CustomStatus) {
   if (!this.settings) return null;
+  let fixed = data ? {
+    emoji_id: typeof data.emoji_id == 'string' && data.emoji_id.length ? data.emoji_id : null,
+    emoji_name: typeof data.emoji_name == 'string' && data.emoji_name.length ? data.emoji_name : null,
+    text: typeof data.text == 'string' && data.text.trim().length ? data.text.trim() : null,
+    expires_at: data.expires_at,
+  } : null;
+  if (!fixed?.emoji_id && !fixed?.emoji_name && !fixed?.text) fixed = null;
   await this.client.presence.set({
-    customStatus: {
+    customStatus: fixed ? {
       type: 4,
-      state: data.text || null,
+      state: fixed.text,
       name: 'Custom Status',
-      emoji: (data.emoji_id || data.emoji_name) ? {
-        id: data.emoji_id || null,
-        name: data.emoji_name || null,
+      emoji: (fixed.emoji_id || fixed.emoji_name) ? {
+        id: fixed.emoji_id,
+        name: fixed.emoji_name,
         animated: false,
       } : null,
-    },
+    } : undefined,
   });
-  const newSettings = await this.settings.update('custom_status', data);
+  const newSettings = await this.settings.update('custom_status', fixed);
   this.settings._patch(newSettings);
   return newSettings;
 }

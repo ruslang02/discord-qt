@@ -2,11 +2,11 @@ import {
   AlignmentFlag,
   Direction, QBoxLayout, QLabel, QPixmap, QWidget,
 } from '@nodegui/nodegui';
-import { Socket } from 'dgram';
-import { ActivityType, Presence } from 'discord.js';
+import { ActivityType, Client, Presence } from 'discord.js';
 import { __ } from 'i18n';
-import { MAX_QSIZE } from '../..';
+import { app, MAX_QSIZE } from '../..';
 import { createLogger } from '../../utilities/Console';
+import { Events } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 
 const { error } = createLogger('ProfilePresence');
@@ -36,11 +36,20 @@ export class ProfilePresence extends QWidget {
 
   private sImage = new QLabel(this.lImage);
 
+  private presence?: Presence;
+
   constructor(parent?: any) {
     super(parent);
 
     this.initComponent();
     this.setObjectName(this.constructor.name);
+    app.on(Events.NEW_CLIENT, this.bindEvents.bind(this));
+  }
+
+  private bindEvents(client: Client) {
+    client.on('presenceUpdate', (o, n) => {
+      if (n.userID === this.presence?.userID) this.load(this.presence);
+    });
   }
 
   private initComponent() {
@@ -88,6 +97,7 @@ export class ProfilePresence extends QWidget {
     const {
       header, label1, label2, label3, lImage, sImage,
     } = this;
+    this.presence = presence;
     const activity = presence.activities.find((a) => a.type !== 'CUSTOM_STATUS');
     if (!activity) {
       this.hide();

@@ -19,7 +19,6 @@ export class PluginManager {
   static readonly searchDirs = [
     join(paths.config, 'plugins'),
     join(__dirname, 'plugins'),
-    join(__dirname, '..', '..', 'mpris-dqt-plugin'),
   ];
 
   static readonly keywords = [

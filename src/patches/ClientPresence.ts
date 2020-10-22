@@ -11,5 +11,8 @@ ClientPresence.prototype._parse = async function _parse(data: any) {
   if (custom) packet.activities.push(custom);
   if (packet.game) packet.activities.push(packet.game);
   delete packet.game;
+  const prev = {...this};
+  this.patch(packet)
+  this.client.emit('presenceUpdate', prev, this);
   return packet;
 }

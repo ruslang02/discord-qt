@@ -1,7 +1,7 @@
 import {
   Direction, QBoxLayout, QMenu, QPoint, QWidget, WidgetAttribute, WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { Snowflake, User } from 'discord.js';
+import { Snowflake } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../utilities/Events';
 import { NoteSection } from './NoteSection';
@@ -48,8 +48,7 @@ export class ProfilePopup extends QMenu {
     });
 
     app.on(Events.OPEN_USER_PROFILE, async (userId, guildId, point) => {
-      this.loadProfile(userId, guildId);
-      this.popup(point);
+      if (await this.loadProfile(userId, guildId)) this.popup(point);
     });
   }
 
@@ -70,8 +69,9 @@ export class ProfilePopup extends QMenu {
     super.popup(this.realign(p));
   }
 
-  loadProfile(userId: Snowflake, guildId?: Snowflake) {
-    const user = app.client.users.resolve(userId) as User;
+  loadProfile(userId: Snowflake, guildId?: Snowflake): boolean {
+    const user = app.client.users.resolve(userId);
+    if (!user) return false;
     const member = guildId
       ? app.client.guilds.resolve(guildId)?.members.resolve(userId) || undefined
       : undefined;
@@ -80,6 +80,7 @@ export class ProfilePopup extends QMenu {
     this.profile.loadProfile(member || user);
     this.rolesSection.loadRoles(member?.roles);
     this.noteSection.loadNote(user);
+    return true;
   }
 
   private initComponent() {
