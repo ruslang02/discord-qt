@@ -11,10 +11,11 @@ import { join } from 'path';
 import { ApplicationEventEmitter } from './ApplicationEventEmitter';
 import { Tray } from './Tray';
 import { ClientManager } from './utilities/ClientManager';
-import { Config } from './utilities/Config';
+import { ConfigManager } from './utilities/ConfigManager';
 import { createLogger } from './utilities/Console';
 import { Events as AppEvents } from './utilities/Events';
 import { paths } from './utilities/Paths';
+import { PluginManager } from './utilities/PluginManager';
 import { RootWindow } from './windows/RootWindow';
 
 const { readdir } = promises;
@@ -34,7 +35,9 @@ export class Application extends ApplicationEventEmitter {
 
   clientManager = new ClientManager();
 
-  config = new Config(CONFIG_PATH);
+  pluginManager = new PluginManager();
+
+  configManager = new ConfigManager(CONFIG_PATH);
 
   application = QApplication.instance();
 
@@ -67,11 +70,12 @@ export class Application extends ApplicationEventEmitter {
   public async start() {
     this.tray = new Tray();
     await this.loadFonts();
-    this.config = new Config(CONFIG_PATH);
-    await this.config.load();
-    i18n.setLocale(this.config.locale as string);
+    this.configManager = new ConfigManager(CONFIG_PATH);
+    await this.configManager.load();
+    i18n.setLocale(this.config.locale || 'en-US');
     this.window = new RootWindow();
     this.window.show();
+    this.pluginManager.reload();
     this.emit(AppEvents.READY);
   }
 
@@ -99,5 +103,13 @@ export class Application extends ApplicationEventEmitter {
 
   public get client(): Client {
     return this.clientManager.client as Client;
+  }
+
+  public get plugins() {
+    return this.pluginManager.plugins;
+  }
+
+  public get config() {
+    return this.configManager.config;
   }
 }

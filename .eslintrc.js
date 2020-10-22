@@ -28,7 +28,8 @@ module.exports = {
     'no-shadow': 'off',
     'no-restricted-syntax': 'off',
     'no-underscore-dangle': 'off',
-    'no-unused-vars': 'off'
+    'no-unused-vars': 'off',
+    'no-useless-constructor': 'off'
   },
   settings: {
     'import/resolver': {

@@ -221,7 +221,7 @@ export class EmojiPicker extends QMenu {
         return obj;
       });
       if (add) app.config.recentEmojis.push([emojiId, 1]);
-      app.config.save();
+      app.configManager.save();
     }
     this.events.emit('emoji', emoji, this.controlPressed);
   }

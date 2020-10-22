@@ -101,6 +101,6 @@ export class ChannelMembers extends QListWidget {
       item.setSizeHint(btn.size());
       this.buttons.set(member.user.id, btn);
     }
-    setTimeout(() => this.adjustSize());
+    setTimeout(() => this.adjustSize(), 0);
   }
 }

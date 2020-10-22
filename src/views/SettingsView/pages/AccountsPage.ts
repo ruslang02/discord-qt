@@ -112,7 +112,7 @@ export class AccountsPage extends Page {
       app.config.accounts = app.config.accounts?.filter((v) => v !== account);
       accWidget.hide();
       this.accountsLayout.removeWidget(accWidget);
-      app.config.save();
+      app.configManager.save();
       this.checkEmpty();
     });
     const loginBtn = new DColorButton();
@@ -142,7 +142,7 @@ export class AccountsPage extends Page {
       this.checkboxes.forEach((c, j) => c.setChecked(i === j ? !isAutoLogin : false));
       app.config.accounts = app.config.accounts
         .map((acc, j) => ({ ...acc, autoLogin: i === j ? !isAutoLogin : false }));
-      app.config.save();
+      app.configManager.save();
     });
 
     const shadow = new QGraphicsDropShadowEffect();
@@ -200,7 +200,7 @@ export class AccountsPage extends Page {
         this.processAccount(account, app.config.accounts.length);
         app.config.accounts.push(account);
         await client.destroy();
-        app.config.save();
+        app.configManager.save();
       } catch (e) {
         errorMsg.setText(e.message);
         errorMsg.show();

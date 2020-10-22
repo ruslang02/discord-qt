@@ -126,11 +126,11 @@ export class InputPanel extends QWidget {
     client.setInterval(() => this.channel && this.updateTyping(this.channel as TextChannel), 100);
   }
 
-  private updateTyping(channel: TextChannel) {
+  private updateTyping(channel: TextChannel | DMChannel) {
     const { typingLabel } = this;
     if (this.channel?.id !== channel.id) return;
     const typers = [...channel._typing.values()]
-      .map((e) => channel.guild.member(e.user.id)?.nickname || e.user.username)
+      .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.nickname || e.user.username)
       .filter((m) => !!m) as string[];
     let i18nString;
     switch (typers.length) {
@@ -306,7 +306,7 @@ export class InputPanel extends QWidget {
     setTimeout(() => {
       input.clear();
       this.adjustInputSize();
-    });
+    }, 0);
     if (this.channel) {
       const msgOptions = {
         files: this.attachments.getFiles(),

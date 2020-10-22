@@ -7,6 +7,7 @@ import {
 import { __ } from 'i18n';
 import open from 'open';
 import { basename, extname } from 'path';
+import { URL } from 'url';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
 import { MarkdownStyles } from '../../utilities/MarkdownStyles';

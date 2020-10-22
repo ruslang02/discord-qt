@@ -65,7 +65,7 @@ Object.defineProperty(Guild.prototype, 'suppressEveryone', {
 const _superPatch = Guild.prototype._patch;
 Guild.prototype._patch = function() {
   _superPatch.apply(this, arguments);
-  setTimeout(() => this.shardID = 0);
+  setTimeout(() => this.shardID = 0, 0);
 }
 
 Guild.prototype.subscribeToTypingEvent = function subscribeToTypingEvent() {

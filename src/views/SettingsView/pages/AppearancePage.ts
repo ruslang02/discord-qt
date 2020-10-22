@@ -65,7 +65,7 @@ export class AppearancePage extends Page {
           checkbox.setChecked(!checked);
           // @ts-ignore
           app.config[id] = !checked;
-          app.config.save();
+          app.configManager.save();
         });
         layout.addWidget(checkbox);
       });
@@ -85,7 +85,7 @@ export class AppearancePage extends Page {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
       if (!existsSync(path)) return;
       app.config.theme = text;
-      await app.config.save();
+      await app.configManager.save();
       app.window.loadStyles();
     });
     langSel.addEventListener('currentIndexChanged', async (index) => {
@@ -93,7 +93,7 @@ export class AppearancePage extends Page {
       const path = join(__dirname, 'locales', `${locale}.json`);
       if (!existsSync(path)) return;
       app.config.locale = locale;
-      await app.config.save();
+      await app.configManager.save();
       setLocale(locale);
       const mbox = new QMessageBox();
       mbox.setText(__('LANGUAGE_RESTART_REQUIRED'));

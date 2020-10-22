@@ -3,6 +3,7 @@
   "version": "0.4.5",
   "main": "launch.js",
   "author": "Ruslan Garifullin",
+  "keywords": ["discord-qt"],
   "repository": {
     "url": "https://github.com/ruslang02/discord-qt"
   },

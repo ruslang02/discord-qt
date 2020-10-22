@@ -1,15 +1,22 @@
 import {
-  AlignmentFlag, ContextMenuPolicy, Direction, QBoxLayout, QLabel, QPixmap, QPoint, WidgetEventTypes,
+  AlignmentFlag,
+  ContextMenuPolicy,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QPixmap,
+  QPoint,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import {
   ActivityType, Client, Constants, GuildMember, Presence, User,
 } from 'discord.js';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
-import { Events as AppEvents } from '../../utilities/Events';
-import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { createLogger } from '../../utilities/Console';
+import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 import { UserButtonMenu } from './UserButtonMenu';
@@ -231,7 +238,7 @@ export class UserButton extends DChannelButton {
     if (!user) return;
     this.isGuildMember = !!member;
     this.user = user;
-    this.member = member;
+    this.member = member || undefined;
 
     this.nameLabel.setText(member?.nickname ?? user.username);
     this.loadPresence(user.presence);
@@ -241,4 +248,4 @@ export class UserButton extends DChannelButton {
     if (member) UserButton.buttons.set(member, this);
   }
 }
-setTimeout(UserButton.init);
+setTimeout(UserButton.init, 0);

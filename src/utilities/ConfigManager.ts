@@ -1,24 +1,22 @@
-import { existsSync, promises } from 'fs';
+import { existsSync, mkdirSync, promises } from 'fs';
 import { dirname, join } from 'path';
 import { createLogger } from './Console';
 import { IConfig } from './IConfig';
 
-const { mkdir, readFile, writeFile } = promises;
+const { readFile, writeFile } = promises;
 const { log, error } = createLogger('Config');
 
-export class Config extends IConfig {
+export class ConfigManager {
   isLoaded = false;
 
-  private file: string;
+  config: IConfig = {};
 
-  constructor(file: string) {
-    super();
-    this.file = file;
+  constructor(private file: string) {
+    mkdirSync(dirname(file), { recursive: true });
   }
 
   async load() {
     const { file } = this;
-    await mkdir(dirname(file), { recursive: true });
     this.isLoaded = false;
     let config: IConfig = {};
     try {
@@ -27,7 +25,7 @@ export class Config extends IConfig {
       if (!existsSync(file)) writeFile(file, '{}', 'utf8');
       else error('Config file could not be used, returning to default values...');
     }
-    Object.assign(this, {
+    this.config = {
       accounts: config.accounts ?? [],
       roundifyAvatars: config.roundifyAvatars ?? true,
       fastLaunch: config.fastLaunch ?? false,
@@ -37,20 +35,14 @@ export class Config extends IConfig {
       theme: config.theme ?? 'dark',
       locale: config.locale ?? 'en-US',
       recentEmojis: config.recentEmojis ?? [],
-    } as IConfig);
-    if (config.debug === true) log('Loaded config:', this);
+    };
+    if (config.debug === true) log('Loaded config:', config);
     this.isLoaded = true;
   }
 
   async save() {
     try {
-      const obj = { ...this };
-      // @ts-ignore
-      delete obj.file;
-      // @ts-ignore
-      delete obj.isLoaded;
-
-      await writeFile(join(this.file), JSON.stringify(obj));
+      await writeFile(join(this.file), JSON.stringify(this.config));
     } catch (e) {
       error(e);
     }
