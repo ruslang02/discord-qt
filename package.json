@@ -2,8 +2,12 @@
   "name": "discord-qt",
   "version": "0.4.5",
   "main": "launch.js",
-  "author": "Ruslan Garifullin",
-  "keywords": ["discord-qt"],
+  "author": "Ruslan Garifullin <ruslan.g2002@gmail.com>",
+  "keywords": [
+    "discord-qt",
+    "discord",
+    "client"
+  ],
   "repository": {
     "url": "https://github.com/ruslang02/discord-qt"
   },
@@ -14,6 +18,7 @@
   "scripts": {
     "build": "webpack",
     "build:prod": "webpack -p",
+    "lint": "eslint src/**/*.ts worker/**/*.ts",
     "start": "qode ./dist/index.js",
     "start:test": "webpack --hide-modules && qode ./dist/index.js",
     "debug": "webpack --hide-modules && qode --inspect=0.0.0.0:9229 ./dist/index.js",
@@ -36,11 +41,9 @@
     "tsconfig.json",
     "webpack.config.js"
   ],
-  "optionalDependencies": {
-    "pulseaudio2": "^0.3.3"
-  },
   "dependencies": {
     "@nodegui/nodegui": "^0.26.0",
+    "audio-mixer": "^2.1.4",
     "discord.js": "^12.3.1",
     "env-paths": "^2.2.0",
     "ffmpeg-static": "^4.2.7",
