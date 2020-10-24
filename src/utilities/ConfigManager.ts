@@ -22,7 +22,7 @@ export class ConfigManager {
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
-      if (!existsSync(file)) writeFile(file, '{}', 'utf8');
+      if (!existsSync(file)) writeFile(file, '{}', 'utf8').catch((e) => error('Missing permissions on the config file.', e));
       else error('Config file could not be used, returning to default values...');
     }
     this.config = {

@@ -9,11 +9,14 @@ import { app } from '..';
 import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
+import { createLogger } from '../utilities/Console';
 import { Events as AppEvents } from '../utilities/Events';
 import { MainView } from '../views/MainView/MainView';
 import { SettingsView } from '../views/SettingsView/SettingsView';
 
 const { readFile } = promises;
+
+const { error } = createLogger('RootWindow');
 
 export class RootWindow extends QMainWindow {
   private root = new QStackedWidget(this);
@@ -32,7 +35,7 @@ export class RootWindow extends QMainWindow {
 
   constructor() {
     super();
-    this.loadStyles();
+    void this.loadStyles();
     this.loadIcon();
     this.initializeWindow();
 
@@ -50,8 +53,8 @@ export class RootWindow extends QMainWindow {
 
     app.on(AppEvents.READY, () => {
       const autoAccount = app.config.accounts?.find((a) => a.autoLogin);
-      if (autoAccount) app.clientManager.load(autoAccount);
-      this.loadStyles();
+      if (autoAccount) void app.clientManager.load(autoAccount);
+      void this.loadStyles();
     });
   }
 
@@ -79,8 +82,12 @@ export class RootWindow extends QMainWindow {
   async loadStyles() {
     const stylePath = path.join(__dirname, 'themes', `${app.config.theme}.theme.css`);
     if (!existsSync(stylePath)) return;
-    const stylesheet = await readFile(stylePath, 'utf8');
-    this.setStyleSheet(stylesheet);
+    try {
+      const stylesheet = await readFile(stylePath, 'utf8');
+      this.setStyleSheet(stylesheet);
+    } catch (e) {
+      error("Couldn't load the stylesheet.", e);
+    }
   }
 
   protected loadIcon() {

@@ -27,7 +27,7 @@ export class ClientManager {
     app.emit(AppEvents.NEW_CLIENT, this.client);
     try {
       await this.client.login(account.token);
-      this.client.user?.setCustomStatus(this.client.user.settings?.customStatus || undefined);
+      this.client.user?.setCustomStatus(this.client.user.settings?.customStatus || undefined).catch((e) => error("Couldn't update custom status on ready.", e));
       app.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
       if (e instanceof HTTPError) {

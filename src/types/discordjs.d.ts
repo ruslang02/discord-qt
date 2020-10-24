@@ -32,7 +32,7 @@ declare module 'discord.js' {
     _typing: Map<Snowflake, TypingEntity>;
     lastReadMessageID: string | null;
     acknowledged: boolean;
-    acknowledge(): void;
+    acknowledge(): Promise<void>;
   }
   export interface DQConstants extends Constants { }
   export interface Guild {
@@ -53,13 +53,13 @@ declare module 'discord.js' {
     _typing: Map<Snowflake, TypingEntity>;
     lastReadMessageID: string | null;
     acknowledged: boolean;
-    acknowledge(): void;
+    acknowledge(): Promise<void>;
   }
   export interface TextChannel {
     _typing: Map<Snowflake, TypingEntity>;
     lastReadMessageID: string | null;
     acknowledged: boolean;
-    acknowledge(): void;
+    acknowledge(): Promise<void>;
   }
   export type TypingEntity = {
     elapsedTime: number,

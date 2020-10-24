@@ -31,6 +31,7 @@ if (!isMainThread) {
     const { url } = request;
     handleRequest(url).then((path) => {
       parentPort?.postMessage({ url, path });
-    });
+    // eslint-disable-next-line no-console
+    }).catch((e) => console.error('Could not complete request.', e));
   });
 }

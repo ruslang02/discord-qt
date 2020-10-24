@@ -50,7 +50,7 @@ export class CustomStatusDialog extends Dialog {
     if (!eid) return;
     const emoji = app.client.emojis.resolve(eid);
     if (!emoji) return;
-    this.loadEmoji(emoji);
+    void this.loadEmoji(emoji);
   }
 
   /**
@@ -97,7 +97,7 @@ export class CustomStatusDialog extends Dialog {
     resetButton.setFixedSize(38, 38);
     resetButton.setInlineStyle('font-size: 32px; padding: 0');
     resetButton.addEventListener('clicked', () => {
-      app.client.user?.setCustomStatus(undefined);
+      app.client.user?.setCustomStatus(undefined).catch((e) => error("Couldn't reset custom status.", e));
     });
     statusLayout.setSpacing(5);
     statusLayout.setContentsMargins(0, 0, 0, 0);
@@ -157,7 +157,7 @@ export class CustomStatusDialog extends Dialog {
         emoji_name: this.emoji?.name,
         expires_at: date?.toISOString(),
         text: this.statusInput.text(),
-      });
+      }).catch((e) => error("Couldn't update custom status.", e));
       this.hide();
     });
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);

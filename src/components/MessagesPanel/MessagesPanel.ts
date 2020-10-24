@@ -26,6 +26,10 @@ export class MessagesPanel extends QScrollArea {
 
   private root = new QWidget();
 
+  private lowestWidget?: MessageItem;
+
+  private highestWidget?: MessageItem;
+
   constructor(parent?: any) {
     super(parent);
     this.setObjectName('MessagesPanel');
@@ -51,15 +55,13 @@ export class MessagesPanel extends QScrollArea {
     app.on(Events.NEW_CLIENT, (client: Client) => {
       client.on('message', async (message: Message) => {
         if (message.channel.id === this.channel?.id) {
-          const widget = new MessageItem(this);
-          (this.root.layout as QBoxLayout).addWidget(widget);
+          const lowest = this.lowestWidget;
+          const widget = new MessageItem(this.root);
+          (this.root.layout as QBoxLayout).insertWidget(0, widget);
           await widget.loadMessage(message);
-          setTimeout(() => this.ensureVisible(0, MAX_QSIZE), 100);
-          if (this.ackTimer) return;
-          this.ackTimer = setTimeout(() => {
-            if (this.channel) this.channel.acknowledge();
-            this.ackTimer = undefined;
-          }, 1000);
+          this.lowestWidget = widget;
+          setTimeout(() => this.isBottom(lowest) && this.ensureVisible(0, MAX_QSIZE), 100);
+          this.initAckTimer();
         }
       });
     });
@@ -69,7 +71,7 @@ export class MessagesPanel extends QScrollArea {
     this.root = new QWidget(this);
     this.root.setObjectName('MessagesContainer');
     this.root.addEventListener(WidgetEventTypes.Move, this.handleWheel.bind(this, false));
-    this.rootControls = new QBoxLayout(Direction.TopToBottom);
+    this.rootControls = new QBoxLayout(Direction.BottomToTop);
     this.rootControls.setContentsMargins(0, 25, 0, 25);
     this.rootControls.setSpacing(10);
     this.rootControls.addStretch(1);
@@ -80,6 +82,8 @@ export class MessagesPanel extends QScrollArea {
   private p0 = new QPoint(0, 0);
 
   private isLoading = false;
+
+  private lastLoad: number = 0;
 
   private async handleWheel(onlyLoadImages = false) {
     if (this.isLoading) return;
@@ -96,10 +100,12 @@ export class MessagesPanel extends QScrollArea {
       const iy = item.mapToParent(this.p0).y();
       if (iy >= y - 400 && iy <= y + height + 100) item.renderImages();
     }
-    if (!onlyLoadImages && y <= 50) {
-      const oldest = children.pop();
-      if (oldest?.message?.id) await this.loadMessages(oldest);
+    if (!onlyLoadImages && y <= 50 && new Date().getTime() - this.lastLoad >= 1000) {
+      this.lastLoad = new Date().getTime();
+      console.log('loading', this.lastLoad);
+      if (this.highestWidget?.message?.id) await this.loadMessages(this.highestWidget);
     }
+    this.initAckTimer();
     this.isLoading = false;
   }
 
@@ -121,11 +127,12 @@ export class MessagesPanel extends QScrollArea {
         withPresences: true,
       });
     }
-    for (const message of messages) {
-      const widget = new MessageItem();
-      (this.root.layout as QBoxLayout).insertWidget(0, widget);
+    messages.forEach((message, i) => {
+      const widget = new MessageItem(this.root);
+      if (i === messages.length - 1) this.highestWidget = widget;
+      (this.root.layout as QBoxLayout).addWidget(widget);
       widget.loadMessage(message);
-    }
+    });
   }
 
   private ratelimit = false;
@@ -134,12 +141,44 @@ export class MessagesPanel extends QScrollArea {
 
   private ackTimer?: any;
 
+  private lastRead?: MessageItem;
+
+  private isBottom(widget = this.lowestWidget) {
+    if (!widget) return false;
+    const rootY = this.root.mapFromParent(this.p0).y();
+    const rootHeight = this.size().height();
+    const y = widget.mapToParent(this.p0).y();
+    const height = widget.size().height();
+    return (y + height - rootY - rootHeight < 100);
+  }
+
+  private initAckTimer() {
+    if (this.ackTimer) clearTimeout(this.ackTimer);
+    this.ackTimer = setTimeout(async () => {
+      if (this.channel && !this.channel.acknowledged) {
+        if (this.isBottom()) {
+          this.channel.acknowledge();
+          this.lastRead?.setInlineStyle('');
+        } else {
+          for (const widget of (<Set<MessageItem>> this.rootControls.nodeChildren).values()) {
+            if (widget.message?.id === this.channel.lastReadMessageID) {
+              widget.setInlineStyle('border-bottom: 1px solid red');
+              this.lastRead = widget;
+            }
+          }
+        }
+      }
+      this.ackTimer = undefined;
+    }, 500);
+  }
+
   private async handleChannelOpen(channel: DMChannel | GuildChannel) {
     this.channel = channel as TextChannel | NewsChannel | DMChannel;
     if (this.ratelimit
       || this.isLoading
       || !['news', 'text', 'dm'].includes(channel.type)
     ) return;
+    this.lastLoad = new Date().getTime();
 
     this.isLoading = true;
     this.ratelimit = true;
@@ -151,13 +190,14 @@ export class MessagesPanel extends QScrollArea {
     if (this.channel.messages.cache.size < 30) await this.channel.messages.fetch({ limit: 30 });
     debug(`Total of ${this.channel.messages.cache.size} messages are available.`);
     const messages = this.channel.messages.cache.array()
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
-      .reverse();
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
     messages.length = Math.min(messages.length, 30);
     const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
-    const promises = messages.map((message) => {
-      const widget = new MessageItem();
-      (this.root.layout as QBoxLayout).insertWidget(0, widget);
+    const promises = messages.map((message, i) => {
+      const widget = new MessageItem(this.root);
+      if (i === messages.length - 1) this.highestWidget = widget;
+      if (i === 0) this.lowestWidget = widget;
+      (this.root.layout as QBoxLayout).addWidget(widget);
       return widget.loadMessage(message);
     });
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
@@ -168,10 +208,7 @@ export class MessagesPanel extends QScrollArea {
       this.handleWheel(true);
       clearInterval(scrollTimer);
     }, 200);
-    this.ackTimer = setTimeout(() => {
-      if (this.channel) this.channel.acknowledge();
-      this.ackTimer = undefined;
-    }, 2000);
+    this.initAckTimer();
     this.rateTimer = setTimeout(() => {
       this.ratelimit = false;
       if (channel !== this.channel && this.channel) this.handleChannelOpen(this.channel);
