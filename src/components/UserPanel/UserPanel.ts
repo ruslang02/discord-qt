@@ -23,7 +23,7 @@ import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DIconButton } from '../DIconButton/DIconButton';
-import { UserMenu } from './UserMenu';
+import { UserPanelMenu } from './UserPanelMenu';
 
 const { error } = createLogger('UserPanel');
 
@@ -72,19 +72,19 @@ export class UserPanel extends QWidget {
     this.discLabel.setText('#0000');
     this.nameLabel.setInlineStyle('');
     client.on(Events.CLIENT_READY, () => {
-      this.updateData();
-      this.updateAvatar();
-      this.updatePresence();
+      void this.updateData();
+      void this.updateAvatar();
+      void this.updatePresence();
     });
     client.on(Events.USER_UPDATE, (prev, cur) => {
-      this.updateData();
-      if (prev.avatar !== cur.avatar) this.updateAvatar();
+      void this.updateData();
+      if (prev.avatar !== cur.avatar) void this.updateAvatar();
     });
     client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
-      if (presence.userID === client.user?.id) this.updatePresence();
+      if (presence.userID === client.user?.id) void this.updatePresence();
     });
     client.on(Events.USER_SETTINGS_UPDATE, () => {
-      this.updatePresence();
+      void this.updatePresence();
     });
   }
 
@@ -102,8 +102,8 @@ export class UserPanel extends QWidget {
     clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
     [discLabel, statusText].forEach((w) => w.setText(__(`ACCOUNT_USERNAME_COPY_SUCCESS_${Math.min(this.copiedAmount, 11)}`)));
     this.copiedTimer = setTimeout(() => {
-      this.updateData();
-      this.updatePresence();
+      void this.updateData();
+      void this.updatePresence();
       this.copiedAmount = 0;
     }, 3000);
   }
@@ -158,7 +158,7 @@ export class UserPanel extends QWidget {
     layInfo.addWidget(nameLabel);
     layInfo.addLayout(layStat);
 
-    const userMenu = new UserMenu(this);
+    const userMenu = new UserPanelMenu(this);
     userMenu.setObjectName('UserMenu');
     avatar.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       userMenu.adjustSize();
@@ -259,7 +259,7 @@ export class UserPanel extends QWidget {
       discLabel.show();
       return;
     }
-    this.loadStatusEmoji(customStatus);
+    void this.loadStatusEmoji(customStatus);
     this.statusText.setText(customStatus.text || '');
 
     statusText.show();

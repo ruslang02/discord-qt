@@ -25,7 +25,7 @@ export class DLabel extends QLabel {
   }
 
   private async handleLinkActivated(link: string) {
-    if (!link) return;
+    if (!link || link === '#') return;
     const url = new URL(link);
     if (url.protocol === 'dq-user:') app.emit(Events.OPEN_USER_PROFILE, url.hostname, app.currentGuildId, this.mapToGlobal(this.p0));
     else if (url.protocol === 'dq-channel:') {
@@ -34,7 +34,7 @@ export class DLabel extends QLabel {
         guild: channel.guild,
         channel,
       });
-    } else if (url.hostname === 'discord.gg') app.window.dialogs.acceptInvite.checkInvite(link);
+    } else if (url.hostname === 'discord.gg') void app.window.dialogs.acceptInvite.checkInvite(link);
     else if (
       /discord(app)?\.com/g.test(url.hostname)
       && url.pathname.startsWith('/channels')
@@ -46,11 +46,11 @@ export class DLabel extends QLabel {
         guild: guildId === '@me' ? undefined : <Guild>app.client.guilds.resolve(guildId),
         channel: <GuildChannel>app.client.channels.resolve(channelId),
       });
-    } else open(link);
+    } else void open(link);
   }
 
   private handleLinkHovered(link: string) {
-    if (!link) {
+    if (!link || link === '#') {
       this.setProperty('toolTip', '');
       return;
     }

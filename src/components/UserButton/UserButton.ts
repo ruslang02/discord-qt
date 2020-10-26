@@ -19,7 +19,6 @@ import { pictureWorker } from '../../utilities/PictureWorker';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
-import { UserButtonMenu } from './UserButtonMenu';
 
 const { error } = createLogger('UserButton');
 
@@ -37,8 +36,6 @@ export class UserButton extends DChannelButton {
   ]);
 
   private static buttons = new WeakMap<User | GuildMember, UserButton>();
-
-  private static menu: UserButtonMenu;
 
   private avatar = new QLabel(this);
 
@@ -74,13 +71,12 @@ export class UserButton extends DChannelButton {
    * Binds discord.js events in order to update user infos dynamically.
    */
   static init() {
-    UserButton.menu = new UserButtonMenu(app.window);
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
       const { Events } = Constants;
       client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
         if (!presence.user) return;
         const btn = UserButton.buttons.get(presence.user);
-        btn?.loadPresence(presence);
+        void btn?.loadPresence(presence);
       });
       client.on(Events.GUILD_MEMBER_UPDATE, (o, m) => {
         const oldMember = o as GuildMember;
@@ -88,7 +84,7 @@ export class UserButton extends DChannelButton {
         const btn = UserButton.buttons.get(member);
         if (!btn) return;
         if (btn.isGuildMember) btn.loadUser(member); else btn.loadUser(member.user);
-        if (oldMember.user.avatar !== member.user.avatar) btn.loadAvatar();
+        if (oldMember.user.avatar !== member.user.avatar) void btn.loadAvatar();
       });
       client.on(Events.USER_UPDATE, (o, u) => {
         const oldUser = o as User;
@@ -96,7 +92,7 @@ export class UserButton extends DChannelButton {
         const btn = UserButton.buttons.get(user);
         if (!btn || btn.isGuildMember) return;
         btn.loadUser(user);
-        if (oldUser.avatar !== user.avatar) btn.loadAvatar();
+        if (oldUser.avatar !== user.avatar) void btn.loadAvatar();
       });
     });
   }
@@ -106,7 +102,7 @@ export class UserButton extends DChannelButton {
     button.loadUser(someone);
     button.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     button.addEventListener('customContextMenuRequested', ({ x, y }) => {
-      UserButton.menu.popout(someone, button.mapToGlobal(new QPoint(x, y)));
+      app.emit(AppEvents.OPEN_USER_MENU, someone, button.mapToGlobal(new QPoint(x, y)));
     });
     button.addEventListener('clicked', async () => {
       if (someone instanceof GuildMember) {
@@ -193,7 +189,7 @@ export class UserButton extends DChannelButton {
     if (this.native.destroyed) return;
     this.statusInd.setProperty('tooltip', presence.status);
     this.statusInd.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)}`);
-    this.loadStatusEmoji(presence);
+    void this.loadStatusEmoji(presence);
 
     if (presence.activities.length) {
       const { type, name, state } = presence.activities[0];
@@ -241,11 +237,11 @@ export class UserButton extends DChannelButton {
     this.member = member || undefined;
 
     this.nameLabel.setText(member?.nickname ?? user.username);
-    this.loadPresence(user.presence);
+    void this.loadPresence(user.presence);
     this.addEventListener(WidgetEventTypes.DeferredDelete, () => UserButton.buttons.delete(user));
 
     UserButton.buttons.set(user, this);
     if (member) UserButton.buttons.set(member, this);
   }
 }
-setTimeout(UserButton.init, 0);
+setTimeout(UserButton.init, 100);

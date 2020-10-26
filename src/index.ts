@@ -24,8 +24,9 @@ i18n.configure({
 export const app = new Application();
 export const MAX_QSIZE = 16777215;
 export const PIXMAP_EXTS = ['BMP', 'GIF', 'JPG', 'JPEG', 'PNG', 'PBM', 'PGM', 'PPM', 'XBM', 'XPM', 'SVG'];
-app.start();
+app.start().catch(console.error);
 
+process.on('unhandledRejection', console.error.bind(console, 'Promise rejected.'));
 process.on('beforeExit', () => app.quit());
 process.on('exit', () => app.quit());
 

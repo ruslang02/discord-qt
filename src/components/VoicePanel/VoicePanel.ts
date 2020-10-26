@@ -90,6 +90,14 @@ export class VoicePanel extends QWidget {
       const { Events } = Constants as unknown as DQConstants;
       client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
     });
+    app.on(AppEvents.CONFIG_UPDATE, (config) => {
+      for (const entries of this.streams.entries()) {
+        const settings = config.userVolumeSettings[entries[0].id] || {};
+        settings.volume = settings.volume ?? 100;
+        settings.muted = settings.muted ?? false;
+        entries[1].setVolume(settings.muted ? 0 : settings.volume);
+      }
+    });
   }
 
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
@@ -155,12 +163,13 @@ export class VoicePanel extends QWidget {
     if (!this.mixer) return;
     const stream = this.connection?.receiver.createStream(member.user, { mode: 'pcm', end: 'manual' });
     if (stream) {
+      const volume = app.config.userVolumeSettings[member.id]?.volume || 100;
       const input = new Input({
         sampleRate: 48000,
         channels: 2,
         bitDepth: 16,
         highWaterMark: 1,
-        volume: 100,
+        volume,
       });
       this.streams.set(member, input);
       this.mixer.addInput(input);

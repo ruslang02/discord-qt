@@ -6,7 +6,7 @@ import { __ } from 'i18n';
 import { join } from 'path';
 import { app } from '../..';
 
-export class UserMenu extends QMenu {
+export class UserPanelMenu extends QMenu {
   constructor(parent?: any) {
     super(parent);
     this.initMenu();

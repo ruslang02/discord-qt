@@ -96,6 +96,6 @@ export class Profile extends QWidget {
       username.hide();
     }
     this.repolish();
-    custom.loadStatus(user);
+    void custom.loadStatus(user);
   }
 }

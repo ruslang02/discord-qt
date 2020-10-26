@@ -1,14 +1,20 @@
 import { QPoint } from '@nodegui/nodegui';
-import { Client, Message, VoiceChannel } from 'discord.js';
+import {
+  Client, GuildMember, Message, User, VoiceChannel,
+} from 'discord.js';
 import { ViewOptions } from '../views/ViewOptions';
+import { IConfig } from './IConfig';
 
 type ValueOf<T> = T[keyof T];
 
 export const Events = {
+  CONFIG_UPDATE: 'configUpdate',
   JOIN_VOICE_CHANNEL: 'joinVoiceChannel',
   LOGIN_FAILED: 'loginFailed',
+  MENTION_USER: 'mentionUser',
   NEW_CLIENT: 'newClient',
   OPEN_SETTINGS_PAGE: 'openSettingsPage',
+  OPEN_USER_MENU: 'openUserMenu',
   OPEN_USER_PROFILE: 'openUserProfile',
   QUOTE_MESSAGE: 'quoteMessage',
   READY: 'ready',
@@ -16,10 +22,13 @@ export const Events = {
 } as const;
 
 export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
+  configUpdate: [IConfig],
   joinVoiceChannel: [VoiceChannel],
   loginFailed: [],
+  mentionUser: [string],
   newClient: [Client],
   openSettingsPage: [string],
+  openUserMenu: [GuildMember | User, QPoint],
   openUserProfile: [string, string | undefined, QPoint],
   quoteMessage: [Message],
   ready: [],

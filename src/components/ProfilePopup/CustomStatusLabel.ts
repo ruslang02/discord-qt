@@ -49,8 +49,9 @@ export class CustomStatusLabel extends QWidget {
    */
   async loadStatus(user: User) {
     const { statusIcon, statusLabel } = this;
-    let emojiId: string; let emojiName: string; let
-      statusText: string;
+    let emojiId: string;
+    let emojiName: string;
+    let statusText: string;
     if (user === app.client.user && app.client.user.customStatus) {
       const { emoji_id: eId, emoji_name: eName, text } = app.client.user.customStatus;
       emojiId = eId || '';

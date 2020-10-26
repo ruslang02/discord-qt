@@ -2,22 +2,30 @@ import { Snowflake } from 'discord.js';
 import { Account } from './Account';
 
 export type RecentEmoji = [Snowflake, number];
-export abstract class IConfig {
-  accounts?: Account[];
 
-  roundifyAvatars?: boolean;
+export type UserVolume = {
+  volume: number;
+  muted: boolean;
+}
 
-  fastLaunch?: boolean;
+export interface IConfig {
+  accounts: Account[];
 
-  debug?: boolean;
+  roundifyAvatars: boolean;
 
-  locale?: string;
+  fastLaunch: boolean;
 
-  processMarkDown?: boolean;
+  debug: boolean;
 
-  enableAvatars?: boolean;
+  locale: string;
 
-  theme?: string;
+  processMarkDown: boolean;
 
-  recentEmojis?: RecentEmoji[];
+  enableAvatars: boolean;
+
+  theme: string;
+
+  recentEmojis: RecentEmoji[];
+
+  userVolumeSettings: Record<Snowflake, UserVolume>;
 }

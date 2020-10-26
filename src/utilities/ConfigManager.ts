@@ -1,6 +1,8 @@
 import { existsSync, mkdirSync, promises } from 'fs';
 import { dirname, join } from 'path';
+import { app } from '..';
 import { createLogger } from './Console';
+import { Events } from './Events';
 import { IConfig } from './IConfig';
 
 const { readFile, writeFile } = promises;
@@ -9,6 +11,7 @@ const { log, error } = createLogger('Config');
 export class ConfigManager {
   isLoaded = false;
 
+  // @ts-ignore
   config: IConfig = {};
 
   constructor(private file: string) {
@@ -18,6 +21,7 @@ export class ConfigManager {
   async load() {
     const { file } = this;
     this.isLoaded = false;
+    // @ts-ignore
     let config: IConfig = {};
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
@@ -35,6 +39,7 @@ export class ConfigManager {
       theme: config.theme ?? 'dark',
       locale: config.locale ?? 'en-US',
       recentEmojis: config.recentEmojis ?? [],
+      userVolumeSettings: config.userVolumeSettings ?? [],
     };
     if (config.debug === true) log('Loaded config:', config);
     this.isLoaded = true;
@@ -43,6 +48,7 @@ export class ConfigManager {
   async save() {
     try {
       await writeFile(join(this.file), JSON.stringify(this.config));
+      app.emit(Events.CONFIG_UPDATE, this.config);
     } catch (e) {
       error(e);
     }

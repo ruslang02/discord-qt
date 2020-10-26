@@ -124,5 +124,18 @@
   "ERROR": "Error",
   "NOTE": "Note",
   "NOTE_PLACEHOLDER": "Click to add a note",
-  "ADD_NOTE": "Add Note"
+  "ADD_NOTE": "Add Note",
+  "USER_VOLUME": "User Volume",
+  "PROFILE": "Profile",
+  "MENTION": "Mention",
+  "SEND_DM": "Message",
+  "MUTE": "Mute",
+  "UNMUTE": "Unmute",
+  "DEAFEN": "Deafen",
+  "UNDEAFEN": "Undeafen",
+  "INVITE_TO_SERVER": "Invite to Server",
+  "CHANGE_NICKNAME": "Change Nickname",
+  "NICKNAME": "Nickname",
+  "RESET_NICKNAME": "Reset Nickname",
+  "SAVE": "Save"
 }

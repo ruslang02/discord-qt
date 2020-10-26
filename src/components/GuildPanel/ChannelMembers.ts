@@ -1,13 +1,17 @@
 import {
+  ContextMenuPolicy,
   Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint,
 } from '@nodegui/nodegui';
 import {
   GuildMember, Snowflake, VoiceChannel, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
+import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
+
+const { error } = createLogger('ChannelMembers');
 
 export class ChannelMembers extends QListWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -71,6 +75,10 @@ export class ChannelMembers extends QListWidget {
       map.setX(map.x() + 200);
       app.emit(AppEvents.OPEN_USER_PROFILE, member.id, member.guild.id, map);
     });
+    btn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    btn.addEventListener('customContextMenuRequested', ({ x, y }) => {
+      app.emit(AppEvents.OPEN_USER_MENU, member, btn.mapToGlobal(new QPoint(x, y)));
+    });
     btn.layout.setContentsMargins(8, 0, 0, 0);
     const memberName = new QLabel(btn);
     btn.labels.push(memberName);
@@ -78,7 +86,8 @@ export class ChannelMembers extends QListWidget {
     btn.layout.addWidget(avatar);
     btn.layout.addWidget(memberName, 1);
     pictureWorker.loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }))
-      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1)));
+      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1)))
+      .catch(error.bind(console, "Couldn't load avatar."));
     return btn;
   }
 

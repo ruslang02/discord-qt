@@ -75,7 +75,7 @@ export class Application extends ApplicationEventEmitter {
     i18n.setLocale(this.config.locale || 'en-US');
     this.window = new RootWindow();
     this.window.show();
-    this.pluginManager.reload();
+    void this.pluginManager.reload();
     this.emit(AppEvents.READY);
   }
 

@@ -7,8 +7,10 @@ import { existsSync, promises } from 'fs';
 import path from 'path';
 import { app } from '..';
 import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
+import { UserMenu } from '../components/UserMenu/UserMenu';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
+import { NicknameChangeDialog } from '../dialogs/NicknameChangeDialog';
 import { createLogger } from '../utilities/Console';
 import { Events as AppEvents } from '../utilities/Events';
 import { MainView } from '../views/MainView/MainView';
@@ -24,12 +26,15 @@ export class RootWindow extends QMainWindow {
   dialogs = {
     customStatus: new CustomStatusDialog(this),
     acceptInvite: new AcceptInviteDialog(this),
+    nicknameChange: new NicknameChangeDialog(this),
     miniProfile: new ProfilePopup(this),
   };
 
   private mainView = new MainView();
 
   private settingsView = new SettingsView();
+
+  private userMenu = new UserMenu(this);
 
   shiftKeyPressed = false;
 

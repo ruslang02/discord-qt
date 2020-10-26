@@ -116,12 +116,10 @@ export class MessageItem extends QWidget {
       });
       menu.addAction(action);
     }
-    this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
-    this.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
-      const ev = new QMouseEvent(e as NativeElement);
-      if (ev.button() === MouseButton.RightButton) {
-        menu.popup(new QPoint(ev.globalX(), ev.globalY()));
-      }
+    this.contentLabel.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    this.contentLabel.addEventListener('customContextMenuRequested', ({ x, y }) => {
+      const map = this.contentLabel.mapToGlobal(this.p0);
+      menu.popup(new QPoint(map.x() + x, map.y() + y));
     });
   }
 
@@ -136,9 +134,19 @@ export class MessageItem extends QWidget {
 
     avatar.setObjectName('Avatar');
     avatar.setMinimumSize(48, 0);
+    avatar.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     avatar.setAlignment(AlignmentFlag.AlignTop);
     avatar.setCursor(CursorShape.PointingHandCursor);
-    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, this.handleUserClick.bind(this));
+    avatar.addEventListener('customContextMenuRequested', ({ x, y }) => {
+      if (!this.message) return;
+      app.emit(Events.OPEN_USER_MENU,
+        this.message.member || this.message.author,
+        avatar.mapToGlobal(new QPoint(x, y)));
+    });
+    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
+      const ev = new QMouseEvent(e as NativeElement);
+      if (ev.button() === MouseButton.LeftButton) this.handleUserClick();
+    });
     if (!app.config.enableAvatars) avatar.hide();
 
     infoLayout.setSpacing(8);
@@ -155,7 +163,6 @@ export class MessageItem extends QWidget {
 
     contentLabel.setObjectName('Content');
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    contentLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
 
     infoLayout.addWidget(unameLabel);
     infoLayout.addWidget(dateLabel, 1);
@@ -186,7 +193,7 @@ export class MessageItem extends QWidget {
   async renderImages() {
     const { message, avatar } = this;
     if (!message || this.alreadyRendered) return;
-    (async () => {
+    void (async () => {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) {
         avatar.setPixmap(cachePixmap);
@@ -206,7 +213,9 @@ export class MessageItem extends QWidget {
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());
     if (this.contentNoEmojis) {
-      processEmojis(this.contentNoEmojis).then((content) => this.contentLabel.setText(content));
+      processEmojis(this.contentNoEmojis)
+        .then((content) => this.contentLabel.setText(content))
+        .catch(error.bind(error, "Couldn't load emoji."));
     }
     this.alreadyRendered = true;
   }
