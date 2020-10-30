@@ -11,6 +11,8 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
+import { Snowflake } from 'discord.js';
+import { TextChannel } from 'discord.js';
 import {
   CategoryChannel,
   Client,
@@ -38,7 +40,11 @@ export class ChannelsList extends QListWidget {
 
   private buttons: Set<ChannelButton> = new Set();
 
+  private listItems = new Set<QListWidgetItem>();
+
   private vcMembers = new Map<string, ChannelMembers>();
+
+  private categoryState = new Map<string, boolean>();
 
   private menu = new ChannelsListMenu(this);
 
@@ -55,6 +61,7 @@ export class ChannelsList extends QListWidget {
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
     app.on(AppEvents.NEW_CLIENT, this.handleEvents.bind(this));
+    app.on(AppEvents.CONFIG_UPDATE, () => this.updateChannelsVisibility());
   }
 
   private handleEvents(client: Client) {
@@ -99,6 +106,19 @@ export class ChannelsList extends QListWidget {
 
   private minSize = new QSize(150, 36);
 
+  private updateChannelsVisibility() {
+    const items = [...this.items.values()] as QListWidgetItem[];
+    items.forEach((item, i) => {
+      if (!this.listItems.has(item) || !this.guild) return;
+      const settings = app.config.userLocalGuildSettings[this.guild.id];
+      const channel = app.client.channels.resolve(item.text()) as TextChannel;
+      const isOpen = channel.parentID ? this.categoryState.get(channel.parentID) ?? true : true;
+      console.log({settings, muted: channel.muted, isOpen, text: item.text()});
+      if (!channel || item.native.destroyed) return;
+      this.setRowHidden(i, !isOpen || (!!channel.muted && (settings?.hideMutedChannels ?? false)));
+    });
+  }
+
   private loadChannels(guild: Guild) {
     this.guild = guild;
     if (this.ratelimit) return;
@@ -111,7 +131,10 @@ export class ChannelsList extends QListWidget {
 
     this.clear();
     this.buttons.clear();
+    this.items.clear();
+    this.listItems.clear();
     this.vcMembers.clear();
+    this.categoryState.clear();
 
     const [categories, channels] = guild.channels.cache
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
@@ -123,20 +146,12 @@ export class ChannelsList extends QListWidget {
     for (const category of categories.sort((a, b) => a.rawPosition - b.rawPosition).values()) {
       const item = new QListWidgetItem();
       const label = new QLabel(this);
-      let isOpened = true;
       label.setObjectName('CategoryHeader');
       label.setText(`<html>▼&nbsp;&nbsp;${category.name}</html>`);
       label.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-        isOpened = !isOpened;
-        label.setText(`<html>${isOpened ? '▼' : '►'}&nbsp;&nbsp;${category.name}</html>`);
-        const channelIds = guild.channels.cache
-          .filter((a) => a.parentID === category.id)
-          .map((a) => a.id);
-        for (const id of channelIds) {
-          this.findItems(id, MatchFlag.MatchExactly)
-            // eslint-disable-next-line no-loop-func
-            .forEach((i) => this.setRowHidden(this.row(i), !isOpened));
-        }
+        label.setText(`<html>${this.categoryState.get(category.id) ? '▼' : '►'}&nbsp;&nbsp;${category.name}</html>`);
+        this.categoryState.set(category.id, !this.categoryState.get(category.id));
+        this.updateChannelsVisibility();
       });
       label.setMinimumSize(0, 30);
       label.setCursor(CursorShape.PointingHandCursor);
@@ -145,6 +160,7 @@ export class ChannelsList extends QListWidget {
       this.addItem(item);
       item.setSizeHint(label.size());
       this.setItemWidget(item, label);
+      this.categoryState.set(category.id, true);
       label.adjustSize();
     }
 
@@ -162,6 +178,7 @@ export class ChannelsList extends QListWidget {
       item.setText(channel.id);
       this.insertItem(row, item);
       this.setItemWidget(item, btn);
+      this.listItems.add(item);
       buttons.add(btn);
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => buttons.delete(btn));
       btn.addEventListener('customContextMenuRequested', (pos) => {
@@ -179,6 +196,8 @@ export class ChannelsList extends QListWidget {
         members.setItem(memitem);
       }
     }
+
+    this.updateChannelsVisibility();
 
     this.rateTimer = setTimeout(() => {
       this.ratelimit = false;

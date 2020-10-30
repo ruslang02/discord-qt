@@ -137,5 +137,7 @@
   "CHANGE_NICKNAME": "Change Nickname",
   "NICKNAME": "Nickname",
   "RESET_NICKNAME": "Reset Nickname",
-  "SAVE": "Save"
+  "SAVE": "Save",
+  "HIDE_MUTED_CHANNELS": "Hide Muted Channels",
+  "SHOW_MUTED_CHANNELS": "Show Muted Channels"
 }

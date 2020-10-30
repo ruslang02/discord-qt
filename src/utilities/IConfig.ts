@@ -4,8 +4,12 @@ import { Account } from './Account';
 export type RecentEmoji = [Snowflake, number];
 
 export type UserVolume = {
-  volume: number;
-  muted: boolean;
+  volume?: number;
+  muted?: boolean;
+}
+
+export type LocalGuildSettings = {
+  hideMutedChannels?: boolean;
 }
 
 export interface IConfig {
@@ -27,5 +31,7 @@ export interface IConfig {
 
   recentEmojis: RecentEmoji[];
 
-  userVolumeSettings: Record<Snowflake, UserVolume>;
+  userVolumeSettings: Record<Snowflake, UserVolume | undefined>;
+
+  userLocalGuildSettings: Record<Snowflake, LocalGuildSettings | undefined>;
 }

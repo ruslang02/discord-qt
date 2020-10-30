@@ -1,8 +1,7 @@
-
-
 #MainView #GuildPanel {
   background-color: $background-secondary;
-  #DTitleBar, #ChannelsList {
+  #DTitleBar,
+  #ChannelsList {
     background-color: $background-secondary;
   }
   #ChannelsList {
@@ -53,12 +52,9 @@
     line-height: 20px;
     color: $header-primary;
   }
-  #ActionsMenu {
-    border-bottom: 1px solid $background-floating;
-  }
   #ChannelMembers {
     margin-left: 24px;
-    margin-bottom:8px;
+    margin-bottom: 8px;
     padding: 0;
     background-color: transparent;
     #DChannelButton {

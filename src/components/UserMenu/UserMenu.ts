@@ -173,6 +173,7 @@ export class UserMenu extends QMenu {
       && this.someone instanceof GuildMember
       && (
         this.someone.user === app.client.user
+        || (this.someone.guild.member(app.client.user)?.hasPermission('CHANGE_NICKNAME') ?? false)
         || (this.someone.guild.member(app.client.user)?.hasPermission('MANAGE_NICKNAMES') ?? false)
       ));
     if (this.someone) {

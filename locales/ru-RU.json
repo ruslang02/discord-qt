@@ -136,5 +136,7 @@
   "CHANGE_NICKNAME": "Изменить никнейм",
   "NICKNAME": "Никнейм",
   "RESET_NICKNAME": "Сбросить никнейм",
-  "SAVE": "Сохранить"
+  "SAVE": "Сохранить",
+  "HIDE_MUTED_CHANNELS": "Скрыть заглуш. каналы",
+  "SHOW_MUTED_CHANNELS": "Показать заглуш. каналы"
 }

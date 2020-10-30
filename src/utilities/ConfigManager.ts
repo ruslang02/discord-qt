@@ -39,7 +39,8 @@ export class ConfigManager {
       theme: config.theme ?? 'dark',
       locale: config.locale ?? 'en-US',
       recentEmojis: config.recentEmojis ?? [],
-      userVolumeSettings: config.userVolumeSettings ?? [],
+      userVolumeSettings: config.userVolumeSettings ?? {},
+      userLocalGuildSettings: config.userLocalGuildSettings ?? {},
     };
     if (config.debug === true) log('Loaded config:', config);
     this.isLoaded = true;
