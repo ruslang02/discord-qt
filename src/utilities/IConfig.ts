@@ -10,6 +10,8 @@ export type UserVolume = {
 
 export type LocalGuildSettings = {
   hideMutedChannels?: boolean;
+  collapsedCategories?: Snowflake[];
+  lastViewedChannel?: Snowflake;
 }
 
 export interface IConfig {

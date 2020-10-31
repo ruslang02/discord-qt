@@ -190,7 +190,7 @@ export class MessageItem extends QWidget {
   /**
    * Loads all images in the message.
    */
-  async renderImages() {
+  renderImages() {
     const { message, avatar } = this;
     if (!message || this.alreadyRendered) return;
     void (async () => {

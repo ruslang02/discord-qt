@@ -1,6 +1,7 @@
 import {
   CursorShape,
   ItemFlag,
+  MatchFlag,
   QCursor,
   QIcon,
   QListWidget,
@@ -47,7 +48,12 @@ export class GuildsList extends QListWidget {
         app.emit(AppEvents.SWITCH_VIEW, 'dm');
       });
       client.on(Events.GUILD_DELETE, (guild) => {
-        this.guilds.get(guild)?.hide();
+        // this.guilds.get(guild)?.hide();
+        const search = this.findItems(guild.id, MatchFlag.MatchExactly);
+        if (search && search.length) {
+          const row = this.row(search[0]);
+          this.takeItem(row);
+        }
       });
       client.on(Events.GUILD_CREATE, (guild) => {
         const btn = new GuildButton(guild, this);
@@ -134,6 +140,7 @@ export class GuildsList extends QListWidget {
         const item = new QListWidgetItem();
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setSizeHint(btn.size());
+        item.setText(guild.id);
         this.addItem(item);
         btn.setUnread(!guild.acknowledged);
         this.setItemWidget(item, btn);

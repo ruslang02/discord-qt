@@ -139,5 +139,7 @@
   "RESET_NICKNAME": "Reset Nickname",
   "SAVE": "Save",
   "HIDE_MUTED_CHANNELS": "Hide Muted Channels",
-  "SHOW_MUTED_CHANNELS": "Show Muted Channels"
+  "SHOW_MUTED_CHANNELS": "Show Muted Channels",
+  "LEAVE_SERVER_TITLE": "Leave '{{name}}'",
+  "LEAVE_SERVER_BODY": "Are you sure you want to leave <b>{{name}}</b>? You won't be able to rejoin this server unless you are re-invited."
 }

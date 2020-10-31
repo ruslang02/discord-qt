@@ -3,12 +3,13 @@ import {
   NativeElement,
   QIcon, QKeyEvent, QMainWindow, QStackedWidget, WidgetAttribute, WidgetEventTypes,
 } from '@nodegui/nodegui';
+import { Guild, GuildChannel } from 'discord.js';
 import { existsSync, promises } from 'fs';
 import path from 'path';
 import { app } from '..';
 import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
-import { UserMenu } from '../components/UserMenu/UserMenu';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
+import { ConfirmLeaveGuildDialog } from '../dialogs/ConfirmLeaveGuildDialog';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
 import { NicknameChangeDialog } from '../dialogs/NicknameChangeDialog';
 import { createLogger } from '../utilities/Console';
@@ -24,17 +25,16 @@ export class RootWindow extends QMainWindow {
   private root = new QStackedWidget(this);
 
   dialogs = {
-    customStatus: new CustomStatusDialog(this),
     acceptInvite: new AcceptInviteDialog(this),
-    nicknameChange: new NicknameChangeDialog(this),
+    confirmLeaveGuild: new ConfirmLeaveGuildDialog(this),
+    customStatus: new CustomStatusDialog(this),
     miniProfile: new ProfilePopup(this),
+    nicknameChange: new NicknameChangeDialog(this),
   };
 
   private mainView = new MainView();
 
   private settingsView = new SettingsView();
-
-  private userMenu = new UserMenu(this);
 
   shiftKeyPressed = false;
 
@@ -44,7 +44,7 @@ export class RootWindow extends QMainWindow {
     this.loadIcon();
     this.initializeWindow();
 
-    app.on(AppEvents.SWITCH_VIEW, (view: string) => {
+    app.on(AppEvents.SWITCH_VIEW, (view, options) => {
       switch (view) {
         case 'main':
           this.root.setCurrentWidget(this.mainView);
@@ -52,6 +52,25 @@ export class RootWindow extends QMainWindow {
         case 'settings':
           this.root.setCurrentWidget(this.settingsView);
           break;
+        case 'guild': {
+          if (!options) return;
+          const guild = options.guild || options.channel?.guild as Guild;
+          const settings = { ...app.config.userLocalGuildSettings[guild.id] };
+          if (options.channel) {
+            settings.lastViewedChannel = options.channel.id;
+            app.config.userLocalGuildSettings[guild.id] = settings;
+            void app.configManager.save();
+          } else {
+            const lastViewedChannelId = settings.lastViewedChannel || '';
+            const firstChannel = app.client.channels.resolve(lastViewedChannelId) as GuildChannel
+              || guild.channels.cache.filter((a) => ['text', 'news'].includes(a.type)).sort((a, b) => a.rawPosition - b.rawPosition).first();
+            app.emit(AppEvents.SWITCH_VIEW, 'guild', {
+              guild,
+              channel: firstChannel,
+            });
+          }
+          break;
+        }
         default:
       }
     });

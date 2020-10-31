@@ -61,11 +61,11 @@ export class NicknameChangeDialog extends Dialog {
     footLayout.setContentsMargins(16, 16, 16, 16);
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
     saveBtn.setText(__('SAVE'));
-    saveBtn.setFixedSize(96, 38);
+    saveBtn.setMinimumSize(96, 38);
     saveBtn.addEventListener('clicked', this.save.bind(this));
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
     cancelBtn.setText(__('CANCEL'));
-    cancelBtn.setFixedSize(80, 38);
+    cancelBtn.setMinimumSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());
     footLayout.addWidget(cancelBtn);
     footLayout.addWidget(saveBtn);

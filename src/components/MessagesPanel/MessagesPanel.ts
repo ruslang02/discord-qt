@@ -17,7 +17,7 @@ import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { MessageItem } from './MessageItem';
 
-const { debug } = createLogger('MessagesPanel');
+const { error, debug } = createLogger('MessagesPanel');
 
 export class MessagesPanel extends QScrollArea {
   private channel?: DMChannel | TextChannel | NewsChannel;
@@ -44,11 +44,7 @@ export class MessagesPanel extends QScrollArea {
     app.on(Events.SWITCH_VIEW, async (view, options) => {
       if (!['dm', 'guild'].includes(view)) return;
       const channel = options ? options.dm || options.channel : undefined;
-      if (!options || !channel) {
-        this.channel = undefined;
-        this.initRoot();
-        return;
-      }
+      if (!options || !channel) return;
       await this.handleChannelOpen(channel);
     });
 
@@ -98,15 +94,19 @@ export class MessagesPanel extends QScrollArea {
     }
     for (const item of children) {
       const iy = item.mapToParent(this.p0).y();
-      if (iy >= y - 400 && iy <= y + height + 100) item.renderImages();
+      if (iy >= y - 400 && iy <= y + height + 100) void item.renderImages();
     }
-    if (!onlyLoadImages && y <= 50 && new Date().getTime() - this.lastLoad >= 1000) {
-      this.lastLoad = new Date().getTime();
-      console.log('loading', this.lastLoad);
-      if (this.highestWidget?.message?.id) await this.loadMessages(this.highestWidget);
+    try {
+      if (!onlyLoadImages && y <= 50 && new Date().getTime() - this.lastLoad >= 1000) {
+        this.lastLoad = new Date().getTime();
+        if (this.highestWidget?.message?.id) await this.loadMessages(this.highestWidget);
+      }
+      this.initAckTimer();
+    } catch (e) {
+      error("Couldn't load a page of messages.", e);
+    } finally {
+      this.isLoading = false;
     }
-    this.initAckTimer();
-    this.isLoading = false;
   }
 
   private async loadMessages(before: MessageItem) {
@@ -125,13 +125,13 @@ export class MessagesPanel extends QScrollArea {
       channel.guild.members.fetch({
         user: messages.map((m) => m.author.id),
         withPresences: true,
-      });
+      }).catch((e) => error("Couldn't prefetch members list.", e));
     }
     messages.forEach((message, i) => {
       const widget = new MessageItem(this.root);
       if (i === messages.length - 1) this.highestWidget = widget;
       (this.root.layout as QBoxLayout).addWidget(widget);
-      widget.loadMessage(message);
+      void widget.loadMessage(message);
     });
   }
 
@@ -157,7 +157,7 @@ export class MessagesPanel extends QScrollArea {
     this.ackTimer = setTimeout(async () => {
       if (this.channel && !this.channel.acknowledged) {
         if (this.isBottom()) {
-          this.channel.acknowledge();
+          this.channel.acknowledge().catch((e) => error("Couldn't mark the channel as read.", e));
           this.lastRead?.setInlineStyle('');
         } else {
           for (const widget of (<Set<MessageItem>> this.rootControls.nodeChildren).values()) {
@@ -186,8 +186,12 @@ export class MessagesPanel extends QScrollArea {
     if (this.ackTimer) clearTimeout(this.ackTimer);
     debug(`Opening channel ${channel.id}...`);
     this.initRoot();
-
-    if (this.channel.messages.cache.size < 30) await this.channel.messages.fetch({ limit: 30 });
+    try {
+      if (this.channel.messages.cache.size < 30) await this.channel.messages.fetch({ limit: 30 });
+    } catch (e) {
+      error(`Couldn't load messages for channel ${channel.id}`, e);
+      this.isLoading = false;
+    }
     debug(`Total of ${this.channel.messages.cache.size} messages are available.`);
     const messages = this.channel.messages.cache.array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
@@ -205,13 +209,13 @@ export class MessagesPanel extends QScrollArea {
     debug('Widgets finished loading.');
     setTimeout(() => {
       this.isLoading = false;
-      this.handleWheel(true);
+      void this.handleWheel(true);
       clearInterval(scrollTimer);
     }, 200);
     this.initAckTimer();
     this.rateTimer = setTimeout(() => {
       this.ratelimit = false;
-      if (channel !== this.channel && this.channel) this.handleChannelOpen(this.channel);
+      if (channel !== this.channel && this.channel) void this.handleChannelOpen(this.channel);
     }, 1500);
   }
 }

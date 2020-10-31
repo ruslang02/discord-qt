@@ -162,7 +162,7 @@ export class CustomStatusDialog extends Dialog {
     });
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
     cancelBtn.setText(__('CANCEL'));
-    cancelBtn.setFixedSize(80, 38);
+    cancelBtn.setMinimumSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());
     footLayout.addWidget(cancelBtn);
     footLayout.addWidget(saveBtn);

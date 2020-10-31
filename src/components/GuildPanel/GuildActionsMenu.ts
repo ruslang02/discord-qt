@@ -59,10 +59,9 @@ export class GuildActionsMenu extends QMenu {
     {
       const item = new QAction();
       item.setText(__('LEAVE_SERVER'));
-      item.addEventListener('triggered', async () => {
-        try {
-          await this.guild?.leave();
-        } catch (e) { }
+      item.addEventListener('triggered', () => {
+        if (!this.guild) return;
+        app.window.dialogs.confirmLeaveGuild.openForGuild(this.guild);
       });
       this.addAction(item);
       this.items.set('LEAVE_SERVER', item);
