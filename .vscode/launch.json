@@ -23,7 +23,7 @@
         "webpack:///./*": "${workspaceRoot}/*",
         "webpack:///*": "*"
       },
-      "console": "integratedTerminal"
+      "console": "internalConsole"
     }
   ]
 }

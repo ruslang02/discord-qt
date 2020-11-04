@@ -1,6 +1,3 @@
-import { Permissions } from 'discord.js';
-import { SnowflakeUtil } from 'discord.js';
-
 const TextBasedChannel = require('discord.js/src/structures/interfaces/TextBasedChannel');
 
 const props = [
@@ -23,7 +20,8 @@ Object.defineProperty(TextBasedChannel.prototype, 'acknowledged', {
 });
 
 TextBasedChannel.prototype.acknowledge = function () {
-  this.client.api.channels[this.id].messages[this.lastMessageID].ack.post({ data: { token: this._ackToken } }).then((res: any) => {
+  if (!this.lastMessageID) return;
+  return this.client.api.channels[this.id].messages[this.lastMessageID].ack.post({ data: { token: this._ackToken } }).then((res: any) => {
     if (res.token) this._ackToken = res.token;
   });
 }

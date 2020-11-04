@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { User } from 'discord.js';
 import { app } from '../..';
-import { CustomStatus } from '../../structures/CustomStatus';
+import { CustomStatus } from '../../utilities/CustomStatus';
 import { createLogger } from '../../utilities/Console';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
@@ -49,8 +49,9 @@ export class CustomStatusLabel extends QWidget {
    */
   async loadStatus(user: User) {
     const { statusIcon, statusLabel } = this;
-    let emojiId: string; let emojiName: string; let
-      statusText: string;
+    let emojiId: string;
+    let emojiName: string;
+    let statusText: string;
     if (user === app.client.user && app.client.user.customStatus) {
       const { emoji_id: eId, emoji_name: eName, text } = app.client.user.customStatus;
       emojiId = eId || '';

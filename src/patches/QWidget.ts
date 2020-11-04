@@ -1,3 +1,5 @@
+import { WidgetEventTypes } from '@nodegui/nodegui';
+import { app } from '..';
 import { createLogger } from '../utilities/Console';
 
 const { NodeWidget } = require('@nodegui/nodegui/dist/lib/QtWidgets/QWidget');
@@ -12,6 +14,7 @@ for (const object of consts) {
       const newArgs = [...args].map(a => a.__isProxy ? a.__proto__ : a);
       if (newArgs.includes(noop)) return noop;
       const newNative = new target(...newArgs);
+      newNative.destroyed = false;
       const native = new Proxy(newNative, {
         get: function (target, prop) {
           if (prop === '__isProxy') return true;
@@ -36,13 +39,19 @@ const processDelete = function (this: any) {
   this.native.destroyed = true;
   debug('destroyed', this.constructor.name);
 };
+const processPress = function (this: any) {
+  if (app.window?.shiftKeyPressed) {
+    console.log(this);
+  }
+}
 const no = ['Component', 'EventWidget', 'YogaWidget', 'NodeObject', 'QObject'];
 const _setNodeParent = NodeWidget.prototype.setNodeParent;
 NodeWidget.prototype.setNodeParent = function patchWidget() {
   if (this.native && !this._processed) {
     this._processed = true;
     if (!no.includes(this.constructor.name)) {
-      this.addEventListener('DeferredDelete', processDelete.bind(this))
+      this.addEventListener(WidgetEventTypes.DeferredDelete, processDelete.bind(this));
+      this.addEventListener(WidgetEventTypes.MouseButtonPress, processPress.bind(this))
     }
   }
   return _setNodeParent.call(this, ...arguments);

@@ -1,6 +1,7 @@
 import {
   CursorShape,
   ItemFlag,
+  MatchFlag,
   QCursor,
   QIcon,
   QListWidget,
@@ -18,7 +19,7 @@ import {
 import { __ } from 'i18n';
 import path from 'path';
 import { app, MAX_QSIZE } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
+import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
 import { GuildButton } from './GuildButton';
 
@@ -29,12 +30,13 @@ export class GuildsList extends QListWidget {
 
   private guilds = new Map<Guild, GuildButton>();
 
-  private active?: QPushButton | GuildButton;
+  private active?: (QPushButton & {setActive: (value: boolean) => void}) | GuildButton;
 
   constructor() {
     super();
 
     this.setFrameShape(Shape.NoFrame);
+    this.setMinimumSize(72, 0);
     this.setMaximumSize(72, MAX_QSIZE);
     this.setObjectName('GuildsList');
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
@@ -46,7 +48,12 @@ export class GuildsList extends QListWidget {
         app.emit(AppEvents.SWITCH_VIEW, 'dm');
       });
       client.on(Events.GUILD_DELETE, (guild) => {
-        this.guilds.get(guild)?.hide();
+        // this.guilds.get(guild)?.hide();
+        const search = this.findItems(guild.id, MatchFlag.MatchExactly);
+        if (search && search.length) {
+          const row = this.row(search[0]);
+          this.takeItem(row);
+        }
       });
       client.on(Events.GUILD_CREATE, (guild) => {
         const btn = new GuildButton(guild, this);
@@ -59,26 +66,25 @@ export class GuildsList extends QListWidget {
         btn.loadAvatar();
       });
       client.on(Events.MESSAGE_ACK, (channel) => this.updateGuildAck(channel.guild));
+      client.on(Events.MESSAGE_CREATE, (message) => message.channel.type !== 'dm' && this.updateGuildAck(message.channel.guild));
     });
 
     app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) return;
       this.mpBtn.setProperty('active', false);
       if (view === 'dm') {
-        this.active?.setProperty('active', false);
-        this.active?.repolish();
-        this.mpBtn.setProperty('active', true);
+        this.active?.setActive(false);
+        // @ts-ignore
+        this.mpBtn.setActive(true);
+        // @ts-ignore
         this.active = this.mpBtn;
-        this.active.repolish();
       } else if (view === 'guild' && options) {
         const guild = options.guild || options.channel?.guild;
         if (!guild) return;
-        this.active?.setProperty('active', false);
-        this.active?.repolish();
+        this.active?.setActive(false);
         const active = this.guilds.get(guild);
-        active?.setProperty('active', true);
+        active?.setActive(true);
         this.active = active;
-        this.active?.repolish();
       }
     });
   }
@@ -96,6 +102,11 @@ export class GuildsList extends QListWidget {
     mpBtn.setIcon(this.mainIcon);
     mpBtn.setIconSize(new QSize(28, 28));
     mpBtn.setFixedSize(72, 68);
+    // @ts-ignore
+    mpBtn.setActive = (value: boolean) => {
+      mpBtn.setProperty('active', value);
+      mpBtn.repolish();
+    };
     mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     mpBtn.setProperty('toolTip', __('DIRECT_MESSAGES'));
     mpBtn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'dm'));
@@ -129,6 +140,7 @@ export class GuildsList extends QListWidget {
         const item = new QListWidgetItem();
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setSizeHint(btn.size());
+        item.setText(guild.id);
         this.addItem(item);
         btn.setUnread(!guild.acknowledged);
         this.setItemWidget(item, btn);

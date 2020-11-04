@@ -1,10 +1,12 @@
 import {
+  AlignmentFlag,
   Direction, QBoxLayout, QLabel, QPixmap, QWidget,
 } from '@nodegui/nodegui';
-import { ActivityType, Presence } from 'discord.js';
+import { ActivityType, Client, Presence } from 'discord.js';
 import { __ } from 'i18n';
-import { MAX_QSIZE } from '../..';
+import { app, MAX_QSIZE } from '../..';
 import { createLogger } from '../../utilities/Console';
+import { Events } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 
 const { error } = createLogger('ProfilePresence');
@@ -32,16 +34,27 @@ export class ProfilePresence extends QWidget {
 
   private lImage = new QLabel(this);
 
+  private sImage = new QLabel(this.lImage);
+
+  private presence?: Presence;
+
   constructor(parent?: any) {
     super(parent);
 
     this.initComponent();
     this.setObjectName(this.constructor.name);
+    app.on(Events.NEW_CLIENT, this.bindEvents.bind(this));
+  }
+
+  private bindEvents(client: Client) {
+    client.on('presenceUpdate', (o, n) => {
+      if (n.userID === this.presence?.userID) this.load(this.presence);
+    });
   }
 
   private initComponent() {
     const {
-      layout, header, label1, label2, label3, lImage,
+      layout, header, label1, label2, label3, lImage, sImage,
     } = this;
     header.setObjectName('Header');
     layout.setContentsMargins(16, 16, 16, 16);
@@ -49,17 +62,25 @@ export class ProfilePresence extends QWidget {
     [label1, label2, label3].forEach((label) => label.setObjectName('Label'));
     const dLayout = new QBoxLayout(Direction.LeftToRight);
     dLayout.setContentsMargins(0, 0, 0, 0);
-    dLayout.setSpacing(10);
-    lImage.setMaximumSize(60, MAX_QSIZE);
-    lImage.setMinimumSize(60, 0);
+    dLayout.setSpacing(0);
+    lImage.setMaximumSize(70, 65);
+    lImage.setMinimumSize(70, 0);
+    lImage.setObjectName('LargeImage');
+    sImage.setObjectName('OverlayIcon');
+    sImage.move(43, 41);
+    sImage.setFixedSize(24, 24);
+    sImage.setAlignment(AlignmentFlag.AlignCenter);
 
     const lLayout = new QBoxLayout(Direction.TopToBottom);
     lLayout.setContentsMargins(0, 0, 0, 0);
     lLayout.setSpacing(0);
 
-    lLayout.addStretch(1);
-    [label1, label2, label3].forEach((label) => lLayout.addWidget(label));
-    lLayout.addStretch(1);
+    lLayout.addSpacing(3);
+    [label1, label2, label3].forEach((label) => {
+      label.setMaximumSize(MAX_QSIZE, 19);
+      lLayout.addWidget(label);
+    });
+    lLayout.addSpacing(3);
     dLayout.addWidget(lImage);
     dLayout.addLayout(lLayout, 1);
 
@@ -74,8 +95,9 @@ export class ProfilePresence extends QWidget {
    */
   load(presence: Presence) {
     const {
-      header, label1, label2, label3, lImage,
+      header, label1, label2, label3, lImage, sImage,
     } = this;
+    this.presence = presence;
     const activity = presence.activities.find((a) => a.type !== 'CUSTOM_STATUS');
     if (!activity) {
       this.hide();
@@ -88,17 +110,32 @@ export class ProfilePresence extends QWidget {
         platform: activity.name,
       },
     ));
-    if (activity.type === 'PLAYING') {
-      label1.setText(`<b>${activity.name}</b>`);
-      label1.show();
-      if (activity.details) label2.show(); else label2.hide();
-      label2.setText(activity.details || '');
-    } else {
-      if (activity.details) label1.show(); else label1.hide();
-      label1.setText(`<b>${activity.details}</b>`);
+    switch (activity.type) {
+      case 'PLAYING':
+        label1.setText(`<b>${activity.name}</b>`);
+        label1.show();
+        if (activity.details) label2.show(); else label2.hide();
+        label2.setText(activity.details || '');
+        label3.hide();
+        break;
+      case 'LISTENING':
+        if (activity.details) label1.show(); else label1.hide();
+        label1.setText(`<b>${activity.details}</b>`);
+        if (activity.state) label2.show(); else label2.hide();
+        label2.setText(activity.state || '');
+        if (activity.assets?.largeText) label3.show(); else label3.hide();
+        label3.setText(activity.assets?.largeText || '');
+        break;
+      default:
+        if (activity.details) label1.show(); else label1.hide();
+        label1.setText(`<b>${activity.details}</b>`);
+        if (activity.state) label2.show(); else label2.hide();
+        label2.setText(activity.state || '');
+        label3.hide();
     }
-    if (activity.state) label3.show(); else label3.hide();
-    label3.setText(activity.state || '');
+
+    lImage.setProperty('toolTip', activity.assets?.largeText || '');
+    sImage.setProperty('toolTip', activity.assets?.smallText || '');
 
     const lImageUrl = activity.assets?.largeImageURL({ size: 256, format: 'png' });
     if (lImageUrl) {
@@ -108,6 +145,16 @@ export class ProfilePresence extends QWidget {
     } else {
       lImage.setText('');
       lImage.hide();
+    }
+
+    const sImageUrl = activity.assets?.smallImageURL({ size: 64, format: 'png' });
+    if (sImageUrl) {
+      pictureWorker.loadImage(sImageUrl, { roundify: true })
+        .then((path) => sImage.setPixmap(new QPixmap(path).scaled(20, 20, 1, 1)))
+        .catch(() => error(`Assets for ${activity.name} could not be loaded.`));
+    } else {
+      sImage.setText('');
+      sImage.hide();
     }
 
     this.show();

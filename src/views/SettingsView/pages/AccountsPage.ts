@@ -17,9 +17,9 @@ import { DColorButtonColor } from '../../../components/DColorButton/DColorButton
 import { DErrorMessage } from '../../../components/DErrorMessage/DErrorMessage';
 import { DLabel } from '../../../components/DLabel/DLabel';
 import { DLineEdit } from '../../../components/DLineEdit/DLineEdit';
-import { Account } from '../../../structures/Account';
-import { clientOptions } from '../../../structures/ClientOptions';
-import { Events } from '../../../structures/Events';
+import { Account } from '../../../utilities/Account';
+import { clientOptions } from '../../../utilities/ClientOptions';
+import { Events } from '../../../utilities/Events';
 import { createLogger } from '../../../utilities/Console';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Divider } from '../Divider';
@@ -112,7 +112,7 @@ export class AccountsPage extends Page {
       app.config.accounts = app.config.accounts?.filter((v) => v !== account);
       accWidget.hide();
       this.accountsLayout.removeWidget(accWidget);
-      app.config.save();
+      app.configManager.save();
       this.checkEmpty();
     });
     const loginBtn = new DColorButton();
@@ -123,7 +123,7 @@ export class AccountsPage extends Page {
       if (isLoggingIn) return;
       isLoggingIn = true;
       loginBtn.setEnabled(false);
-      await app.loadClient(account);
+      await app.clientManager.load(account);
       loginBtn.setEnabled(true);
       isLoggingIn = false;
     });
@@ -142,7 +142,7 @@ export class AccountsPage extends Page {
       this.checkboxes.forEach((c, j) => c.setChecked(i === j ? !isAutoLogin : false));
       app.config.accounts = app.config.accounts
         .map((acc, j) => ({ ...acc, autoLogin: i === j ? !isAutoLogin : false }));
-      app.config.save();
+      app.configManager.save();
     });
 
     const shadow = new QGraphicsDropShadowEffect();
@@ -200,7 +200,7 @@ export class AccountsPage extends Page {
         this.processAccount(account, app.config.accounts.length);
         app.config.accounts.push(account);
         await client.destroy();
-        app.config.save();
+        app.configManager.save();
       } catch (e) {
         errorMsg.setText(e.message);
         errorMsg.show();

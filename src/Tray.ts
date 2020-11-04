@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { Constants } from 'discord.js';
 import { app } from '.';
-import { Events as AppEvents } from './structures/Events';
+import { Events as AppEvents } from './utilities/Events';
 
 export class Tray extends QSystemTrayIcon {
   private menu = new QMenu();
@@ -79,7 +79,7 @@ export class Tray extends QSystemTrayIcon {
     for (const account of app.config.accounts) {
       const item = new QAction();
       item.setText(`${account.username}#${account.discriminator}`);
-      item.addEventListener('triggered', () => app.loadClient(account));
+      item.addEventListener('triggered', () => app.clientManager.load(account));
       accMenu.addAction(item);
     }
     const tag = app.client?.user?.tag;

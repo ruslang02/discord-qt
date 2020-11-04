@@ -8,8 +8,8 @@ import { basename, join } from 'path';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
-import { Events } from '../../../structures/Events';
-import { paths } from '../../../structures/Paths';
+import { Events } from '../../../utilities/Events';
+import { paths } from '../../../utilities/Paths';
 import { createLogger } from '../../../utilities/Console';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
@@ -65,7 +65,7 @@ export class AppearancePage extends Page {
           checkbox.setChecked(!checked);
           // @ts-ignore
           app.config[id] = !checked;
-          app.config.save();
+          app.configManager.save();
         });
         layout.addWidget(checkbox);
       });
@@ -85,7 +85,7 @@ export class AppearancePage extends Page {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
       if (!existsSync(path)) return;
       app.config.theme = text;
-      await app.config.save();
+      await app.configManager.save();
       app.window.loadStyles();
     });
     langSel.addEventListener('currentIndexChanged', async (index) => {
@@ -93,7 +93,7 @@ export class AppearancePage extends Page {
       const path = join(__dirname, 'locales', `${locale}.json`);
       if (!existsSync(path)) return;
       app.config.locale = locale;
-      await app.config.save();
+      await app.configManager.save();
       setLocale(locale);
       const mbox = new QMessageBox();
       mbox.setText(__('LANGUAGE_RESTART_REQUIRED'));
@@ -105,7 +105,7 @@ export class AppearancePage extends Page {
       mbox.open();
     });
     const clearCacheBtn = new DColorButton();
-    clearCacheBtn.setText(__('CLEAR_CACHE')); // TODO: i18n
+    clearCacheBtn.setText(__('CLEAR_CACHE'));
     clearCacheBtn.setMinimumSize(0, 36);
     clearCacheBtn.addEventListener('clicked', () => {
       rmdir(paths.cache, { recursive: true }).then(() => {

@@ -1,19 +1,18 @@
 import {
-  AlignmentFlag,
+  DialogCode,
   Direction,
   FileMode,
   FocusReason,
   Key,
   KeyboardModifier,
-  MouseButton,
   NativeElement,
   QBoxLayout,
+
+  QClipboardMode,
   QDragMoveEvent,
   QFileDialog,
   QKeyEvent,
   QLabel,
-  QMouseEvent,
-  QPixmap,
   QPoint,
   QSize,
   QTextEdit,
@@ -22,27 +21,25 @@ import {
 } from '@nodegui/nodegui';
 import {
   Client,
-  Constants,
-  DMChannel,
-  Emoji,
-  Message,
-  MessageEmbedOptions,
+  DMChannel, GuildEmoji, Message,
   MessageOptions,
   NewsChannel,
   Permissions,
   TextChannel,
 } from 'discord.js';
 import { __ } from 'i18n';
-import { basename, extname, join } from 'path';
-import { fileURLToPath, pathToFileURL, URL } from 'url';
-import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
+import { join } from 'path';
+import { fileURLToPath, URL } from 'url';
+import { app, MAX_QSIZE } from '../..';
+import { Events as AppEvents } from '../../utilities/Events';
+import { paths } from '../../utilities/Paths';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { getEmojiURL } from '../../utilities/ResolveEmoji';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
+import { AttachmentsPanel } from './AttachmentsPanel';
 
 const { error } = createLogger('InputPanel');
 
@@ -62,9 +59,7 @@ export class InputPanel extends QWidget {
 
   private statusLabel = new QLabel(this);
 
-  private attachPanel = new QWidget(this);
-
-  private attachLayout = new QBoxLayout(Direction.LeftToRight);
+  private attachments = new AttachmentsPanel(this);
 
   private emojiBtn = new DIconButton({
     iconPath: join(__dirname, './assets/icons/emoticon.png'),
@@ -73,8 +68,6 @@ export class InputPanel extends QWidget {
   });
 
   private emojiPicker = new EmojiPicker(this, Direction.BottomToTop);
-
-  private files = new Set<string>();
 
   private p0 = new QPoint(0, 0);
 
@@ -85,10 +78,6 @@ export class InputPanel extends QWidget {
     iconQSize: new QSize(24, 24),
     tooltipText: __('UPLOAD_A_MEDIA_FILE'),
   });
-
-  private fileIcon = new QPixmap(join(__dirname, './assets/icons/file.png'))
-
-  private quoteEmbed?: MessageEmbedOptions;
 
   constructor() {
     super();
@@ -101,119 +90,73 @@ export class InputPanel extends QWidget {
   }
 
   private setEvents() {
-    const { input, typingLabel } = this;
-    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (!['dm', 'guild'].includes(view)) return;
-      const channel = <DMChannel | undefined>options?.dm
-        || <TextChannel | NewsChannel | undefined>options?.channel
-        || undefined;
-      if (!channel) {
-        input.setPlaceholderText('');
+    app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
+    app.on(AppEvents.NEW_CLIENT, this.handleClientEvents.bind(this));
+
+    app.on(AppEvents.QUOTE_MESSAGE, this.handleQuoteMessage.bind(this));
+  }
+
+  private handleSwitchView(view: string, options?: ViewOptions) {
+    const { input } = this;
+    if (!['dm', 'guild'].includes(view)) return;
+    const channel = <DMChannel | undefined>options?.dm
+      || <TextChannel | NewsChannel | undefined>options?.channel
+      || undefined;
+    if (!channel) {
+      input.setPlaceholderText('');
+      return;
+    }
+    this.channel = channel;
+    this.attachments.clear();
+    if (channel.type === 'text') {
+      this.addBtn.setEnabled(channel.can(Permissions.FLAGS.ATTACH_FILES));
+    } else this.addBtn.setEnabled(true);
+    input.setPlaceholderText(
+      __('TEXTAREA_PLACEHOLDER', {
+        channel: channel.type === 'dm'
+          ? `@${(<DMChannel>channel).recipient.username}`
+          : `#${(<TextChannel>channel).name}`,
+      }),
+    );
+
+    input.setFocus(FocusReason.TabFocusReason);
+  }
+
+  private handleClientEvents(client: Client) {
+    client.setInterval(() => this.channel && this.updateTyping(this.channel as TextChannel), 100);
+  }
+
+  private updateTyping(channel: TextChannel | DMChannel) {
+    const { typingLabel } = this;
+    if (this.channel?.id !== channel.id) return;
+    const typers = [...channel._typing.values()]
+      .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.nickname || e.user.username)
+      .filter((m) => !!m) as string[];
+    let i18nString;
+    switch (typers.length) {
+      case 0:
+        typingLabel.setText('');
         return;
-      }
-      this.channel = channel;
-      this.files.clear();
-      this.renderAttachPanel();
-      if (channel.type === 'text') {
-        this.addBtn.setEnabled(channel.can(Permissions.FLAGS.ATTACH_FILES));
-      } else this.addBtn.setEnabled(true);
-      input.setPlaceholderText(
-        __('TEXTAREA_PLACEHOLDER', {
-          channel: channel.type === 'dm'
-            ? `@${(<DMChannel>channel).recipient.username}`
-            : `#${(<TextChannel>channel).name}`,
-        }),
-      );
-
-      input.setFocus(FocusReason.TabFocusReason);
-    });
-
-    app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-      const { Events } = Constants;
-      client.on(Events.TYPING_START, (typingChannel, user) => {
-        if (this.channel?.id !== typingChannel.id) return;
-        typingLabel.setText(__('ONE_USER_TYPING', { a: user.username || '' })); // TODO: Multiple, guild typing indicators
-        setTimeout(() => typingLabel.clear(), 2000);
-      });
-    });
-
-    app.on(AppEvents.QUOTE_MESSAGE_NOEMBED, (message: Message) => {
-      input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
-      input.setFocus(FocusReason.TabFocusReason);
-      this.adjustInputSize();
-    });
-    app.on(AppEvents.QUOTE_MESSAGE_EMBED, (message: Message) => {
-      this.quoteEmbed = {
-        description: message.cleanContent,
-        author: {
-          name: message.author.username,
-          icon_url: message.author.displayAvatarURL(),
-          url: `https://discordapp.com/channels/${message.guild?.id}/${message.channel.id}/${message.id}`,
-        },
-      };
-      this.renderAttachPanel();
-      input.setFocus(FocusReason.TabFocusReason);
-    });
+      case 1:
+        i18nString = 'ONE_USER_TYPING';
+        break;
+      case 2:
+        i18nString = 'TWO_USERS_TYPING';
+        break;
+      case 3:
+        i18nString = 'THREE_USERS_TYPING';
+        break;
+      default:
+        i18nString = 'SEVERAL_USERS_TYPING';
+    }
+    typingLabel.setText(__(i18nString, { a: typers[0], b: typers[1], c: typers[2] }));
   }
 
-  /**
-   * Adds attachments to the message.
-   * @param files Files to add.
-   */
-  addFiles(files: string[]) {
-    for (const file of files) this.files.add(file);
-    this.renderAttachPanel();
-  }
-
-  private renderAttachPanel() {
-    const { attachLayout, attachPanel, fileIcon } = this;
-    (attachLayout.nodeChildren as Set<QWidget>)
-      .forEach((w) => { w.hide(); attachLayout.removeWidget(w); });
-    if (this.quoteEmbed) {
-      const attach = new QLabel(attachPanel);
-      attach.setFixedSize(120, 60);
-      attach.setAlignment(AlignmentFlag.AlignCenter);
-      attach.setProperty('toolTip', __('RIGHT_CLICK_REMOVE'));
-      attach.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
-        const event = new QMouseEvent(e as NativeElement);
-        if ((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
-          this.quoteEmbed = undefined;
-          this.renderAttachPanel();
-        }
-      });
-      attach.setPixmap(new QPixmap(join(__dirname, './assets/icons/reply.png')));
-      attachLayout.insertWidget(attachLayout.nodeChildren.size, attach);
-    }
-    for (const file of this.files) {
-      const attach = new QLabel(attachPanel);
-      attach.setFixedSize(120, 60);
-      attach.setAlignment(AlignmentFlag.AlignCenter);
-      attach.setProperty('toolTip', __('RIGHT_CLICK_REMOVE'));
-      attach.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
-        const event = new QMouseEvent(e as NativeElement);
-        if ((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
-          this.files.delete(file);
-          this.renderAttachPanel();
-        }
-      });
-      const url = pathToFileURL(file);
-      const ext = extname(file).replace(/\./g, '').toUpperCase();
-      if (!PIXMAP_EXTS.includes(ext)) attach.setPixmap(fileIcon);
-      else {
-        pictureWorker.loadImage(url.href, { roundify: false })
-          .then((path) => {
-            const pix = new QPixmap(path);
-            if (pix.width() < 1) attach.setPixmap(fileIcon);
-            else attach.setPixmap(pix.scaled(120, 60, 1, 1));
-          }).catch(() => {
-            error(`Couldn't access file ${file}.`);
-            attach.setPixmap(fileIcon);
-          });
-      }
-
-      attachLayout.insertWidget(attachLayout.nodeChildren.size, attach);
-    }
-    if (this.files.size || this.quoteEmbed) attachPanel.show(); else attachPanel.hide();
+  private handleQuoteMessage(message: Message) {
+    const { input } = this;
+    input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
+    input.setFocus(FocusReason.TabFocusReason);
+    this.adjustInputSize();
   }
 
   private initComponent() {
@@ -223,9 +166,8 @@ export class InputPanel extends QWidget {
       rootLayout,
       typingLabel,
       statusLabel,
-      attachLayout,
-      attachPanel,
       addBtn,
+      attachments,
       dialog,
       emojiPicker,
       emojiBtn,
@@ -240,21 +182,25 @@ export class InputPanel extends QWidget {
 
     addBtn.setFixedSize(56, 44);
     addBtn.addEventListener('clicked', () => {
-      dialog.exec();
-      dialog.selectedFiles().forEach((f) => this.files.add(f));
-      this.renderAttachPanel();
+      if (dialog.exec() === DialogCode.Accepted) this.attachments.addFiles(dialog.selectedFiles());
     });
     input.setObjectName('Input');
-    emojiPicker.events.on('emoji', async (emoji: Emoji, special: boolean) => {
-      if (special) {
+    emojiPicker.events.on('emoji', async (emoji: GuildEmoji, special: boolean) => {
+      if (!this.channel) return;
+      if (special || (app.client.user?.premium === false
+        && (
+          (this.channel.type !== 'dm' && emoji.guild.id !== (this.channel as TextChannel).guild.id)
+          || this.channel.type === 'dm'
+        )
+      )) {
         try {
-          const url = await getEmojiURL({
+          let url = await getEmojiURL({
             emoji_id: emoji.id || undefined,
             emoji_name: emoji.name,
-          });
+          }, emoji.animated ? 'gif' : 'png');
+          url += '?size=128';
           const path = await pictureWorker.loadImage(url, { roundify: false });
-          this.files.add(path);
-          this.renderAttachPanel();
+          this.attachments.addFiles([path]);
         } catch (e) { error(e); }
       } else input.insertPlainText(emoji.toString());
       emojiPicker.close();
@@ -266,7 +212,9 @@ export class InputPanel extends QWidget {
     input.setMaximumSize(MAX_QSIZE, 42);
     input.setMinimumSize(0, 42);
     input.setAcceptDrops(true);
+    input.setAcceptRichText(false);
     input.addEventListener(WidgetEventTypes.DragEnter, this.handleDrag.bind(this));
+    input.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
     input.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyRelease.bind(this));
 
     rootLayout.addWidget(addBtn);
@@ -278,12 +226,7 @@ export class InputPanel extends QWidget {
     const bottomLayout = new QBoxLayout(Direction.LeftToRight);
     bottomLayout.addWidget(typingLabel, 1);
     bottomLayout.addWidget(statusLabel);
-    attachPanel.setLayout(attachLayout);
-    attachPanel.setObjectName('AttachmentPanel');
-    attachLayout.setContentsMargins(0, 5, 0, 5);
-    attachLayout.addStretch(1);
-    attachPanel.hide();
-    this.layout?.addWidget(attachPanel);
+    this.layout?.addWidget(attachments);
     this.layout?.addWidget(root);
     (this.layout as QBoxLayout).addLayout(bottomLayout);
   }
@@ -303,11 +246,25 @@ export class InputPanel extends QWidget {
       if (mimeData.hasUrls()) {
         const url = new URL(mimeData.text());
         if (url.protocol !== 'file:') return;
-        this.addFiles([fileURLToPath(url.href)]);
-        this.renderAttachPanel();
+        this.attachments.addFiles([fileURLToPath(url.href)]);
       }
       ev.accept();
     } catch (ex) { }
+  }
+
+  private handleKeyPress(native?: any) {
+    if (!native) return;
+    const event = new QKeyEvent(native);
+    if (
+      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
+      && event.key() === Key.Key_V
+    ) {
+      const pixmap = app.clipboard.pixmap(QClipboardMode.Clipboard);
+      if (pixmap.width() === 0 && pixmap.height() === 0) return;
+      const tmp = join(paths.cache, `clipboard${Math.round(Math.random() * 10000)}.png`);
+      pixmap.save(tmp);
+      this.attachments.addFiles([tmp]);
+    }
   }
 
   private handleKeyRelease(native?: any) {
@@ -318,7 +275,7 @@ export class InputPanel extends QWidget {
     if (
       event.key() === Key.Key_Return
       && (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier
-      && (message.trim() !== '' || this.files.size !== 0)
+      && (message.trim() !== '' || this.attachments.getFiles().length)
     ) this.sendMessage();
     else if (
       event.key() === Key.Key_E
@@ -345,19 +302,14 @@ export class InputPanel extends QWidget {
    */
   private async sendMessage() {
     const { input, statusLabel } = this;
-    if (this.quoteEmbed) {
-      await this.channel?.send({ embed: this.quoteEmbed });
-    }
-    this.quoteEmbed = undefined;
     const message = input.toPlainText().trim();
     setTimeout(() => {
       input.clear();
       this.adjustInputSize();
-    });
+    }, 0);
     if (this.channel) {
       const msgOptions = {
-        files: [...this.files.values()]
-          .map((attachment) => ({ attachment, name: basename(attachment) })),
+        files: this.attachments.getFiles(),
       };
       statusLabel.setText(__('TWO_FA_ENTER_SMS_TOKEN_SENDING'));
       statusLabel.setInlineStyle('color: #dcddde');
@@ -371,8 +323,7 @@ export class InputPanel extends QWidget {
         statusLabel.setInlineStyle('color: #f04747');
         statusLabel.setText(e.message);
       }
-      this.files.clear();
-      this.renderAttachPanel();
+      this.attachments.clear();
     }
   }
 

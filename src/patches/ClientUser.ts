@@ -1,5 +1,5 @@
 import { Collection, Constants } from 'discord.js';
-import { CustomStatus } from '../structures/CustomStatus';
+import { CustomStatus } from '../utilities/CustomStatus';
 
 const ClientUser = require('discord.js/src/structures/ClientUser');
 Object.defineProperty(ClientUser.prototype, 'email', {
@@ -18,6 +18,10 @@ Object.defineProperty(ClientUser.prototype, 'notes', {
   value: new Collection(),
   writable: true
 });
+Object.defineProperty(ClientUser.prototype, 'guildSettings', {
+  value: new Collection(),
+  writable: true
+});
 const _patch = ClientUser.prototype._patch;
 ClientUser.prototype._patch = function _newPatch(data: any) {
   _patch.apply(this, arguments);
@@ -33,23 +37,28 @@ Object.defineProperty(ClientUser.prototype, 'customStatus', {
     return this.settings.customStatus;
   }
 });
-ClientUser.prototype.setCustomStatus = async function setCustomStatus(data: CustomStatus) {
+ClientUser.prototype.setCustomStatus = async function setCustomStatus(data?: CustomStatus) {
   if (!this.settings) return null;
+  let fixed = data ? {
+    emoji_id: typeof data.emoji_id == 'string' && data.emoji_id.length ? data.emoji_id : null,
+    emoji_name: typeof data.emoji_name == 'string' && data.emoji_name.length ? data.emoji_name : null,
+    text: typeof data.text == 'string' && data.text.trim().length ? data.text.trim() : null,
+    expires_at: data.expires_at,
+  } : null;
+  if (!fixed?.emoji_id && !fixed?.emoji_name && !fixed?.text) fixed = null;
   await this.client.presence.set({
-    activities: [
-      {
-        type: 4,
-        state: data.text || null,
-        name: 'Custom Status',
-        emoji: {
-          id: data.emoji_id || null,
-          name: data.emoji_name || null,
-          animated: false,
-        },
-      },
-    ],
+    customStatus: fixed ? {
+      type: 4,
+      state: fixed.text,
+      name: 'Custom Status',
+      emoji: (fixed.emoji_id || fixed.emoji_name) ? {
+        id: fixed.emoji_id,
+        name: fixed.emoji_name,
+        animated: false,
+      } : null,
+    } : undefined,
   });
-  const newSettings = await this.settings.update('custom_status', data);
+  const newSettings = await this.settings.update('custom_status', fixed);
   this.settings._patch(newSettings);
   return newSettings;
 }

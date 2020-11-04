@@ -1,4 +1,3 @@
-
 * {
   font-family: "Source Sans Pro"; // Default font
   //font-family: Whitney;           // Discord's font
@@ -47,6 +46,9 @@ QMenu {
   padding: 8px;
   border: none;
   color: $interactive-normal;
+  #UserVolumeLabel {
+    color: $interactive-normal;
+  }
   &::separator {
     height: 1px;
     background: $background-modifier-accent;
@@ -70,7 +72,20 @@ QMenu {
     color: $interactive-muted;
   }
   &::icon {
-    left: 8px;
+    left: 7px;
+  }
+  &::icon:checked {
+    position: absolute;
+    right: 7px;
+    top: 1px;
+    bottom: 1px;
+    image-position: right;
+    subcontrol-origin: padding;
+    subcontrol-position: right center;
+  }
+  &::indicator {
+      width: 13px;
+      height: 13px;
   }
 }
 
@@ -90,10 +105,41 @@ QScrollBar {
     background-color: $scrollbar-thin-thumb;
     border-radius: 2px;
   }
-  &::add-line, &::sub-line {
+  &::add-line,
+  &::sub-line {
     height: 0px;
   }
-  &::add-page, &::sub-page {
+  &::add-page,
+  &::sub-page {
     background-color: transparent;
+  }
+}
+QSlider {
+  &::groove:horizontal {
+    background-color: $background-accent;
+    border: 0px solid $background-accent;
+    height: 6px;
+    border-radius: 3px;
+  }
+
+  &::handle:horizontal {
+    background-color: $interactive-active;
+    border: 3px solid $interactive-active;
+    width: 6px;
+    height: 12px;
+    line-height: 12px;
+    margin-top: -3px;
+    margin-bottom: -3px;
+    border-radius: 6px;
+  }
+
+  &::add-page:horizontal {
+    background: $interactive-muted;
+    border-radius: 3px;
+  }
+
+  &::sub-page:horizontal {
+    background: $blurple;
+    border-radius: 3px;
   }
 }

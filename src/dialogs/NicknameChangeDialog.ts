@@ -1,21 +1,26 @@
 import {
   Direction, QBoxLayout, QLabel, QWidget,
 } from '@nodegui/nodegui';
+import { GuildMember } from 'discord.js';
 import { __ } from 'i18n';
-import { URL } from 'url';
-import { app } from '..';
 import { DColorButton } from '../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';
+import { DLabel } from '../components/DLabel/DLabel';
 import { DTextEdit } from '../components/DTextEdit/DTextEdit';
 import { Dialog } from './Dialog';
 
-export class AcceptInviteDialog extends Dialog {
-  private urlLabel = new QLabel(this);
+/**
+ * Represents a dialog is used for changing current guild member's nickname.
+ */
+export class NicknameChangeDialog extends Dialog {
+  private nnLabel = new QLabel(this);
 
-  private urlInput = new DTextEdit(this);
+  private nnInput = new DTextEdit(this);
 
   private errMsg = new DErrorMessage(this);
+
+  private member?: GuildMember;
 
   constructor(parent?: any) {
     super(parent);
@@ -26,17 +31,23 @@ export class AcceptInviteDialog extends Dialog {
 
   private init() {
     const {
-      header, urlLabel, urlInput, errMsg,
+      header, nnLabel, nnInput, errMsg,
     } = this;
-    header.setText(__('INSTANT_INVITE_ACCEPT'));
+    header.setText(__('CHANGE_NICKNAME'));
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
-    urlLabel.setText(__('FORM_LABEL_INVITE_LINK'));
-    urlLabel.setObjectName('Header3');
-    urlInput.setPlaceholderText('https://discord.gg/...');
-    layout.addWidget(urlLabel);
-    layout.addWidget(urlInput);
+    const nnLink = new DLabel(this);
+    nnLabel.setText(__('NICKNAME'));
+    nnLabel.setObjectName('Header3');
+    nnLink.setText(`<a href='#'>${__('RESET_NICKNAME')}</a>`);
+    nnLink.addEventListener('linkActivated', () => {
+      nnInput.clear();
+      void this.save();
+    });
+    layout.addWidget(nnLabel);
+    layout.addWidget(nnInput);
+    layout.addWidget(nnLink);
     layout.addWidget(errMsg);
     errMsg.hide();
     this.controls.addLayout(layout);
@@ -49,9 +60,9 @@ export class AcceptInviteDialog extends Dialog {
     footLayout.addStretch(1);
     footLayout.setContentsMargins(16, 16, 16, 16);
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
-    saveBtn.setText(__('OKAY'));
+    saveBtn.setText(__('SAVE'));
     saveBtn.setMinimumSize(96, 38);
-    saveBtn.addEventListener('clicked', () => this.checkInvite());
+    saveBtn.addEventListener('clicked', this.save.bind(this));
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
     cancelBtn.setText(__('CANCEL'));
     cancelBtn.setMinimumSize(80, 38);
@@ -62,22 +73,22 @@ export class AcceptInviteDialog extends Dialog {
     this.controls.addWidget(footer);
   }
 
-  async checkInvite(url?: string) {
-    if (url) {
-      this.urlInput.setText(url);
-      this.show();
-      this.raise();
-    }
-    let code = this.urlInput.text();
-    if (code.includes('//')) code = new URL(code).pathname.replace(/\//g, '');
+  openForMember(member: GuildMember) {
+    this.nnInput.setPlaceholderText(member.user.username);
+    this.nnInput.setText(member.nickname || '');
+    if (!member.nickname) this.nnInput.clear();
+    this.member = member;
+    this.show();
+  }
+
+  private async save() {
     try {
-      await app.client.user?.acceptInvite(code);
+      this.errMsg.hide();
+      await this.member?.setNickname(this.nnInput.text());
+      this.hide();
     } catch (e) {
-      this.errMsg.setText(__('INVALID_INVITE_LINK_ERROR'));
+      this.errMsg.setText(e.message);
       this.errMsg.show();
-      return;
     }
-    this.urlLabel.clear();
-    this.hide();
   }
 }

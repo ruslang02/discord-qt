@@ -1,33 +1,35 @@
-import { existsSync, promises } from 'fs';
+import { existsSync, mkdirSync, promises } from 'fs';
 import { dirname, join } from 'path';
-import { createLogger } from '../utilities/Console';
+import { app } from '..';
+import { createLogger } from './Console';
+import { Events } from './Events';
 import { IConfig } from './IConfig';
 
-const { mkdir, readFile, writeFile } = promises;
+const { readFile, writeFile } = promises;
 const { log, error } = createLogger('Config');
 
-export class Config extends IConfig {
+export class ConfigManager {
   isLoaded = false;
 
-  private file: string;
+  // @ts-ignore
+  config: IConfig = {};
 
-  constructor(file: string) {
-    super();
-    this.file = file;
+  constructor(private file: string) {
+    mkdirSync(dirname(file), { recursive: true });
   }
 
   async load() {
     const { file } = this;
-    await mkdir(dirname(file), { recursive: true });
     this.isLoaded = false;
+    // @ts-ignore
     let config: IConfig = {};
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
-      if (!existsSync(file)) writeFile(file, '{}', 'utf8');
+      if (!existsSync(file)) writeFile(file, '{}', 'utf8').catch((e) => error('Missing permissions on the config file.', e));
       else error('Config file could not be used, returning to default values...');
     }
-    Object.assign(this, {
+    this.config = {
       accounts: config.accounts ?? [],
       roundifyAvatars: config.roundifyAvatars ?? true,
       fastLaunch: config.fastLaunch ?? false,
@@ -37,20 +39,17 @@ export class Config extends IConfig {
       theme: config.theme ?? 'dark',
       locale: config.locale ?? 'en-US',
       recentEmojis: config.recentEmojis ?? [],
-    } as IConfig);
-    if (config.debug === true) log('Loaded config:', this);
+      userVolumeSettings: config.userVolumeSettings ?? {},
+      userLocalGuildSettings: config.userLocalGuildSettings ?? {},
+    };
+    if (config.debug === true) log('Loaded config:', config);
     this.isLoaded = true;
   }
 
   async save() {
     try {
-      const obj = { ...this };
-      // @ts-ignore
-      delete obj.file;
-      // @ts-ignore
-      delete obj.isLoaded;
-
-      await writeFile(join(this.file), JSON.stringify(obj));
+      await writeFile(join(this.file), JSON.stringify(this.config));
+      app.emit(Events.CONFIG_UPDATE, this.config);
     } catch (e) {
       error(e);
     }

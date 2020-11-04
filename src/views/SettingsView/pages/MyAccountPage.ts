@@ -6,7 +6,7 @@ import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DLabel } from '../../../components/DLabel/DLabel';
-import { Events } from '../../../structures/Events';
+import { Events } from '../../../utilities/Events';
 import { createLogger } from '../../../utilities/Console';
 import { pictureWorker } from '../../../utilities/PictureWorker';
 import { Page } from './Page';

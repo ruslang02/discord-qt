@@ -13,7 +13,7 @@ import {
   Client, Constants, DMChannel, SnowflakeUtil,
 } from 'discord.js';
 import { app } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
+import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from '../UserButton/UserButton';
 
@@ -98,26 +98,23 @@ export class DMUsersList extends QListWidget {
     this.clear();
     // this.addDMLabel();
 
-    const promises: Promise<void>[] = (app.client.channels.cache.array() as DMChannel[])
+    (app.client.channels.cache.array() as DMChannel[])
       .filter((c) => c.type === 'dm' && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
         return snB.date.getTime() - snA.date.getTime();
       })
-      .map((dm) => {
-        const btn = new UserButton(this);
+      .forEach((dm) => {
+        const btn = UserButton.createInstance(this, dm.recipient);
         const item = new QListWidgetItem();
         item.setSizeHint(new QSize(224, 44));
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setText(dm.id);
-        btn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm }));
         this.channels.set(dm, btn);
         this.addItem(item);
         this.setItemWidget(item, btn);
-        return btn.loadUser(dm.recipient);
       });
-    await Promise.all(promises);
-    setTimeout(() => this.loadAvatars(), 1000);
+    this.loadAvatars();
   }
 }

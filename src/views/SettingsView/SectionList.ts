@@ -3,7 +3,7 @@ import {
 } from '@nodegui/nodegui';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { Page } from './pages/Page';
 import { Element } from './SettingsView';
 

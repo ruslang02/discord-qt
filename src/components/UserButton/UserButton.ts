@@ -1,19 +1,28 @@
 import {
-  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, WidgetEventTypes,
+  AlignmentFlag,
+  ContextMenuPolicy,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QPixmap,
+  QPoint,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import {
   ActivityType, Client, Constants, GuildMember, Presence, User,
 } from 'discord.js';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
-import { Events as AppEvents } from '../../structures/Events';
-import { PresenceStatusColor } from '../../structures/PresenceStatusColor';
 import { createLogger } from '../../utilities/Console';
+import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
 const { error } = createLogger('UserButton');
+
+const p0 = new QPoint(0, 0);
 
 /**
  * Represents a button with user's avatar, name and current status.
@@ -46,6 +55,8 @@ export class UserButton extends DChannelButton {
 
   user?: User;
 
+  member?: GuildMember;
+
   isGuildMember = false;
 
   constructor(parent?: any) {
@@ -65,7 +76,7 @@ export class UserButton extends DChannelButton {
       client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
         if (!presence.user) return;
         const btn = UserButton.buttons.get(presence.user);
-        btn?.loadPresence(presence);
+        void btn?.loadPresence(presence);
       });
       client.on(Events.GUILD_MEMBER_UPDATE, (o, m) => {
         const oldMember = o as GuildMember;
@@ -73,7 +84,7 @@ export class UserButton extends DChannelButton {
         const btn = UserButton.buttons.get(member);
         if (!btn) return;
         if (btn.isGuildMember) btn.loadUser(member); else btn.loadUser(member.user);
-        if (oldMember.user.avatar !== member.user.avatar) btn.loadAvatar();
+        if (oldMember.user.avatar !== member.user.avatar) void btn.loadAvatar();
       });
       client.on(Events.USER_UPDATE, (o, u) => {
         const oldUser = o as User;
@@ -81,9 +92,28 @@ export class UserButton extends DChannelButton {
         const btn = UserButton.buttons.get(user);
         if (!btn || btn.isGuildMember) return;
         btn.loadUser(user);
-        if (oldUser.avatar !== user.avatar) btn.loadAvatar();
+        if (oldUser.avatar !== user.avatar) void btn.loadAvatar();
       });
     });
+  }
+
+  static createInstance(parent: any, someone: User | GuildMember) {
+    const button = new UserButton(app.window);
+    button.loadUser(someone);
+    button.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    button.addEventListener('customContextMenuRequested', ({ x, y }) => {
+      app.emit(AppEvents.OPEN_USER_MENU, someone, button.mapToGlobal(new QPoint(x, y)));
+    });
+    button.addEventListener('clicked', async () => {
+      if (someone instanceof GuildMember) {
+        const map = button.mapToGlobal(p0);
+        map.setX(map.x() - 250);
+        app.emit(AppEvents.OPEN_USER_PROFILE, someone.id, someone.guild.id, map);
+      } else {
+        app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm: await someone.createDM() });
+      }
+    });
+    return button;
   }
 
   private initComponent() {
@@ -159,7 +189,7 @@ export class UserButton extends DChannelButton {
     if (this.native.destroyed) return;
     this.statusInd.setProperty('tooltip', presence.status);
     this.statusInd.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)}`);
-    this.loadStatusEmoji(presence);
+    void this.loadStatusEmoji(presence);
 
     if (presence.activities.length) {
       const { type, name, state } = presence.activities[0];
@@ -198,17 +228,20 @@ export class UserButton extends DChannelButton {
    * Loads user/member data into the button.
    * @param someone User or member to render.
    */
-  async loadUser(someone: User | GuildMember) {
+  loadUser(someone: User | GuildMember) {
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;
     if (!user) return;
     this.isGuildMember = !!member;
     this.user = user;
+    this.member = member || undefined;
 
     this.nameLabel.setText(member?.nickname ?? user.username);
-    this.loadPresence(user.presence);
+    void this.loadPresence(user.presence);
+    this.addEventListener(WidgetEventTypes.DeferredDelete, () => UserButton.buttons.delete(user));
+
     UserButton.buttons.set(user, this);
     if (member) UserButton.buttons.set(member, this);
   }
 }
-setTimeout(UserButton.init);
+setTimeout(UserButton.init, 100);

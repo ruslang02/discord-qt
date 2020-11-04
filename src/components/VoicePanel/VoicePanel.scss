@@ -13,4 +13,12 @@
       width: 0px;
     }
   }
+  #StatusLabel {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  #InfoLabel {
+    font-size: 12px;
+    color: $header-secondary;
+  }
 }

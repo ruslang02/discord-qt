@@ -1,7 +1,7 @@
 import {
   ClientUser, Constants, DQConstants, Guild, PresenceStatus, Snowflake, Util,
 } from 'discord.js';
-import { CustomStatus } from './CustomStatus';
+import { CustomStatus } from '../utilities/CustomStatus';
 
 type FriendsSources = { all: boolean, mutualGuilds: boolean, mutualFriends: boolean };
 

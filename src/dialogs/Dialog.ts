@@ -52,7 +52,7 @@ export class Dialog extends QWidget {
     this.raise();
   }
 
-  protected async initEvents() {
+  protected initEvents() {
     (this.nodeParent as RootWindow).addEventListener(
       WidgetEventTypes.Resize,
       this.resizeToWindow.bind(this),

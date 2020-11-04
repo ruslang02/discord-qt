@@ -3,7 +3,7 @@ const fs = require('fs');
 const childProcess = require('child_process');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const { DefinePlugin, NormalModuleReplacementPlugin } = require('webpack');
+const { DefinePlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const globImporter = require('node-sass-glob-importer');
@@ -112,9 +112,6 @@ module.exports = (_env, argv) => {
     plugins: [
       new CleanWebpackPlugin(),
       new DefinePlugin({ __BUILDNUM__ }),
-      new NormalModuleReplacementPlugin(
-        /^bindings$/, require.resolve('./bindings')
-      ),
       new MiniCssExtractPlugin({
         filename: 'themes/[name].css',
       }),

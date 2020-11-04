@@ -19,7 +19,7 @@ import {
 import { Message, Snowflake } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DLabel } from '../DLabel/DLabel';
@@ -77,17 +77,9 @@ export class MessageItem extends QWidget {
     menu.setCursor(CursorShape.PointingHandCursor);
     {
       const action = new QAction(menu);
-      action.setText(`${__('QUOTE')} (>)`);
+      action.setText(__('QUOTE'));
       action.addEventListener('triggered', () => {
-        if (this.message) app.emit(Events.QUOTE_MESSAGE_NOEMBED, this.message);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(`${__('QUOTE')} (embed)`);
-      action.addEventListener('triggered', () => {
-        if (this.message) app.emit(Events.QUOTE_MESSAGE_EMBED, this.message);
+        if (this.message) app.emit(Events.QUOTE_MESSAGE, this.message);
       });
       menu.addAction(action);
     }
@@ -124,12 +116,10 @@ export class MessageItem extends QWidget {
       });
       menu.addAction(action);
     }
-    this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
-    this.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
-      const ev = new QMouseEvent(e as NativeElement);
-      if (ev.button() === MouseButton.RightButton) {
-        menu.popup(new QPoint(ev.globalX(), ev.globalY()));
-      }
+    this.contentLabel.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    this.contentLabel.addEventListener('customContextMenuRequested', ({ x, y }) => {
+      const map = this.contentLabel.mapToGlobal(this.p0);
+      menu.popup(new QPoint(map.x() + x, map.y() + y));
     });
   }
 
@@ -144,9 +134,19 @@ export class MessageItem extends QWidget {
 
     avatar.setObjectName('Avatar');
     avatar.setMinimumSize(48, 0);
+    avatar.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     avatar.setAlignment(AlignmentFlag.AlignTop);
     avatar.setCursor(CursorShape.PointingHandCursor);
-    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, this.handleUserClick.bind(this));
+    avatar.addEventListener('customContextMenuRequested', ({ x, y }) => {
+      if (!this.message) return;
+      app.emit(Events.OPEN_USER_MENU,
+        this.message.member || this.message.author,
+        avatar.mapToGlobal(new QPoint(x, y)));
+    });
+    avatar.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
+      const ev = new QMouseEvent(e as NativeElement);
+      if (ev.button() === MouseButton.LeftButton) this.handleUserClick();
+    });
     if (!app.config.enableAvatars) avatar.hide();
 
     infoLayout.setSpacing(8);
@@ -163,7 +163,6 @@ export class MessageItem extends QWidget {
 
     contentLabel.setObjectName('Content');
     contentLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    contentLabel.setContextMenuPolicy(ContextMenuPolicy.NoContextMenu);
 
     infoLayout.addWidget(unameLabel);
     infoLayout.addWidget(dateLabel, 1);
@@ -191,10 +190,10 @@ export class MessageItem extends QWidget {
   /**
    * Loads all images in the message.
    */
-  async renderImages() {
+  renderImages() {
     const { message, avatar } = this;
     if (!message || this.alreadyRendered) return;
-    (async () => {
+    void (async () => {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) {
         avatar.setPixmap(cachePixmap);
@@ -214,7 +213,9 @@ export class MessageItem extends QWidget {
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());
     if (this.contentNoEmojis) {
-      processEmojis(this.contentNoEmojis).then((content) => this.contentLabel.setText(content));
+      processEmojis(this.contentNoEmojis)
+        .then((content) => this.contentLabel.setText(content))
+        .catch(error.bind(error, "Couldn't load emoji."));
     }
     this.alreadyRendered = true;
   }
@@ -226,7 +227,7 @@ export class MessageItem extends QWidget {
   async loadMessage(message: Message): Promise<void> {
     const { unameLabel: userNameLabel, dateLabel, contentLabel } = this;
     const user = message.author;
-    const member = message.guild?.member(user);// || await message.guild?.members.fetch({ user });
+    const member = message.guild?.members.cache.get(user.id);
     this.message = message;
     userNameLabel.setText(member?.nickname || user.username);
     dateLabel.setText(message.createdAt.toLocaleString());
@@ -235,11 +236,6 @@ export class MessageItem extends QWidget {
     else {
       let { content } = message;
       content = await processMarkdown(content);
-      content = content
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .trim();
       content = await processMentions(content, message);
       this.contentNoEmojis = content;
       content = await processEmojiPlaceholders(content);

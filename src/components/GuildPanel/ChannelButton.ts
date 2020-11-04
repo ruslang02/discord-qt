@@ -1,18 +1,12 @@
 import {
   ContextMenuPolicy,
-  QAction,
-  QApplication,
-  QClipboardMode,
   QLabel,
-  QMenu,
   QPixmap,
-  QPoint,
 } from '@nodegui/nodegui';
 import { GuildChannel, TextChannel, VoiceChannel } from 'discord.js';
-import { __ } from 'i18n';
 import { join } from 'path';
 import { app } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
 export class ChannelButton extends DChannelButton {
@@ -26,10 +20,6 @@ export class ChannelButton extends DChannelButton {
 
   private chlabel = new QLabel(this);
 
-  private clipboard = QApplication.clipboard();
-
-  private channelMenu = new QMenu(this);
-
   private unreadIcon = new QLabel(this);
 
   channel?: GuildChannel;
@@ -39,13 +29,12 @@ export class ChannelButton extends DChannelButton {
     this.initComponent();
     this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     this.addEventListener('clicked', this.handleClick.bind(this));
-    this.setInlineStyle('margin-left: 8px');
     this.layout.setContentsMargins(12, 4, 12, 4);
   }
 
   private handleClick() {
     const { channel } = this;
-    if (!channel) return;
+    if (!channel || this.activated()) return;
     switch (channel.type) {
       case 'news':
       case 'text':
@@ -74,30 +63,22 @@ export class ChannelButton extends DChannelButton {
     unreadIcon.hide();
   }
 
+  setMuted(value: boolean) {
+    super.setMuted(value);
+    this.setUnread(this.unread());
+  }
+
   setUnread(value: boolean) {
     super.setUnread(value);
-    if (value) this.unreadIcon.show(); else this.unreadIcon.hide();
+    if (value && !this.muted()) this.unreadIcon.show(); else this.unreadIcon.hide();
   }
 
   loadChannel(channel: GuildChannel) {
-    const { channelMenu, chicon } = this;
+    const { chicon } = this;
     this.channel = channel;
     this.chlabel.setText(channel.name);
     const pixmap = ChannelButton.Icons.get(channel.type);
     if (pixmap) chicon.setPixmap(pixmap);
-    if (channel instanceof TextChannel) {
-      this.setUnread(!channel.acknowledged);
-    }
-    // channelMenu.setInlineStyle('background: #18191c');
-    const copyId = new QAction();
-    copyId.setText(__('COPY_ID'));
-    copyId.addEventListener('triggered', () => {
-      this.clipboard.setText(channel.id, QClipboardMode.Clipboard);
-    });
-    channelMenu.addAction(copyId);
-    this.addEventListener('customContextMenuRequested', (pos) => {
-      channelMenu.repolish();
-      channelMenu.popup(this.mapToGlobal(new QPoint(pos.x, pos.y)));
-    });
+    if (channel instanceof TextChannel && !channel.acknowledged) this.setUnread(true);
   }
 }

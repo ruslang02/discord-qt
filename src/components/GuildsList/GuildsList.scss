@@ -1,5 +1,3 @@
-
-
 #GuildsList {
   background: $background-tertiary;
   &::item {
@@ -20,7 +18,6 @@
     &:hover,
     &[active="true"] {
       background-color: $blurple;
-      border-radius: 15px;
     }
   }
   #UnreadIndicator {

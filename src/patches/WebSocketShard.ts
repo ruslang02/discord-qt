@@ -7,4 +7,5 @@ WebSocketShard.prototype.checkReady = function () {
   this.status = Status.READY;
   // @ts-ignore
   this.emit(ShardEvents.ALL_READY);
+  this.manager.client.shard = this;
 }

@@ -3,15 +3,14 @@
 ![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg)
 ![David](https://img.shields.io/david/ruslang02/discord-qt)
 
+[![discord](https://img.shields.io/discord/765296053410857000?color=%237289da&label=discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/tNNuUK4)
+
 A Discord desktop client powered by Node.JS and [NodeGui](https://github.com/nodegui).
 It offers a significantly less resource-consuming experience comparing to the official Electron-based desktop client thanks to native UI rendering instead of a Chromium rendering engine.
 
+### **[Download](https://github.com/ruslang02/discord-qt/releases/latest) for Windows, Linux and macOS**
+
 ![Screenshot](screenshot.png)
-
-Node.JS v12+ is required to build.
-
-## Running the binary release
-Precompiled builds are available at https://github.com/ruslang02/discord-qt/releases for Windows, macOS and Linux (AppImage, Debian package).
 
 ## Installing from npm
 Windows (macOS should work as well, however not tested):
@@ -24,7 +23,10 @@ Linux:
 # npm i -g discord-qt --unsafe-perm --allow-root
 ```
 
-## Installing from sources
+## Building from sources
+
+Node.JS v12+ is required to build.
+
 ```bash
 git clone https://github.com/ruslang02/discord-qt
 cd discord-qt/
@@ -36,11 +38,16 @@ npm start
 In order to run this application you **must** obtain a Discord user token [(how-to guide)](https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs).
 You can configure your user accounts, as well as other settings in the Settings screen.
 
+## Plugins
+Plugins should be located in `~/.config/discord-qt/plugins` and represent itself as an npm-like package with `discord-qt` and `plugin` keywords placed in `package.json`. Currently available plugins:
+ - [mpris-dqt-plugin](https://github.com/ruslang02/mpris-dqt-plugin)
+
 ## Fonts
 By default, the application uses Source Sans Pro font. However, if you want an even more seamless experience, you need to obtain a copy of Whitney fonts (commercial fonts used by Discord) and put them into `/assets/fonts` folder. In order to activate them, uncomment line with Whitley font in `/src/windows/RootWindow.scss` and rebuild.
 
-## Caution
-DiscordQt is against Discord's Terms of Service as an unofficial client, *however* you most likely won't get banned/detected for using this client. 
+## Notice
+[Discord's Terms of Service](https://discord.com/terms) do not explictly prohibit the usage of third-party clients, however we can not guarantee that accounts using this application will not be disabled.
+DiscordQt does its best to only *replicate* official client's functionality. Authors of DiscordQt discourage usage and modification of this project's source code in the ways that may violate service's Terms of Service.
 
 ## License
 GPL 3.0

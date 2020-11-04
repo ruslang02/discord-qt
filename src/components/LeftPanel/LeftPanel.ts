@@ -2,7 +2,7 @@ import {
   Direction, QBoxLayout, QStackedWidget, QWidget,
 } from '@nodegui/nodegui';
 import { app, MAX_QSIZE } from '../..';
-import { Events } from '../../structures/Events';
+import { Events } from '../../utilities/Events';
 import { DMPanel } from '../DMPanel/DMPanel';
 import { GuildPanel } from '../GuildPanel/GuildPanel';
 import { UserPanel } from '../UserPanel/UserPanel';
