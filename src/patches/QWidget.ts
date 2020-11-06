@@ -20,13 +20,15 @@ for (const object of consts) {
           if (prop === '__isProxy') return true;
           if (prop === '__proto__') return newNative;
           if (prop === 'destroyed') return target.destroyed;
-          if (target.destroyed) {
+          if (target.destroyed || [...args].some((a) => a.destroyed)) {
             warn(`Method ${String(prop)} was called of a dereferenced object of type ${target.constructor.name}`);
             return noop;
           }
+          // console.log(target, prop, args);
           return function () {
             if ([...arguments].includes(noop)) return noop;
             const args = [...arguments].map(a => a?.__isProxy ? a.__proto__ : a);
+            // console.log(args);
             return target[prop].call(newNative, ...args);
           };
         },

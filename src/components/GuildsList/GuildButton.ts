@@ -39,7 +39,7 @@ export class GuildButton extends QLabel {
 
   hasPixmap = false;
 
-  private _unread = false;
+  private _unread = true;
 
   private _active = false;
 

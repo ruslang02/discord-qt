@@ -30,6 +30,8 @@ export class MessagesPanel extends QScrollArea {
 
   private highestWidget?: MessageItem;
 
+  private items: MessageItem[] = [];
+
   constructor(parent?: any) {
     super(parent);
     this.setObjectName('MessagesPanel');
@@ -55,6 +57,7 @@ export class MessagesPanel extends QScrollArea {
           const widget = new MessageItem(this.root);
           (this.root.layout as QBoxLayout).insertWidget(0, widget);
           await widget.loadMessage(message);
+          this.items.push(widget);
           this.lowestWidget = widget;
           setTimeout(() => this.isBottom(lowest) && this.ensureVisible(0, MAX_QSIZE), 100);
           this.initAckTimer();
@@ -127,12 +130,13 @@ export class MessagesPanel extends QScrollArea {
         withPresences: true,
       }).catch((e) => error("Couldn't prefetch members list.", e));
     }
-    messages.forEach((message, i) => {
+    const promises = messages.map((message, i) => {
       const widget = new MessageItem(this.root);
       if (i === messages.length - 1) this.highestWidget = widget;
       (this.root.layout as QBoxLayout).addWidget(widget);
-      void widget.loadMessage(message);
+      return widget.loadMessage(message);
     });
+    this.items = [...this.items, ...(await Promise.all(promises))];
   }
 
   private ratelimit = false;
@@ -181,10 +185,11 @@ export class MessagesPanel extends QScrollArea {
     this.lastLoad = new Date().getTime();
 
     this.isLoading = true;
-    this.ratelimit = true;
     if (this.rateTimer) clearTimeout(this.rateTimer);
     if (this.ackTimer) clearTimeout(this.ackTimer);
     debug(`Opening channel ${channel.id}...`);
+    for (const item of this.items) item.destroy();
+    this.items = [];
     this.initRoot();
     try {
       if (this.channel.messages.cache.size < 30) await this.channel.messages.fetch({ limit: 30 });
@@ -205,7 +210,7 @@ export class MessagesPanel extends QScrollArea {
       return widget.loadMessage(message);
     });
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
-    await Promise.all(promises);
+    this.items = await Promise.all(promises);
     debug('Widgets finished loading.');
     setTimeout(() => {
       this.isLoading = false;
@@ -213,9 +218,5 @@ export class MessagesPanel extends QScrollArea {
       clearInterval(scrollTimer);
     }, 200);
     this.initAckTimer();
-    this.rateTimer = setTimeout(() => {
-      this.ratelimit = false;
-      if (channel !== this.channel && this.channel) void this.handleChannelOpen(this.channel);
-    }, 1500);
   }
 }

@@ -40,15 +40,9 @@ export class MembersList extends QListWidget {
     });
   }
 
-  private ratelimit = false;
-
-  private rateTimer?: any;
-
   private loadList(channel: GuildChannel) {
     this.channel = channel as TextChannel | NewsChannel;
-    if (this.ratelimit || !['text', 'news'].includes(channel.type)) return;
-    this.ratelimit = true;
-    if (this.rateTimer) clearTimeout(this.rateTimer);
+    if (!['text', 'news'].includes(channel.type)) return;
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
 
@@ -62,12 +56,8 @@ export class MembersList extends QListWidget {
       item.setBackground(new QBrush(new QColor('transparent'), BrushStyle.NoBrush));
       this.addItem(item);
       this.setItemWidget(item, btn);
-      btn.loadAvatar();
+      void btn.loadAvatar();
     }
     debug('Finished loading members list.');
-    this.rateTimer = setTimeout(() => {
-      this.ratelimit = false;
-      if (channel !== this.channel && this.channel) this.loadList(this.channel);
-    }, 500);
   }
 }

@@ -126,12 +126,16 @@ export class InputPanel extends QWidget {
     client.setInterval(() => this.channel && this.updateTyping(this.channel as TextChannel), 100);
   }
 
+  private prevTypers: string[] = [];
+
   private updateTyping(channel: TextChannel | DMChannel) {
     const { typingLabel } = this;
     if (this.channel?.id !== channel.id) return;
     const typers = [...channel._typing.values()]
       .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.nickname || e.user.username)
       .filter((m) => !!m) as string[];
+    if (typers.every((s) => this.prevTypers.includes(s))) return;
+    this.prevTypers = typers;
     let i18nString;
     switch (typers.length) {
       case 0:

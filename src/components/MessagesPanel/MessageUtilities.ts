@@ -246,7 +246,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         .trim();
       processMentions(description, message).then((pdescription) => {
         if (!item.native.destroyed) descr.setText(pdescription);
-      });
+      }).catch(() => error("Couldn't process mentions in embed description."));
       layout.addWidget(descr);
     }
     const grid = new QGridLayout(); // TODO: QGridLayout::addLayout
@@ -274,7 +274,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
     if (embed.image || embed.thumbnail) {
       const image = embed.image || embed.thumbnail as MessageEmbedImage;
       const { width, height } = getCorrectSize(image.width, image.height);
-      const qImage = new QLabel();
+      const qImage = new QLabel(item);
       qImage.setCursor(CursorShape.PointingHandCursor);
       qImage.setFixedSize(width, height);
       qImage.setObjectName('EmbedImage');
@@ -285,6 +285,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         if (item.native.destroyed || !image.proxyURL) return;
         try {
           const path = await pictureWorker.loadImage(image.proxyURL);
+          if (item.native.destroyed) return;
           if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
           qImage.setInlineStyle('background-color: transparent');
         } catch (e) {
@@ -302,61 +303,61 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
  * Retrieves and displays information about invitation links.
  * @param message Message to process.
  */
-export async function processInvites(message: Message): Promise<QWidget[]> {
+export async function processInvites(message: Message, msgItem: MessageItem): Promise<QWidget[]> {
   const invites = message.content.match(INVITE_REGEX) || [];
   const widgets: QWidget[] = [];
   for (const inviteLink of invites) {
-    try {
-      // eslint-disable-next-line no-await-in-loop
-      const invite = await app.client.fetchInvite(inviteLink);
-      const item = new QWidget();
-      item.setObjectName('InviteContainer');
-      item.setMinimumSize(432, 0);
-      item.setMaximumSize(432, MAX_QSIZE);
-      const layout = new QBoxLayout(Direction.TopToBottom);
-      item.setLayout(layout);
-      layout.setContentsMargins(16, 16, 16, 16);
-      layout.setSpacing(12);
-      const helperText = new QLabel(item);
-      helperText.setText(__('GUILD_PROFILE_JOIN_SERVER_BUTTON'));
-      helperText.setObjectName('Helper');
-      const mainLayout = new QBoxLayout(Direction.LeftToRight);
-      const avatar = new QLabel(item);
-      avatar.setFixedSize(50, 50);
-      avatar.setObjectName('Icon');
+    const item = new QWidget(msgItem);
+    item.setObjectName('InviteContainer');
+    item.setMinimumSize(432, 0);
+    item.setMaximumSize(432, MAX_QSIZE);
+    const layout = new QBoxLayout(Direction.TopToBottom);
+    item.setLayout(layout);
+    layout.setContentsMargins(16, 16, 16, 16);
+    layout.setSpacing(12);
+    const helperText = new QLabel(item);
+    helperText.setText(__('GUILD_PROFILE_JOIN_SERVER_BUTTON'));
+    helperText.setObjectName('Helper');
+    const mainLayout = new QBoxLayout(Direction.LeftToRight);
+    const avatar = new QLabel(item);
+    avatar.setFixedSize(50, 50);
+    avatar.setObjectName('Icon');
+    avatar.setInlineStyle('font-size: 18px;');
+    avatar.setAlignment(AlignmentFlag.AlignCenter);
+    const infoLayout = new QBoxLayout(Direction.TopToBottom);
+    const nameLabel = new QLabel(item);
+    nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
+    nameLabel.setObjectName('Name');
+    const infoLabel = new QLabel(item);
+    infoLabel.setInlineStyle('font-size: small; color: #72767d;');
+    infoLayout.addStretch(1);
+    infoLayout.addWidget(nameLabel);
+    infoLayout.addWidget(infoLabel);
+    infoLayout.addStretch(1);
+    mainLayout.addWidget(avatar);
+    mainLayout.addLayout(infoLayout, 1);
+    layout.addWidget(helperText);
+    layout.addLayout(mainLayout, 1);
+    widgets.push(item);
+    app.client.fetchInvite(inviteLink).then((invite) => {
+      if (msgItem.native.destroyed) return;
       avatar.setText(invite.guild?.nameAcronym || '');
-      avatar.setInlineStyle('font-size: 18px;');
-      avatar.setAlignment(AlignmentFlag.AlignCenter);
+      infoLabel.setText(`${__('TOTAL_MEMBERS')}: ${invite.memberCount}`);
+      nameLabel.setText(invite.guild?.name || '');
       // @ts-ignore
       item.loadImages = async function loadImages() {
         const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
         if (!iconUrl) return;
         try {
           const path = await pictureWorker.loadImage(iconUrl);
+          if (msgItem.native.destroyed) return;
           avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
           avatar.setObjectName('');
         } catch (e) {
           error(`Guild image in invite to "${invite.guild?.name}" could not be loaded.`);
         }
       };
-      const infoLayout = new QBoxLayout(Direction.TopToBottom);
-      const nameLabel = new QLabel(item);
-      nameLabel.setText(invite.guild?.name || '');
-      nameLabel.setAlignment(AlignmentFlag.AlignVCenter);
-      nameLabel.setObjectName('Name');
-      const infoLabel = new QLabel(item);
-      infoLabel.setText(`${__('TOTAL_MEMBERS')}: ${invite.memberCount}`);
-      infoLabel.setInlineStyle('font-size: small; color: #72767d;');
-      infoLayout.addStretch(1);
-      infoLayout.addWidget(nameLabel);
-      infoLayout.addWidget(infoLabel);
-      infoLayout.addStretch(1);
-      mainLayout.addWidget(avatar);
-      mainLayout.addLayout(infoLayout, 1);
-      layout.addWidget(helperText);
-      layout.addLayout(mainLayout, 1);
-      widgets.push(item);
-    } catch (e) { }
+    }).catch(error.bind("Couldn't load the invite."));
   }
   return widgets;
 }
@@ -365,13 +366,13 @@ export async function processInvites(message: Message): Promise<QWidget[]> {
  * Processes attachments in the message.
  * @param message Message to process.
  */
-export function processAttachments(message: Message): QLabel[] {
+export function processAttachments(message: Message, item: MessageItem): QLabel[] {
   const { attachments } = message;
   return attachments.map((attach) => {
     const { width, height } = getCorrectSize(attach.width, attach.height);
     const url = `${attach.proxyURL}?width=${width}&height=${height}`;
     const isImage = PIXMAP_EXTS.includes(extname(attach.url).slice(1).toUpperCase());
-    const qimage = new DLabel();
+    const qimage = new DLabel(item);
     qimage.setFixedSize(width, height);
     qimage.setInlineStyle('background-color: #2f3136; border-radius: 3px;');
     qimage.setCursor(CursorShape.PointingHandCursor);
@@ -392,6 +393,7 @@ export function processAttachments(message: Message): QLabel[] {
         if (!isImage) return;
         try {
           const image = await pictureWorker.loadImage(url);
+          if (item.native.destroyed) return;
           qimage.setPixmap(new QPixmap(image));
           qimage.setInlineStyle('background-color: transparent');
         } catch (e) {

@@ -224,7 +224,7 @@ export class MessageItem extends QWidget {
    * Populates the message widget with message data.
    * @param message Message to process.
    */
-  async loadMessage(message: Message): Promise<void> {
+  async loadMessage(message: Message): Promise<MessageItem> {
     const { unameLabel: userNameLabel, dateLabel, contentLabel } = this;
     const user = message.author;
     const member = message.guild?.members.cache.get(user.id);
@@ -239,13 +239,15 @@ export class MessageItem extends QWidget {
       content = await processMentions(content, message);
       this.contentNoEmojis = content;
       content = await processEmojiPlaceholders(content);
+      if (this.native.destroyed) return this;
       contentLabel.setText(content);
     }
     [
-      ...processAttachments(message),
+      ...processAttachments(message, this),
       ...processEmbeds(message, this),
-      ...await processInvites(message),
+      ...await processInvites(message, this),
     ].forEach((w) => !this.native.destroyed && this.msgLayout.addWidget(w));
+    return this;
   }
 
   /**
@@ -257,5 +259,10 @@ export class MessageItem extends QWidget {
     this.dateLabel.hide();
     this.contentLabel.setPlainText(`<i>&nbsp;</i>${content}`);
     this.msgLayout.setDirection(Direction.LeftToRight);
+  }
+
+  destroy() {
+    this.native.destroyed = true;
+    this.contentLabel.native.destroyed = true;
   }
 }
