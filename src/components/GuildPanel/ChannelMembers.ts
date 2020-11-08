@@ -3,7 +3,7 @@ import {
   Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint,
 } from '@nodegui/nodegui';
 import {
-  GuildMember, Snowflake, VoiceChannel, VoiceState,
+  GuildMember, Snowflake, VoiceChannel, VoiceConnection, VoiceState,
 } from 'discord.js';
 import { app } from '../..';
 import { createLogger } from '../../utilities/Console';
@@ -20,34 +20,50 @@ export class ChannelMembers extends QListWidget {
 
   private asItem?: QListWidgetItem;
 
-  private channel?: VoiceChannel;
+  private connection?: VoiceConnection;
 
   private p0 = new QPoint(0, 0);
 
-  constructor(parent?: any) {
-    super(parent);
+  constructor(private channel: VoiceChannel) {
+    super();
     this.setMinimumSize(240, 0);
     this.setUniformItemSizes(true);
     this.setFrameShape(0);
     this.setHorizontalScrollBarPolicy(1);
     this.setObjectName('ChannelMembers');
+
+    this.loadChannel(channel);
   }
 
   handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
     if (this.native.destroyed || !o.member) return;
+    if (n.connection && n.connection !== this.connection) {
+      this.connection = n.connection;
+      n.connection.on('speaking', (user, speaking) => {
+        const ubtn = this.buttons.get(user.id);
+        if (ubtn) {
+          ubtn.setStyleSheet(speaking.bitfield ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }' : '');
+        }
+      });
+    }
     if (o.channel === this.channel && n.channel !== this.channel) {
       try {
-        const item = this.findItems(o.member.id, 0)[0];
+        const item = this.findItems(o.member.user.id, 0)[0];
         this.buttons.get(o.member.user.id)?.hide();
         this.buttons.delete(o.member.user.id);
         this.takeItem(this.row(item));
       } catch (e) { }
+      if (o.member.user.id === app.client.user?.id) {
+        this.buttons.forEach((btn) => btn.setStyleSheet(''));
+      }
     }
     if (o.channel !== this.channel && n.channel === this.channel) {
       const item = new QListWidgetItem();
       const btn = this.buttons.get(o.member.user.id) || this.createButton(o.member);
       this.layout.addWidget(btn);
       item.setSizeHint(btn.size());
+      item.setFlags(~32);
+      item.setText(o.member.user.id);
       this.addItem(item);
       this.setItemWidget(item, btn);
       this.buttons.set(o.member.user.id, btn);
@@ -68,6 +84,7 @@ export class ChannelMembers extends QListWidget {
     const btn = new DChannelButton(this);
     const avatar = new QLabel(btn);
     avatar.setFixedSize(24, 24);
+    avatar.setObjectName('Avatar');
     btn.layout.setSpacing(8);
     btn.setFixedSize(200, 30);
     btn.addEventListener('clicked', () => {
@@ -75,6 +92,8 @@ export class ChannelMembers extends QListWidget {
       map.setX(map.x() + 200);
       app.emit(AppEvents.OPEN_USER_PROFILE, member.id, member.guild.id, map);
     });
+    // @ts-ignore
+    btn.avatar = avatar;
     btn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     btn.addEventListener('customContextMenuRequested', ({ x, y }) => {
       app.emit(AppEvents.OPEN_USER_MENU, member, btn.mapToGlobal(new QPoint(x, y)));
@@ -97,7 +116,6 @@ export class ChannelMembers extends QListWidget {
    * @returns Whether the widget should be shown.
    */
   loadChannel(channel: VoiceChannel) {
-    this.channel = channel;
     this.buttons.clear();
     for (const member of channel.members.values()) {
       const item = new QListWidgetItem();

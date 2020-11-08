@@ -192,8 +192,7 @@ export class ChannelsList extends QListWidget {
         this.menu.popup(btn.mapToGlobal(new QPoint(pos.x, pos.y)));
       });
       if (channel.type === 'voice') {
-        const members = new ChannelMembers(this);
-        members.loadChannel(channel as VoiceChannel);
+        const members = new ChannelMembers(channel as VoiceChannel);
         const memitem = new QListWidgetItem();
         memitem.setText(channel.id);
         this.insertItem(row + 1, memitem);
