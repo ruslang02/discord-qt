@@ -51,6 +51,7 @@ export class ClientManager {
   private bindEvents() {
     const { Events } = Constants;
     this.client.on(Events.ERROR, error);
+    this.client.on(Events.DEBUG, debug);
     this.client.on(Events.RAW, debug);
     this.client.on(Events.WARN, warn);
     this.client.on(Events.MESSAGE_CREATE, async (message) => {

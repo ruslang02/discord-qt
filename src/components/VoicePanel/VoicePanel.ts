@@ -15,9 +15,10 @@ import { app } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { DIconButton } from '../DIconButton/DIconButton';
+import { NoiseReductor } from './NoiseReductor';
 import { Silence } from './Silence';
 
-const { error } = createLogger('VoicePanel');
+const { debug, error, warn } = createLogger('VoicePanel');
 
 const PLAYBACK_OPTIONS = [
   '-f', 's16le',
@@ -27,7 +28,7 @@ const PLAYBACK_OPTIONS = [
   '-guess_layout_max', '0',
   '-i', '-',
   '-f', 'pulse',
-  '-buffer_duration', '10',
+  '-buffer_duration', '5',
   '-name', '{name}',
   'default',
 ];
@@ -38,16 +39,10 @@ const RECORD_OPTIONS = [
   '-frame_size', '960',
   '-f', 'pulse',
   '-i', 'default',
-  '-c', 'libopus',
-  '-loglevel', 'quiet',
-  '-b:a', '256000',
-  '-compression_level', '10',
-  '-frame_duration', '2.5',
-  '-application', 'lowdelay',
-  '-fflags', 'nobuffer',
-  '-fflags', 'discardcorrupt',
-  '-max_muxing_queue_size', '0',
-  '-f', 'opus', '-',
+  '-filter', 'lowpass=12000,afftdn=nr=50,bass=g=14',
+  '-f', 's16le',
+  '-ar', '48000',
+  '-ac', '2', '-',
 ];
 
 setTimeout(() => {
@@ -198,6 +193,11 @@ export class VoicePanel extends QWidget {
     infoLabel.setText(channel.name);
     try {
       this.connection = await channel.join();
+      this.connection.on('warn', warn.bind(this, '[djs]'));
+      this.connection.on('error', error.bind(this, '[djs]'));
+      this.connection.on('failed', error.bind(this, '[djs]'));
+      this.connection.on('debug', debug.bind(this, '[djs]'));
+      this.connection.setSpeaking(0);
       statusLabel.setText("<font color='#faa61a'>Connecting Devices</font>");
       this.playbackStream = ChildProcess.spawn(FFmpeg.getInfo().command, PLAYBACK_OPTIONS);
       this.connection.play(new Silence(), { type: 'opus' });
@@ -212,7 +212,11 @@ export class VoicePanel extends QWidget {
       }
       this.mixer.pipe(this.playbackStream.stdin);
       this.recordStream = ChildProcess.spawn(FFmpeg.getInfo().command, RECORD_OPTIONS);
-      this.connection.play(this.recordStream.stdout, { bitrate: 256, type: 'ogg/opus', highWaterMark: 0 });
+      const noiseReductor = new NoiseReductor((value: boolean) => {
+        this.connection?.setSpeaking(value ? 1 : 0);
+      });
+      noiseReductor.setSensivity(9);
+      this.connection.play(this.recordStream.stdout.pipe(noiseReductor), { bitrate: 256, type: 'converted', highWaterMark: 0 });
       statusLabel.setText("<font color='#43b581'>Voice Connected</font>");
     } catch (e) {
       statusLabel.setText("<font color='#f04747'>Error</font>");

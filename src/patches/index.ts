@@ -4,6 +4,7 @@ export const Patches = [
   require('./QWidget'),
   require('./Prism'),
   require('./SecretBox'),
+  require('./StreamDispatcher'),
   require('./Constants'),
   require('./TextBasedChannel'),
   require('./ClientUser'),

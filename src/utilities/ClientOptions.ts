@@ -3,6 +3,9 @@ import { ClientOptions } from 'discord.js';
 const { version } = require('../../package.json');
 
 export const clientOptions: ClientOptions = {
+  http: {
+    version: 8,
+  },
   ws: {
     compress: false,
     properties: {
@@ -15,5 +18,6 @@ export const clientOptions: ClientOptions = {
       // @ts-ignore
       client_build_number: __BUILDNUM__ || 0,
     },
+    version: 7,
   },
 };

@@ -8,6 +8,7 @@ import { existsSync, promises } from 'fs';
 import path from 'path';
 import { app } from '..';
 import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
+import { UserMenu } from '../components/UserMenu/UserMenu';
 import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
 import { ConfirmLeaveGuildDialog } from '../dialogs/ConfirmLeaveGuildDialog';
 import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
@@ -35,6 +36,8 @@ export class RootWindow extends QMainWindow {
   private mainView = new MainView();
 
   private settingsView = new SettingsView();
+
+  private userMenu = new UserMenu(this.root);
 
   shiftKeyPressed = false;
 
