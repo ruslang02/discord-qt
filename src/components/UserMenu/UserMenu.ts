@@ -91,7 +91,7 @@ export class UserMenu extends QMenu {
       userVolLabel.setObjectName('UserVolumeLabel');
       this.userVolSlider.setOrientation(Orientation.Horizontal);
       this.userVolSlider.setCursor(CursorShape.SizeHorCursor);
-      this.userVolSlider.setMaximum(100);
+      this.userVolSlider.setMaximum(150);
       this.userVolSlider.addEventListener('sliderReleased', async () => {
         if (!this.someone) return;
         const settings = app.config.userVolumeSettings[this.someone.id];

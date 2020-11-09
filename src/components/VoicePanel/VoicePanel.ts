@@ -29,13 +29,12 @@ const PLAYBACK_OPTIONS = [
   '-i', '-',
   '-f', 'pulse',
   '-buffer_duration', '5',
-  '-name', '{name}',
+  '-name', 'DiscordQt',
   'default',
 ];
 
 const RECORD_OPTIONS = [
   '-name', 'DiscordQt',
-  '-stream_name', 'Voice Chat input',
   '-frame_size', '960',
   '-f', 'pulse',
   '-i', 'default',
@@ -44,11 +43,6 @@ const RECORD_OPTIONS = [
   '-ar', '48000',
   '-ac', '2', '-',
 ];
-
-setTimeout(() => {
-  const i = PLAYBACK_OPTIONS.findIndex((val) => val === '{name}');
-  PLAYBACK_OPTIONS[i] = app.name;
-}, 0);
 
 export class VoicePanel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -129,7 +123,6 @@ export class VoicePanel extends QWidget {
   private handleDisconnectButton() {
     this.statusLabel.setText("<font color='#f04747'>Disconnecting</font>");
     this.connection?.disconnect();
-    this.mixer?.close();
     this.recordStream?.kill();
     this.playbackStream?.kill();
     this.mixer?.close();
@@ -163,7 +156,6 @@ export class VoicePanel extends QWidget {
         sampleRate: 48000,
         channels: 2,
         bitDepth: 16,
-        highWaterMark: 1,
         volume,
       });
       this.streams.set(member, input);
@@ -177,7 +169,12 @@ export class VoicePanel extends QWidget {
   private disconnectFromMixer(member: GuildMember) {
     if (!this.mixer) return;
     const input = this.streams.get(member);
-    if (input) this.mixer.removeInput(input);
+    if (input) {
+      this.mixer.removeInput(input);
+      input.end();
+    } else {
+      error(`Couldn't disconnect a member ${member} from the playback stream.`);
+    }
   }
 
   private async joinChannel(channel: VoiceChannel) {
@@ -197,9 +194,10 @@ export class VoicePanel extends QWidget {
       this.connection.on('error', error.bind(this, '[djs]'));
       this.connection.on('failed', error.bind(this, '[djs]'));
       this.connection.on('debug', debug.bind(this, '[djs]'));
-      this.connection.setSpeaking(0);
+      this.connection.setSpeaking(4);
       statusLabel.setText("<font color='#faa61a'>Connecting Devices</font>");
       this.playbackStream = ChildProcess.spawn(FFmpeg.getInfo().command, PLAYBACK_OPTIONS);
+      this.playbackStream.stderr.on('data', (chunk) => debug('[PlaybackStream]', chunk.toString()));
       this.connection.play(new Silence(), { type: 'opus' });
       this.mixer = new Mixer({
         channels: 2,
@@ -212,8 +210,11 @@ export class VoicePanel extends QWidget {
       }
       this.mixer.pipe(this.playbackStream.stdin);
       this.recordStream = ChildProcess.spawn(FFmpeg.getInfo().command, RECORD_OPTIONS);
+      this.recordStream.stderr.on('data', (chunk) => debug('[RecordStream]', chunk.toString()));
       const noiseReductor = new NoiseReductor((value: boolean) => {
-        this.connection?.setSpeaking(value ? 1 : 0);
+        if (!this.connection) return;
+        this.connection.setSpeaking(value ? 1 : 4);
+        this.connection.emit('speaking', app.client.user, this.connection.speaking);
       });
       noiseReductor.setSensivity(9);
       this.connection.play(this.recordStream.stdout.pipe(noiseReductor), { bitrate: 256, type: 'converted', highWaterMark: 0 });

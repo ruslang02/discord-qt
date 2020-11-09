@@ -1,4 +1,5 @@
 import {
+  AlignmentFlag,
   ContextMenuPolicy,
   Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint,
 } from '@nodegui/nodegui';
@@ -42,7 +43,7 @@ export class ChannelMembers extends QListWidget {
       n.connection.on('speaking', (user, speaking) => {
         const ubtn = this.buttons.get(user.id);
         if (ubtn) {
-          ubtn.setStyleSheet(speaking.bitfield ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }' : '');
+          ubtn.setStyleSheet(speaking.bitfield === 1 ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }' : '');
         }
       });
     }
@@ -85,6 +86,7 @@ export class ChannelMembers extends QListWidget {
     const avatar = new QLabel(btn);
     avatar.setFixedSize(24, 24);
     avatar.setObjectName('Avatar');
+    avatar.setAlignment(AlignmentFlag.AlignCenter);
     btn.layout.setSpacing(8);
     btn.setFixedSize(200, 30);
     btn.addEventListener('clicked', () => {

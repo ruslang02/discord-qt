@@ -7,7 +7,7 @@ export class NoiseReductor extends Transform {
 
   private timer?: any;
 
-  constructor(private onSetSpeaking: (value: boolean) => void) {
+  constructor(private onSetSpeaking: (isSpeaking: boolean) => void) {
     super();
   }
 
