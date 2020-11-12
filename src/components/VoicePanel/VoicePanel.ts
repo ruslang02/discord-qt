@@ -21,7 +21,7 @@ import { DIconButton } from '../DIconButton/DIconButton';
 import { NoiseReductor } from './NoiseReductor';
 import { Silence } from './Silence';
 
-const { error, warn } = createLogger('VoicePanel');
+const { debug, error, warn } = createLogger('VoicePanel');
 
 const MIXER_OPTIONS = {
   sampleRate: 48000,
@@ -44,9 +44,13 @@ export class VoicePanel extends QWidget {
 
   private mixer?: Mixer;
 
+  private currentPlaybackDevice?: string;
+
   private playbackStream?: ChildProcessWithoutNullStreams;
 
   private playbackVolumeTransformer?: VolumeTransformer;
+
+  private currentRecordDevice?: string;
 
   private recordStream?: ChildProcessWithoutNullStreams;
 
@@ -79,6 +83,14 @@ export class VoicePanel extends QWidget {
       settings.volume = settings.volume ?? 100;
       settings.muted = settings.muted ?? false;
       entries[1].setVolume(settings.muted ? 0 : settings.volume);
+    }
+    if (this.currentPlaybackDevice !== (app.config.voiceSettings.outputDevice || 'default')) {
+      this.currentPlaybackDevice = app.config.voiceSettings.outputDevice || 'default';
+      this.initPlayback();
+    }
+    if (this.currentRecordDevice !== (app.config.voiceSettings.inputDevice || 'default')) {
+      this.currentRecordDevice = app.config.voiceSettings.inputDevice || 'default';
+      this.initRecord();
     }
     this.playbackVolumeTransformer?.setVolume((config.voiceSettings.outputVolume || 100) / 100);
     this.recordVolumeTransformer?.setVolume((config.voiceSettings.inputVolume || 100) / 100);
@@ -124,6 +136,8 @@ export class VoicePanel extends QWidget {
     this.mixer?.close();
     this.streams.clear();
     this.hide();
+    this.channel = undefined;
+    this.connection = undefined;
   }
 
   private static openVoiceNotSupportedDialog(channel: VoiceChannel) {
@@ -147,10 +161,11 @@ export class VoicePanel extends QWidget {
     if (!this.mixer) return;
     const stream = this.connection?.receiver.createStream(member.user, { mode: 'pcm', end: 'manual' });
     if (stream) {
-      const volume = app.config.userVolumeSettings[member.id]?.volume || 100;
+      const volume = app.config.userVolumeSettings[member.id]?.volume ?? 100;
+      const muted = app.config.userVolumeSettings[member.id]?.muted ?? false;
       const input = new Input({
         ...MIXER_OPTIONS,
-        volume,
+        volume: muted ? 0 : volume,
       });
       this.streams.set(member, input);
       this.mixer.addInput(input);
@@ -171,9 +186,46 @@ export class VoicePanel extends QWidget {
     }
   }
 
+  private initPlayback() {
+    if (!this.connection || !this.channel) return;
+
+    const { channel } = this;
+
+    this.mixer?.close();
+    this.playbackStream?.kill();
+    this.streams.clear();
+
+    pipeline(
+      this.mixer = new Mixer(MIXER_OPTIONS), // Initialize the member streams mixer
+      (this.playbackVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform, // Change the volume
+      (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
+      (err) => err && debug("Couldn't finish playback pipeline.", err),
+    );
+
+    for (const member of channel.members.filter((m) => m.user !== app.client.user).values()) {
+      this.connectToMixer(member);
+    }
+  }
+
+  private initRecord() {
+    if (!this.connection) return;
+
+    this.connection.dispatcher.end();
+
+    const recorder = pipeline(
+      (this.recordStream = createRecordStream()).stdout, // Open a recording stream
+      (this.recordVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform,
+      // Change the volume
+      this.recordNoiseReductor = new NoiseReductor(this.onSpeaking.bind(this)), // Audio gate
+      (err) => err && debug("Couldn't finish recording pipeline.", err),
+    );
+
+    this.connection.play(recorder, { bitrate: 256, type: 'converted', highWaterMark: 0 });
+  }
+
   private async joinChannel(channel: VoiceChannel) {
     const {
-      infoLabel, statusLabel, onSpeaking, createConnection,
+      infoLabel, statusLabel, createConnection, initPlayback, initRecord,
     } = this;
     if (process.platform !== 'linux') {
       VoicePanel.openVoiceNotSupportedDialog(channel);
@@ -189,26 +241,9 @@ export class VoicePanel extends QWidget {
       statusLabel.setText("<font color='#faa61a'>Connecting Devices</font>");
       this.connection.play(new Silence(), { type: 'opus' }); // To receive audio we need to send something.
 
-      pipeline(
-        this.mixer = new Mixer(MIXER_OPTIONS), // Initialize the member streams mixer
-        (this.playbackVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform, // Change the volume
-        (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
-        (err) => err && error("Couldn't finish playback pipeline.", err),
-      );
+      initPlayback.call(this);
+      initRecord.call(this);
 
-      for (const member of channel.members.filter((m) => m.user !== app.client.user).values()) {
-        this.connectToMixer(member);
-      }
-
-      const recorder = pipeline(
-        (this.recordStream = createRecordStream()).stdout, // Open a recording stream
-        (this.recordVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform,
-        // Change the volume
-        this.recordNoiseReductor = new NoiseReductor(onSpeaking.bind(this)), // Audio gate
-        (err) => err && error("Couldn't finish recording pipeline.", err),
-      );
-
-      this.connection.play(recorder, { bitrate: 256, type: 'converted', highWaterMark: 0 });
       this.handleConfigUpdate(app.config);
       statusLabel.setText("<font color='#43b581'>Voice Connected</font>");
     } catch (e) {

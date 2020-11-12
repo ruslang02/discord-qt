@@ -42,6 +42,7 @@ export class UserMenu extends QMenu {
   }
 
   private initItems() {
+    const { updateUserVolume } = this;
     const { clipboard } = app;
     {
       const item = new QAction();
@@ -93,18 +94,8 @@ export class UserMenu extends QMenu {
       this.userVolSlider.setOrientation(Orientation.Horizontal);
       this.userVolSlider.setCursor(CursorShape.SizeHorCursor);
       this.userVolSlider.setMaximum(150);
-      this.userVolSlider.addEventListener('valueChanged', async () => {
-        if (!this.someone) return;
-        const settings = app.config.userVolumeSettings[this.someone.id];
-        if (settings) settings.volume = this.userVolSlider.value();
-        else {
-          app.config.userVolumeSettings[this.someone.id] = {
-            volume: this.userVolSlider.value(),
-            muted: false,
-          };
-        }
-        this.userVolSlider.setProperty('toolTip', `${this.userVolSlider.value()}%`);
-      });
+      this.userVolSlider.addEventListener('valueChanged', updateUserVolume.bind(this));
+      this.userVolSlider.addEventListener('sliderMoved', updateUserVolume.bind(this));
       layout.addWidget(userVolLabel);
       layout.addWidget(this.userVolSlider);
       this.userVol.setLayout(layout);
@@ -166,6 +157,19 @@ export class UserMenu extends QMenu {
     }
   }
 
+  private updateUserVolume() {
+    if (!this.someone) return;
+    const settings = app.config.userVolumeSettings[this.someone.id];
+    if (settings) settings.volume = this.userVolSlider.value();
+    else {
+      app.config.userVolumeSettings[this.someone.id] = {
+        volume: this.userVolSlider.value(),
+        muted: false,
+      };
+    }
+    this.userVolSlider.setProperty('toolTip', `${this.userVolSlider.value()}%`);
+  }
+
   private updateVisibility() {
     this.items.get('MENTION')?.setProperty('visible', this.someone instanceof GuildMember);
     this.items.get('PROFILE')?.setProperty('visible', this.someone instanceof User);
@@ -173,8 +177,10 @@ export class UserMenu extends QMenu {
       !!app.client.user
       && this.someone instanceof GuildMember
       && (
-        this.someone.user === app.client.user
-        || (this.someone.guild.member(app.client.user)?.hasPermission('CHANGE_NICKNAME') ?? false)
+        (
+          this.someone.user === app.client.user
+          && (this.someone.guild.member(app.client.user)?.hasPermission('CHANGE_NICKNAME') ?? false)
+        )
         || (this.someone.guild.member(app.client.user)?.hasPermission('MANAGE_NICKNAMES') ?? false)
       ));
     if (this.someone) {
