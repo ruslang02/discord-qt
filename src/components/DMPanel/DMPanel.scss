@@ -3,6 +3,7 @@
 #MainView #DMPanel {
   #DTitleBar, #UsersContainer {
     background-color: $background-secondary;
+    border-bottom: 1px solid $background-secondary-alt;
   }
   #UsersContainer {
     &::item {

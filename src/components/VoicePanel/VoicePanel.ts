@@ -3,46 +3,31 @@ import {
   Direction, QBoxLayout, QLabel, QMessageBox, QPushButton, QSize, QWidget,
 } from '@nodegui/nodegui';
 import { Input, Mixer } from 'audio-mixer';
-import ChildProcess, { ChildProcessWithoutNullStreams } from 'child_process';
+import { ChildProcessWithoutNullStreams } from 'child_process';
 import {
   Client, Constants, DQConstants, GuildMember, VoiceChannel, VoiceConnection, VoiceState,
 } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
 import { join } from 'path';
-import { FFmpeg } from 'prism-media';
+import { VolumeTransformer } from 'prism-media';
+import { pipeline, Transform } from 'stream';
 import { app } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
+import { IConfig } from '../../utilities/IConfig';
+import { createPlaybackStream, createRecordStream } from '../../utilities/VoiceStreams';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { NoiseReductor } from './NoiseReductor';
 import { Silence } from './Silence';
 
-const { debug, error, warn } = createLogger('VoicePanel');
+const { error, warn } = createLogger('VoicePanel');
 
-const PLAYBACK_OPTIONS = [
-  '-f', 's16le',
-  '-ar', '48000',
-  '-ac', '2',
-  '-loglevel', 'quiet',
-  '-guess_layout_max', '0',
-  '-i', '-',
-  '-f', 'pulse',
-  '-buffer_duration', '5',
-  '-name', 'DiscordQt',
-  'default',
-];
-
-const RECORD_OPTIONS = [
-  '-name', 'DiscordQt',
-  '-frame_size', '960',
-  '-f', 'pulse',
-  '-i', 'default',
-  '-filter', 'lowpass=12000,afftdn=nr=50,bass=g=14',
-  '-f', 's16le',
-  '-ar', '48000',
-  '-ac', '2', '-',
-];
+const MIXER_OPTIONS = {
+  sampleRate: 48000,
+  channels: 2,
+  bitDepth: 16,
+};
 
 export class VoicePanel extends QWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
@@ -61,7 +46,13 @@ export class VoicePanel extends QWidget {
 
   private playbackStream?: ChildProcessWithoutNullStreams;
 
+  private playbackVolumeTransformer?: VolumeTransformer;
+
   private recordStream?: ChildProcessWithoutNullStreams;
+
+  private recordVolumeTransformer?: VolumeTransformer;
+
+  private recordNoiseReductor?: NoiseReductor;
 
   private channel?: VoiceChannel;
 
@@ -79,14 +70,19 @@ export class VoicePanel extends QWidget {
       const { Events } = Constants as unknown as DQConstants;
       client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
     });
-    app.on(AppEvents.CONFIG_UPDATE, (config) => {
-      for (const entries of this.streams.entries()) {
-        const settings = config.userVolumeSettings[entries[0].id] || {};
-        settings.volume = settings.volume ?? 100;
-        settings.muted = settings.muted ?? false;
-        entries[1].setVolume(settings.muted ? 0 : settings.volume);
-      }
-    });
+    app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
+  }
+
+  private handleConfigUpdate(config: IConfig) {
+    for (const entries of this.streams.entries()) {
+      const settings = config.userVolumeSettings[entries[0].id] || {};
+      settings.volume = settings.volume ?? 100;
+      settings.muted = settings.muted ?? false;
+      entries[1].setVolume(settings.muted ? 0 : settings.volume);
+    }
+    this.playbackVolumeTransformer?.setVolume((config.voiceSettings.outputVolume || 100) / 100);
+    this.recordVolumeTransformer?.setVolume((config.voiceSettings.inputVolume || 100) / 100);
+    this.recordNoiseReductor?.setSensivity((config.voiceSettings.inputSensitivity || 0));
   }
 
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
@@ -153,9 +149,7 @@ export class VoicePanel extends QWidget {
     if (stream) {
       const volume = app.config.userVolumeSettings[member.id]?.volume || 100;
       const input = new Input({
-        sampleRate: 48000,
-        channels: 2,
-        bitDepth: 16,
+        ...MIXER_OPTIONS,
         volume,
       });
       this.streams.set(member, input);
@@ -178,7 +172,9 @@ export class VoicePanel extends QWidget {
   }
 
   private async joinChannel(channel: VoiceChannel) {
-    const { infoLabel, statusLabel } = this;
+    const {
+      infoLabel, statusLabel, onSpeaking, createConnection,
+    } = this;
     if (process.platform !== 'linux') {
       VoicePanel.openVoiceNotSupportedDialog(channel);
       return;
@@ -189,39 +185,49 @@ export class VoicePanel extends QWidget {
     this.channel = channel;
     infoLabel.setText(channel.name);
     try {
-      this.connection = await channel.join();
-      this.connection.on('warn', warn.bind(this, '[djs]'));
-      this.connection.on('error', error.bind(this, '[djs]'));
-      this.connection.on('failed', error.bind(this, '[djs]'));
-      this.connection.on('debug', debug.bind(this, '[djs]'));
-      this.connection.setSpeaking(4);
+      this.connection = await createConnection.call(this, channel);
       statusLabel.setText("<font color='#faa61a'>Connecting Devices</font>");
-      this.playbackStream = ChildProcess.spawn(FFmpeg.getInfo().command, PLAYBACK_OPTIONS);
-      this.playbackStream.stderr.on('data', (chunk) => debug('[PlaybackStream]', chunk.toString()));
-      this.connection.play(new Silence(), { type: 'opus' });
-      this.mixer = new Mixer({
-        channels: 2,
-        sampleRate: 48000,
-        bitDepth: 16,
-      });
+      this.connection.play(new Silence(), { type: 'opus' }); // To receive audio we need to send something.
+
+      pipeline(
+        this.mixer = new Mixer(MIXER_OPTIONS), // Initialize the member streams mixer
+        (this.playbackVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform, // Change the volume
+        (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
+        (err) => err && error("Couldn't finish playback pipeline.", err),
+      );
 
       for (const member of channel.members.filter((m) => m.user !== app.client.user).values()) {
         this.connectToMixer(member);
       }
-      this.mixer.pipe(this.playbackStream.stdin);
-      this.recordStream = ChildProcess.spawn(FFmpeg.getInfo().command, RECORD_OPTIONS);
-      this.recordStream.stderr.on('data', (chunk) => debug('[RecordStream]', chunk.toString()));
-      const noiseReductor = new NoiseReductor((value: boolean) => {
-        if (!this.connection) return;
-        this.connection.setSpeaking(value ? 1 : 4);
-        this.connection.emit('speaking', app.client.user, this.connection.speaking);
-      });
-      noiseReductor.setSensivity(9);
-      this.connection.play(this.recordStream.stdout.pipe(noiseReductor), { bitrate: 256, type: 'converted', highWaterMark: 0 });
+
+      const recorder = pipeline(
+        (this.recordStream = createRecordStream()).stdout, // Open a recording stream
+        (this.recordVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform,
+        // Change the volume
+        this.recordNoiseReductor = new NoiseReductor(onSpeaking.bind(this)), // Audio gate
+        (err) => err && error("Couldn't finish recording pipeline.", err),
+      );
+
+      this.connection.play(recorder, { bitrate: 256, type: 'converted', highWaterMark: 0 });
+      this.handleConfigUpdate(app.config);
       statusLabel.setText("<font color='#43b581'>Voice Connected</font>");
     } catch (e) {
       statusLabel.setText("<font color='#f04747'>Error</font>");
       error('Could not join the voice channel.', e);
     }
+  }
+
+  private onSpeaking(value: boolean) {
+    if (!this.connection) return;
+    this.connection.setSpeaking(value ? 1 : 4);
+    this.connection.emit('speaking', app.client.user, this.connection.speaking);
+  }
+
+  private async createConnection(channel: VoiceChannel) {
+    const connection = await channel.join();
+    connection.on('warn', warn.bind(this, '[djs]'));
+    connection.on('error', error.bind(this, '[djs]'));
+    connection.on('failed', error.bind(this, '[djs]'));
+    return connection;
   }
 }

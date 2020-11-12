@@ -7,7 +7,10 @@ export class NoiseReductor extends Transform {
 
   private timer?: any;
 
-  constructor(private onSetSpeaking: (isSpeaking: boolean) => void) {
+  constructor(
+    private onSetSpeaking: (isSpeaking: boolean) => void,
+    private onLoudnessChanged?: (loudness: number) => void,
+  ) {
     super();
   }
 
@@ -15,6 +18,7 @@ export class NoiseReductor extends Transform {
     const N = chunk.length;
     const sum = chunk.reduce((prev, cur) => prev + cur, 0);
     const loudness = Math.sqrt(sum / N);
+    if (this.onLoudnessChanged) this.onLoudnessChanged(loudness);
     if (loudness < this.sensivity) {
       if (!this.timer) {
         this.timer = setTimeout(() => {

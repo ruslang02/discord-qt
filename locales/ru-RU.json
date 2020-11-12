@@ -140,5 +140,10 @@
   "HIDE_MUTED_CHANNELS": "Скрыть заглуш. каналы",
   "SHOW_MUTED_CHANNELS": "Показать заглуш. каналы",
   "LEAVE_SERVER_TITLE": "Покинуть '{{name}}'",
-  "LEAVE_SERVER_BODY": "Вы уверены, что хотите покинуть <b>{{name}}</b>? Вы не сможете вернуться на этот сервер, пока вас снова не пригласят."
+  "LEAVE_SERVER_BODY": "Вы уверены, что хотите покинуть <b>{{name}}</b>? Вы не сможете вернуться на этот сервер, пока вас снова не пригласят.",
+  "FORM_LABEL_INPUT_DEVICE": "Устройство ввода",
+  "FORM_LABEL_OUTPUT_DEVICE": "Устройство вывода",
+  "FORM_LABEL_INPUT_VOLUME": "Громкость микрофона",
+  "FORM_LABEL_OUTPUT_VOLUME": "Громкость звука",
+  "VOICE": "Голос"
 }

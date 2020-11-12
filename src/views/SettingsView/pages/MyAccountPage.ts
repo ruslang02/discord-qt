@@ -79,6 +79,7 @@ export class MyAccountPage extends Page {
     editet.setLayout(new QBoxLayout(Direction.TopToBottom));
     const editbn = new DColorButton();
     editbn.setText(__('EDIT'));
+    editbn.hide();
     editbn.setMinimumSize(60, 32);
     editbn.setMinimumSize(MAX_QSIZE, 32);
     (editet.layout as QBoxLayout).addWidget(editbn);

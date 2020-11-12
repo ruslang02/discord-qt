@@ -69,12 +69,14 @@ export class MainTitleBar extends DTitleBar {
     const searchEdit = new DLineEdit();
     searchEdit.setInlineStyle('width: 136px; height: 24px; margin-left: 4px; margin-right: 4px;');
     searchEdit.setPlaceholderText(__('SEARCH'));
+    searchEdit.hide();
 
     const pinBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/pin.png'),
       iconQSize: new QSize(24, 24),
       tooltipText: __('PINNED_MESSAGES'),
     });
+    pinBtn.hide();
 
     const helpBtn = new DIconButton({
       iconPath: path.join(__dirname, './assets/icons/help-circle.png'),

@@ -64,7 +64,7 @@ export class ConfirmLeaveGuildDialog extends Dialog {
     this.guild = guild;
     const { name } = guild;
     this.header.setText(__('LEAVE_SERVER_TITLE', { name }));
-    this.description.setText(__('LEAVE_SERVER_BODY', { name: name.toUpperCase() }));
+    this.description.setText(__('LEAVE_SERVER_BODY', { name }));
     this.show();
   }
 }

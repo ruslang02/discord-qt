@@ -14,6 +14,14 @@ export type LocalGuildSettings = {
   lastViewedChannel?: Snowflake;
 }
 
+export type VoiceSettings = {
+  inputDevice?: string;
+  outputDevice?: string;
+  inputVolume?: number;
+  outputVolume?: number;
+  inputSensitivity?: number;
+}
+
 export interface IConfig {
   accounts: Account[];
 
@@ -36,4 +44,6 @@ export interface IConfig {
   userVolumeSettings: Record<Snowflake, UserVolume | undefined>;
 
   userLocalGuildSettings: Record<Snowflake, LocalGuildSettings | undefined>;
+
+  voiceSettings: VoiceSettings;
 }

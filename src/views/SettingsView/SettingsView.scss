@@ -1,14 +1,16 @@
-
-
 #SettingsView {
-  width: '100%';
-  height: '100%';
+  width: "100%";
+  height: "100%";
   background-color: $background-primary;
   #SettingsContainer {
     background-color: $background-primary;
     border: none;
+    QScrollBar:vertical {
+      border-color: $background-primary;
+    }
   }
-  #LeftSpacer, #SectionList {
+  #LeftSpacer,
+  #SectionList {
     background-color: $background-secondary;
     #Divider {
       margin: 8px 10px;
@@ -20,7 +22,7 @@
     border-radius: 18px;
     border: 2px solid $text-muted;
     &:hover {
-      background-color: rgba(114,118,125,.3);
+      background-color: rgba(114, 118, 125, 0.3);
     }
   }
   #CloseKeybind {
@@ -60,7 +62,7 @@
       background-color: $background-modifier-active;
       color: $interactive-active;
     }*/
-    &[active=true] {
+    &[active="true"] {
       background-color: $background-modifier-selected;
       color: $interactive-active;
     }

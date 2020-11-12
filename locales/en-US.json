@@ -141,5 +141,11 @@
   "HIDE_MUTED_CHANNELS": "Hide Muted Channels",
   "SHOW_MUTED_CHANNELS": "Show Muted Channels",
   "LEAVE_SERVER_TITLE": "Leave '{{name}}'",
-  "LEAVE_SERVER_BODY": "Are you sure you want to leave <b>{{name}}</b>? You won't be able to rejoin this server unless you are re-invited."
+  "LEAVE_SERVER_BODY": "Are you sure you want to leave <b>{{name}}</b>? You won't be able to rejoin this server unless you are re-invited.",
+  "FORM_LABEL_INPUT_DEVICE": "Input Device",
+  "FORM_LABEL_OUTPUT_DEVICE": "Output Device",
+  "FORM_LABEL_INPUT_VOLUME": "Input Volume",
+  "FORM_LABEL_OUTPUT_VOLUME": "Output Volume",
+  "FORM_LABEL_INPUT_SENSITIVTY": "Input Sensitivity",
+  "VOICE": "Voice"
 }

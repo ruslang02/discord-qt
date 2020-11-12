@@ -1,5 +1,10 @@
 #MainView #DTitleBar {
-  background-color: $background-primary;
+  @if $theme-name == amoled {
+    background-color: $background-secondary;
+  } @else {
+    background-color: $background-primary;
+  }
+  border-bottom: 1px solid $background-secondary-alt;
 
   #UserNameLabel {
     font-size: 16px;

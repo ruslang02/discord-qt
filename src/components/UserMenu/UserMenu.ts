@@ -37,6 +37,7 @@ export class UserMenu extends QMenu {
     this.addEventListener(WidgetEventTypes.Resize, () => {
       this.userVol.setMinimumSize(this.size().width() - 14, 0);
     });
+    this.addEventListener(WidgetEventTypes.Close, () => void app.configManager.save());
     app.on(Events.OPEN_USER_MENU, this.popout.bind(this));
   }
 
@@ -92,7 +93,7 @@ export class UserMenu extends QMenu {
       this.userVolSlider.setOrientation(Orientation.Horizontal);
       this.userVolSlider.setCursor(CursorShape.SizeHorCursor);
       this.userVolSlider.setMaximum(150);
-      this.userVolSlider.addEventListener('sliderReleased', async () => {
+      this.userVolSlider.addEventListener('valueChanged', async () => {
         if (!this.someone) return;
         const settings = app.config.userVolumeSettings[this.someone.id];
         if (settings) settings.volume = this.userVolSlider.value();
@@ -102,7 +103,7 @@ export class UserMenu extends QMenu {
             muted: false,
           };
         }
-        await app.configManager.save();
+        this.userVolSlider.setProperty('toolTip', `${this.userVolSlider.value()}%`);
       });
       layout.addWidget(userVolLabel);
       layout.addWidget(this.userVolSlider);
@@ -180,6 +181,7 @@ export class UserMenu extends QMenu {
       const settings = app.config.userVolumeSettings[this.someone.id];
       this.items.get('MUTE')?.setText(__((!settings || !settings.muted) ? 'MUTE' : 'UNMUTE'));
       this.userVolSlider.setValue(settings ? settings.volume || 100 : 100);
+      this.userVolSlider.setProperty('toolTip', `${this.userVolSlider.value()}%`);
     }
   }
 

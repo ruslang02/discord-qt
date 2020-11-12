@@ -1,6 +1,4 @@
-import {
-  ButtonRole, QLabel, QMessageBox, QMessageBoxIcon, QPushButton, QVariant, WidgetEventTypes,
-} from '@nodegui/nodegui';
+import { QLabel, QVariant, WidgetEventTypes } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
 import { notify } from 'node-notifier';
@@ -8,14 +6,14 @@ import { basename, join } from 'path';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
+import { createLogger } from '../../../utilities/Console';
 import { Events } from '../../../utilities/Events';
 import { paths } from '../../../utilities/Paths';
-import { createLogger } from '../../../utilities/Console';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
 
 const { readdir, readFile, rmdir } = promises;
-const { warn } = createLogger(basename(__filename, '.ts'));
+const { error, warn } = createLogger(basename(__filename, '.ts'));
 // @ts-ignore
 global.notify = notify;
 
@@ -43,9 +41,13 @@ export class AppearancePage extends Page {
     this.initPage();
     this.layout.setSpacing(5);
     app.on(Events.READY, this.loadConfig.bind(this));
+
+    Promise.all([this.loadThemes(), this.loadLanguages()])
+      .then(this.loadConfig.bind(this))
+      .catch(error.bind(this, "Couldn't load the appearance page."));
   }
 
-  private async initPage() {
+  private initPage() {
     const {
       title, header, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, layout,
     } = this;
@@ -65,7 +67,7 @@ export class AppearancePage extends Page {
           checkbox.setChecked(!checked);
           // @ts-ignore
           app.config[id] = !checked;
-          app.configManager.save();
+          void app.configManager.save();
         });
         layout.addWidget(checkbox);
       });
@@ -77,16 +79,16 @@ export class AppearancePage extends Page {
     langLabel.setObjectName('Header3');
     langLabel.setText(`\r\n${__('LANGUAGE')}`);
 
-    await this.loadThemes();
-    await this.loadLanguages();
-    this.loadConfig();
+    const restartNotice = new QLabel(this);
+    restartNotice.setText(__('LANGUAGE_RESTART_REQUIRED'));
+    restartNotice.setInlineStyle('color: #f04747');
 
     themeSel.addEventListener('currentTextChanged', async (text) => {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
       if (!existsSync(path)) return;
       app.config.theme = text;
       await app.configManager.save();
-      app.window.loadStyles();
+      void app.window.loadStyles();
     });
     langSel.addEventListener('currentIndexChanged', async (index) => {
       const locale = langSel.itemData(index).toString();
@@ -95,14 +97,7 @@ export class AppearancePage extends Page {
       app.config.locale = locale;
       await app.configManager.save();
       setLocale(locale);
-      const mbox = new QMessageBox();
-      mbox.setText(__('LANGUAGE_RESTART_REQUIRED'));
-      mbox.setWindowTitle(app.name);
-      mbox.setProperty('icon', QMessageBoxIcon.Information);
-      const okBtn = new QPushButton();
-      okBtn.setText(__('OKAY'));
-      mbox.addButton(okBtn, ButtonRole.ApplyRole);
-      mbox.open();
+      restartNotice.show();
     });
     const clearCacheBtn = new DColorButton();
     clearCacheBtn.setText(__('CLEAR_CACHE'));
@@ -119,16 +114,18 @@ export class AppearancePage extends Page {
           hint: 'string:desktop-entry:discord-qt',
           'app-name': app.name,
         });
-      });
+      }).catch(error.bind(this, "Couldn't clear cache directory."));
     });
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);
     layout.addWidget(langLabel);
     layout.addWidget(langSel);
+    layout.addWidget(restartNotice);
     layout.addSpacing(10);
     layout.addWidget(clearCacheBtn);
     clearCacheBtn.setFlexNodeSizeControlled(false);
     layout.addStretch(1);
+    restartNotice.hide();
   }
 
   private async loadThemes() {

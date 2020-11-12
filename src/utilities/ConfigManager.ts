@@ -41,6 +41,7 @@ export class ConfigManager {
       recentEmojis: config.recentEmojis ?? [],
       userVolumeSettings: config.userVolumeSettings ?? {},
       userLocalGuildSettings: config.userLocalGuildSettings ?? {},
+      voiceSettings: config.voiceSettings ?? {},
     };
     if (config.debug === true) log('Loaded config:', config);
     this.isLoaded = true;

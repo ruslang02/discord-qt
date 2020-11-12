@@ -9,7 +9,9 @@ import {
   QPushButton,
   QScrollArea,
   QSize,
+  QStackedWidget,
   QWidget,
+  ScrollBarPolicy,
   Shape,
 } from '@nodegui/nodegui';
 import { __ } from 'i18n';
@@ -23,6 +25,7 @@ import { AccountsPage } from './pages/AccountsPage';
 import { AppearancePage } from './pages/AppearancePage';
 import { MyAccountPage } from './pages/MyAccountPage';
 import { Page } from './pages/Page';
+import { VoicePage } from './pages/VoicePage';
 import { SectionList } from './SectionList';
 
 export type Element = Page | Divider | CategoryHeader | Footer;
@@ -36,6 +39,7 @@ export class SettingsView extends QWidget {
     new Divider(),
     new CategoryHeader(__('APP_SETTINGS')),
     new AppearancePage(),
+    new VoicePage(),
     new Divider(),
     new Footer(),
   ];
@@ -46,9 +50,13 @@ export class SettingsView extends QWidget {
 
   private pageContainer = new QScrollArea();
 
+  private pageWidget = new QStackedWidget();
+
   private closeContainer = new QWidget();
 
   private rightSpacer = new QWidget();
+
+  private currentPage: Page = this.elements[0] as Page;
 
   layout = new QBoxLayout(Direction.LeftToRight);
 
@@ -58,21 +66,30 @@ export class SettingsView extends QWidget {
     this.setObjectName('SettingsView');
     this.initView();
     this.setEvents();
+    this.elements
+      .filter((element) => element instanceof Page)
+      .forEach((page) => this.pageWidget.addWidget(page));
+    this.pageWidget.setCurrentWidget(this.currentPage);
+
+    app.on(Events.SWITCH_VIEW, (view: string) => {
+      if (view !== 'settings') this.currentPage.onClosed();
+      else this.currentPage.onOpened();
+    });
   }
 
   private setEvents() {
     app.on(Events.OPEN_SETTINGS_PAGE, (pageTitle: string) => {
-      const { pageContainer, elements } = this;
-      const page = <Page>elements.find((p) => p instanceof Page && p.title === pageTitle);
-
-      pageContainer.takeWidget();
-      pageContainer.setWidget(page);
+      const page = <Page> this.elements.find((p) => p instanceof Page && p.title === pageTitle);
+      this.currentPage.onClosed();
+      this.pageWidget.setCurrentWidget(page);
+      this.currentPage = page;
+      this.currentPage.onOpened();
     });
   }
 
   private initView() {
     const {
-      layout, leftSpacer, sectionList, pageContainer, closeContainer, rightSpacer,
+      layout, leftSpacer, sectionList, pageContainer, closeContainer, rightSpacer, pageWidget,
     } = this;
 
     layout.setContentsMargins(0, 0, 0, 0);
@@ -85,11 +102,15 @@ export class SettingsView extends QWidget {
     closeLayout.setContentsMargins(0, 60, 21, 0);
     closeLayout.setSpacing(0);
 
+    pageWidget.setFrameShape(Shape.NoFrame);
+    pageWidget.setObjectName('SettingsContainer');
+
     pageContainer.setFrameShape(Shape.NoFrame);
     pageContainer.setMinimumSize(460, 0);
     pageContainer.setMaximumSize(740, MAX_QSIZE);
     pageContainer.setObjectName('SettingsContainer');
-    pageContainer.setWidget(this.elements[0] as Page);
+    pageContainer.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
+    pageContainer.setWidget(pageWidget);
 
     const effect = new QGraphicsDropShadowEffect();
     effect.setBlurRadius(5);
