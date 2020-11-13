@@ -29,7 +29,7 @@ const RECORD_OPTIONS = [
   '-frame_size', '960',
   '-f', 'pulse',
   '-i', RECORD_DEVICE,
-  '-filter', 'lowpass=12000,afftdn=nr=50,bass=g=14',
+  '-filter', 'lowpass=12000,afftdn=nr=50',
   '-f', 's16le',
   '-ar', '48000',
   '-ac', '2', '-',

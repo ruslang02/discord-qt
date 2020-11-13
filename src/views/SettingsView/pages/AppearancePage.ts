@@ -1,4 +1,6 @@
-import { QLabel, QVariant, WidgetEventTypes } from '@nodegui/nodegui';
+import {
+  ButtonRole, QLabel, QMessageBox, QMessageBoxIcon, QPushButton, QVariant, WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
 import { notify } from 'node-notifier';
@@ -6,16 +8,14 @@ import { basename, join } from 'path';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
-import { createLogger } from '../../../utilities/Console';
 import { Events } from '../../../utilities/Events';
 import { paths } from '../../../utilities/Paths';
+import { createLogger } from '../../../utilities/Console';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
 
 const { readdir, readFile, rmdir } = promises;
 const { error, warn } = createLogger(basename(__filename, '.ts'));
-// @ts-ignore
-global.notify = notify;
 
 export class AppearancePage extends Page {
   title = __('APPEARANCE');
@@ -38,16 +38,12 @@ export class AppearancePage extends Page {
 
   constructor() {
     super();
-    this.initPage();
+    void this.initPage();
     this.layout.setSpacing(5);
     app.on(Events.READY, this.loadConfig.bind(this));
-
-    Promise.all([this.loadThemes(), this.loadLanguages()])
-      .then(this.loadConfig.bind(this))
-      .catch(error.bind(this, "Couldn't load the appearance page."));
   }
 
-  private initPage() {
+  private async initPage() {
     const {
       title, header, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, layout,
     } = this;
@@ -79,16 +75,16 @@ export class AppearancePage extends Page {
     langLabel.setObjectName('Header3');
     langLabel.setText(`\r\n${__('LANGUAGE')}`);
 
-    const restartNotice = new QLabel(this);
-    restartNotice.setText(__('LANGUAGE_RESTART_REQUIRED'));
-    restartNotice.setInlineStyle('color: #f04747');
+    await this.loadThemes();
+    await this.loadLanguages();
+    this.loadConfig();
 
     themeSel.addEventListener('currentTextChanged', async (text) => {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
       if (!existsSync(path)) return;
       app.config.theme = text;
       await app.configManager.save();
-      void app.window.loadStyles();
+      await app.window.loadStyles();
     });
     langSel.addEventListener('currentIndexChanged', async (index) => {
       const locale = langSel.itemData(index).toString();
@@ -97,8 +93,10 @@ export class AppearancePage extends Page {
       app.config.locale = locale;
       await app.configManager.save();
       setLocale(locale);
-      restartNotice.show();
     });
+    const restartNotice = new QLabel(this);
+    restartNotice.setText(__('LANGUAGE_RESTART_REQUIRED'));
+    restartNotice.setInlineStyle('color: #f04747');
     const clearCacheBtn = new DColorButton();
     clearCacheBtn.setText(__('CLEAR_CACHE'));
     clearCacheBtn.setMinimumSize(0, 36);
@@ -114,7 +112,7 @@ export class AppearancePage extends Page {
           hint: 'string:desktop-entry:discord-qt',
           'app-name': app.name,
         });
-      }).catch(error.bind(this, "Couldn't clear cache directory."));
+      }).catch(error.bind(this, "Couldn't clear cache directory."));;
     });
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);
@@ -125,31 +123,38 @@ export class AppearancePage extends Page {
     layout.addWidget(clearCacheBtn);
     clearCacheBtn.setFlexNodeSizeControlled(false);
     layout.addStretch(1);
-    restartNotice.hide();
   }
 
   private async loadThemes() {
-    const themes = await readdir('./dist/themes', { withFileTypes: true });
-    themes.forEach((theme) => {
-      if (theme.name.endsWith('.theme.css')) {
-        const myThemeName = theme.name.replace('.theme.css', '');
-        this.themeSel.addItem(undefined, myThemeName, undefined);
-      }
-    });
+    try {
+      const themes = await readdir('./dist/themes', { withFileTypes: true });
+      themes.forEach((theme) => {
+        if (theme.name.endsWith('.theme.css')) {
+          const myThemeName = theme.name.replace('.theme.css', '');
+          this.themeSel.addItem(undefined, myThemeName, undefined);
+        }
+      });
+    } catch (e) {
+      error("Couldn't load themes.", e);
+    }
   }
 
   private async loadLanguages() {
-    const locales = await readdir('./dist/locales', { withFileTypes: true });
-    this.langs = await Promise.all(locales.map(async (locale) => {
-      const localeName = locale.name.replace('.json', '');
-      try {
-        const file = JSON.parse((await readFile(join('./dist/locales/', locale.name))).toString());
-        this.langSel.addItem(undefined, file['locale.name'], new QVariant(localeName));
-      } catch (e) {
-        warn(`[AppearancePage] Locale file "${locale.name}" can not be read.`);
-      }
-      return localeName;
-    }));
+    try {
+      const locales = await readdir('./dist/locales', { withFileTypes: true });
+      this.langs = await Promise.all(locales.map(async (locale) => {
+        const localeName = locale.name.replace('.json', '');
+        try {
+          const file = JSON.parse((await readFile(join('./dist/locales/', locale.name))).toString());
+          this.langSel.addItem(undefined, file['locale.name'], new QVariant(localeName));
+        } catch (e) {
+          warn(`[AppearancePage] Locale file "${locale.name}" can not be read.`);
+        }
+        return localeName;
+      }));
+    } catch (e) {
+      error("Couldn't load languages.", e);
+    }
   }
 
   private loadConfig() {
