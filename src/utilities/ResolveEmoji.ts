@@ -34,6 +34,8 @@ export async function resolveEmoji(status: CustomStatus): Promise<string> {
   st.emoji_name = (status.emoji_name || '').toString();
   let fname = st.emoji_id;
   const url = await getEmojiURL(st);
-  if (fname === '') fname = `tw/${basename(url).split('.')[0]}`;
+  if (fname === '') {
+    fname = `tw/${basename(url).split('.')[0]}`;
+  }
   return pictureWorker.loadImage(url, { roundify: false });
 }

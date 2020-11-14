@@ -1,9 +1,5 @@
-import {
-  QLabel, QPixmap, QSize, QWidget,
-} from '@nodegui/nodegui';
-import {
-  Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel,
-} from 'discord.js';
+import { QLabel, QPixmap, QSize, QWidget } from '@nodegui/nodegui';
+import { Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
 import path from 'path';
@@ -36,10 +32,14 @@ export class MainTitleBar extends DTitleBar {
     super();
     this.initComponent();
     app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (!['dm', 'guild'].includes(view)) return;
-      if (view === 'dm' && options?.dm) this.handleDMOpen(options.dm);
-      else if (view === 'guild' && options?.channel) this.handleGuildOpen(options.channel);
-      else {
+      if (!['dm', 'guild'].includes(view)) {
+        return;
+      }
+      if (view === 'dm' && options?.dm) {
+        this.handleDMOpen(options.dm);
+      } else if (view === 'guild' && options?.channel) {
+        this.handleGuildOpen(options.channel);
+      } else {
         this.channel = undefined;
         this.handleClear();
       }
@@ -55,9 +55,7 @@ export class MainTitleBar extends DTitleBar {
   }
 
   private initComponent() {
-    const {
-      userNameLabel, statusLabel, nicknamesBar, controls: layout, iconLabel,
-    } = this;
+    const { userNameLabel, statusLabel, nicknamesBar, controls: layout, iconLabel } = this;
 
     layout.setSpacing(6);
     layout.setContentsMargins(16, 12, 16, 12);
@@ -98,7 +96,9 @@ export class MainTitleBar extends DTitleBar {
     const { channel, statusLabel } = this;
     if (channel instanceof DMChannel) {
       statusLabel.setText('●');
-      statusLabel.setInlineStyle(`color: ${PresenceStatusColor.get(channel.recipient.presence.status || 'offline')}`);
+      statusLabel.setInlineStyle(
+        `color: ${PresenceStatusColor.get(channel.recipient.presence.status || 'offline')}`,
+      );
     }
   }
 
@@ -110,9 +110,7 @@ export class MainTitleBar extends DTitleBar {
   }
 
   private handleDMOpen(channel: DMChannel) {
-    const {
-      userNameLabel, statusLabel, iconLabel, atPixmap,
-    } = this;
+    const { userNameLabel, statusLabel, iconLabel, atPixmap } = this;
     this.channel = channel;
     iconLabel.setPixmap(atPixmap);
     iconLabel.show();
@@ -122,10 +120,10 @@ export class MainTitleBar extends DTitleBar {
   }
 
   private handleGuildOpen(channel: GuildChannel) {
-    const {
-      userNameLabel, statusLabel, iconLabel, poundPixmap,
-    } = this;
-    if (channel.type !== 'text' && channel.type !== 'news') return;
+    const { userNameLabel, statusLabel, iconLabel, poundPixmap } = this;
+    if (channel.type !== 'text' && channel.type !== 'news') {
+      return;
+    }
     this.channel = channel as TextChannel | NewsChannel;
     iconLabel.setPixmap(poundPixmap);
     iconLabel.show();

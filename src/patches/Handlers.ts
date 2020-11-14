@@ -33,7 +33,9 @@ Object.assign(handlers, {
     if (data.notes) {
       for (const user of Object.keys(data.notes)) {
         let note = data.notes[user];
-        if (!note.length) note = null;
+        if (!note.length) {
+          note = null;
+        }
 
         client.user.notes.set(user, note);
       }
@@ -57,7 +59,7 @@ Object.assign(handlers, {
     }
 
     client.emit(
-      (Constants as unknown as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE,
+      ((Constants as unknown) as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE,
       client.user.guildSettings.get(packet.d.guild_id),
     );
   },

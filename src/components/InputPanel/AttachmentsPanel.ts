@@ -19,7 +19,7 @@ import { pictureWorker } from '../../utilities/PictureWorker';
 const { error } = createLogger('AttachmentsPanel');
 
 export class AttachmentsPanel extends QWidget {
-  private static fileIcon = new QPixmap(join(__dirname, './assets/icons/file.png'))
+  private static fileIcon = new QPixmap(join(__dirname, './assets/icons/file.png'));
 
   private files = new Set<string>();
 
@@ -39,7 +39,9 @@ export class AttachmentsPanel extends QWidget {
    * @param files Files to add.
    */
   addFiles(files: string[]) {
-    for (const file of files) this.files.add(file);
+    for (const file of files) {
+      this.files.add(file);
+    }
     this.updateComponent();
   }
 
@@ -49,14 +51,18 @@ export class AttachmentsPanel extends QWidget {
   }
 
   getFiles() {
-    return [...this.files.values()]
-      .map((attachment) => ({ attachment, name: basename(attachment) }));
+    return [...this.files.values()].map((attachment) => ({
+      attachment,
+      name: basename(attachment),
+    }));
   }
 
   private updateComponent() {
     const { layout } = this;
-    (layout.nodeChildren as Set<QWidget>)
-      .forEach((w) => { w.hide(); layout.removeWidget(w); });
+    (layout.nodeChildren as Set<QWidget>).forEach((w) => {
+      w.hide();
+      layout.removeWidget(w);
+    });
     for (const file of this.files) {
       const attach = new QLabel(this);
       attach.setFixedSize(120, 60);
@@ -71,14 +77,20 @@ export class AttachmentsPanel extends QWidget {
       });
       const url = pathToFileURL(file);
       const ext = extname(file).replace(/\./g, '').toUpperCase();
-      if (!PIXMAP_EXTS.includes(ext)) attach.setPixmap(AttachmentsPanel.fileIcon);
-      else {
-        pictureWorker.loadImage(url.href, { roundify: false })
+      if (!PIXMAP_EXTS.includes(ext)) {
+        attach.setPixmap(AttachmentsPanel.fileIcon);
+      } else {
+        pictureWorker
+          .loadImage(url.href, { roundify: false })
           .then((path) => {
             const pix = new QPixmap(path);
-            if (pix.width() < 1) attach.setPixmap(AttachmentsPanel.fileIcon);
-            else attach.setPixmap(pix.scaled(120, 60, 1, 1));
-          }).catch(() => {
+            if (pix.width() < 1) {
+              attach.setPixmap(AttachmentsPanel.fileIcon);
+            } else {
+              attach.setPixmap(pix.scaled(120, 60, 1, 1));
+            }
+          })
+          .catch(() => {
             error(`Couldn't access file ${file}.`);
             attach.setPixmap(AttachmentsPanel.fileIcon);
           });
@@ -86,6 +98,10 @@ export class AttachmentsPanel extends QWidget {
 
       this.layout.insertWidget(this.layout.nodeChildren.size, attach);
     }
-    if (this.files.size) this.show(); else this.hide();
+    if (this.files.size) {
+      this.show();
+    } else {
+      this.hide();
+    }
   }
 }

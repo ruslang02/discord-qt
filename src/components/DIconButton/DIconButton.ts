@@ -1,5 +1,10 @@
 import {
-  CursorShape, QCursor, QIcon, QPushButton, QSize, WidgetEventTypes,
+  CursorShape,
+  QCursor,
+  QIcon,
+  QPushButton,
+  QSize,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 
 export class DIconButton extends QPushButton {
@@ -7,11 +12,7 @@ export class DIconButton extends QPushButton {
 
   qiconOff = new QIcon();
 
-  constructor(options: {
-    iconPath: string,
-    tooltipText: string,
-    iconQSize: QSize
-  }) {
+  constructor(options: { iconPath: string; tooltipText: string; iconQSize: QSize }) {
     super();
     const { iconPath, tooltipText, iconQSize } = options;
 

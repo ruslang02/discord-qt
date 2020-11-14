@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QLabel, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { GuildMember } from 'discord.js';
 import { __ } from 'i18n';
 import { DColorButton } from '../components/DColorButton/DColorButton';
@@ -30,9 +28,7 @@ export class NicknameChangeDialog extends Dialog {
   }
 
   private init() {
-    const {
-      header, nnLabel, nnInput, errMsg,
-    } = this;
+    const { header, nnLabel, nnInput, errMsg } = this;
     header.setText(__('CHANGE_NICKNAME'));
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
@@ -76,7 +72,9 @@ export class NicknameChangeDialog extends Dialog {
   openForMember(member: GuildMember) {
     this.nnInput.setPlaceholderText(member.user.username);
     this.nnInput.setText(member.nickname || '');
-    if (!member.nickname) this.nnInput.clear();
+    if (!member.nickname) {
+      this.nnInput.clear();
+    }
     this.member = member;
     this.show();
   }

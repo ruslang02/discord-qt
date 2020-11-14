@@ -13,9 +13,7 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import {
-  Client, Constants, DQConstants, Guild,
-} from 'discord.js';
+import { Client, Constants, DQConstants, Guild } from 'discord.js';
 import { __ } from 'i18n';
 import path from 'path';
 import { app, MAX_QSIZE } from '../..';
@@ -30,7 +28,7 @@ export class GuildsList extends QListWidget {
 
   private guilds = new Map<Guild, GuildButton>();
 
-  private active?: (QPushButton & {setActive: (value: boolean) => void}) | GuildButton;
+  private active?: (QPushButton & { setActive: (value: boolean) => void }) | GuildButton;
 
   constructor() {
     super();
@@ -42,7 +40,7 @@ export class GuildsList extends QListWidget {
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-      const { Events } = Constants as unknown as DQConstants;
+      const { Events } = (Constants as unknown) as DQConstants;
       client.on(Events.CLIENT_READY, async () => {
         await this.loadGuilds();
         app.emit(AppEvents.SWITCH_VIEW, 'dm');
@@ -66,11 +64,16 @@ export class GuildsList extends QListWidget {
         void btn.loadAvatar();
       });
       client.on(Events.MESSAGE_ACK, (channel) => this.updateGuildAck(channel.guild));
-      client.on(Events.MESSAGE_CREATE, (message) => message.channel.type !== 'dm' && this.updateGuildAck(message.channel.guild));
+      client.on(
+        Events.MESSAGE_CREATE,
+        (message) => message.channel.type !== 'dm' && this.updateGuildAck(message.channel.guild),
+      );
     });
 
     app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (!['dm', 'guild'].includes(view)) return;
+      if (!['dm', 'guild'].includes(view)) {
+        return;
+      }
       this.mpBtn.setProperty('active', false);
       if (view === 'dm') {
         this.active?.setActive(false);
@@ -80,7 +83,9 @@ export class GuildsList extends QListWidget {
         this.active = this.mpBtn;
       } else if (view === 'guild' && options) {
         const guild = options.guild || options.channel?.guild;
-        if (!guild) return;
+        if (!guild) {
+          return;
+        }
         this.active?.setActive(false);
         const active = this.guilds.get(guild);
         active?.setActive(true);
@@ -91,7 +96,9 @@ export class GuildsList extends QListWidget {
 
   private updateGuildAck(guild: Guild) {
     const btn = this.guilds.get(guild);
-    if (!btn) return;
+    if (!btn) {
+      return;
+    }
     btn.setUnread(!guild.acknowledged);
   }
 
@@ -156,15 +163,23 @@ export class GuildsList extends QListWidget {
   private ratetimer?: any;
 
   async loadAvatars() {
-    if (this.ratelimited) return;
+    if (this.ratelimited) {
+      return;
+    }
     this.ratelimited = true;
-    if (this.ratetimer) clearTimeout(this.ratetimer);
-    this.ratetimer = setTimeout(() => { this.ratelimited = false; }, 100);
+    if (this.ratetimer) {
+      clearTimeout(this.ratetimer);
+    }
+    this.ratetimer = setTimeout(() => {
+      this.ratelimited = false;
+    }, 100);
     const height = app.window.size().height();
     for (const btn of this.guilds.values()) {
       if (btn.loadAvatar && !btn.hasPixmap) {
         const iy = btn.mapToParent(this.p0).y();
-        if (iy > 0 && iy < height) void btn.loadAvatar();
+        if (iy > 0 && iy < height) {
+          void btn.loadAvatar();
+        }
       }
     }
   }

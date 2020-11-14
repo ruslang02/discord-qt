@@ -39,9 +39,13 @@ export class Dialog extends QWidget {
       const pos = this.window.mapToParent(this.p0);
       const size = this.window.size();
       if (
-        event.x() < pos.x() || event.x() > pos.x() + size.width()
-        || event.y() < pos.y() || event.y() > pos.y() + size.height()
-      ) this.hide();
+        event.x() < pos.x() ||
+        event.x() > pos.x() + size.width() ||
+        event.y() < pos.y() ||
+        event.y() > pos.y() + size.height()
+      ) {
+        this.hide();
+      }
     });
 
     this.initEvents();
@@ -66,9 +70,7 @@ export class Dialog extends QWidget {
   }
 
   protected initDialog() {
-    const {
-      window, header, closeBtn, controls,
-    } = this;
+    const { window, header, closeBtn, controls } = this;
 
     controls.setContentsMargins(0, 0, 0, 0);
 

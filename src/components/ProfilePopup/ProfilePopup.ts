@@ -1,5 +1,11 @@
 import {
-  Direction, QBoxLayout, QMenu, QPoint, QWidget, WidgetAttribute, WidgetEventTypes,
+  Direction,
+  QBoxLayout,
+  QMenu,
+  QPoint,
+  QWidget,
+  WidgetAttribute,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Snowflake } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
@@ -38,17 +44,25 @@ export class ProfilePopup extends QMenu {
     this.initComponent();
     this.setAttribute(WidgetAttribute.WA_TranslucentBackground, true);
     this.addEventListener(WidgetEventTypes.Show, () => {
-      if (this.adjustTimer) clearInterval(this.adjustTimer);
+      if (this.adjustTimer) {
+        clearInterval(this.adjustTimer);
+      }
       this.adjustTimer = setInterval(() => this.adjustSize(), 10);
     });
-    this.addEventListener(WidgetEventTypes.Close, () => { clearInterval(this.adjustTimer); });
+    this.addEventListener(WidgetEventTypes.Close, () => {
+      clearInterval(this.adjustTimer);
+    });
     this.addEventListener(WidgetEventTypes.Resize, () => {
-      if (!this.isVisible() || !this.p) return;
+      if (!this.isVisible() || !this.p) {
+        return;
+      }
       this.realign(this.p);
     });
 
     app.on(Events.OPEN_USER_PROFILE, async (userId, guildId, point) => {
-      if (await this.loadProfile(userId, guildId)) this.popup(point);
+      if (await this.loadProfile(userId, guildId)) {
+        this.popup(point);
+      }
     });
   }
 
@@ -71,7 +85,9 @@ export class ProfilePopup extends QMenu {
 
   loadProfile(userId: Snowflake, guildId?: Snowflake): boolean {
     const user = app.client.users.resolve(userId);
-    if (!user) return false;
+    if (!user) {
+      return false;
+    }
     const member = guildId
       ? app.client.guilds.resolve(guildId)?.members.resolve(userId) || undefined
       : undefined;
@@ -84,9 +100,7 @@ export class ProfilePopup extends QMenu {
   }
 
   private initComponent() {
-    const {
-      controls, root, profile, presence, rolesSection, noteSection,
-    } = this;
+    const { controls, root, profile, presence, rolesSection, noteSection } = this;
 
     root.setLayout(controls);
     root.setMinimumSize(250, 0);

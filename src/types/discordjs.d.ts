@@ -5,7 +5,7 @@ import { CustomStatus } from '../utilities/CustomStatus';
 type ValueOf<T> = T[keyof T];
 declare module 'discord.js' {
   export interface Client {
-    read_state: { mention_count: number, last_message_id: string, id: string }[]
+    read_state: { mention_count: number; last_message_id: string; id: string }[];
   }
   export interface ClientEvents {
     messageAck: [GuildChannel, Message];
@@ -34,7 +34,7 @@ declare module 'discord.js' {
     acknowledged: boolean;
     acknowledge(): Promise<void>;
   }
-  export interface DQConstants extends Constants { }
+  export interface DQConstants extends Constants {}
   export interface Guild {
     acknowledged: boolean;
     position: number | null;
@@ -62,12 +62,12 @@ declare module 'discord.js' {
     acknowledge(): Promise<void>;
   }
   export type TypingEntity = {
-    elapsedTime: number,
-    lastTimestamp: Date,
-    since: Date,
-    timeout: NodeJS.Timeout,
-    user: User
-  }
+    elapsedTime: number;
+    lastTimestamp: Date;
+    since: Date;
+    timeout: NodeJS.Timeout;
+    user: User;
+  };
   export interface User {
     note: string | null;
     setNote(note: string): void;

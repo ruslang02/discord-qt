@@ -1,6 +1,4 @@
-import {
-  QAction, QMenu, QSystemTrayIcon, QSystemTrayIconActivationReason,
-} from '@nodegui/nodegui';
+import { QAction, QMenu, QSystemTrayIcon, QSystemTrayIconActivationReason } from '@nodegui/nodegui';
 import { Constants } from 'discord.js';
 import { app } from '.';
 import { Events as AppEvents } from './utilities/Events';
@@ -36,16 +34,16 @@ export class Tray extends QSystemTrayIcon {
   }
 
   private static handleShowApp(reason?: QSystemTrayIconActivationReason) {
-    if (reason && reason !== QSystemTrayIconActivationReason.Trigger) return;
+    if (reason && reason !== QSystemTrayIconActivationReason.Trigger) {
+      return;
+    }
     app.window.showNormal();
     app.window.activateWindow();
     app.window.raise();
   }
 
   private initTrayMenu() {
-    const {
-      menu, accMenu, tagAction,
-    } = this;
+    const { menu, accMenu, tagAction } = this;
     tagAction.setText('Not logged in');
     tagAction.setEnabled(false);
     tagAction.setIcon(app.icon);
@@ -74,7 +72,9 @@ export class Tray extends QSystemTrayIcon {
 
   private update() {
     const { accMenu } = this;
-    if (!app.config.accounts) return;
+    if (!app.config.accounts) {
+      return;
+    }
     accMenu.actions.forEach((a) => accMenu.removeAction(a));
     for (const account of app.config.accounts) {
       const item = new QAction();

@@ -12,9 +12,7 @@ import {
   QWidget,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import {
-  GuildChannel, Message, MessageEmbedImage, MessageMentions,
-} from 'discord.js';
+import { GuildChannel, Message, MessageEmbedImage, MessageMentions } from 'discord.js';
 import { __ } from 'i18n';
 import markdownIt from 'markdown-it';
 import open from 'open';
@@ -31,7 +29,9 @@ const MD = markdownIt({
   html: false,
   linkify: true,
   breaks: true,
-}).disable(['hr', 'blockquote', 'lheading', 'list']).enable('link');
+})
+  .disable(['hr', 'blockquote', 'lheading', 'list'])
+  .enable('link');
 
 const { debug, error } = createLogger('MessageUtilities');
 
@@ -39,8 +39,10 @@ const EMOJI_REGEX = /<a?:\w+:[0-9]+>/g;
 const INVITE_REGEX = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+[A-z]/g;
 const EMOJI_PLACEHOLDER = join(__dirname, 'assets/icons/emoji-placeholder.png');
 
-const unescape = (str: string) => str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-const escape = (str: string) => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const unescape = (str: string) =>
+  str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+const escape = (str: string) =>
+  str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 /**
  * Calculates the thumbnail size.
@@ -83,15 +85,22 @@ export async function processMentions(content: string, message: Message) {
       await message.guild?.members.fetch({
         user: uIds,
       });
-    } catch (e) { }
+    } catch (e) {}
   }
   await Promise.all([
     ...userMatches.map(async (match) => {
       const id = match.replace(/<@!?/g, '').replace(/>/g, '');
       if (message.guild) {
         const member = message.guild.members.resolve(id);
-        const memberName = member?.nickname || member?.user.username || app.client.users.resolve(id)?.username || 'unknown-user';
-        newContent = newContent.replace(escape(match), `<a href='dq-user://${id}'>@${memberName}</a>`);
+        const memberName =
+          member?.nickname ||
+          member?.user.username ||
+          app.client.users.resolve(id)?.username ||
+          'unknown-user';
+        newContent = newContent.replace(
+          escape(match),
+          `<a href='dq-user://${id}'>@${memberName}</a>`,
+        );
       } else {
         let userName: string;
         try {
@@ -100,19 +109,30 @@ export async function processMentions(content: string, message: Message) {
         } catch (e) {
           userName = 'unknown-user';
         }
-        newContent = newContent.replace(escape(match), `<a href='dq-user://${id}'>@${userName}</a>`);
+        newContent = newContent.replace(
+          escape(match),
+          `<a href='dq-user://${id}'>@${userName}</a>`,
+        );
       }
     }),
     ...roleMatches.map(async (match) => {
       const id = match.replace(/<@&/g, '').replace(/>/g, '');
       const role = await message.guild?.roles.fetch(id);
-      if (role) newContent = newContent.replace(escape(match), `<span style='color: ${role.hexColor}'>@${role.name}</span>`);
+      if (role) {
+        newContent = newContent.replace(
+          escape(match),
+          `<span style='color: ${role.hexColor}'>@${role.name}</span>`,
+        );
+      }
     }),
     ...channelMatches.map(async (match) => {
       const id = match.replace(/<#/g, '').replace(/>/g, '');
       const channel = app.client.channels.resolve(id) as GuildChannel;
       const channelName = channel?.name || 'invalid-channel';
-      newContent = newContent.replace(escape(match), `<a href='dq-channel://${id}'>#${channelName}</a>`);
+      newContent = newContent.replace(
+        escape(match),
+        `<a href='dq-channel://${id}'>#${channelName}</a>`,
+      );
     }),
   ]);
   return newContent;
@@ -123,10 +143,13 @@ export async function processMentions(content: string, message: Message) {
  * @param content String to process.
  */
 export function processMarkdown(content: string) {
-  if (!app.config.processMarkDown) return content.replace(/\n/g, '<br/>');
+  if (!app.config.processMarkDown) {
+    return content.replace(/\n/g, '<br/>');
+  }
   return MD.render(content)
     .replace(/<\/?p>/g, '')
-    .split('\n').map((line) => (line.startsWith('&gt; ') ? line.replace('&gt; ', '<span>▎</span>') : line))
+    .split('\n')
+    .map((line) => (line.startsWith('&gt; ') ? line.replace('&gt; ', '<span>▎</span>') : line))
     .join('\n')
     .trim();
 }
@@ -139,9 +162,18 @@ export async function processEmojiPlaceholders(content: string): Promise<string>
   let newContent = content;
   const uContent = unescape(content);
   const emoIds = uContent.match(EMOJI_REGEX) || [];
-  const size = uContent.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
+  const size =
+    uContent
+      .replace(EMOJI_REGEX, '')
+      .replace(/<\/?p>/g, '')
+      .trim() === ''
+      ? 48
+      : 24;
   for (const emo of emoIds) {
-    newContent = newContent.replace(escape(emo), `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`);
+    newContent = newContent.replace(
+      escape(emo),
+      `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`,
+    );
   }
   return newContent;
 }
@@ -154,7 +186,13 @@ export async function processEmojis(content: string): Promise<string> {
   let newContent = content;
   const uContent = unescape(content);
   const emoIds = uContent.match(EMOJI_REGEX) || [];
-  const size = uContent.replace(EMOJI_REGEX, '').replace(/<\/?p>/g, '').trim() === '' ? 48 : 24;
+  const size =
+    uContent
+      .replace(EMOJI_REGEX, '')
+      .replace(/<\/?p>/g, '')
+      .trim() === ''
+      ? 48
+      : 24;
   const promises: Promise<any>[] = emoIds.map((emo) => {
     const [type, name, id] = emo.replace('<', '').replace('>', '').split(':');
     const format = type === 'a' ? 'gif' : 'png';
@@ -167,14 +205,18 @@ export async function processEmojis(content: string): Promise<string> {
         const pix = new QPixmap(emojiPath);
         const larger = pix.width() > pix.height() ? 'width' : 'height';
 
-        newContent = newContent.replace(escape(emo), `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`);
-      }).catch(() => {
+        newContent = newContent.replace(
+          escape(emo),
+          `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`,
+        );
+      })
+      .catch(() => {
         debug(`Emoji <:${name}:${id}> was not resolved.`);
       });
   });
   try {
     await Promise.all(promises);
-  } catch (e) { }
+  } catch (e) {}
   return newContent;
 }
 
@@ -208,9 +250,11 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       if (embed.author.proxyIconURL) {
         const auimage = new QLabel(body);
         auimage.setFixedSize(24, 24);
-        pictureWorker.loadImage(embed.author.proxyIconURL)
-          .then((path) => !item.native.destroyed
-            && auimage.setPixmap(new QPixmap(path).scaled(24, 24)))
+        pictureWorker
+          .loadImage(embed.author.proxyIconURL)
+          .then(
+            (path) => !item.native.destroyed && auimage.setPixmap(new QPixmap(path).scaled(24, 24)),
+          )
           .catch(() => {
             error(`Couldn't load avatar picture of embed ${embed.title}.`);
           });
@@ -219,7 +263,9 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       const auname = new DLabel(body);
       auname.setObjectName('EmbedAuthorName');
       if (embed.author.url) {
-        auname.setText(`<a style='color: white;' href='${embed.author.url}'>${embed.author.name}</a>`);
+        auname.setText(
+          `<a style='color: white;' href='${embed.author.url}'>${embed.author.name}</a>`,
+        );
       } else {
         auname.setText(embed.author.name || '');
       }
@@ -244,9 +290,13 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         .replace(/&lt;/g, '<')
         .replace(/&gt;/g, '>')
         .trim();
-      processMentions(description, message).then((pdescription) => {
-        if (!item.native.destroyed) descr.setText(pdescription);
-      }).catch(() => error("Couldn't process mentions in embed description."));
+      processMentions(description, message)
+        .then((pdescription) => {
+          if (!item.native.destroyed) {
+            descr.setText(pdescription);
+          }
+        })
+        .catch(() => error("Couldn't process mentions in embed description."));
       layout.addWidget(descr);
     }
     const grid = new QGridLayout(); // TODO: QGridLayout::addLayout
@@ -272,7 +322,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
     }
     layout.addLayout(grid);
     if (embed.image || embed.thumbnail) {
-      const image = embed.image || embed.thumbnail as MessageEmbedImage;
+      const image = embed.image || (embed.thumbnail as MessageEmbedImage);
       const { width, height } = getCorrectSize(image.width, image.height);
       const qImage = new QLabel(item);
       qImage.setCursor(CursorShape.PointingHandCursor);
@@ -282,11 +332,17 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
       // body.setMaximumSize(width + 32, MAX_QSIZE);
       // @ts-ignore
       container.loadImages = async function loadImages() {
-        if (item.native.destroyed || !image.proxyURL) return;
+        if (item.native.destroyed || !image.proxyURL) {
+          return;
+        }
         try {
           const path = await pictureWorker.loadImage(image.proxyURL);
-          if (item.native.destroyed) return;
-          if (path) qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
+          if (item.native.destroyed) {
+            return;
+          }
+          if (path) {
+            qImage.setPixmap(new QPixmap(path).scaled(width, height, 1, 1));
+          }
           qImage.setInlineStyle('background-color: transparent');
         } catch (e) {
           error(`Image in embed ${embed.title} could not be downloaded.`);
@@ -339,25 +395,34 @@ export async function processInvites(message: Message, msgItem: MessageItem): Pr
     layout.addWidget(helperText);
     layout.addLayout(mainLayout, 1);
     widgets.push(item);
-    app.client.fetchInvite(inviteLink).then((invite) => {
-      if (msgItem.native.destroyed) return;
-      avatar.setText(invite.guild?.nameAcronym || '');
-      infoLabel.setText(`${__('TOTAL_MEMBERS')}: ${invite.memberCount}`);
-      nameLabel.setText(invite.guild?.name || '');
-      // @ts-ignore
-      item.loadImages = async function loadImages() {
-        const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
-        if (!iconUrl) return;
-        try {
-          const path = await pictureWorker.loadImage(iconUrl);
-          if (msgItem.native.destroyed) return;
-          avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
-          avatar.setObjectName('');
-        } catch (e) {
-          error(`Guild image in invite to "${invite.guild?.name}" could not be loaded.`);
+    app.client
+      .fetchInvite(inviteLink)
+      .then((invite) => {
+        if (msgItem.native.destroyed) {
+          return;
         }
-      };
-    }).catch(error.bind("Couldn't load the invite."));
+        avatar.setText(invite.guild?.nameAcronym || '');
+        infoLabel.setText(`${__('TOTAL_MEMBERS')}: ${invite.memberCount}`);
+        nameLabel.setText(invite.guild?.name || '');
+        // @ts-ignore
+        item.loadImages = async function loadImages() {
+          const iconUrl = invite.guild?.iconURL({ size: 256, format: 'png' });
+          if (!iconUrl) {
+            return;
+          }
+          try {
+            const path = await pictureWorker.loadImage(iconUrl);
+            if (msgItem.native.destroyed) {
+              return;
+            }
+            avatar.setPixmap(new QPixmap(path).scaled(50, 50, 1, 1));
+            avatar.setObjectName('');
+          } catch (e) {
+            error(`Guild image in invite to "${invite.guild?.name}" could not be loaded.`);
+          }
+        };
+      })
+      .catch(error.bind("Couldn't load the invite."));
   }
   return widgets;
 }
@@ -377,10 +442,13 @@ export function processAttachments(message: Message, item: MessageItem): QLabel[
     qimage.setInlineStyle('background-color: #2f3136; border-radius: 3px;');
     qimage.setCursor(CursorShape.PointingHandCursor);
     qimage.setAlignment(AlignmentFlag.AlignCenter);
-    qimage.setProperty('toolTip', `${attach.name || attach.url}<br />
+    qimage.setProperty(
+      'toolTip',
+      `${attach.name || attach.url}<br />
     Size: ${attach.size} bytes
     ${attach.width && attach.height ? `<br />Resolution: ${attach.width}x${attach.height}` : ''}
-    `);
+    `,
+    );
     qimage.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       void open(attach.url);
     });
@@ -390,10 +458,14 @@ export function processAttachments(message: Message, item: MessageItem): QLabel[
     } else {
       // @ts-ignore
       qimage.loadImages = async function loadImages() {
-        if (!isImage) return;
+        if (!isImage) {
+          return;
+        }
         try {
           const image = await pictureWorker.loadImage(url);
-          if (item.native.destroyed) return;
+          if (item.native.destroyed) {
+            return;
+          }
           qimage.setPixmap(new QPixmap(image));
           qimage.setInlineStyle('background-color: transparent');
         } catch (e) {

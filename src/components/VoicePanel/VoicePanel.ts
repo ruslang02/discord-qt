@@ -1,11 +1,23 @@
 import {
   ButtonRole,
-  Direction, QBoxLayout, QLabel, QMessageBox, QPushButton, QSize, QWidget,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QMessageBox,
+  QPushButton,
+  QSize,
+  QWidget,
 } from '@nodegui/nodegui';
 import { Input, Mixer } from 'audio-mixer';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import {
-  Client, Constants, DQConstants, GuildMember, VoiceChannel, VoiceConnection, VoiceState,
+  Client,
+  Constants,
+  DQConstants,
+  GuildMember,
+  VoiceChannel,
+  VoiceConnection,
+  VoiceState,
 } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
@@ -71,7 +83,7 @@ export class VoicePanel extends QWidget {
     this.hide();
     app.on(AppEvents.JOIN_VOICE_CHANNEL, this.joinChannel.bind(this));
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-      const { Events } = Constants as unknown as DQConstants;
+      const { Events } = (Constants as unknown) as DQConstants;
       client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
     });
     app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
@@ -94,21 +106,23 @@ export class VoicePanel extends QWidget {
     }
     this.playbackVolumeTransformer?.setVolume((config.voiceSettings.outputVolume || 100) / 100);
     this.recordVolumeTransformer?.setVolume((config.voiceSettings.inputVolume || 100) / 100);
-    this.recordNoiseReductor?.setSensivity((config.voiceSettings.inputSensitivity || 0));
+    this.recordNoiseReductor?.setSensivity(config.voiceSettings.inputSensitivity || 0);
   }
 
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
-    if (!n.member || n.member.user === app.client.user) return;
-    if (o.channel === this.channel
-      && n.channel !== this.channel) this.connectToMixer(n.member);
-    if (o.channel !== this.channel
-      && n.channel === this.channel) this.disconnectFromMixer(n.member);
+    if (!n.member || n.member.user === app.client.user) {
+      return;
+    }
+    if (o.channel === this.channel && n.channel !== this.channel) {
+      this.connectToMixer(n.member);
+    }
+    if (o.channel !== this.channel && n.channel === this.channel) {
+      this.disconnectFromMixer(n.member);
+    }
   }
 
   private initComponent() {
-    const {
-      layout, infoLabel, statusLabel, discntBtn,
-    } = this;
+    const { layout, infoLabel, statusLabel, discntBtn } = this;
     layout.setContentsMargins(8, 8, 8, 8);
     layout.setSpacing(8);
 
@@ -158,8 +172,13 @@ export class VoicePanel extends QWidget {
   }
 
   private connectToMixer(member: GuildMember) {
-    if (!this.mixer) return;
-    const stream = this.connection?.receiver.createStream(member.user, { mode: 'pcm', end: 'manual' });
+    if (!this.mixer) {
+      return;
+    }
+    const stream = this.connection?.receiver.createStream(member.user, {
+      mode: 'pcm',
+      end: 'manual',
+    });
     if (stream) {
       const volume = app.config.userVolumeSettings[member.id]?.volume ?? 100;
       const muted = app.config.userVolumeSettings[member.id]?.muted ?? false;
@@ -176,7 +195,9 @@ export class VoicePanel extends QWidget {
   }
 
   private disconnectFromMixer(member: GuildMember) {
-    if (!this.mixer) return;
+    if (!this.mixer) {
+      return;
+    }
     const input = this.streams.get(member);
     if (input) {
       this.mixer.removeInput(input);
@@ -187,7 +208,9 @@ export class VoicePanel extends QWidget {
   }
 
   private initPlayback() {
-    if (!this.connection || !this.channel) return;
+    if (!this.connection || !this.channel) {
+      return;
+    }
 
     const { channel } = this;
 
@@ -196,8 +219,10 @@ export class VoicePanel extends QWidget {
     this.streams.clear();
 
     pipeline(
-      this.mixer = new Mixer(MIXER_OPTIONS), // Initialize the member streams mixer
-      (this.playbackVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform, // Change the volume
+      (this.mixer = new Mixer(MIXER_OPTIONS)), // Initialize the member streams mixer
+      ((this.playbackVolumeTransformer = new VolumeTransformer({
+        type: 's16le',
+      })) as unknown) as Transform, // Change the volume
       (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
       (err) => err && debug("Couldn't finish playback pipeline.", err),
     );
@@ -208,15 +233,19 @@ export class VoicePanel extends QWidget {
   }
 
   private initRecord() {
-    if (!this.connection) return;
+    if (!this.connection) {
+      return;
+    }
 
     this.connection.dispatcher.end();
 
     const recorder = pipeline(
       (this.recordStream = createRecordStream()).stdout, // Open a recording stream
-      (this.recordVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform,
+      ((this.recordVolumeTransformer = new VolumeTransformer({
+        type: 's16le',
+      })) as unknown) as Transform,
       // Change the volume
-      this.recordNoiseReductor = new NoiseReductor(this.onSpeaking.bind(this)), // Audio gate
+      (this.recordNoiseReductor = new NoiseReductor(this.onSpeaking.bind(this))), // Audio gate
       (err) => err && debug("Couldn't finish recording pipeline.", err),
     );
 
@@ -224,9 +253,7 @@ export class VoicePanel extends QWidget {
   }
 
   private async joinChannel(channel: VoiceChannel) {
-    const {
-      infoLabel, statusLabel, createConnection, initPlayback, initRecord,
-    } = this;
+    const { infoLabel, statusLabel, createConnection, initPlayback, initRecord } = this;
     if (process.platform !== 'linux') {
       VoicePanel.openVoiceNotSupportedDialog(channel);
       return;
@@ -253,7 +280,9 @@ export class VoicePanel extends QWidget {
   }
 
   private onSpeaking(value: boolean) {
-    if (!this.connection) return;
+    if (!this.connection) {
+      return;
+    }
     this.connection.setSpeaking(value ? 1 : 4);
     this.connection.emit('speaking', app.client.user, this.connection.speaking);
   }

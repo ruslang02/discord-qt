@@ -72,14 +72,17 @@ export class SettingsView extends QWidget {
     this.pageWidget.setCurrentWidget(this.currentPage);
 
     app.on(Events.SWITCH_VIEW, (view: string) => {
-      if (view !== 'settings') this.currentPage.onClosed();
-      else this.currentPage.onOpened();
+      if (view !== 'settings') {
+        this.currentPage.onClosed();
+      } else {
+        this.currentPage.onOpened();
+      }
     });
   }
 
   private setEvents() {
     app.on(Events.OPEN_SETTINGS_PAGE, (pageTitle: string) => {
-      const page = <Page> this.elements.find((p) => p instanceof Page && p.title === pageTitle);
+      const page = <Page>this.elements.find((p) => p instanceof Page && p.title === pageTitle);
       this.currentPage.onClosed();
       this.pageWidget.setCurrentWidget(page);
       this.currentPage = page;
@@ -89,7 +92,13 @@ export class SettingsView extends QWidget {
 
   private initView() {
     const {
-      layout, leftSpacer, sectionList, pageContainer, closeContainer, rightSpacer, pageWidget,
+      layout,
+      leftSpacer,
+      sectionList,
+      pageContainer,
+      closeContainer,
+      rightSpacer,
+      pageWidget,
     } = this;
 
     layout.setContentsMargins(0, 0, 0, 0);

@@ -38,8 +38,12 @@ import { resolveEmoji } from '../../utilities/ResolveEmoji';
 const { error } = createLogger('EmojiPicker');
 
 const mod = (a: number, x: number) => {
-  if (Math.abs(a) === x) return 0;
-  if (a >= 0) return a % x;
+  if (Math.abs(a) === x) {
+    return 0;
+  }
+  if (a >= 0) {
+    return a % x;
+  }
   return x - (-a % x);
 };
 
@@ -94,9 +98,7 @@ export class EmojiPicker extends QMenu {
   }
 
   private initComponent() {
-    const {
-      controls, root, emojiView, textInput,
-    } = this;
+    const { controls, root, emojiView, textInput } = this;
     root.setLayout(controls);
     root.setObjectName('EmojiPicker');
     root.setFixedSize(377, 335);
@@ -141,8 +143,8 @@ export class EmojiPicker extends QMenu {
 
   private handleControlPressed(event: any) {
     const e = new QKeyEvent(event as NativeElement) as QKeyEvent & { ignore: () => void };
-    this.controlPressed = (e.modifiers() & KeyboardModifier.ControlModifier)
-      === KeyboardModifier.ControlModifier;
+    this.controlPressed =
+      (e.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier;
     this.textInput.clear();
   }
 
@@ -151,28 +153,22 @@ export class EmojiPicker extends QMenu {
     this.handleControlPressed(event);
     const e = new QKeyEvent(event as NativeElement);
     let text = textInput.placeholderText();
-    if (text.includes(' ')) text = '';
+    if (text.includes(' ')) {
+      text = '';
+    }
     const input = e.text();
     switch (e.key()) {
       case Key.Key_Up:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() - 9, emojiView.count()),
-        );
+        emojiView.setCurrentRow(mod(emojiView.currentRow() - 9, emojiView.count()));
         break;
       case Key.Key_Left:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() - 1, emojiView.count()),
-        );
+        emojiView.setCurrentRow(mod(emojiView.currentRow() - 1, emojiView.count()));
         break;
       case Key.Key_Down:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() + 9, emojiView.count()),
-        );
+        emojiView.setCurrentRow(mod(emojiView.currentRow() + 9, emojiView.count()));
         break;
       case Key.Key_Right:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() + 1, emojiView.count()),
-        );
+        emojiView.setCurrentRow(mod(emojiView.currentRow() + 1, emojiView.count()));
         break;
       case Key.Key_Return:
       case Key.Key_Space:
@@ -185,13 +181,17 @@ export class EmojiPicker extends QMenu {
       default: {
         const newText = (text + input).trim();
         const check = newText.match(EMOJI_REGEX);
-        if (!check || !check.length || check[0] !== newText) break;
+        if (!check || !check.length || check[0] !== newText) {
+          break;
+        }
         textInput.setPlaceholderText(newText);
         void this.updateView();
       }
     }
     const newValue = textInput.placeholderText();
-    if (!newValue) textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
+    if (!newValue) {
+      textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
+    }
   }
 
   private handleKeyRelease(event: any) {
@@ -209,7 +209,9 @@ export class EmojiPicker extends QMenu {
   private handleItemClicked(item: QListWidgetItem) {
     const emojiId = item.data(256).toString();
     const emoji = app.client.emojis.resolve(emojiId);
-    if (!emoji) return;
+    if (!emoji) {
+      return;
+    }
     if (app.config.recentEmojis) {
       let add = true;
       app.config.recentEmojis = app.config.recentEmojis.map((obj) => {
@@ -220,7 +222,9 @@ export class EmojiPicker extends QMenu {
         }
         return obj;
       });
-      if (add) app.config.recentEmojis.push([emojiId, 1]);
+      if (add) {
+        app.config.recentEmojis.push([emojiId, 1]);
+      }
       void app.configManager.save();
     }
     this.events.emit('emoji', emoji, this.controlPressed);
@@ -235,7 +239,9 @@ export class EmojiPicker extends QMenu {
     const { emojiView, textInput } = this;
     const { client, config } = app;
     const emojiName = textInput.placeholderText().trim();
-    if (!client) return;
+    if (!client) {
+      return;
+    }
     this.token?.cancel();
     this.token = new CancelToken();
     emojiView.clear();
@@ -244,12 +250,16 @@ export class EmojiPicker extends QMenu {
       const recents = config.recentEmojis.sort((a, b) => a[1] - b[1]);
       for (const item of recents) {
         const emoji = client.emojis.resolve(item[0]);
-        if (emoji) this.insertEmoji(emoji, this.token);
+        if (emoji) {
+          this.insertEmoji(emoji, this.token);
+        }
       }
       return;
     }
     const result = client.emojis.cache
-      .filter((emoji) => emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase()))
+      .filter((emoji) =>
+        emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase()),
+      )
       .partition((v) => v.guild.id === app.currentGuildId);
     const thisGuild = result[0].first(MAX_EMOJIS);
     const otherGuilds = result[1].first(MAX_EMOJIS - thisGuild.length);
@@ -263,9 +273,10 @@ export class EmojiPicker extends QMenu {
         max -= 1;
       }
       // // eslint-disable-next-line no-await-in-loop
-      this.insertEmoji(i < thisGuild.length
-        ? thisGuild[i]
-        : otherGuilds[i - thisGuild.length], this.token);
+      this.insertEmoji(
+        i < thisGuild.length ? thisGuild[i] : otherGuilds[i - thisGuild.length],
+        this.token,
+      );
     }
     emojiView.setCurrentRow(0);
   }
@@ -282,7 +293,9 @@ export class EmojiPicker extends QMenu {
     resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name })
       .then((path) => !cancel.cancelled && item.setIcon(new QIcon(path)))
       .catch((e) => {
-        if (cancel.cancelled) return;
+        if (cancel.cancelled) {
+          return;
+        }
         item.setText(emoji.name);
         error(`Couldn't retrieve emoji ${emoji}`, e);
       });

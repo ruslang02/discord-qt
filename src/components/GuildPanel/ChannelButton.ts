@@ -1,8 +1,4 @@
-import {
-  ContextMenuPolicy,
-  QLabel,
-  QPixmap,
-} from '@nodegui/nodegui';
+import { ContextMenuPolicy, QLabel, QPixmap } from '@nodegui/nodegui';
 import { GuildChannel, TextChannel, VoiceChannel } from 'discord.js';
 import { join } from 'path';
 import { app } from '../..';
@@ -14,7 +10,7 @@ export class ChannelButton extends DChannelButton {
     ['text', new QPixmap(join(__dirname, './assets/icons/pound.png'))],
     ['news', new QPixmap(join(__dirname, './assets/icons/bullhorn.png'))],
     ['voice', new QPixmap(join(__dirname, './assets/icons/volume-high.png'))],
-  ])
+  ]);
 
   private chicon = new QLabel(this);
 
@@ -34,7 +30,9 @@ export class ChannelButton extends DChannelButton {
 
   private handleClick() {
     const { channel } = this;
-    if (!channel || this.activated()) return;
+    if (!channel || this.activated()) {
+      return;
+    }
     switch (channel.type) {
       case 'news':
       case 'text':
@@ -48,9 +46,7 @@ export class ChannelButton extends DChannelButton {
   }
 
   private initComponent() {
-    const {
-      chicon, chlabel, layout, unreadIcon,
-    } = this;
+    const { chicon, chlabel, layout, unreadIcon } = this;
     layout.setSpacing(6);
     chlabel.setInlineStyle('font-size: 16px; line-height: 20px;');
     this.labels.push(chlabel);
@@ -70,7 +66,11 @@ export class ChannelButton extends DChannelButton {
 
   setUnread(value: boolean) {
     super.setUnread(value);
-    if (value && !this.muted()) this.unreadIcon.show(); else this.unreadIcon.hide();
+    if (value && !this.muted()) {
+      this.unreadIcon.show();
+    } else {
+      this.unreadIcon.hide();
+    }
   }
 
   loadChannel(channel: GuildChannel) {
@@ -78,7 +78,11 @@ export class ChannelButton extends DChannelButton {
     this.channel = channel;
     this.chlabel.setText(channel.name);
     const pixmap = ChannelButton.Icons.get(channel.type);
-    if (pixmap) chicon.setPixmap(pixmap);
-    if (channel instanceof TextChannel && !channel.acknowledged) this.setUnread(true);
+    if (pixmap) {
+      chicon.setPixmap(pixmap);
+    }
+    if (channel instanceof TextChannel && !channel.acknowledged) {
+      this.setUnread(true);
+    }
   }
 }

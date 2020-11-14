@@ -34,7 +34,9 @@ export class MembersList extends QListWidget {
         return;
       }
       if (view === 'guild' && options?.channel) {
-        if (options.channel !== this.channel) this.loadList(options.channel);
+        if (options.channel !== this.channel) {
+          this.loadList(options.channel);
+        }
         this.show();
       }
     });
@@ -42,7 +44,9 @@ export class MembersList extends QListWidget {
 
   private loadList(channel: GuildChannel) {
     this.channel = channel as TextChannel | NewsChannel;
-    if (!['text', 'news'].includes(channel.type)) return;
+    if (!['text', 'news'].includes(channel.type)) {
+      return;
+    }
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
 

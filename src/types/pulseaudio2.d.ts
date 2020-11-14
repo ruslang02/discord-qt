@@ -4,18 +4,18 @@ declare module 'pulseaudio2' {
   import { Stream } from 'stream';
 
   export type ContextOptions = {
-    client?: string,
-    server?: string,
-    flags?: string,
+    client?: string;
+    server?: string;
+    flags?: string;
   };
 
   export type StreamOptions = {
-    stream?: string,
-    device?: string,
-    format?: string,
-    rate?: number,
-    channels?: number,
-    latency?: number,
+    stream?: string;
+    device?: string;
+    format?: string;
+    rate?: number;
+    channels?: number;
+    latency?: number;
     flags?: string;
   };
 

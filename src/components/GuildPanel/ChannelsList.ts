@@ -18,7 +18,10 @@ import {
   DQConstants,
   Guild,
   GuildChannel,
-  Permissions, Snowflake, VoiceChannel, VoiceState,
+  Permissions,
+  Snowflake,
+  VoiceChannel,
+  VoiceState,
 } from 'discord.js';
 import { app } from '../..';
 import { createLogger } from '../../utilities/Console';
@@ -62,14 +65,18 @@ export class ChannelsList extends QListWidget {
   }
 
   private handleEvents(client: Client) {
-    const { Events } = Constants as unknown as DQConstants;
+    const { Events } = (Constants as unknown) as DQConstants;
     client.on(Events.MESSAGE_ACK, (channel) => {
       const button = this.buttons.get(channel.id);
-      if (button) button.setUnread(false);
+      if (button) {
+        button.setUnread(false);
+      }
     });
     client.on(Events.MESSAGE_CREATE, (message) => {
       const button = this.buttons.get(message.channel.id);
-      if (button) button.setUnread(true);
+      if (button) {
+        button.setUnread(true);
+      }
     });
     client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
   }
@@ -77,16 +84,24 @@ export class ChannelsList extends QListWidget {
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
     for (const state of [o, n]) {
       const component = this.vcMembers.get(state.channelID || '');
-      if (component) component.handleVoiceStateUpdate(o, n);
+      if (component) {
+        component.handleVoiceStateUpdate(o, n);
+      }
     }
   }
 
   private async handleSwitchView(view: string, options?: ViewOptions) {
-    if (view !== 'guild' || !options) return;
+    if (view !== 'guild' || !options) {
+      return;
+    }
     let newGuild;
-    if (options.guild) newGuild = options.guild;
-    else if (options.channel) newGuild = options.channel.guild;
-    else return;
+    if (options.guild) {
+      newGuild = options.guild;
+    } else if (options.channel) {
+      newGuild = options.channel.guild;
+    } else {
+      return;
+    }
     if (newGuild.id !== this.guild?.id) {
       this.loadChannels(newGuild);
     }
@@ -95,25 +110,35 @@ export class ChannelsList extends QListWidget {
       this.active?.setActivated(false);
       chan?.setActivated(true);
       this.active = chan;
-    } else this.active = undefined;
+    } else {
+      this.active = undefined;
+    }
   }
 
   private minSize = new QSize(150, 36);
 
   private updateState() {
-    if (!this.guild) return;
+    if (!this.guild) {
+      return;
+    }
     const settings = app.config.userLocalGuildSettings[this.guild.id];
-    for (const item of (<IterableIterator<QListWidgetItem>> this.items.values())) {
+    for (const item of <IterableIterator<QListWidgetItem>>this.items.values()) {
       const channel = app.client.channels.resolve(item.text());
       if (channel instanceof GuildChannel) {
         const isOpen = !settings?.collapsedCategories?.includes(channel.parentID || '');
-        if (!channel || item.native.destroyed) return;
-        this.setRowHidden(this.row(item), !isOpen
-          || (!!channel.muted && (settings?.hideMutedChannels ?? false)));
+        if (!channel || item.native.destroyed) {
+          return;
+        }
+        this.setRowHidden(
+          this.row(item),
+          !isOpen || (!!channel.muted && (settings?.hideMutedChannels ?? false)),
+        );
       }
       if (channel instanceof CategoryChannel) {
         const arrow = settings?.collapsedCategories?.includes(channel.id) ? '►' : '▼';
-        this.categories.get(channel.id)?.setText(`<html>${arrow}&nbsp;&nbsp;${channel.name}</html>`);
+        this.categories
+          .get(channel.id)
+          ?.setText(`<html>${arrow}&nbsp;&nbsp;${channel.name}</html>`);
       }
     }
   }
@@ -123,7 +148,9 @@ export class ChannelsList extends QListWidget {
     s.collapsedCategories = [...(s.collapsedCategories || [])] as string[];
     if (s.collapsedCategories.includes(categoryId)) {
       s.collapsedCategories = s.collapsedCategories.filter((id) => id !== categoryId);
-    } else s.collapsedCategories = [...s.collapsedCategories, categoryId];
+    } else {
+      s.collapsedCategories = [...s.collapsedCategories, categoryId];
+    }
 
     app.config.userLocalGuildSettings[guildId] = s;
     void app.configManager.save();
@@ -133,10 +160,16 @@ export class ChannelsList extends QListWidget {
 
   private loadChannels(guild: Guild) {
     this.guild = guild;
-    if (this.ratelimit) return;
+    if (this.ratelimit) {
+      return;
+    }
     this.ratelimit = true;
-    if (this.rateTimer) clearTimeout(this.rateTimer);
-    if (!guild) return;
+    if (this.rateTimer) {
+      clearTimeout(this.rateTimer);
+    }
+    if (!guild) {
+      return;
+    }
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
 
@@ -150,16 +183,18 @@ export class ChannelsList extends QListWidget {
     const [categories, channels] = guild.channels.cache
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition((a) => a.type === 'category') as [
-        Collection<string, CategoryChannel>,
-        Collection<string, GuildChannel>
-      ];
+      Collection<string, CategoryChannel>,
+      Collection<string, GuildChannel>,
+    ];
     debug(`Loading ${categories.size} categories...`);
     for (const category of categories.sort((a, b) => a.rawPosition - b.rawPosition).values()) {
       const item = new QListWidgetItem();
       const label = new QLabel(this);
       label.setObjectName('CategoryHeader');
-      label.addEventListener(WidgetEventTypes.MouseButtonPress,
-        this.toggleCategory.bind(this, guild.id, category.id));
+      label.addEventListener(
+        WidgetEventTypes.MouseButtonPress,
+        this.toggleCategory.bind(this, guild.id, category.id),
+      );
       label.setMinimumSize(0, 30);
       label.setCursor(CursorShape.PointingHandCursor);
       item.setText(category.id);
@@ -180,7 +215,9 @@ export class ChannelsList extends QListWidget {
       item.setFlags(~ItemFlag.ItemIsEnabled);
       btn.loadChannel(channel);
       btn.setFixedSize(232, 32);
-      if (channel.muted) btn.setMuted(true);
+      if (channel.muted) {
+        btn.setMuted(true);
+      }
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(row, item);
@@ -206,7 +243,9 @@ export class ChannelsList extends QListWidget {
 
     this.rateTimer = setTimeout(() => {
       this.ratelimit = false;
-      if (guild !== this.guild && this.guild) this.loadChannels(this.guild);
+      if (guild !== this.guild && this.guild) {
+        this.loadChannels(this.guild);
+      }
     }, 500);
   }
 }

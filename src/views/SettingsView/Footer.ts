@@ -1,5 +1,11 @@
 import {
-  CursorShape, Direction, QBoxLayout, QLabel, QSize, QWidget, TextInteractionFlag,
+  CursorShape,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QSize,
+  QWidget,
+  TextInteractionFlag,
 } from '@nodegui/nodegui';
 import open from 'open';
 import { join } from 'path';
@@ -24,10 +30,17 @@ export class Footer extends QWidget {
     });
     github.setFixedSize(24, 24);
     const label = new QLabel();
-    const me = await import('../../../package.json') as { version: string; repository: { url: string; }; };
+    const me = (await import('../../../package.json')) as {
+      version: string;
+      repository: { url: string };
+    };
     github.addEventListener('clicked', () => open(me.repository.url));
     // @ts-ignore
-    label.setText(`${app.name} ${me.version}${__BUILDNUM__ !== 0 ? ` (build ${__BUILDNUM__})` : ''}<br>node ${process.versions.node}<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`);
+    label.setText(
+      `${app.name} ${me.version}${__BUILDNUM__ !== 0 ? ` (build ${__BUILDNUM__})` : ''}<br>node ${
+        process.versions.node
+      }<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`,
+    );
     label.setOpenExternalLinks(true);
     label.setObjectName('Footer');
     label.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);

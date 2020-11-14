@@ -7,7 +7,6 @@ import {
   KeyboardModifier,
   NativeElement,
   QBoxLayout,
-
   QClipboardMode,
   QDragMoveEvent,
   QFileDialog,
@@ -21,7 +20,9 @@ import {
 } from '@nodegui/nodegui';
 import {
   Client,
-  DMChannel, GuildEmoji, Message,
+  DMChannel,
+  GuildEmoji,
+  Message,
   MessageOptions,
   NewsChannel,
   Permissions,
@@ -101,9 +102,10 @@ export class InputPanel extends QWidget {
     if (!['dm', 'guild'].includes(view)) {
       return;
     }
-    const channel = <DMChannel | undefined>options?.dm
-      || <TextChannel | NewsChannel | undefined>options?.channel
-      || undefined;
+    const channel =
+      <DMChannel | undefined>options?.dm ||
+      <TextChannel | NewsChannel | undefined>options?.channel ||
+      undefined;
     if (!channel) {
       input.setPlaceholderText('');
       return;
@@ -117,9 +119,10 @@ export class InputPanel extends QWidget {
     }
     input.setPlaceholderText(
       __('TEXTAREA_PLACEHOLDER', {
-        channel: channel.type === 'dm'
-          ? `@${(<DMChannel>channel).recipient.username}`
-          : `#${(<TextChannel>channel).name}`,
+        channel:
+          channel.type === 'dm'
+            ? `@${(<DMChannel>channel).recipient.username}`
+            : `#${(<TextChannel>channel).name}`,
       }),
     );
 
@@ -140,7 +143,9 @@ export class InputPanel extends QWidget {
     const typers = [...channel._typing.values()]
       .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.nickname || e.user.username)
       .filter((m) => !!m) as string[];
-    if (typers.every((s) => this.prevTypers.includes(s))) return;
+    if (typers.every((s) => this.prevTypers.includes(s))) {
+      return;
+    }
     this.prevTypers = typers;
     let i18nString;
     switch (typers.length) {
@@ -164,7 +169,9 @@ export class InputPanel extends QWidget {
 
   private handleQuoteMessage(message: Message) {
     const { input } = this;
-    input.insertPlainText(`> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`);
+    input.insertPlainText(
+      `> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`,
+    );
     input.setFocus(FocusReason.TabFocusReason);
     this.adjustInputSize();
   }
@@ -192,27 +199,39 @@ export class InputPanel extends QWidget {
 
     addBtn.setFixedSize(56, 44);
     addBtn.addEventListener('clicked', () => {
-      if (dialog.exec() === DialogCode.Accepted) this.attachments.addFiles(dialog.selectedFiles());
+      if (dialog.exec() === DialogCode.Accepted) {
+        this.attachments.addFiles(dialog.selectedFiles());
+      }
     });
     input.setObjectName('Input');
     emojiPicker.events.on('emoji', async (emoji: GuildEmoji, special: boolean) => {
-      if (!this.channel) return;
-      if (special || (app.client.user?.premium === false
-        && (
-          (this.channel.type !== 'dm' && emoji.guild.id !== (this.channel as TextChannel).guild.id)
-          || this.channel.type === 'dm'
-        )
-      )) {
+      if (!this.channel) {
+        return;
+      }
+      if (
+        special ||
+        (app.client.user?.premium === false &&
+          ((this.channel.type !== 'dm' &&
+            emoji.guild.id !== (this.channel as TextChannel).guild.id) ||
+            this.channel.type === 'dm'))
+      ) {
         try {
-          let url = await getEmojiURL({
-            emoji_id: emoji.id || undefined,
-            emoji_name: emoji.name,
-          }, emoji.animated ? 'gif' : 'png');
+          let url = await getEmojiURL(
+            {
+              emoji_id: emoji.id || undefined,
+              emoji_name: emoji.name,
+            },
+            emoji.animated ? 'gif' : 'png',
+          );
           url += '?size=128';
           const path = await pictureWorker.loadImage(url, { roundify: false });
           this.attachments.addFiles([path]);
-        } catch (e) { error(e); }
-      } else input.insertPlainText(emoji.toString());
+        } catch (e) {
+          error(e);
+        }
+      } else {
+        input.insertPlainText(emoji.toString());
+      }
       emojiPicker.close();
       input.setFocus(FocusReason.TabFocusReason);
     });
@@ -255,22 +274,28 @@ export class InputPanel extends QWidget {
       const mimeData = ev.mimeData();
       if (mimeData.hasUrls()) {
         const url = new URL(mimeData.text());
-        if (url.protocol !== 'file:') return;
+        if (url.protocol !== 'file:') {
+          return;
+        }
         this.attachments.addFiles([fileURLToPath(url.href)]);
       }
       ev.accept();
-    } catch (ex) { }
+    } catch (ex) {}
   }
 
   private handleKeyPress(native?: any) {
-    if (!native) return;
+    if (!native) {
+      return;
+    }
     const event = new QKeyEvent(native);
     if (
-      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
-      && event.key() === Key.Key_V
+      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier &&
+      event.key() === Key.Key_V
     ) {
       const pixmap = app.clipboard.pixmap(QClipboardMode.Clipboard);
-      if (pixmap.width() === 0 && pixmap.height() === 0) return;
+      if (pixmap.width() === 0 && pixmap.height() === 0) {
+        return;
+      }
       const tmp = join(paths.cache, `clipboard${Math.round(Math.random() * 10000)}.png`);
       pixmap.save(tmp);
       this.attachments.addFiles([tmp]);
@@ -279,19 +304,25 @@ export class InputPanel extends QWidget {
 
   private handleKeyRelease(native?: any) {
     const { input } = this;
-    if (!native) return;
+    if (!native) {
+      return;
+    }
     const event = new QKeyEvent(native);
     const message = input.toPlainText();
     if (
-      event.key() === Key.Key_Return
-      && (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier
-      && (message.trim() !== '' || this.attachments.getFiles().length)
-    ) void this.sendMessage();
-    else if (
-      event.key() === Key.Key_E
-      && (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
-    ) this.handleEmojiOpen();
-    else setTimeout(this.adjustInputSize.bind(this), 0);
+      event.key() === Key.Key_Return &&
+      (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier &&
+      (message.trim() !== '' || this.attachments.getFiles().length)
+    ) {
+      void this.sendMessage();
+    } else if (
+      event.key() === Key.Key_E &&
+      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
+    ) {
+      this.handleEmojiOpen();
+    } else {
+      setTimeout(this.adjustInputSize.bind(this), 0);
+    }
   }
 
   /**
@@ -324,8 +355,9 @@ export class InputPanel extends QWidget {
       statusLabel.setText(__('TWO_FA_ENTER_SMS_TOKEN_SENDING'));
       statusLabel.setInlineStyle('color: #dcddde');
       try {
-        if (message.startsWith('/')) await this.execCommand(message, msgOptions);
-        else {
+        if (message.startsWith('/')) {
+          await this.execCommand(message, msgOptions);
+        } else {
           await this.channel.send(message, msgOptions);
         }
         statusLabel.setText('');
@@ -343,7 +375,9 @@ export class InputPanel extends QWidget {
    * @param msgOptions Extra data to add to the Message.
    */
   private execCommand(content: string, msgOptions: MessageOptions) {
-    if (!this.channel) return;
+    if (!this.channel) {
+      return;
+    }
     const { input } = this;
     const command = content.toLowerCase().trim().slice(1).split(' ')[0];
     const msg = content.replace(`/${command}`, '').trim();

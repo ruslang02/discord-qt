@@ -1,11 +1,15 @@
 import {
   AlignmentFlag,
   ContextMenuPolicy,
-  Direction, QBoxLayout, QLabel, QListWidget, QListWidgetItem, QPixmap, QPoint,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QListWidget,
+  QListWidgetItem,
+  QPixmap,
+  QPoint,
 } from '@nodegui/nodegui';
-import {
-  GuildMember, Snowflake, VoiceChannel, VoiceConnection, VoiceState,
-} from 'discord.js';
+import { GuildMember, Snowflake, VoiceChannel, VoiceConnection, VoiceState } from 'discord.js';
 import { app } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
@@ -37,13 +41,19 @@ export class ChannelMembers extends QListWidget {
   }
 
   handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
-    if (this.native.destroyed || !o.member) return;
+    if (this.native.destroyed || !o.member) {
+      return;
+    }
     if (n.connection && n.connection !== this.connection) {
       this.connection = n.connection;
       n.connection.on('speaking', (user, speaking) => {
         const ubtn = this.buttons.get(user.id);
         if (ubtn) {
-          ubtn.setStyleSheet(speaking.bitfield === 1 ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }' : '');
+          ubtn.setStyleSheet(
+            speaking.bitfield === 1
+              ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }'
+              : '',
+          );
         }
       });
     }
@@ -53,7 +63,7 @@ export class ChannelMembers extends QListWidget {
         this.buttons.get(o.member.user.id)?.hide();
         this.buttons.delete(o.member.user.id);
         this.takeItem(this.row(item));
-      } catch (e) { }
+      } catch (e) {}
       if (o.member.user.id === app.client.user?.id) {
         this.buttons.forEach((btn) => btn.setStyleSheet(''));
       }
@@ -106,7 +116,8 @@ export class ChannelMembers extends QListWidget {
     memberName.setText(member.nickname || member.user.username);
     btn.layout.addWidget(avatar);
     btn.layout.addWidget(memberName, 1);
-    pictureWorker.loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }))
+    pictureWorker
+      .loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }))
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1)))
       .catch(error.bind(console, "Couldn't load avatar."));
     return btn;

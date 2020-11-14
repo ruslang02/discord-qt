@@ -6,4 +6,4 @@ try {
   Loader.require = function load() {
     return { Encoder: Opus };
   };
-} catch (e) { }
+} catch (e) {}

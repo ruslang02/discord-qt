@@ -1,5 +1,10 @@
 import {
-  CursorShape, Direction, QBoxLayout, QPushButton, QScrollArea, Shape,
+  CursorShape,
+  Direction,
+  QBoxLayout,
+  QPushButton,
+  QScrollArea,
+  Shape,
 } from '@nodegui/nodegui';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
@@ -16,9 +21,7 @@ export class SectionList extends QScrollArea {
 
   layout = new QBoxLayout(Direction.TopToBottom);
 
-  constructor(
-    elements: Element[],
-  ) {
+  constructor(elements: Element[]) {
     super();
     this.elements = elements;
     this.setObjectName('SectionList');
@@ -33,7 +36,9 @@ export class SectionList extends QScrollArea {
       this.active?.setProperty('active', false);
       this.active?.repolish();
       const page = [...this.pageButtons.keys()].find((p) => p.title === pageTitle);
-      if (!page) return;
+      if (!page) {
+        return;
+      }
       this.active = this.pageButtons.get(page);
       this.active?.setProperty('active', true);
       this.active?.repolish();
@@ -58,7 +63,9 @@ export class SectionList extends QScrollArea {
         btn.addEventListener('clicked', () => app.emit('openSettingsPage', elem.title));
         layout.addWidget(btn);
         pageButtons.set(elem, btn);
-      } else layout.addWidget(elem);
+      } else {
+        layout.addWidget(elem);
+      }
     }
     layout.addStretch(1);
   }

@@ -1,5 +1,10 @@
 import {
-  AlignmentFlag, CursorShape, QCursor, QLabel, QPixmap, WidgetEventTypes,
+  AlignmentFlag,
+  CursorShape,
+  QCursor,
+  QLabel,
+  QPixmap,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
 import { __ } from 'i18n';
@@ -17,14 +22,18 @@ export class GuildButton extends QLabel {
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.setProperty('toolTip', guild.available ? guild.name : __('GUILD_UNAVAILABLE_HEADER'));
     this.setText(guild.available ? guild.nameAcronym : '!');
-    if (!guild.available) this.setInlineStyle('border: 1px solid red');
+    if (!guild.available) {
+      this.setInlineStyle('border: 1px solid red');
+    }
     this.setAlignment(AlignmentFlag.AlignCenter);
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       guild.subscribeToTypingEvent();
       app.emit(Events.SWITCH_VIEW, 'guild', { guild });
     });
     this.addEventListener(WidgetEventTypes.HoverEnter, () => {
-      if (this._active === true) return;
+      if (this._active === true) {
+        return;
+      }
       this.unreadInd.move(-4, 14);
       this.unreadInd.resize(8, 20);
     });
@@ -45,9 +54,13 @@ export class GuildButton extends QLabel {
 
   setUnread(value: boolean) {
     let val = value;
-    if (this.guild.muted) val = false;
+    if (this.guild.muted) {
+      val = false;
+    }
     this._unread = val;
-    if (this._active === true) return;
+    if (this._active === true) {
+      return;
+    }
     this.unreadInd.move(-4, 20);
     // this.unreadInd.resize(0, 0);
     this.unreadInd.resize(8, val === true ? 8 : 0);
@@ -59,19 +72,26 @@ export class GuildButton extends QLabel {
     if (value === true) {
       this.unreadInd.move(-4, 4);
       this.unreadInd.resize(8, 40);
-    } else this.setUnread(this._unread);
+    } else {
+      this.setUnread(this._unread);
+    }
     this.setProperty('active', value);
     this.repolish();
   }
 
   async loadAvatar() {
-    if (this.hasPixmap) return;
+    if (this.hasPixmap) {
+      return;
+    }
     const url = this.guild.iconURL({ size: 256, format: 'png' });
     this.hasPixmap = !!url;
     if (url) {
-      pictureWorker.loadImage(url)
+      pictureWorker
+        .loadImage(url)
         .then((path) => this.setPixmap(new QPixmap(path).scaled(48, 48, 1, 1)))
-        .catch(() => { this.hasPixmap = false; });
+        .catch(() => {
+          this.hasPixmap = false;
+        });
     }
   }
 }

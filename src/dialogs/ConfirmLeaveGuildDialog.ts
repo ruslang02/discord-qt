@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QLabel, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '..';
@@ -45,7 +43,8 @@ export class ConfirmLeaveGuildDialog extends Dialog {
       try {
         await this.guild?.leave();
         app.emit(Events.SWITCH_VIEW, 'dm');
-      } catch (e) {} finally {
+      } catch (e) {
+      } finally {
         leaveBtn.setEnabled(true);
       }
       this.hide();

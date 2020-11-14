@@ -22,9 +22,7 @@ export class MainPanel extends QWidget {
   }
 
   private initComponent() {
-    const {
-      channelLayout, layout, messages, inputPanel, membersList,
-    } = this;
+    const { channelLayout, layout, messages, inputPanel, membersList } = this;
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     channelLayout.setContentsMargins(0, 0, 0, 0);

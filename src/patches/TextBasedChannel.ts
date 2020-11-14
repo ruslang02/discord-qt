@@ -1,10 +1,6 @@
 const TextBasedChannel = require('discord.js/src/structures/interfaces/TextBasedChannel');
 
-const props = [
-  'lastReadMessageID',
-  'acknowledged',
-  'acknowledge',
-];
+const props = ['lastReadMessageID', 'acknowledged', 'acknowledge'];
 
 Object.defineProperty(TextBasedChannel.prototype, 'lastReadMessageID', {
   get() {
@@ -27,7 +23,9 @@ TextBasedChannel.prototype.acknowledge = function acknowledge(): any {
   const { ack } = this.client.api.channels[this.id].messages[this.lastMessageID];
 
   return ack.post({ data: { token: this._ackToken } }).then((res: any) => {
-    if (res.token) this._ackToken = res.token;
+    if (res.token) {
+      this._ackToken = res.token;
+    }
   });
 };
 

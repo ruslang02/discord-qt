@@ -53,7 +53,9 @@ export class UserPanel extends QWidget {
     this.initComponent();
     app.on(AppEvents.NEW_CLIENT, this.bindEvents.bind(this));
     app.on(AppEvents.READY, () => {
-      if (!app.config.enableAvatars) this.avatar.hide();
+      if (!app.config.enableAvatars) {
+        this.avatar.hide();
+      }
     });
     app.on(AppEvents.LOGIN_FAILED, () => {
       this.nameLabel.setText(__('ERROR'));
@@ -67,7 +69,7 @@ export class UserPanel extends QWidget {
    * @param client discord.js Client to bind into.
    */
   private bindEvents(client: Client) {
-    const { Events } = Constants as unknown as DQConstants;
+    const { Events } = (Constants as unknown) as DQConstants;
     this.nameLabel.setText(__('CONNECTION_STATUS_CONNECTING'));
     this.discLabel.setText('#0000');
     this.nameLabel.setInlineStyle('');
@@ -78,10 +80,14 @@ export class UserPanel extends QWidget {
     });
     client.on(Events.USER_UPDATE, (prev, cur) => {
       void this.updateData();
-      if (prev.avatar !== cur.avatar) void this.updateAvatar();
+      if (prev.avatar !== cur.avatar) {
+        void this.updateAvatar();
+      }
     });
     client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
-      if (presence.userID === client.user?.id) void this.updatePresence();
+      if (presence.userID === client.user?.id) {
+        void this.updatePresence();
+      }
     });
     client.on(Events.USER_SETTINGS_UPDATE, () => {
       void this.updatePresence();
@@ -97,10 +103,14 @@ export class UserPanel extends QWidget {
    */
   private copyUserInfo() {
     const { clipboard, discLabel, statusText } = this;
-    if (this.copiedTimer) clearTimeout(this.copiedTimer);
+    if (this.copiedTimer) {
+      clearTimeout(this.copiedTimer);
+    }
     this.copiedAmount += 1;
     clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
-    [discLabel, statusText].forEach((w) => w.setText(__(`ACCOUNT_USERNAME_COPY_SUCCESS_${Math.min(this.copiedAmount, 11)}`)));
+    [discLabel, statusText].forEach((w) =>
+      w.setText(__(`ACCOUNT_USERNAME_COPY_SUCCESS_${Math.min(this.copiedAmount, 11)}`)),
+    );
     this.copiedTimer = setTimeout(() => {
       void this.updateData();
       void this.updatePresence();
@@ -109,9 +119,7 @@ export class UserPanel extends QWidget {
   }
 
   private initComponent() {
-    const {
-      avatar, nameLabel, discLabel, controls, statusCircle, statusIcon, statusText,
-    } = this;
+    const { avatar, nameLabel, discLabel, controls, statusCircle, statusIcon, statusText } = this;
     this.setLayout(controls);
     this.setObjectName('UserPanel');
     this.setMinimumSize(0, 52);
@@ -214,14 +222,16 @@ export class UserPanel extends QWidget {
   async updateAvatar(): Promise<void> {
     const { avatar } = this;
     const { client } = app;
-    if (!client.user) return;
+    if (!client.user) {
+      return;
+    }
     try {
       const path = await pictureWorker.loadImage(
         client.user.displayAvatarURL({ format: 'png', size: 256 }),
       );
       avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
     } catch (e) {
-      error('User\'s avatar could not be updated.');
+      error("User's avatar could not be updated.");
     }
   }
 
@@ -244,10 +254,10 @@ export class UserPanel extends QWidget {
    * Updates user's custom status text and the status circle.
    */
   async updatePresence() {
-    const {
-      discLabel, statusCircle, statusIcon, statusText,
-    } = this;
-    if (!app.client?.user) return;
+    const { discLabel, statusCircle, statusIcon, statusText } = this;
+    if (!app.client?.user) {
+      return;
+    }
     const { customStatus, presence } = app.client.user;
     statusCircle.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)};`);
     statusCircle.setProperty('toolTip', presence.status);

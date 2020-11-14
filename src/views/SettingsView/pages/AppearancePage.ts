@@ -1,6 +1,4 @@
-import {
-  QLabel, QVariant, WidgetEventTypes,
-} from '@nodegui/nodegui';
+import { QLabel, QVariant, WidgetEventTypes } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
 import { notify } from 'node-notifier';
@@ -44,9 +42,7 @@ export class AppearancePage extends Page {
   }
 
   private async initPage() {
-    const {
-      title, header, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, layout,
-    } = this;
+    const { title, header, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, layout } = this;
     header.setObjectName('Header2');
     header.setText(title);
     layout.addWidget(header);
@@ -81,7 +77,9 @@ export class AppearancePage extends Page {
 
     themeSel.addEventListener('currentTextChanged', async (text) => {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
-      if (!existsSync(path)) return;
+      if (!existsSync(path)) {
+        return;
+      }
       app.config.theme = text;
       await app.configManager.save();
       await app.window.loadStyles();
@@ -89,7 +87,9 @@ export class AppearancePage extends Page {
     langSel.addEventListener('currentIndexChanged', async (index) => {
       const locale = langSel.itemData(index).toString();
       const path = join(__dirname, 'locales', `${locale}.json`);
-      if (!existsSync(path)) return;
+      if (!existsSync(path)) {
+        return;
+      }
       app.config.locale = locale;
       await app.configManager.save();
       setLocale(locale);
@@ -101,18 +101,20 @@ export class AppearancePage extends Page {
     clearCacheBtn.setText(__('CLEAR_CACHE'));
     clearCacheBtn.setMinimumSize(0, 36);
     clearCacheBtn.addEventListener('clicked', () => {
-      rmdir(paths.cache, { recursive: true }).then(() => {
-        notify({
-          title: __('CLEAR_CACHE_SUCCESS'),
-          message: __('CLEAR_CACHE_MOTIVATIONAL_MESSAGE'),
-          icon: app.iconPath,
-          // @ts-ignore
-          type: 'info',
-          category: 'im',
-          hint: 'string:desktop-entry:discord-qt',
-          'app-name': app.name,
-        });
-      }).catch(error.bind(this, "Couldn't clear cache directory."));
+      rmdir(paths.cache, { recursive: true })
+        .then(() => {
+          notify({
+            title: __('CLEAR_CACHE_SUCCESS'),
+            message: __('CLEAR_CACHE_MOTIVATIONAL_MESSAGE'),
+            icon: app.iconPath,
+            // @ts-ignore
+            type: 'info',
+            category: 'im',
+            hint: 'string:desktop-entry:discord-qt',
+            'app-name': app.name,
+          });
+        })
+        .catch(error.bind(this, "Couldn't clear cache directory."));
     });
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);
@@ -142,33 +144,35 @@ export class AppearancePage extends Page {
   private async loadLanguages() {
     try {
       const locales = await readdir('./dist/locales', { withFileTypes: true });
-      this.langs = await Promise.all(locales.map(async (locale) => {
-        const localeName = locale.name.replace('.json', '');
-        try {
-          const file = JSON.parse((await readFile(join('./dist/locales/', locale.name))).toString());
-          this.langSel.addItem(undefined, file['locale.name'], new QVariant(localeName));
-        } catch (e) {
-          warn(`[AppearancePage] Locale file "${locale.name}" can not be read.`);
-        }
-        return localeName;
-      }));
+      this.langs = await Promise.all(
+        locales.map(async (locale) => {
+          const localeName = locale.name.replace('.json', '');
+          try {
+            const file = JSON.parse(
+              (await readFile(join('./dist/locales/', locale.name))).toString(),
+            );
+            this.langSel.addItem(undefined, file['locale.name'], new QVariant(localeName));
+          } catch (e) {
+            warn(`[AppearancePage] Locale file "${locale.name}" can not be read.`);
+          }
+          return localeName;
+        }),
+      );
     } catch (e) {
       error("Couldn't load languages.", e);
     }
   }
 
   private loadConfig() {
-    const {
-      enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel,
-    } = this;
-    const {
-      debug, processMarkDown, enableAvatars, roundifyAvatars, theme,
-    } = app.config;
+    const { enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel } = this;
+    const { debug, processMarkDown, enableAvatars, roundifyAvatars, theme } = app.config;
     enavcx.setChecked(enableAvatars as boolean);
     rdavcx.setChecked(roundifyAvatars as boolean);
     prmdcx.setChecked(processMarkDown as boolean);
     dbgcx.setChecked(debug as boolean);
-    if (typeof theme === 'string') themeSel.setCurrentText(theme);
+    if (typeof theme === 'string') {
+      themeSel.setCurrentText(theme);
+    }
     langSel.setCurrentIndex(this.langs.indexOf(getLocale()));
   }
 }

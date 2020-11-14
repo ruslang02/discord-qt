@@ -1,5 +1,11 @@
 import {
-  Direction, QBoxLayout, QLabel, QTextEdit, QWidget, ScrollBarPolicy, WidgetEventTypes,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QTextEdit,
+  QWidget,
+  ScrollBarPolicy,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { User } from 'discord.js';
 import { __ } from 'i18n';

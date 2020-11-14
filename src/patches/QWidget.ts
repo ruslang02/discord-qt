@@ -7,7 +7,7 @@ const { NodeWidget } = require('@nodegui/nodegui/dist/lib/QtWidgets/QWidget');
 const addon = require('@nodegui/nodegui/dist/lib/utils/addon');
 
 const consts = Object.getOwnPropertyNames(addon.default);
-const noop = () => { };
+const noop = () => {};
 const { debug, warn } = createLogger('Qt');
 
 for (const object of consts) {
@@ -39,7 +39,11 @@ for (const object of consts) {
           }
 
           if (target.destroyed || [...args].some((a) => a.destroyed)) {
-            warn(`Method ${String(prop)} was called of a dereferenced object of type ${target.constructor.name}`);
+            warn(
+              `Method ${String(prop)} was called of a dereferenced object of type ${
+                target.constructor.name
+              }`,
+            );
             return noop;
           }
 

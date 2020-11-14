@@ -48,7 +48,9 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('PROFILE'));
       item.addEventListener('triggered', async () => {
-        if (!this.someone || !this.point) return;
+        if (!this.someone || !this.point) {
+          return;
+        }
         app.emit(Events.OPEN_USER_PROFILE, this.someone.id, app.currentGuildId, this.point);
       });
       this.addAction(item);
@@ -58,7 +60,9 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('MENTION'));
       item.addEventListener('triggered', async () => {
-        if (!this.someone) return;
+        if (!this.someone) {
+          return;
+        }
         app.emit(Events.MENTION_USER, this.someone.id);
       });
       this.addAction(item);
@@ -68,7 +72,9 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('SEND_DM'));
       item.addEventListener('triggered', async () => {
-        if (!this.someone) return;
+        if (!this.someone) {
+          return;
+        }
         app.emit(Events.SWITCH_VIEW, 'dm', {
           dm: await (this.someone instanceof User
             ? this.someone.createDM()
@@ -105,10 +111,13 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('MUTE'));
       item.addEventListener('triggered', async () => {
-        if (!this.someone) return;
+        if (!this.someone) {
+          return;
+        }
         const settings = app.config.userVolumeSettings[this.someone.id];
-        if (settings) settings.muted = !settings.muted;
-        else {
+        if (settings) {
+          settings.muted = !settings.muted;
+        } else {
           app.config.userVolumeSettings[this.someone.id] = {
             volume: 100,
             muted: true,
@@ -124,7 +133,9 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('CHANGE_NICKNAME'));
       item.addEventListener('triggered', async () => {
-        if (!(this.someone instanceof GuildMember)) return;
+        if (!(this.someone instanceof GuildMember)) {
+          return;
+        }
         app.window.dialogs.nicknameChange.openForMember(this.someone);
       });
       this.addAction(item);
@@ -134,7 +145,9 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('INVITE_TO_SERVER'));
       item.addEventListener('triggered', async () => {
-        if (!this.someone) return;
+        if (!this.someone) {
+          return;
+        }
         app.emit(Events.SWITCH_VIEW, 'dm', {
           dm: await (this.someone instanceof User
             ? this.someone.createDM()
@@ -149,7 +162,9 @@ export class UserMenu extends QMenu {
       const item = new QAction();
       item.setText(__('COPY_ID'));
       item.addEventListener('triggered', async () => {
-        if (!this.someone) return;
+        if (!this.someone) {
+          return;
+        }
         clipboard.setText(this.someone.id, QClipboardMode.Clipboard);
       });
       this.addAction(item);
@@ -158,10 +173,13 @@ export class UserMenu extends QMenu {
   }
 
   private updateUserVolume() {
-    if (!this.someone) return;
+    if (!this.someone) {
+      return;
+    }
     const settings = app.config.userVolumeSettings[this.someone.id];
-    if (settings) settings.volume = this.userVolSlider.value();
-    else {
+    if (settings) {
+      settings.volume = this.userVolSlider.value();
+    } else {
       app.config.userVolumeSettings[this.someone.id] = {
         volume: this.userVolSlider.value(),
         muted: false,
@@ -173,19 +191,21 @@ export class UserMenu extends QMenu {
   private updateVisibility() {
     this.items.get('MENTION')?.setProperty('visible', this.someone instanceof GuildMember);
     this.items.get('PROFILE')?.setProperty('visible', this.someone instanceof User);
-    this.items.get('CHANGE_NICKNAME')?.setProperty('visible',
-      !!app.client.user
-      && this.someone instanceof GuildMember
-      && (
-        (
-          this.someone.user === app.client.user
-          && (this.someone.guild.member(app.client.user)?.hasPermission('CHANGE_NICKNAME') ?? false)
-        )
-        || (this.someone.guild.member(app.client.user)?.hasPermission('MANAGE_NICKNAMES') ?? false)
-      ));
+    this.items
+      .get('CHANGE_NICKNAME')
+      ?.setProperty(
+        'visible',
+        !!app.client.user &&
+          this.someone instanceof GuildMember &&
+          ((this.someone.user === app.client.user &&
+            (this.someone.guild.member(app.client.user)?.hasPermission('CHANGE_NICKNAME') ??
+              false)) ||
+            (this.someone.guild.member(app.client.user)?.hasPermission('MANAGE_NICKNAMES') ??
+              false)),
+      );
     if (this.someone) {
       const settings = app.config.userVolumeSettings[this.someone.id];
-      this.items.get('MUTE')?.setText(__((!settings || !settings.muted) ? 'MUTE' : 'UNMUTE'));
+      this.items.get('MUTE')?.setText(__(!settings || !settings.muted ? 'MUTE' : 'UNMUTE'));
       this.userVolSlider.setValue(settings ? settings.volume || 100 : 100);
       this.userVolSlider.setProperty('toolTip', `${this.userVolSlider.value()}%`);
     }

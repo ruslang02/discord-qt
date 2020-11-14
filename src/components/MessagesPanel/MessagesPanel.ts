@@ -9,9 +9,7 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import {
-  Client, DMChannel, GuildChannel, Message, NewsChannel, TextChannel,
-} from 'discord.js';
+import { Client, DMChannel, GuildChannel, Message, NewsChannel, TextChannel } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
@@ -44,9 +42,13 @@ export class MessagesPanel extends QScrollArea {
 
   private initEvents() {
     app.on(Events.SWITCH_VIEW, async (view, options) => {
-      if (!['dm', 'guild'].includes(view)) return;
+      if (!['dm', 'guild'].includes(view)) {
+        return;
+      }
       const channel = options ? options.dm || options.channel : undefined;
-      if (!options || !channel) return;
+      if (!options || !channel) {
+        return;
+      }
       await this.handleChannelOpen(channel);
     });
 
@@ -85,7 +87,9 @@ export class MessagesPanel extends QScrollArea {
   private lastLoad: number = 0;
 
   private async handleWheel(onlyLoadImages = false) {
-    if (this.isLoading) return;
+    if (this.isLoading) {
+      return;
+    }
     this.isLoading = true;
 
     const y = -this.root.mapToParent(this.p0).y() - 20;
@@ -97,12 +101,16 @@ export class MessagesPanel extends QScrollArea {
     }
     for (const item of children) {
       const iy = item.mapToParent(this.p0).y();
-      if (iy >= y - 400 && iy <= y + height + 100) void item.renderImages();
+      if (iy >= y - 400 && iy <= y + height + 100) {
+        void item.renderImages();
+      }
     }
     try {
       if (!onlyLoadImages && y <= 50 && new Date().getTime() - this.lastLoad >= 1000) {
         this.lastLoad = new Date().getTime();
-        if (this.highestWidget?.message?.id) await this.loadMessages(this.highestWidget);
+        if (this.highestWidget?.message?.id) {
+          await this.loadMessages(this.highestWidget);
+        }
       }
       this.initAckTimer();
     } catch (e) {
@@ -115,24 +123,34 @@ export class MessagesPanel extends QScrollArea {
   private async loadMessages(before: MessageItem) {
     const { channel } = this;
     const height = this.size().height();
-    if (!channel) return;
-    const messages = (await channel.messages.fetch({ before: before.message?.id })).array()
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
-    if (!messages.length) return;
+    if (!channel) {
+      return;
+    }
+    const messages = (await channel.messages.fetch({ before: before.message?.id }))
+      .array()
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .reverse();
+    if (!messages.length) {
+      return;
+    }
     const scrollTo = () => {
       this.ensureVisible(0, before.mapToParent(this.p0).y() + height - before.size().height());
     };
     const scrollTimer = setInterval(scrollTo, 1);
     setTimeout(() => clearInterval(scrollTimer), 200);
     if (channel?.type !== 'dm') {
-      channel.guild.members.fetch({
-        user: messages.map((m) => m.author.id),
-        withPresences: true,
-      }).catch((e) => error("Couldn't prefetch members list.", e));
+      channel.guild.members
+        .fetch({
+          user: messages.map((m) => m.author.id),
+          withPresences: true,
+        })
+        .catch((e) => error("Couldn't prefetch members list.", e));
     }
     const promises = messages.map((message, i) => {
       const widget = new MessageItem(this.root);
-      if (i === messages.length - 1) this.highestWidget = widget;
+      if (i === messages.length - 1) {
+        this.highestWidget = widget;
+      }
       (this.root.layout as QBoxLayout).addWidget(widget);
       return widget.loadMessage(message);
     });
@@ -148,23 +166,27 @@ export class MessagesPanel extends QScrollArea {
   private lastRead?: MessageItem;
 
   private isBottom(widget = this.lowestWidget) {
-    if (!widget) return false;
+    if (!widget) {
+      return false;
+    }
     const rootY = this.root.mapFromParent(this.p0).y();
     const rootHeight = this.size().height();
     const y = widget.mapToParent(this.p0).y();
     const height = widget.size().height();
-    return (y + height - rootY - rootHeight < 100);
+    return y + height - rootY - rootHeight < 100;
   }
 
   private initAckTimer() {
-    if (this.ackTimer) clearTimeout(this.ackTimer);
+    if (this.ackTimer) {
+      clearTimeout(this.ackTimer);
+    }
     this.ackTimer = setTimeout(async () => {
       if (this.channel && !this.channel.acknowledged) {
         if (this.isBottom()) {
           this.channel.acknowledge().catch((e) => error("Couldn't mark the channel as read.", e));
           this.lastRead?.setInlineStyle('');
         } else {
-          for (const widget of (<Set<MessageItem>> this.rootControls.nodeChildren).values()) {
+          for (const widget of (<Set<MessageItem>>this.rootControls.nodeChildren).values()) {
             if (widget.message?.id === this.channel.lastReadMessageID) {
               widget.setInlineStyle('border-bottom: 1px solid red');
               this.lastRead = widget;
@@ -178,34 +200,47 @@ export class MessagesPanel extends QScrollArea {
 
   private async handleChannelOpen(channel: DMChannel | GuildChannel) {
     this.channel = channel as TextChannel | NewsChannel | DMChannel;
-    if (this.ratelimit
-      || this.isLoading
-      || !['news', 'text', 'dm'].includes(channel.type)
-    ) return;
+    if (this.ratelimit || this.isLoading || !['news', 'text', 'dm'].includes(channel.type)) {
+      return;
+    }
     this.lastLoad = new Date().getTime();
 
     this.isLoading = true;
-    if (this.rateTimer) clearTimeout(this.rateTimer);
-    if (this.ackTimer) clearTimeout(this.ackTimer);
+    if (this.rateTimer) {
+      clearTimeout(this.rateTimer);
+    }
+    if (this.ackTimer) {
+      clearTimeout(this.ackTimer);
+    }
     debug(`Opening channel ${channel.id}...`);
-    for (const item of this.items) item.destroy();
+    for (const item of this.items) {
+      item.destroy();
+    }
     this.items = [];
     this.initRoot();
     try {
-      if (this.channel.messages.cache.size < 30) await this.channel.messages.fetch({ limit: 30 });
+      if (this.channel.messages.cache.size < 30) {
+        await this.channel.messages.fetch({ limit: 30 });
+      }
     } catch (e) {
       error(`Couldn't load messages for channel ${channel.id}`, e);
       this.isLoading = false;
     }
     debug(`Total of ${this.channel.messages.cache.size} messages are available.`);
-    const messages = this.channel.messages.cache.array()
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()).reverse();
+    const messages = this.channel.messages.cache
+      .array()
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .reverse();
     messages.length = Math.min(messages.length, 30);
     const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
     const promises = messages.map((message, i) => {
       const widget = new MessageItem(this.root);
-      if (i === messages.length - 1) this.highestWidget = widget;
-      if (i === 0) this.lowestWidget = widget;
+      if (i === messages.length - 1) {
+        this.highestWidget = widget;
+      }
+      if (i === 0) {
+        this.lowestWidget = widget;
+      }
       (this.root.layout as QBoxLayout).addWidget(widget);
       return widget.loadMessage(message);
     });

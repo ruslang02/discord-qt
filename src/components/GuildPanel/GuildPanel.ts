@@ -32,7 +32,12 @@ export class GuildPanel extends QWidget {
 
   private iopen = new QPixmap(join(__dirname, './assets/icons/close.png')).scaled(24, 24, 1, 1);
 
-  private iclosed = new QPixmap(join(__dirname, './assets/icons/chevron-down.png')).scaled(24, 24, 1, 1);
+  private iclosed = new QPixmap(join(__dirname, './assets/icons/chevron-down.png')).scaled(
+    24,
+    24,
+    1,
+    1,
+  );
 
   private guildow = new QLabel(this);
 
@@ -41,17 +46,20 @@ export class GuildPanel extends QWidget {
 
     this.initComponent();
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (view !== 'guild' || !options) return;
-      if (options.guild) this.guildel.setText(options.guild.name);
-      else if (options.channel) this.guildel.setText(options.channel.guild.name);
+      if (view !== 'guild' || !options) {
+        return;
+      }
+      if (options.guild) {
+        this.guildel.setText(options.guild.name);
+      } else if (options.channel) {
+        this.guildel.setText(options.channel.guild.name);
+      }
       this.actionsMenu.close();
     });
   }
 
   private initComponent() {
-    const {
-      titleBar, actionsMenu, channelsList, controls, guildel, guildow, iclosed,
-    } = this;
+    const { titleBar, actionsMenu, channelsList, controls, guildel, guildow, iclosed } = this;
     this.setLayout(controls);
     this.setObjectName('GuildPanel');
 
@@ -60,7 +68,9 @@ export class GuildPanel extends QWidget {
     guildow.setPixmap(iclosed);
     titleBar.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
       const event = new QMouseEvent(e as any);
-      if (event?.button() !== MouseButton.LeftButton) return;
+      if (event?.button() !== MouseButton.LeftButton) {
+        return;
+      }
       actionsMenu.popup(this.channelsList.mapToGlobal(new QPoint(0, 0)));
     });
     guildow.setInlineStyle('background: none; border: none;');

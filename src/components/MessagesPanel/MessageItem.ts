@@ -88,7 +88,9 @@ export class MessageItem extends QWidget {
     menu.setCursor(CursorShape.PointingHandCursor);
 
     this.addMenuEntry(__('QUOTE'), () => {
-      if (this.message) app.emit(Events.QUOTE_MESSAGE, this.message);
+      if (this.message) {
+        app.emit(Events.QUOTE_MESSAGE, this.message);
+      }
     });
 
     menu.addSeparator();
@@ -102,7 +104,8 @@ export class MessageItem extends QWidget {
     });
 
     this.addMenuEntry(__('COPY_MESSAGE_LINK'), () => {
-      const channelType = this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id;
+      const channelType =
+        this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id;
       const txt = `https://discord.com/channels/${channelType}/${this.message?.channel.id}/${this.message?.id}`;
 
       app.clipboard.setText(txt, QClipboardMode.Clipboard);
@@ -122,9 +125,7 @@ export class MessageItem extends QWidget {
   private p0 = new QPoint(0, 0);
 
   private initComponent() {
-    const {
-      controls, avatar, unameLabel, dateLabel, contentLabel, msgLayout, infoLayout,
-    } = this;
+    const { controls, avatar, unameLabel, dateLabel, contentLabel, msgLayout, infoLayout } = this;
     controls.setContentsMargins(16, 4, 16, 4);
     controls.setSpacing(10);
 
@@ -134,16 +135,24 @@ export class MessageItem extends QWidget {
     avatar.setAlignment(AlignmentFlag.AlignTop);
     avatar.setCursor(CursorShape.PointingHandCursor);
     avatar.addEventListener('customContextMenuRequested', ({ x, y }) => {
-      if (!this.message) return;
-      app.emit(Events.OPEN_USER_MENU,
+      if (!this.message) {
+        return;
+      }
+      app.emit(
+        Events.OPEN_USER_MENU,
         this.message.member || this.message.author,
-        avatar.mapToGlobal(new QPoint(x, y)));
+        avatar.mapToGlobal(new QPoint(x, y)),
+      );
     });
     avatar.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
       const ev = new QMouseEvent(e as NativeElement);
-      if (ev.button() === MouseButton.LeftButton) this.handleUserClick();
+      if (ev.button() === MouseButton.LeftButton) {
+        this.handleUserClick();
+      }
     });
-    if (!app.config.enableAvatars) avatar.hide();
+    if (!app.config.enableAvatars) {
+      avatar.hide();
+    }
 
     infoLayout.setSpacing(8);
     infoLayout.setContentsMargins(0, 0, 0, 0);
@@ -174,7 +183,9 @@ export class MessageItem extends QWidget {
    * Handles user clicking the avatar or username link.
    */
   private handleUserClick() {
-    if (!this.message) return;
+    if (!this.message) {
+      return;
+    }
     const { avatar } = this;
     const map = avatar.mapToGlobal(this.p0);
     map.setX(map.x() + avatar.size().width());
@@ -188,7 +199,9 @@ export class MessageItem extends QWidget {
    */
   renderImages() {
     const { message, avatar } = this;
-    if (!message || this.alreadyRendered) return;
+    if (!message || this.alreadyRendered) {
+      return;
+    }
     void (async () => {
       const cachePixmap = avatarCache.get(message.author.id);
       if (cachePixmap) {
@@ -227,21 +240,25 @@ export class MessageItem extends QWidget {
     this.message = message;
     userNameLabel.setText(member?.nickname || user.username);
     dateLabel.setText(message.createdAt.toLocaleString());
-    if (message.system) this.loadSystemMessage(message);
-    else if (message.content.trim() === '') contentLabel.hide();
-    else {
+    if (message.system) {
+      this.loadSystemMessage(message);
+    } else if (message.content.trim() === '') {
+      contentLabel.hide();
+    } else {
       let { content } = message;
       content = await processMarkdown(content);
       content = await processMentions(content, message);
       this.contentNoEmojis = content;
       content = await processEmojiPlaceholders(content);
-      if (this.native.destroyed) return this;
+      if (this.native.destroyed) {
+        return this;
+      }
       contentLabel.setText(content);
     }
     [
       ...processAttachments(message, this),
       ...processEmbeds(message, this),
-      ...await processInvites(message, this),
+      ...(await processInvites(message, this)),
     ].forEach((w) => !this.native.destroyed && this.msgLayout.addWidget(w));
     return this;
   }

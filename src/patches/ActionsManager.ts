@@ -1,19 +1,19 @@
 /* eslint-disable max-classes-per-file */
-import {
-  Client, Constants, DQConstants, TextChannel,
-} from 'discord.js';
+import { Client, Constants, DQConstants, TextChannel } from 'discord.js';
 
 const Action = require('discord.js/src/client/actions/Action');
 const ActionsManager = require('discord.js/src/client/actions/ActionsManager');
 
-const { Events } = Constants as unknown as DQConstants;
+const { Events } = (Constants as unknown) as DQConstants;
 class MessageAcknowledgedAction extends Action {
   handle(data: any): any {
     const client = this.client as Client;
     const channel = client.channels.resolve(data.channel_id) as TextChannel;
     const state = client.read_state.find((s: any) => s.id === data.channel_id);
     const message = channel.messages.resolve(data.message_id);
-    if (!state || !channel || !message) return undefined;
+    if (!state || !channel || !message) {
+      return undefined;
+    }
     state.last_message_id = data.message_id;
     /**
      * Emitted whenever a channel/messages change their read state

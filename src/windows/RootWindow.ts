@@ -1,7 +1,12 @@
 import {
   KeyboardModifier,
   NativeElement,
-  QIcon, QKeyEvent, QMainWindow, QStackedWidget, WidgetAttribute, WidgetEventTypes,
+  QIcon,
+  QKeyEvent,
+  QMainWindow,
+  QStackedWidget,
+  WidgetAttribute,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Guild, GuildChannel } from 'discord.js';
 import { existsSync, promises } from 'fs';
@@ -56,8 +61,10 @@ export class RootWindow extends QMainWindow {
           this.root.setCurrentWidget(this.settingsView);
           break;
         case 'guild': {
-          if (!options) return;
-          const guild = options.guild || options.channel?.guild as Guild;
+          if (!options) {
+            return;
+          }
+          const guild = options.guild || (options.channel?.guild as Guild);
           const settings = { ...app.config.userLocalGuildSettings[guild.id] };
           if (options.channel) {
             settings.lastViewedChannel = options.channel.id;
@@ -65,8 +72,12 @@ export class RootWindow extends QMainWindow {
             void app.configManager.save();
           } else {
             const lastViewedChannelId = settings.lastViewedChannel || '';
-            const firstChannel = app.client.channels.resolve(lastViewedChannelId) as GuildChannel
-              || guild.channels.cache.filter((a) => ['text', 'news'].includes(a.type)).sort((a, b) => a.rawPosition - b.rawPosition).first();
+            const firstChannel =
+              (app.client.channels.resolve(lastViewedChannelId) as GuildChannel) ||
+              guild.channels.cache
+                .filter((a) => ['text', 'news'].includes(a.type))
+                .sort((a, b) => a.rawPosition - b.rawPosition)
+                .first();
             app.emit(AppEvents.SWITCH_VIEW, 'guild', {
               guild,
               channel: firstChannel,
@@ -80,7 +91,9 @@ export class RootWindow extends QMainWindow {
 
     app.on(AppEvents.READY, () => {
       const autoAccount = app.config.accounts?.find((a) => a.autoLogin);
-      if (autoAccount) void app.clientManager.load(autoAccount);
+      if (autoAccount) {
+        void app.clientManager.load(autoAccount);
+      }
       void this.loadStyles();
     });
   }
@@ -102,13 +115,15 @@ export class RootWindow extends QMainWindow {
 
   private handleKeyPress(e: any) {
     const event = new QKeyEvent(e as NativeElement);
-    this.shiftKeyPressed = (event.modifiers() & KeyboardModifier.ShiftModifier)
-      === KeyboardModifier.ShiftModifier;
+    this.shiftKeyPressed =
+      (event.modifiers() & KeyboardModifier.ShiftModifier) === KeyboardModifier.ShiftModifier;
   }
 
   async loadStyles() {
     const stylePath = path.join(__dirname, 'themes', `${app.config.theme}.theme.css`);
-    if (!existsSync(stylePath)) return;
+    if (!existsSync(stylePath)) {
+      return;
+    }
     try {
       const stylesheet = await readFile(stylePath, 'utf8');
       this.setStyleSheet(stylesheet);

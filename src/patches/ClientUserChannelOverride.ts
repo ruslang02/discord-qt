@@ -11,8 +11,8 @@ export class ClientUserChannelOverride {
   }
 
   patch(data: any) {
-    for (const key of Object.keys((Constants as unknown as DQConstants).UserChannelOverrideMap)) {
-      const value = (Constants as unknown as DQConstants).UserChannelOverrideMap[key];
+    for (const key of Object.keys(((Constants as unknown) as DQConstants).UserChannelOverrideMap)) {
+      const value = ((Constants as unknown) as DQConstants).UserChannelOverrideMap[key];
 
       if (data.hasOwnProperty.call(key)) {
         if (typeof value === 'function') {

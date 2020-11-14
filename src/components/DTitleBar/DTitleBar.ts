@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 
 export class DTitleBar extends QWidget {
   controls = new QBoxLayout(Direction.LeftToRight);

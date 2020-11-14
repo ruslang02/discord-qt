@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QLabel, QPixmap, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { Client, Constants } from 'discord.js';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../../..';
@@ -28,12 +26,15 @@ export class MyAccountPage extends Page {
   }
 
   private loadUser() {
-    if (!app.client.user) return;
+    if (!app.client.user) {
+      return;
+    }
     this.unabel.setText(app.client.user.tag || '');
     this.emabel.setText(app.client.user.email || '');
-    pictureWorker.loadImage(app.client.user.displayAvatarURL({ size: 256, format: 'png' }))
+    pictureWorker
+      .loadImage(app.client.user.displayAvatarURL({ size: 256, format: 'png' }))
       .then((path) => this.avatar.setPixmap(new QPixmap(path).scaled(100, 100, 1, 1)))
-      .catch(() => error('Could not load user\'s avatar.'));
+      .catch(() => error("Could not load user's avatar."));
   }
 
   private unabel = new QLabel(this);
@@ -43,9 +44,7 @@ export class MyAccountPage extends Page {
   private avatar = new QLabel(this);
 
   private initPage() {
-    const {
-      layout, title, avatar, unabel, emabel,
-    } = this;
+    const { layout, title, avatar, unabel, emabel } = this;
     const header = new QLabel();
     header.setObjectName('Header2');
     header.setText(title);
@@ -93,9 +92,11 @@ export class MyAccountPage extends Page {
     twoFAHeader.setText(__('TWO_FA'));
 
     const twoFAHelper = new DLabel(this);
-    twoFAHelper.setText(__('TWO_FA_UNAVAILABLE', {
-      tfaURL: 'https://discord.com/channels/@me/settings',
-    }));
+    twoFAHelper.setText(
+      __('TWO_FA_UNAVAILABLE', {
+        tfaURL: 'https://discord.com/channels/@me/settings',
+      }),
+    );
 
     layout.addWidget(header);
     layout.addWidget(card, 0);

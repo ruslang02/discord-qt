@@ -1,6 +1,4 @@
-import {
-  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget,
-} from '@nodegui/nodegui';
+import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { User } from 'discord.js';
 import { app } from '../..';
 import { CustomStatus } from '../../utilities/CustomStatus';
@@ -67,10 +65,20 @@ export class CustomStatusLabel extends QWidget {
       this.hide();
       return;
     }
-    if (!statusText) statusLabel.hide(); else statusLabel.show();
-    if (!emojiName) statusIcon.hide(); else statusIcon.show();
+    if (!statusText) {
+      statusLabel.hide();
+    } else {
+      statusLabel.show();
+    }
+    if (!emojiName) {
+      statusIcon.hide();
+    } else {
+      statusIcon.show();
+    }
     statusLabel.setText(statusText);
-    if (!emojiId && !emojiName) return;
+    if (!emojiId && !emojiName) {
+      return;
+    }
 
     const status = { emoji_id: emojiId, emoji_name: emojiName } as CustomStatus;
     try {

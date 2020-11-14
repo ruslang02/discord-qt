@@ -1,6 +1,4 @@
-import {
-  Client, Collection, Constants, Snowflake, DQConstants,
-} from 'discord.js';
+import { Client, Collection, Constants, Snowflake, DQConstants } from 'discord.js';
 import { ClientUserChannelOverride } from './ClientUserChannelOverride';
 
 /**
@@ -18,14 +16,13 @@ export class ClientUserGuildSettings {
   }
 
   patch(data: any) {
-    for (const key of Object.keys((Constants as unknown as DQConstants).UserGuildSettingsMap)) {
-      const value = (Constants as unknown as DQConstants).UserGuildSettingsMap[key];
+    for (const key of Object.keys(((Constants as unknown) as DQConstants).UserGuildSettingsMap)) {
+      const value = ((Constants as unknown) as DQConstants).UserGuildSettingsMap[key];
 
       if (data.hasOwnProperty.call(key)) {
         if (key === 'channel_overrides') {
           for (const channel of data[key]) {
-            this.channelOverrides.set(channel.channel_id,
-              new ClientUserChannelOverride(channel));
+            this.channelOverrides.set(channel.channel_id, new ClientUserChannelOverride(channel));
           }
         } else if (typeof value === 'function') {
           // @ts-ignore

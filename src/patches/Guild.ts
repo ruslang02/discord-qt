@@ -5,22 +5,33 @@ const Guild = require('discord.js/src/structures/Guild');
 Object.defineProperty(Guild.prototype, 'acknowledged', {
   get() {
     return this.channels.cache
-      .filter((channel: any) => ['news', 'text'].includes(channel.type) && channel.can(Permissions.FLAGS.VIEW_CHANNEL) && !channel.muted)
+      .filter(
+        (channel: any) =>
+          ['news', 'text'].includes(channel.type) &&
+          channel.can(Permissions.FLAGS.VIEW_CHANNEL) &&
+          !channel.muted,
+      )
       .every((channel: any) => channel.acknowledged);
   },
 });
 
 Object.defineProperty(Guild.prototype, 'position', {
   get() {
-    if (this.client.user.bot) return null;
-    if (!this.client.user.settings.guildPositions) return null;
+    if (this.client.user.bot) {
+      return null;
+    }
+    if (!this.client.user.settings.guildPositions) {
+      return null;
+    }
     return this.client.user.settings.guildPositions.indexOf(this.id);
   },
 });
 
 Object.defineProperty(Guild.prototype, 'muted', {
   get() {
-    if (this.client.user.bot) return null;
+    if (this.client.user.bot) {
+      return null;
+    }
     try {
       return this.client.user.guildSettings.get(this.id).muted;
     } catch (err) {
@@ -31,7 +42,9 @@ Object.defineProperty(Guild.prototype, 'muted', {
 
 Object.defineProperty(Guild.prototype, 'messageNotifications', {
   get() {
-    if (this.client.user.bot) return null;
+    if (this.client.user.bot) {
+      return null;
+    }
     try {
       return this.client.user.guildSettings.get(this.id).messageNotifications;
     } catch (err) {
@@ -42,7 +55,9 @@ Object.defineProperty(Guild.prototype, 'messageNotifications', {
 
 Object.defineProperty(Guild.prototype, 'mobilePush', {
   get() {
-    if (this.client.user.bot) return null;
+    if (this.client.user.bot) {
+      return null;
+    }
     try {
       return this.client.user.guildSettings.get(this.id).mobilePush;
     } catch (err) {
@@ -53,7 +68,9 @@ Object.defineProperty(Guild.prototype, 'mobilePush', {
 
 Object.defineProperty(Guild.prototype, 'suppressEveryone', {
   get() {
-    if (this.client.user.bot) return null;
+    if (this.client.user.bot) {
+      return null;
+    }
     try {
       return this.client.user.guildSettings.get(this.id).suppressEveryone;
     } catch (err) {
@@ -65,7 +82,9 @@ Object.defineProperty(Guild.prototype, 'suppressEveryone', {
 const _superPatch = Guild.prototype._patch;
 Guild.prototype._patch = function _patch(...args: any[]) {
   _superPatch.apply(this, ...args);
-  setTimeout(() => { this.shardID = 0; }, 0);
+  setTimeout(() => {
+    this.shardID = 0;
+  }, 0);
 };
 
 Guild.prototype.subscribeToTypingEvent = function subscribeToTypingEvent() {

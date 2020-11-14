@@ -1,6 +1,4 @@
-import {
-  QAction, QClipboardMode, QMenu, WidgetAttribute,
-} from '@nodegui/nodegui';
+import { QAction, QClipboardMode, QMenu, WidgetAttribute } from '@nodegui/nodegui';
 import { GuildChannel } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';

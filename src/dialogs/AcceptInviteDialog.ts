@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QLabel, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { __ } from 'i18n';
 import { URL } from 'url';
 import { app } from '..';
@@ -25,9 +23,7 @@ export class AcceptInviteDialog extends Dialog {
   }
 
   private init() {
-    const {
-      header, urlLabel, urlInput, errMsg,
-    } = this;
+    const { header, urlLabel, urlInput, errMsg } = this;
     header.setText(__('INSTANT_INVITE_ACCEPT'));
     const layout = new QBoxLayout(Direction.TopToBottom);
     layout.setSpacing(8);
@@ -69,7 +65,9 @@ export class AcceptInviteDialog extends Dialog {
       this.raise();
     }
     let code = this.urlInput.text();
-    if (code.includes('//')) code = new URL(code).pathname.replace(/\//g, '');
+    if (code.includes('//')) {
+      code = new URL(code).pathname.replace(/\//g, '');
+    }
     try {
       await app.client.user?.acceptInvite(code);
     } catch (e) {

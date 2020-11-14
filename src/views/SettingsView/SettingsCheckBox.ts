@@ -27,7 +27,9 @@ export class SettingsCheckBox extends QWidget {
     this.setChecked(false);
   }
 
-  text() { return this.label.text(); }
+  text() {
+    return this.label.text();
+  }
 
   setText(text: string) {
     this.label.setText(text);
@@ -35,7 +37,9 @@ export class SettingsCheckBox extends QWidget {
 
   private _checked = false;
 
-  isChecked() { return this._checked; }
+  isChecked() {
+    return this._checked;
+  }
 
   setChecked(checked: boolean) {
     this.checkbox.setPixmap(checked ? this.ch : this.unch);

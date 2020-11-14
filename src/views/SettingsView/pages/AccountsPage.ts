@@ -99,12 +99,15 @@ export class AccountsPage extends Page {
     info.setObjectName('Info');
 
     const avatar = new QLabel(accWidget);
-    pictureWorker.loadImage(account.avatar, { roundify: true })
+    pictureWorker
+      .loadImage(account.avatar, { roundify: true })
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)))
-      .catch(() => error('Couldn\'t load account\'s avatar.'));
+      .catch(() => error("Couldn't load account's avatar."));
     const uname = new QLabel(accWidget);
     uname.setObjectName('UserName');
-    uname.setText(`<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`);
+    uname.setText(
+      `<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`,
+    );
     const deleteBtn = new DColorButton(DColorButtonColor.RED);
     deleteBtn.setText(__('DELETE'));
     deleteBtn.setMinimumSize(0, 32);
@@ -120,7 +123,9 @@ export class AccountsPage extends Page {
     loginBtn.setMinimumSize(0, 32);
     let isLoggingIn = false;
     loginBtn.addEventListener('clicked', async () => {
-      if (isLoggingIn) return;
+      if (isLoggingIn) {
+        return;
+      }
       isLoggingIn = true;
       loginBtn.setEnabled(false);
       await app.clientManager.load(account);
@@ -137,11 +142,15 @@ export class AccountsPage extends Page {
     checkbox.layout.setContentsMargins(20, 15, 20, 15);
     this.checkboxes.push(checkbox);
     checkbox.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      if (!app.config.accounts) return;
+      if (!app.config.accounts) {
+        return;
+      }
       const isAutoLogin = app.config.accounts[i].autoLogin;
       this.checkboxes.forEach((c, j) => c.setChecked(i === j ? !isAutoLogin : false));
-      app.config.accounts = app.config.accounts
-        .map((acc, j) => ({ ...acc, autoLogin: i === j ? !isAutoLogin : false }));
+      app.config.accounts = app.config.accounts.map((acc, j) => ({
+        ...acc,
+        autoLogin: i === j ? !isAutoLogin : false,
+      }));
       void app.configManager.save();
     });
 
@@ -169,9 +178,12 @@ export class AccountsPage extends Page {
     addLayout.setSpacing(10);
     const helpLabel = new DLabel();
     const errorMsg = new DErrorMessage(this);
-    helpLabel.setText(__('ACCOUNTS_PAGE_HELPER', {
-      guideURL: 'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs',
-    }));
+    helpLabel.setText(
+      __('ACCOUNTS_PAGE_HELPER', {
+        guideURL:
+          'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs',
+      }),
+    );
     const addTokenField = new DLineEdit();
     addTokenField.setPlaceholderText('Nvgd6sfgs...');
     const addButton = new DColorButton();
@@ -179,7 +191,9 @@ export class AccountsPage extends Page {
     addButton.setMinimumSize(0, 32);
     let isLoggingIn = false;
     addButton.addEventListener('clicked', async () => {
-      if (isLoggingIn || !app.config.accounts) return;
+      if (isLoggingIn || !app.config.accounts) {
+        return;
+      }
       isLoggingIn = true;
       const token = addTokenField.text();
       addButton.setEnabled(false);
@@ -193,7 +207,8 @@ export class AccountsPage extends Page {
         const account = {
           username: client.user?.username || __('UNKNOWN_USER'),
           discriminator: client.user?.discriminator || '0000',
-          avatar: client.user?.avatarURL({ format: 'png', size: 256 }) || client.user?.defaultAvatarURL,
+          avatar:
+            client.user?.avatarURL({ format: 'png', size: 256 }) || client.user?.defaultAvatarURL,
           token,
           autoLogin: false,
         } as Account;

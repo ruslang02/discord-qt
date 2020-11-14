@@ -9,9 +9,7 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import {
-  Client, Constants, DMChannel, SnowflakeUtil,
-} from 'discord.js';
+import { Client, Constants, DMChannel, SnowflakeUtil } from 'discord.js';
 import { app } from '../..';
 import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
@@ -22,7 +20,7 @@ export class DMUsersList extends QListWidget {
 
   active?: UserButton;
 
-  prevUpdate = (new Date()).getTime();
+  prevUpdate = new Date().getTime();
 
   constructor() {
     super();
@@ -36,9 +34,13 @@ export class DMUsersList extends QListWidget {
       client.on(Events.CLIENT_READY, this.loadDMs.bind(this));
       client.on(Events.MESSAGE_CREATE, (message) => {
         const dm = message.channel;
-        if (dm.type !== 'dm') return;
+        if (dm.type !== 'dm') {
+          return;
+        }
         const btn = this.channels.get(dm);
-        if (!btn) return;
+        if (!btn) {
+          return;
+        }
         const items = this.findItems(dm.id, MatchFlag.MatchExactly);
         const newItem = new QListWidgetItem();
         newItem.setSizeHint(new QSize(224, 44));
@@ -56,7 +58,9 @@ export class DMUsersList extends QListWidget {
         this.active?.setActivated(false);
         this.active = undefined;
       }
-      if (view !== 'dm' || !options || !options.dm) return;
+      if (view !== 'dm' || !options || !options.dm) {
+        return;
+      }
       const button = this.channels.get(options.dm);
       this.active?.setActivated(false);
       button?.setActivated(true);
@@ -69,15 +73,21 @@ export class DMUsersList extends QListWidget {
   private isLoading = false;
 
   async loadAvatars() {
-    if (this.isLoading) return;
-    const cDate = (new Date()).getTime();
-    if (cDate - this.prevUpdate < 100) return;
+    if (this.isLoading) {
+      return;
+    }
+    const cDate = new Date().getTime();
+    if (cDate - this.prevUpdate < 100) {
+      return;
+    }
     this.isLoading = true;
     const y = -this.mapToParent(this.p0).y();
     const height = this.size().height();
     for (const btn of this.channels.values()) {
       const iy = btn.mapToParent(this.p0).y();
-      if (iy >= y - 100 && iy <= y + height + 100) void btn.loadAvatar();
+      if (iy >= y - 100 && iy <= y + height + 100) {
+        void btn.loadAvatar();
+      }
     }
     this.isLoading = false;
   }
@@ -86,7 +96,9 @@ export class DMUsersList extends QListWidget {
     const q = (query || '').replace(/ /g, '').toLowerCase().trim();
     let i = 0;
     for (const btn of this.channels.values()) {
-      if (!btn.user) return;
+      if (!btn.user) {
+        return;
+      }
       const show = q !== '' ? btn.user.username.toLowerCase().replace(/ /g, '').includes(q) : true;
       this.setRowHidden(i, !show);
       i += 1;

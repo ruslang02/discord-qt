@@ -1,7 +1,4 @@
-import {
-  AlignmentFlag,
-  Direction, QBoxLayout, QLabel, QPixmap, QWidget,
-} from '@nodegui/nodegui';
+import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { ActivityType, Client, Presence } from 'discord.js';
 import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
@@ -48,14 +45,14 @@ export class ProfilePresence extends QWidget {
 
   private bindEvents(client: Client) {
     client.on('presenceUpdate', (o, n) => {
-      if (n.userID === this.presence?.userID) this.load(this.presence);
+      if (n.userID === this.presence?.userID) {
+        this.load(this.presence);
+      }
     });
   }
 
   private initComponent() {
-    const {
-      layout, header, label1, label2, label3, lImage, sImage,
-    } = this;
+    const { layout, header, label1, label2, label3, lImage, sImage } = this;
     header.setObjectName('Header');
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(8);
@@ -94,42 +91,63 @@ export class ProfilePresence extends QWidget {
    * @param presence User presence to render.
    */
   load(presence: Presence) {
-    const {
-      header, label1, label2, label3, lImage, sImage,
-    } = this;
+    const { header, label1, label2, label3, lImage, sImage } = this;
     this.presence = presence;
     const activity = presence.activities.find((a) => a.type !== 'CUSTOM_STATUS');
     if (!activity) {
       this.hide();
       return false;
     }
-    header.setText(__(
-      ProfilePresence.ActivityTypeText.get(activity.type) || '',
-      {
+    header.setText(
+      __(ProfilePresence.ActivityTypeText.get(activity.type) || '', {
         name: activity.name,
         platform: activity.name,
-      },
-    ));
+      }),
+    );
     switch (activity.type) {
       case 'PLAYING':
         label1.setText(`<b>${activity.name}</b>`);
         label1.show();
-        if (activity.details) label2.show(); else label2.hide();
+        if (activity.details) {
+          label2.show();
+        } else {
+          label2.hide();
+        }
         label2.setText(activity.details || '');
         label3.hide();
         break;
       case 'LISTENING':
-        if (activity.details) label1.show(); else label1.hide();
+        if (activity.details) {
+          label1.show();
+        } else {
+          label1.hide();
+        }
         label1.setText(`<b>${activity.details}</b>`);
-        if (activity.state) label2.show(); else label2.hide();
+        if (activity.state) {
+          label2.show();
+        } else {
+          label2.hide();
+        }
         label2.setText(activity.state || '');
-        if (activity.assets?.largeText) label3.show(); else label3.hide();
+        if (activity.assets?.largeText) {
+          label3.show();
+        } else {
+          label3.hide();
+        }
         label3.setText(activity.assets?.largeText || '');
         break;
       default:
-        if (activity.details) label1.show(); else label1.hide();
+        if (activity.details) {
+          label1.show();
+        } else {
+          label1.hide();
+        }
         label1.setText(`<b>${activity.details}</b>`);
-        if (activity.state) label2.show(); else label2.hide();
+        if (activity.state) {
+          label2.show();
+        } else {
+          label2.hide();
+        }
         label2.setText(activity.state || '');
         label3.hide();
     }
@@ -139,7 +157,8 @@ export class ProfilePresence extends QWidget {
 
     const lImageUrl = activity.assets?.largeImageURL({ size: 256, format: 'png' });
     if (lImageUrl) {
-      pictureWorker.loadImage(lImageUrl, { roundify: false })
+      pictureWorker
+        .loadImage(lImageUrl, { roundify: false })
         .then((path) => lImage.setPixmap(new QPixmap(path).scaled(60, 60, 1, 1)))
         .catch(() => error(`Assets for ${activity.name} could not be loaded.`));
     } else {
@@ -149,7 +168,8 @@ export class ProfilePresence extends QWidget {
 
     const sImageUrl = activity.assets?.smallImageURL({ size: 64, format: 'png' });
     if (sImageUrl) {
-      pictureWorker.loadImage(sImageUrl, { roundify: true })
+      pictureWorker
+        .loadImage(sImageUrl, { roundify: true })
         .then((path) => sImage.setPixmap(new QPixmap(path).scaled(20, 20, 1, 1)))
         .catch(() => error(`Assets for ${activity.name} could not be loaded.`));
     } else {
