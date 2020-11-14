@@ -77,7 +77,7 @@ export class DMUsersList extends QListWidget {
     const height = this.size().height();
     for (const btn of this.channels.values()) {
       const iy = btn.mapToParent(this.p0).y();
-      if (iy >= y - 100 && iy <= y + height + 100) btn.loadAvatar();
+      if (iy >= y - 100 && iy <= y + height + 100) void btn.loadAvatar();
     }
     this.isLoading = false;
   }
@@ -115,6 +115,6 @@ export class DMUsersList extends QListWidget {
         this.addItem(item);
         this.setItemWidget(item, btn);
       });
-    this.loadAvatars();
+    void this.loadAvatars();
   }
 }

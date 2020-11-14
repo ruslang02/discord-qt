@@ -83,7 +83,7 @@ export class EmojiPicker extends QMenu {
   clear() {
     this.textInput.clear();
     this.textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
-    this.updateView();
+    void this.updateView();
   }
 
   hide() {
@@ -180,14 +180,14 @@ export class EmojiPicker extends QMenu {
       case Key.Key_Delete:
       case Key.Key_Backspace:
         textInput.setPlaceholderText(text.slice(0, -1));
-        this.updateView();
+        void this.updateView();
         break;
       default: {
         const newText = (text + input).trim();
         const check = newText.match(EMOJI_REGEX);
         if (!check || !check.length || check[0] !== newText) break;
         textInput.setPlaceholderText(newText);
-        this.updateView();
+        void this.updateView();
       }
     }
     const newValue = textInput.placeholderText();
@@ -221,7 +221,7 @@ export class EmojiPicker extends QMenu {
         return obj;
       });
       if (add) app.config.recentEmojis.push([emojiId, 1]);
-      app.configManager.save();
+      void app.configManager.save();
     }
     this.events.emit('emoji', emoji, this.controlPressed);
   }

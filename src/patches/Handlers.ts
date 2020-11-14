@@ -1,5 +1,5 @@
-import { Constants, DQConstants } from 'discord.js';
-import { WebSocketShard } from 'discord.js';
+import { Constants, DQConstants, WebSocketShard } from 'discord.js';
+
 import { ClientUserGuildSettings } from './ClientUserGuildSettings';
 import { ClientUserSettings } from './ClientUserSettings';
 
@@ -12,12 +12,18 @@ Object.assign(handlers, {
   },
   READY: function ReadyHandler(client: any, packet: any, shard: WebSocketShard) {
     const { d: data } = packet;
-    READY.apply(this, [client, packet, {checkReady: () => {}}]);
-    client.user.settings = data.user_settings ? new ClientUserSettings(client.user, data.user_settings) : null;
+    READY.apply(this, [client, packet, { checkReady: () => {} }]);
+    if (data.user_settings) {
+      // eslint-disable-next-line no-param-reassign
+      client.user.settings = new ClientUserSettings(client.user, data.user_settings);
+    }
 
     if (data.user_guild_settings) {
       for (const settings of data.user_guild_settings) {
-        client.user.guildSettings.set(settings.guild_id, new ClientUserGuildSettings(settings, client));
+        client.user.guildSettings.set(
+          settings.guild_id,
+          new ClientUserGuildSettings(settings, client),
+        );
       }
     }
 
@@ -32,15 +38,28 @@ Object.assign(handlers, {
         client.user.notes.set(user, note);
       }
     }
+    // eslint-disable-next-line no-param-reassign
     client.read_state = data.read_state;
-    // @ts-ignore
+
+    // @ts-ignore ts(2341)
     shard.checkReady();
   },
   USER_GUILD_SETTINGS_UPDATE: function UserGuildSettingsUpdate(client: any, packet: any) {
     const settings = client.user.guildSettings.get(packet.d.guild_id);
-    if (settings) settings.patch(packet.d);
-    else client.user.guildSettings.set(packet.d.guild_id, new ClientUserGuildSettings(packet.d, client));
-    client.emit((Constants as unknown as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE, client.user.guildSettings.get(packet.d.guild_id));
+
+    if (settings) {
+      settings.patch(packet.d);
+    } else {
+      client.user.guildSettings.set(
+        packet.d.guild_id,
+        new ClientUserGuildSettings(packet.d, client),
+      );
+    }
+
+    client.emit(
+      (Constants as unknown as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE,
+      client.user.guildSettings.get(packet.d.guild_id),
+    );
   },
   USER_NOTE_UPDATE: function UserNoteUpdateHandler(client: any, packet: any) {
     client.actions.UserNoteUpdate.handle(packet.d);
@@ -48,5 +67,5 @@ Object.assign(handlers, {
   USER_SETTINGS_UPDATE: function UserSettingsUpdateHandler(client: any, packet: any) {
     client.user.settings._patch(packet.d);
     client.actions.UserSettingsUpdate.handle(packet.d);
-  }
+  },
 });

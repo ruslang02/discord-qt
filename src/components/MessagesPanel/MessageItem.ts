@@ -70,52 +70,48 @@ export class MessageItem extends QWidget {
   }
 
   /**
+   * Add an entry to the context menu
+   */
+  private addMenuEntry(text: string, callback: () => void) {
+    const { menu } = this;
+    const action = new QAction(menu);
+    action.setText(text);
+    action.addEventListener('triggered', callback);
+    menu.addAction(action);
+  }
+
+  /**
    * Initializes the context menu of the message.
    */
   private initMenu() {
     const { menu } = this;
     menu.setCursor(CursorShape.PointingHandCursor);
-    {
-      const action = new QAction(menu);
-      action.setText(__('QUOTE'));
-      action.addEventListener('triggered', () => {
-        if (this.message) app.emit(Events.QUOTE_MESSAGE, this.message);
-      });
-      menu.addAction(action);
-    }
+
+    this.addMenuEntry(__('QUOTE'), () => {
+      if (this.message) app.emit(Events.QUOTE_MESSAGE, this.message);
+    });
+
     menu.addSeparator();
-    {
-      const action = new QAction(menu);
-      action.setText(__('COPY_TEXT'));
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(`${__('COPY_TEXT')} (source)`);
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(__('COPY_MESSAGE_LINK'));
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(`https://discord.com/channels/${this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id}/${this.message?.channel.id}/${this.message?.id}`, QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(__('COPY_ID'));
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
+
+    this.addMenuEntry(__('COPY_TEXT'), () => {
+      app.clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
+    });
+
+    this.addMenuEntry(`${__('COPY_TEXT')} (source)`, () => {
+      app.clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
+    });
+
+    this.addMenuEntry(__('COPY_MESSAGE_LINK'), () => {
+      const channelType = this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id;
+      const txt = `https://discord.com/channels/${channelType}/${this.message?.channel.id}/${this.message?.id}`;
+
+      app.clipboard.setText(txt, QClipboardMode.Clipboard);
+    });
+
+    this.addMenuEntry(__('COPY_ID'), () => {
+      app.clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
+    });
+
     this.contentLabel.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     this.contentLabel.addEventListener('customContextMenuRequested', ({ x, y }) => {
       const map = this.contentLabel.mapToGlobal(this.p0);

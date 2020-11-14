@@ -98,7 +98,9 @@ export class InputPanel extends QWidget {
 
   private handleSwitchView(view: string, options?: ViewOptions) {
     const { input } = this;
-    if (!['dm', 'guild'].includes(view)) return;
+    if (!['dm', 'guild'].includes(view)) {
+      return;
+    }
     const channel = <DMChannel | undefined>options?.dm
       || <TextChannel | NewsChannel | undefined>options?.channel
       || undefined;
@@ -110,7 +112,9 @@ export class InputPanel extends QWidget {
     this.attachments.clear();
     if (channel.type === 'text') {
       this.addBtn.setEnabled(channel.can(Permissions.FLAGS.ATTACH_FILES));
-    } else this.addBtn.setEnabled(true);
+    } else {
+      this.addBtn.setEnabled(true);
+    }
     input.setPlaceholderText(
       __('TEXTAREA_PLACEHOLDER', {
         channel: channel.type === 'dm'
@@ -130,7 +134,9 @@ export class InputPanel extends QWidget {
 
   private updateTyping(channel: TextChannel | DMChannel) {
     const { typingLabel } = this;
-    if (this.channel?.id !== channel.id) return;
+    if (this.channel?.id !== channel.id) {
+      return;
+    }
     const typers = [...channel._typing.values()]
       .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.nickname || e.user.username)
       .filter((m) => !!m) as string[];
@@ -280,7 +286,7 @@ export class InputPanel extends QWidget {
       event.key() === Key.Key_Return
       && (event.modifiers() & KeyboardModifier.ShiftModifier) !== KeyboardModifier.ShiftModifier
       && (message.trim() !== '' || this.attachments.getFiles().length)
-    ) this.sendMessage();
+    ) void this.sendMessage();
     else if (
       event.key() === Key.Key_E
       && (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier
@@ -344,19 +350,19 @@ export class InputPanel extends QWidget {
 
     switch (command) {
       case 'shrug':
-        this.channel.send(`${msg} ¯\\_(ツ)_/¯`, msgOptions);
+        void this.channel.send(`${msg} ¯\\_(ツ)_/¯`, msgOptions);
         break;
       case 'tableflip':
-        this.channel.send(`${msg} (╯°□°）╯︵ ┻━┻`, msgOptions);
+        void this.channel.send(`${msg} (╯°□°）╯︵ ┻━┻`, msgOptions);
         break;
       case 'unflip':
-        this.channel.send(`${msg} ┬─┬ ノ( ゜-゜ノ)`, msgOptions);
+        void this.channel.send(`${msg} ┬─┬ ノ( ゜-゜ノ)`, msgOptions);
         break;
       case 'me':
-        this.channel.send(`*${msg}*`, msgOptions);
+        void this.channel.send(`*${msg}*`, msgOptions);
         break;
       default:
-        this.channel.send(input.toPlainText(), msgOptions);
+        void this.channel.send(input.toPlainText(), msgOptions);
         break;
     }
   }

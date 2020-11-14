@@ -77,7 +77,7 @@ export class ProfilePopup extends QMenu {
       : undefined;
     const isPlaying = this.presence.load(user.presence);
     this.profile.setPlaying(isPlaying);
-    this.profile.loadProfile(member || user);
+    void this.profile.loadProfile(member || user);
     this.rolesSection.loadRoles(member?.roles);
     this.noteSection.loadNote(user);
     return true;

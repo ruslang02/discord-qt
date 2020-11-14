@@ -382,7 +382,7 @@ export function processAttachments(message: Message, item: MessageItem): QLabel[
     ${attach.width && attach.height ? `<br />Resolution: ${attach.width}x${attach.height}` : ''}
     `);
     qimage.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      open(attach.url);
+      void open(attach.url);
     });
     if (!isImage) {
       qimage.setPixmap(new QPixmap(join(__dirname, 'assets/icons/file.png')));

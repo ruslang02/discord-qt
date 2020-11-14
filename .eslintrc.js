@@ -3,21 +3,27 @@ module.exports = {
     es2020: true,
     node: true,
   },
+
   extends: [
     'airbnb-base',
   ],
+
   globals: {
     __BUILDNUM__: 'readonly',
   },
+
   parser: '@typescript-eslint/parser',
+
   parserOptions: {
     ecmaVersion: 12,
     sourceType: 'module',
     project: 'tsconfig.json',
   },
+
   plugins: [
     '@typescript-eslint',
   ],
+
   rules: {
     '@typescript-eslint/no-floating-promises': ['warn'],
     '@typescript-eslint/no-shadow': ['error'],
@@ -25,6 +31,7 @@ module.exports = {
     'import/extensions': 'off',
     'import/prefer-default-export': 'off',
     'no-bitwise': 'off',
+    'no-console': 'off',
     'no-empty': 'off',
     'no-shadow': 'off',
     'no-restricted-syntax': 'off',
@@ -33,6 +40,7 @@ module.exports = {
     'no-useless-constructor': 'off',
     'no-void': 'off',
   },
+
   settings: {
     'import/resolver': {
       node: {

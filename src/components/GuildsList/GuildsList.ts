@@ -63,7 +63,7 @@ export class GuildsList extends QListWidget {
         this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
         this.updateGuildAck(guild);
-        btn.loadAvatar();
+        void btn.loadAvatar();
       });
       client.on(Events.MESSAGE_ACK, (channel) => this.updateGuildAck(channel.guild));
       client.on(Events.MESSAGE_CREATE, (message) => message.channel.type !== 'dm' && this.updateGuildAck(message.channel.guild));
@@ -146,7 +146,7 @@ export class GuildsList extends QListWidget {
         this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
       });
-    this.loadAvatars();
+    void this.loadAvatars();
   }
 
   private p0 = new QPoint(0, 0);
@@ -164,7 +164,7 @@ export class GuildsList extends QListWidget {
     for (const btn of this.guilds.values()) {
       if (btn.loadAvatar && !btn.hasPixmap) {
         const iy = btn.mapToParent(this.p0).y();
-        if (iy > 0 && iy < height) btn.loadAvatar();
+        if (iy > 0 && iy < height) void btn.loadAvatar();
       }
     }
   }

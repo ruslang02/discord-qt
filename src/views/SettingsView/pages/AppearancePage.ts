@@ -1,5 +1,5 @@
 import {
-  ButtonRole, QLabel, QMessageBox, QMessageBoxIcon, QPushButton, QVariant, WidgetEventTypes,
+  QLabel, QVariant, WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
@@ -112,7 +112,7 @@ export class AppearancePage extends Page {
           hint: 'string:desktop-entry:discord-qt',
           'app-name': app.name,
         });
-      }).catch(error.bind(this, "Couldn't clear cache directory."));;
+      }).catch(error.bind(this, "Couldn't clear cache directory."));
     });
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);

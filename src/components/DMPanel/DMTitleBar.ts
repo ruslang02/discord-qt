@@ -12,7 +12,7 @@ export class DMTitleBar extends DTitleBar {
     this.controls.setContentsMargins(10, 10, 10, 10);
     this.filterInput.setPlaceholderText(__('DM_SEARCH_PLACEHOLDER'));
     this.filterInput.addEventListener('textEdited', (text) => {
-      usersList.filter(text);
+      void usersList.filter(text);
     });
     this.controls.addWidget(this.filterInput);
   }

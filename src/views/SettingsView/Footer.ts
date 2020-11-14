@@ -13,7 +13,7 @@ export class Footer extends QWidget {
     super();
 
     this.setLayout(this.layout);
-    this.initComponent();
+    void this.initComponent();
   }
 
   private async initComponent() {
