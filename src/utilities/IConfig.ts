@@ -6,13 +6,13 @@ export type RecentEmoji = [Snowflake, number];
 export type UserVolume = {
   volume?: number;
   muted?: boolean;
-}
+};
 
 export type LocalGuildSettings = {
   hideMutedChannels?: boolean;
   collapsedCategories?: Snowflake[];
   lastViewedChannel?: Snowflake;
-}
+};
 
 export type VoiceSettings = {
   inputDevice?: string;
@@ -20,7 +20,7 @@ export type VoiceSettings = {
   inputVolume?: number;
   outputVolume?: number;
   inputSensitivity?: number;
-}
+};
 
 export interface IConfig {
   accounts: Account[];

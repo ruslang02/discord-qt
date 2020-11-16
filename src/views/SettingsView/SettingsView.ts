@@ -69,17 +69,22 @@ export class SettingsView extends QWidget {
     this.elements
       .filter((element) => element instanceof Page)
       .forEach((page) => this.pageWidget.addWidget(page));
+
     this.pageWidget.setCurrentWidget(this.currentPage);
 
     app.on(Events.SWITCH_VIEW, (view: string) => {
-      if (view !== 'settings') this.currentPage.onClosed();
-      else this.currentPage.onOpened();
+      if (view !== 'settings') {
+        this.currentPage.onClosed();
+      } else {
+        this.currentPage.onOpened();
+      }
     });
   }
 
   private setEvents() {
     app.on(Events.OPEN_SETTINGS_PAGE, (pageTitle: string) => {
-      const page = <Page> this.elements.find((p) => p instanceof Page && p.title === pageTitle);
+      const page = <Page>this.elements.find((p) => p instanceof Page && p.title === pageTitle);
+
       this.currentPage.onClosed();
       this.pageWidget.setCurrentWidget(page);
       this.currentPage = page;
@@ -89,7 +94,13 @@ export class SettingsView extends QWidget {
 
   private initView() {
     const {
-      layout, leftSpacer, sectionList, pageContainer, closeContainer, rightSpacer, pageWidget,
+      layout,
+      leftSpacer,
+      sectionList,
+      pageContainer,
+      closeContainer,
+      rightSpacer,
+      pageWidget,
     } = this;
 
     layout.setContentsMargins(0, 0, 0, 0);
@@ -98,6 +109,7 @@ export class SettingsView extends QWidget {
     leftSpacer.setObjectName('LeftSpacer');
 
     const closeLayout = new QBoxLayout(Direction.TopToBottom);
+
     closeContainer.setLayout(closeLayout);
     closeLayout.setContentsMargins(0, 60, 21, 0);
     closeLayout.setSpacing(0);
@@ -113,11 +125,13 @@ export class SettingsView extends QWidget {
     pageContainer.setWidget(pageWidget);
 
     const effect = new QGraphicsDropShadowEffect();
+
     effect.setBlurRadius(5);
     effect.setXOffset(0);
     effect.setYOffset(0);
 
     const closeBtn = new QPushButton();
+
     closeBtn.setObjectName('CloseButton');
     closeBtn.addEventListener('clicked', () => app.emit(Events.SWITCH_VIEW, 'main'));
     closeBtn.setFixedSize(36, 36);
@@ -127,6 +141,7 @@ export class SettingsView extends QWidget {
     closeBtn.setGraphicsEffect(effect);
 
     const closeKeybind = new QLabel();
+
     closeKeybind.setObjectName('CloseKeybind');
     closeKeybind.setText('ESC');
     closeKeybind.setAlignment(AlignmentFlag.AlignTop + AlignmentFlag.AlignHCenter);

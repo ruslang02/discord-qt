@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QLabel, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { __ } from 'i18n';
 import { URL } from 'url';
 import { app } from '..';
@@ -25,11 +23,11 @@ export class AcceptInviteDialog extends Dialog {
   }
 
   private init() {
-    const {
-      header, urlLabel, urlInput, errMsg,
-    } = this;
+    const { header, urlLabel, urlInput, errMsg } = this;
+
     header.setText(__('INSTANT_INVITE_ACCEPT'));
     const layout = new QBoxLayout(Direction.TopToBottom);
+
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
     urlLabel.setText(__('FORM_LABEL_INVITE_LINK'));
@@ -44,15 +42,19 @@ export class AcceptInviteDialog extends Dialog {
 
   private initFooter() {
     const footer = new QWidget(this);
+
     footer.setObjectName('Footer');
     const footLayout = new QBoxLayout(Direction.LeftToRight);
+
     footLayout.addStretch(1);
     footLayout.setContentsMargins(16, 16, 16, 16);
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
+
     saveBtn.setText(__('OKAY'));
     saveBtn.setMinimumSize(96, 38);
     saveBtn.addEventListener('clicked', () => this.checkInvite());
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
+
     cancelBtn.setText(__('CANCEL'));
     cancelBtn.setMinimumSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());
@@ -68,15 +70,22 @@ export class AcceptInviteDialog extends Dialog {
       this.show();
       this.raise();
     }
+
     let code = this.urlInput.text();
-    if (code.includes('//')) code = new URL(code).pathname.replace(/\//g, '');
+
+    if (code.includes('//')) {
+      code = new URL(code).pathname.replace(/\//g, '');
+    }
+
     try {
       await app.client.user?.acceptInvite(code);
     } catch (e) {
       this.errMsg.setText(__('INVALID_INVITE_LINK_ERROR'));
       this.errMsg.show();
+
       return;
     }
+
     this.urlLabel.clear();
     this.hide();
   }

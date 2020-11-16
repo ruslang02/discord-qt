@@ -8,9 +8,7 @@ import { createLogger } from './Console';
 import { Events as AppEvents } from './Events';
 import { pictureWorker } from './PictureWorker';
 
-const {
-  debug, warn, error,
-} = createLogger('discord.js');
+const { debug, warn, error } = createLogger('discord.js');
 
 export class ClientManager {
   // @ts-ignore
@@ -21,14 +19,20 @@ export class ClientManager {
    * @param account Account to connect.
    */
   async load(account: Account) {
-    if (this.client) this.client.destroy();
+    if (this.client) {
+      this.client.destroy();
+    }
+
     this.client = new Client(clientOptions);
     this.bindEvents();
     app.emit(AppEvents.NEW_CLIENT, this.client);
+
     try {
       await this.client.login(account.token);
-      this.client.user?.setCustomStatus(this.client.user.settings?.customStatus || undefined)
+      this.client.user
+        ?.setCustomStatus(this.client.user.settings?.customStatus || undefined)
         .catch((e) => error("Couldn't update custom status on ready.", e));
+
       app.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
       if (e instanceof HTTPError) {
@@ -44,27 +48,39 @@ export class ClientManager {
           'app-name': app.name,
         });
       }
-      debug('Couldn\'t log in', e);
+
+      debug("Couldn't log in", e);
     }
   }
 
   private bindEvents() {
     const { Events } = Constants;
+
     this.client.on(Events.ERROR, error);
     this.client.on(Events.DEBUG, debug);
     this.client.on(Events.RAW, debug);
     this.client.on(Events.WARN, warn);
-    this.client.on(Events.MESSAGE_CREATE, async (message) => {
-      if (message.author === this.client.user) return;
+    this.client.on(Events.MESSAGE_CREATE, async (message: any) => {
+      if (message.author === this.client.user) {
+        return;
+      }
+
       if (
-        message.channel.type !== 'dm'
-        && (message.channel.muted || message.channel.messageNotifications !== 'EVERYTHING')) return;
+        message.channel.type !== 'dm' &&
+        (message.channel.muted || message.channel.messageNotifications !== 'EVERYTHING')
+      ) {
+        return;
+      }
+
       notify({
         title: message.member?.nickname || message.author.username,
         message: message.cleanContent,
         // @ts-ignore
         type: 'error',
-        icon: await pictureWorker.loadImage(message.author.displayAvatarURL({ size: 64, format: 'png' }), { roundify: false }),
+        icon: await pictureWorker.loadImage(
+          message.author.displayAvatarURL({ size: 64, format: 'png' }),
+          { roundify: false },
+        ),
         category: 'im',
         hint: 'string:desktop-entry:discord',
         'app-name': app.name,

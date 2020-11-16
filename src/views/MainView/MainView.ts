@@ -35,8 +35,7 @@ export class MainView extends QWidget {
   private initView() {
     this.mainLayout.addWidget(this.titlebar);
     this.mainLayout.addWidget(this.mainPanel, 1);
-    [this.guildsList, this.leftPanel]
-      .forEach((w) => this.controls.addWidget(w));
+    [this.guildsList, this.leftPanel].forEach((w) => this.controls.addWidget(w));
     this.controls.addWidget(this.main, 1);
   }
 }

@@ -5,7 +5,7 @@ import { app } from '..';
 import { createLogger } from './Console';
 
 type Options = {
-  roundify?: boolean
+  roundify?: boolean;
 };
 const { debug } = createLogger('PictureWorker');
 
@@ -22,10 +22,13 @@ class PictureWorker {
   /**
    * Callbacks that are awaiting their image file paths.
    */
-  private callbacks = new Map<string, {
-    resolve(imagePath: string): void,
-    reject(error: any): void,
-  }>();
+  private callbacks = new Map<
+    string,
+    {
+      resolve(imagePath: string): void;
+      reject(error: any): void;
+    }
+  >();
 
   constructor() {
     this.worker = new Worker(join(__dirname, 'worker.js'));
@@ -39,22 +42,33 @@ class PictureWorker {
    */
   loadImage(url: string, options?: Options): Promise<string> {
     const { callbacks, worker } = this;
+
     if ((url || '').toString().trim() === '') {
       debug('An empty URL was requested.');
+
       return Promise.reject(new Error('URL was empty or null.'));
     }
+
     const opts = { roundify: app.config.roundifyAvatars, ...(options || {}) };
 
     const uri = new URL(url);
+
     if (uri.hostname === 'cdn.discordapp.com') {
-      if (extname(uri.pathname).toLowerCase() !== '.png') opts.roundify = false;
-    } else if (uri.protocol !== 'file:') opts.roundify = false;
+      if (extname(uri.pathname).toLowerCase() !== '.png') {
+        opts.roundify = false;
+      }
+    } else if (uri.protocol !== 'file:') {
+      opts.roundify = false;
+    }
 
     uri.searchParams.append('roundify', opts.roundify ? 'true' : 'false');
     const urlHref = uri.href;
+
     debug(`Sending ${urlHref}...`);
+
     return new Promise((resolve, reject) => {
       const cb = callbacks.get(urlHref);
+
       if (cb !== undefined) {
         callbacks.set(urlHref, {
           reject,
@@ -63,8 +77,10 @@ class PictureWorker {
             resolve(b);
           },
         });
+
         return;
       }
+
       worker.postMessage({ url: urlHref });
       callbacks.set(urlHref, { resolve, reject });
     });
@@ -74,16 +90,27 @@ class PictureWorker {
    * Retrieves download image's path and finishes the request.
    * @param result The response from the worker with the image path.
    */
-  private resolveImage(result: { url: string, path: string }) {
+  private resolveImage(result: { url: string; path: string }) {
     const { url, path } = result;
-    if (typeof url !== 'string') return debug('URL was strange:', url);
+
+    if (typeof url !== 'string') {
+      return debug('URL was strange:', url);
+    }
+
     const cb = this.callbacks.get(url);
-    if (!cb) return debug('There was no callback for', url);
+
+    if (!cb) {
+      return debug('There was no callback for', url);
+    }
+
     if (!path || !path.length) {
       debug(`Couldn't load URL: ${url}, throwing error...`);
-      return cb.reject('Couldn\'t get path.');
+
+      return cb.reject("Couldn't get path.");
     }
+
     this.callbacks.delete(url);
+
     return cb.resolve(path);
   }
 }

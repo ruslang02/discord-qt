@@ -1,11 +1,23 @@
 import {
   ButtonRole,
-  Direction, QBoxLayout, QLabel, QMessageBox, QPushButton, QSize, QWidget,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QMessageBox,
+  QPushButton,
+  QSize,
+  QWidget,
 } from '@nodegui/nodegui';
 import { Input, Mixer } from 'audio-mixer';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import {
-  Client, Constants, DQConstants, GuildMember, VoiceChannel, VoiceConnection, VoiceState,
+  Client,
+  Constants,
+  DQConstants,
+  GuildMember,
+  VoiceChannel,
+  VoiceConnection,
+  VoiceState,
 } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
@@ -71,44 +83,55 @@ export class VoicePanel extends QWidget {
     this.hide();
     app.on(AppEvents.JOIN_VOICE_CHANNEL, this.joinChannel.bind(this));
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-      const { Events } = Constants as unknown as DQConstants;
+      const { Events } = (Constants as unknown) as DQConstants;
+
       client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
     });
+
     app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
   }
 
   private handleConfigUpdate(config: IConfig) {
     for (const entries of this.streams.entries()) {
       const settings = config.userVolumeSettings[entries[0].id] || {};
+
       settings.volume = settings.volume ?? 100;
       settings.muted = settings.muted ?? false;
       entries[1].setVolume(settings.muted ? 0 : settings.volume);
     }
+
     if (this.currentPlaybackDevice !== (app.config.voiceSettings.outputDevice || 'default')) {
       this.currentPlaybackDevice = app.config.voiceSettings.outputDevice || 'default';
       this.initPlayback();
     }
+
     if (this.currentRecordDevice !== (app.config.voiceSettings.inputDevice || 'default')) {
       this.currentRecordDevice = app.config.voiceSettings.inputDevice || 'default';
       this.initRecord();
     }
+
     this.playbackVolumeTransformer?.setVolume((config.voiceSettings.outputVolume || 100) / 100);
     this.recordVolumeTransformer?.setVolume((config.voiceSettings.inputVolume || 100) / 100);
-    this.recordNoiseReductor?.setSensivity((config.voiceSettings.inputSensitivity || 0));
+    this.recordNoiseReductor?.setSensivity(config.voiceSettings.inputSensitivity || 0);
   }
 
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
-    if (!n.member || n.member.user === app.client.user) return;
-    if (o.channel === this.channel
-      && n.channel !== this.channel) this.connectToMixer(n.member);
-    if (o.channel !== this.channel
-      && n.channel === this.channel) this.disconnectFromMixer(n.member);
+    if (!n.member || n.member.user === app.client.user) {
+      return;
+    }
+
+    if (o.channel === this.channel && n.channel !== this.channel) {
+      this.connectToMixer(n.member);
+    }
+
+    if (o.channel !== this.channel && n.channel === this.channel) {
+      this.disconnectFromMixer(n.member);
+    }
   }
 
   private initComponent() {
-    const {
-      layout, infoLabel, statusLabel, discntBtn,
-    } = this;
+    const { layout, infoLabel, statusLabel, discntBtn } = this;
+
     layout.setContentsMargins(8, 8, 8, 8);
     layout.setSpacing(8);
 
@@ -117,6 +140,7 @@ export class VoicePanel extends QWidget {
 
     const voiceLayout = new QBoxLayout(Direction.LeftToRight);
     const infoLayout = new QBoxLayout(Direction.TopToBottom);
+
     infoLayout.addWidget(statusLabel);
     infoLayout.addWidget(infoLabel);
     infoLayout.setSpacing(0);
@@ -142,24 +166,35 @@ export class VoicePanel extends QWidget {
 
   private static openVoiceNotSupportedDialog(channel: VoiceChannel) {
     const msgBox = new QMessageBox();
+
     msgBox.setText(__('VOICE_NOT_SUPPORTED'));
     msgBox.setWindowTitle('DiscordQt');
     msgBox.setProperty('icon', 4);
     const noBtn = new QPushButton();
+
     noBtn.setText(__('NO_TEXT'));
     msgBox.addButton(noBtn, ButtonRole.NoRole);
     const yesBtn = new QPushButton();
+
     yesBtn.setText(__('YES_TEXT'));
     msgBox.addButton(yesBtn, ButtonRole.YesRole);
     yesBtn.addEventListener('clicked', () => {
       void open(`https://discord.com/channels/${channel.guild.id}/${channel.id}`);
     });
+
     msgBox.open();
   }
 
   private connectToMixer(member: GuildMember) {
-    if (!this.mixer) return;
-    const stream = this.connection?.receiver.createStream(member.user, { mode: 'pcm', end: 'manual' });
+    if (!this.mixer) {
+      return;
+    }
+
+    const stream = this.connection?.receiver.createStream(member.user, {
+      mode: 'pcm',
+      end: 'manual',
+    });
+
     if (stream) {
       const volume = app.config.userVolumeSettings[member.id]?.volume ?? 100;
       const muted = app.config.userVolumeSettings[member.id]?.muted ?? false;
@@ -167,6 +202,7 @@ export class VoicePanel extends QWidget {
         ...MIXER_OPTIONS,
         volume: muted ? 0 : volume,
       });
+
       this.streams.set(member, input);
       this.mixer.addInput(input);
       stream.pipe(input);
@@ -176,8 +212,12 @@ export class VoicePanel extends QWidget {
   }
 
   private disconnectFromMixer(member: GuildMember) {
-    if (!this.mixer) return;
+    if (!this.mixer) {
+      return;
+    }
+
     const input = this.streams.get(member);
+
     if (input) {
       this.mixer.removeInput(input);
       input.end();
@@ -187,7 +227,9 @@ export class VoicePanel extends QWidget {
   }
 
   private initPlayback() {
-    if (!this.connection || !this.channel) return;
+    if (!this.connection || !this.channel) {
+      return;
+    }
 
     const { channel } = this;
 
@@ -196,8 +238,10 @@ export class VoicePanel extends QWidget {
     this.streams.clear();
 
     pipeline(
-      this.mixer = new Mixer(MIXER_OPTIONS), // Initialize the member streams mixer
-      (this.playbackVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform, // Change the volume
+      (this.mixer = new Mixer(MIXER_OPTIONS)), // Initialize the member streams mixer
+      ((this.playbackVolumeTransformer = new VolumeTransformer({
+        type: 's16le',
+      })) as unknown) as Transform, // Change the volume
       (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
       (err) => err && debug("Couldn't finish playback pipeline.", err),
     );
@@ -208,15 +252,19 @@ export class VoicePanel extends QWidget {
   }
 
   private initRecord() {
-    if (!this.connection) return;
+    if (!this.connection) {
+      return;
+    }
 
     this.connection.dispatcher.end();
 
     const recorder = pipeline(
       (this.recordStream = createRecordStream()).stdout, // Open a recording stream
-      (this.recordVolumeTransformer = new VolumeTransformer({ type: 's16le' })) as unknown as Transform,
+      ((this.recordVolumeTransformer = new VolumeTransformer({
+        type: 's16le',
+      })) as unknown) as Transform,
       // Change the volume
-      this.recordNoiseReductor = new NoiseReductor(this.onSpeaking.bind(this)), // Audio gate
+      (this.recordNoiseReductor = new NoiseReductor(this.onSpeaking.bind(this))), // Audio gate
       (err) => err && debug("Couldn't finish recording pipeline.", err),
     );
 
@@ -224,18 +272,20 @@ export class VoicePanel extends QWidget {
   }
 
   private async joinChannel(channel: VoiceChannel) {
-    const {
-      infoLabel, statusLabel, createConnection, initPlayback, initRecord,
-    } = this;
+    const { infoLabel, statusLabel, createConnection, initPlayback, initRecord } = this;
+
     if (process.platform !== 'linux') {
       VoicePanel.openVoiceNotSupportedDialog(channel);
+
       return;
     }
+
     this.handleDisconnectButton();
     statusLabel.setText("<font color='#faa61a'>Joining Voice Channel</font>");
     this.show();
     this.channel = channel;
     infoLabel.setText(channel.name);
+
     try {
       this.connection = await createConnection.call(this, channel);
       statusLabel.setText("<font color='#faa61a'>Connecting Devices</font>");
@@ -253,16 +303,21 @@ export class VoicePanel extends QWidget {
   }
 
   private onSpeaking(value: boolean) {
-    if (!this.connection) return;
+    if (!this.connection) {
+      return;
+    }
+
     this.connection.setSpeaking(value ? 1 : 4);
     this.connection.emit('speaking', app.client.user, this.connection.speaking);
   }
 
   private async createConnection(channel: VoiceChannel) {
     const connection = await channel.join();
+
     connection.on('warn', warn.bind(this, '[djs]'));
     connection.on('error', error.bind(this, '[djs]'));
     connection.on('failed', error.bind(this, '[djs]'));
+
     return connection;
   }
 }

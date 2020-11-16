@@ -4,4 +4,4 @@ export type CustomStatus = {
   expires_at?: string;
   emoji_name?: string;
   emoji_id?: string;
-}
+};

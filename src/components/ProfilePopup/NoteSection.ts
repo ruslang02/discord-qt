@@ -1,5 +1,11 @@
 import {
-  Direction, QBoxLayout, QLabel, QTextEdit, QWidget, ScrollBarPolicy, WidgetEventTypes,
+  Direction,
+  QBoxLayout,
+  QLabel,
+  QTextEdit,
+  QWidget,
+  ScrollBarPolicy,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { User } from 'discord.js';
 import { __ } from 'i18n';
@@ -22,6 +28,7 @@ export class NoteSection extends QWidget {
 
   private initComponent() {
     const { layout, noteLabel, noteContent } = this;
+
     layout.setContentsMargins(16, 8, 16, 16);
     layout.setSpacing(4);
     this.setLayout(layout);
@@ -36,6 +43,7 @@ export class NoteSection extends QWidget {
     noteContent.setVerticalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
     noteContent.addEventListener(WidgetEventTypes.FocusOut, () => {
       const note = noteContent.toPlainText();
+
       if (this.user && this.user.note !== note) {
         this.user.setNote(note);
       }

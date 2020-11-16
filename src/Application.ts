@@ -1,10 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import {
-  QApplication, QFontDatabase, QIcon,
-} from '@nodegui/nodegui';
-import {
-  Client, Snowflake,
-} from 'discord.js';
+import { QApplication, QFontDatabase, QIcon } from '@nodegui/nodegui';
+import { Client, Snowflake } from 'discord.js';
 import { existsSync, promises } from 'fs';
 import i18n from 'i18n';
 import { join } from 'path';
@@ -58,12 +54,15 @@ export class Application extends ApplicationEventEmitter {
         case 'dm':
           this.currentGuildId = undefined;
           break;
+
         case 'guild':
           this.currentGuildId = options?.channel?.guild.id || options?.guild?.id;
           break;
+
         default:
       }
     });
+
     (global as any).config = this.config;
   }
 
@@ -82,12 +81,19 @@ export class Application extends ApplicationEventEmitter {
   public quit() {
     log('Bye.');
     this.tray?.hide();
-    if (this.client) this.client.destroy();
+
+    if (this.client) {
+      this.client.destroy();
+    }
+
     this.application.quit();
   }
 
   private async loadFonts() {
-    if (!existsSync(FONTS_PATH)) return;
+    if (!existsSync(FONTS_PATH)) {
+      return;
+    }
+
     for (const file of await readdir(FONTS_PATH)) {
       QFontDatabase.addApplicationFont(join(FONTS_PATH, file));
     }

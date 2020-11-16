@@ -46,6 +46,7 @@ export class AccountsPage extends Page {
 
   private checkEmpty() {
     const { noAcLbl } = this;
+
     if (!app.config.accounts?.length) {
       this.accountsLayout.insertWidget(0, noAcLbl, 0);
       noAcLbl.show();
@@ -59,6 +60,7 @@ export class AccountsPage extends Page {
 
   private loadAccounts() {
     const { noAcLbl } = this;
+
     this.layout.removeWidget(this.accountsSection);
     this.accountsSection = new QWidget();
     this.accountsSection.setObjectName('Page');
@@ -87,65 +89,91 @@ export class AccountsPage extends Page {
   private processAccount(account: Account, i = 0) {
     const accWidget = new QWidget(this.accountsSection);
     const layout = new QBoxLayout(Direction.TopToBottom);
+
     accWidget.setObjectName('Account');
     accWidget.setLayout(layout);
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     const info = new QWidget(accWidget);
     const infoLayout = new QBoxLayout(Direction.LeftToRight);
+
     infoLayout.setContentsMargins(20, 20, 20, 20);
     infoLayout.setSpacing(10);
     info.setLayout(infoLayout);
     info.setObjectName('Info');
 
     const avatar = new QLabel(accWidget);
-    pictureWorker.loadImage(account.avatar, { roundify: true })
+
+    pictureWorker
+      .loadImage(account.avatar, { roundify: true })
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1)))
-      .catch(() => error('Couldn\'t load account\'s avatar.'));
+      .catch(() => error("Couldn't load account's avatar."));
+
     const uname = new QLabel(accWidget);
+
     uname.setObjectName('UserName');
-    uname.setText(`<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`);
+    uname.setText(
+      `<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`,
+    );
+
     const deleteBtn = new DColorButton(DColorButtonColor.RED);
+
     deleteBtn.setText(__('DELETE'));
     deleteBtn.setMinimumSize(0, 32);
     deleteBtn.addEventListener('clicked', () => {
       app.config.accounts = app.config.accounts?.filter((v) => v !== account);
       accWidget.hide();
       this.accountsLayout.removeWidget(accWidget);
-      app.configManager.save();
+      void app.configManager.save();
       this.checkEmpty();
     });
+
     const loginBtn = new DColorButton();
+
     loginBtn.setText(__('LOGIN'));
     loginBtn.setMinimumSize(0, 32);
     let isLoggingIn = false;
+
     loginBtn.addEventListener('clicked', async () => {
-      if (isLoggingIn) return;
+      if (isLoggingIn) {
+        return;
+      }
+
       isLoggingIn = true;
       loginBtn.setEnabled(false);
       await app.clientManager.load(account);
       loginBtn.setEnabled(true);
       isLoggingIn = false;
     });
+
     infoLayout.addWidget(avatar);
     infoLayout.addWidget(uname, 1);
     infoLayout.addWidget(deleteBtn);
     infoLayout.addWidget(loginBtn);
     const checkbox = new SettingsCheckBox(accWidget);
+
     checkbox.setText(__('LOGIN_AUTO'));
     checkbox.setChecked(account.autoLogin);
     checkbox.layout.setContentsMargins(20, 15, 20, 15);
     this.checkboxes.push(checkbox);
     checkbox.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      if (!app.config.accounts) return;
+      if (!app.config.accounts) {
+        return;
+      }
+
       const isAutoLogin = app.config.accounts[i].autoLogin;
+
       this.checkboxes.forEach((c, j) => c.setChecked(i === j ? !isAutoLogin : false));
-      app.config.accounts = app.config.accounts
-        .map((acc, j) => ({ ...acc, autoLogin: i === j ? !isAutoLogin : false }));
-      app.configManager.save();
+      app.config.accounts = app.config.accounts.map((acc, j) => ({
+        ...acc,
+        autoLogin: i === j ? !isAutoLogin : false,
+      }));
+
+      void app.configManager.save();
     });
 
     const shadow = new QGraphicsDropShadowEffect();
+
     shadow.setBlurRadius(5);
     shadow.setColor(new QColor(12, 12, 12, 60));
     shadow.setXOffset(-1);
@@ -160,55 +188,77 @@ export class AccountsPage extends Page {
   private initPage() {
     const { layout } = this;
     const headerLabel = new QLabel();
+
     headerLabel.setObjectName('Header2');
     headerLabel.setText('Accounts');
 
     const addBlock = new QWidget();
     const addLayout = new QBoxLayout(Direction.LeftToRight);
+
     addLayout.setContentsMargins(0, 20, 0, 20);
     addLayout.setSpacing(10);
     const helpLabel = new DLabel();
     const errorMsg = new DErrorMessage(this);
-    helpLabel.setText(__('ACCOUNTS_PAGE_HELPER', {
-      guideURL: 'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs',
-    }));
+
+    helpLabel.setText(
+      __('ACCOUNTS_PAGE_HELPER', {
+        guideURL:
+          'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs',
+      }),
+    );
+
     const addTokenField = new DLineEdit();
+
     addTokenField.setPlaceholderText('Nvgd6sfgs...');
     const addButton = new DColorButton();
+
     addButton.setText(__('ADD_ACCOUNT'));
     addButton.setMinimumSize(0, 32);
     let isLoggingIn = false;
+
     addButton.addEventListener('clicked', async () => {
-      if (isLoggingIn || !app.config.accounts) return;
+      if (isLoggingIn || !app.config.accounts) {
+        return;
+      }
+
       isLoggingIn = true;
       const token = addTokenField.text();
+
       addButton.setEnabled(false);
+
       try {
         const client = new Client(clientOptions);
+
         await client.login(token);
+
         if (client.user?.bot) {
           await client.destroy();
           throw new Error(__('BOT_ACCOUNT_ERROR'));
         }
+
         const account = {
           username: client.user?.username || __('UNKNOWN_USER'),
           discriminator: client.user?.discriminator || '0000',
-          avatar: client.user?.avatarURL({ format: 'png', size: 256 }) || client.user?.defaultAvatarURL,
+          avatar:
+            client.user?.avatarURL({ format: 'png', size: 256 }) || client.user?.defaultAvatarURL,
           token,
           autoLogin: false,
         } as Account;
+
         this.processAccount(account, app.config.accounts.length);
         app.config.accounts.push(account);
         await client.destroy();
-        app.configManager.save();
+        void app.configManager.save();
       } catch (e) {
         errorMsg.setText(e.message);
         errorMsg.show();
       }
+
       addButton.setEnabled(true);
       this.checkEmpty();
       isLoggingIn = false;
     });
+
     addTokenField.setMinimumSize(0, 32);
     addBlock.setLayout(addLayout);
     addLayout.addWidget(addTokenField, 1);
@@ -219,6 +269,7 @@ export class AccountsPage extends Page {
     layout.addWidget(errorMsg);
     errorMsg.hide();
     const divider = new Divider();
+
     layout.addWidget(divider);
   }
 }

@@ -9,9 +9,7 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import {
-  Client, Constants, DMChannel, SnowflakeUtil,
-} from 'discord.js';
+import { Client, Constants, DMChannel, Message, SnowflakeUtil } from 'discord.js';
 import { app } from '../..';
 import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
@@ -22,10 +20,15 @@ export class DMUsersList extends QListWidget {
 
   active?: UserButton;
 
-  prevUpdate = (new Date()).getTime();
+  private prevUpdate = new Date().getTime();
+
+  private p0 = new QPoint(0, 0);
+
+  private isLoading = false;
 
   constructor() {
     super();
+
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('UsersContainer');
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
@@ -33,81 +36,120 @@ export class DMUsersList extends QListWidget {
 
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
       const { Events } = Constants;
+
       client.on(Events.CLIENT_READY, this.loadDMs.bind(this));
-      client.on(Events.MESSAGE_CREATE, (message) => {
-        const dm = message.channel;
-        if (dm.type !== 'dm') return;
-        const btn = this.channels.get(dm);
-        if (!btn) return;
-        const items = this.findItems(dm.id, MatchFlag.MatchExactly);
-        const newItem = new QListWidgetItem();
-        newItem.setSizeHint(new QSize(224, 44));
-        newItem.setFlags(~ItemFlag.ItemIsEnabled);
-        newItem.setText(dm.id);
-        const row = this.row(items[0]);
-        this.insertItem(0, newItem);
-        this.setItemWidget(newItem, btn);
-        this.takeItem(row + 1);
-      });
+      client.on(Events.MESSAGE_CREATE, this.handleNewMessage.bind(this));
     });
 
-    app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (view === 'guild') {
-        this.active?.setActivated(false);
-        this.active = undefined;
-      }
-      if (view !== 'dm' || !options || !options.dm) return;
+    app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
+  }
+
+  private handleNewMessage(message: Message) {
+    const dm = message.channel;
+
+    if (dm.type !== 'dm') {
+      return;
+    }
+
+    const btn = this.channels.get(dm);
+
+    if (!btn) {
+      return;
+    }
+
+    const items = this.findItems(dm.id, MatchFlag.MatchExactly);
+    const newItem = new QListWidgetItem();
+
+    newItem.setSizeHint(new QSize(224, 44));
+    newItem.setFlags(~ItemFlag.ItemIsEnabled);
+    newItem.setText(dm.id);
+    this.insertItem(0, newItem);
+    this.setItemWidget(newItem, btn);
+
+    const row = this.row(items[1]);
+
+    this.takeItem(row + 1);
+  }
+
+  private handleSwitchView(view: string, options?: ViewOptions) {
+    if (view === 'guild') {
+      this.active?.setActivated(false);
+      this.active = undefined;
+    }
+
+    if (view === 'dm' && options && options.dm) {
       const button = this.channels.get(options.dm);
+
       this.active?.setActivated(false);
       button?.setActivated(true);
       this.active = button;
-    });
+    }
   }
 
-  private p0 = new QPoint(0, 0);
-
-  private isLoading = false;
-
   async loadAvatars() {
-    if (this.isLoading) return;
-    const cDate = (new Date()).getTime();
-    if (cDate - this.prevUpdate < 100) return;
+    if (this.isLoading) {
+      return;
+    }
+
+    const cDate = new Date().getTime();
+
+    if (cDate - this.prevUpdate < 100) {
+      return;
+    }
+
     this.isLoading = true;
+
     const y = -this.mapToParent(this.p0).y();
     const height = this.size().height();
+    const promises: Promise<void>[] = [];
+
     for (const btn of this.channels.values()) {
       const iy = btn.mapToParent(this.p0).y();
-      if (iy >= y - 100 && iy <= y + height + 100) btn.loadAvatar();
+
+      if (iy >= y - 100 && iy <= y + height + 100) {
+        promises.push(btn.loadAvatar());
+      }
     }
+
+    await Promise.all(promises);
+
     this.isLoading = false;
   }
 
+  /**
+   * Filter DM userlist by queried string
+   * @param query String to search for
+   */
   async filter(query?: string) {
     const q = (query || '').replace(/ /g, '').toLowerCase().trim();
     let i = 0;
+
     for (const btn of this.channels.values()) {
-      if (!btn.user) return;
-      const show = q !== '' ? btn.user.username.toLowerCase().replace(/ /g, '').includes(q) : true;
-      this.setRowHidden(i, !show);
-      i += 1;
+      if (btn.user) {
+        const show = q === '' || btn.user.username.toLowerCase().replace(/ /g, '').includes(q);
+
+        this.setRowHidden(i, !show);
+        i += 1;
+      }
     }
   }
 
   async loadDMs() {
     this.channels.clear();
     this.clear();
-    // this.addDMLabel();
 
     (app.client.channels.cache.array() as DMChannel[])
       .filter((c) => c.type === 'dm' && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
+
         return snB.date.getTime() - snA.date.getTime();
       })
       .forEach((dm) => {
         const btn = UserButton.createInstance(this, dm.recipient);
         const item = new QListWidgetItem();
+
         item.setSizeHint(new QSize(224, 44));
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setText(dm.id);
@@ -115,6 +157,7 @@ export class DMUsersList extends QListWidget {
         this.addItem(item);
         this.setItemWidget(item, btn);
       });
-    this.loadAvatars();
+
+    void this.loadAvatars();
   }
 }

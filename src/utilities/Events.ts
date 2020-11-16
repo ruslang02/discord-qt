@@ -1,7 +1,5 @@
 import { QPoint } from '@nodegui/nodegui';
-import {
-  Client, GuildMember, Message, User, VoiceChannel,
-} from 'discord.js';
+import { Client, GuildMember, Message, User, VoiceChannel } from 'discord.js';
 import { ViewOptions } from '../views/ViewOptions';
 import { IConfig } from './IConfig';
 
@@ -22,15 +20,15 @@ export const Events = {
 } as const;
 
 export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
-  configUpdate: [IConfig],
-  joinVoiceChannel: [VoiceChannel],
-  loginFailed: [],
-  mentionUser: [string],
-  newClient: [Client],
-  openSettingsPage: [string],
-  openUserMenu: [GuildMember | User, QPoint],
-  openUserProfile: [string, string | undefined, QPoint],
-  quoteMessage: [Message],
-  ready: [],
-  switchView: [string, ViewOptions?],
+  configUpdate: [IConfig];
+  joinVoiceChannel: [VoiceChannel];
+  loginFailed: [];
+  mentionUser: [string];
+  newClient: [Client];
+  openSettingsPage: [string];
+  openUserMenu: [GuildMember | User, QPoint];
+  openUserProfile: [string, string | undefined, QPoint];
+  quoteMessage: [Message];
+  ready: [];
+  switchView: [string, ViewOptions?];
 }

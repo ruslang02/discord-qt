@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QLabel, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { GuildMember } from 'discord.js';
 import { __ } from 'i18n';
 import { DColorButton } from '../components/DColorButton/DColorButton';
@@ -30,14 +28,15 @@ export class NicknameChangeDialog extends Dialog {
   }
 
   private init() {
-    const {
-      header, nnLabel, nnInput, errMsg,
-    } = this;
+    const { header, nnLabel, nnInput, errMsg } = this;
+
     header.setText(__('CHANGE_NICKNAME'));
     const layout = new QBoxLayout(Direction.TopToBottom);
+
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
     const nnLink = new DLabel(this);
+
     nnLabel.setText(__('NICKNAME'));
     nnLabel.setObjectName('Header3');
     nnLink.setText(`<a href='#'>${__('RESET_NICKNAME')}</a>`);
@@ -45,6 +44,7 @@ export class NicknameChangeDialog extends Dialog {
       nnInput.clear();
       void this.save();
     });
+
     layout.addWidget(nnLabel);
     layout.addWidget(nnInput);
     layout.addWidget(nnLink);
@@ -55,15 +55,19 @@ export class NicknameChangeDialog extends Dialog {
 
   private initFooter() {
     const footer = new QWidget(this);
+
     footer.setObjectName('Footer');
     const footLayout = new QBoxLayout(Direction.LeftToRight);
+
     footLayout.addStretch(1);
     footLayout.setContentsMargins(16, 16, 16, 16);
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
+
     saveBtn.setText(__('SAVE'));
     saveBtn.setMinimumSize(96, 38);
     saveBtn.addEventListener('clicked', this.save.bind(this));
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
+
     cancelBtn.setText(__('CANCEL'));
     cancelBtn.setMinimumSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());
@@ -76,7 +80,11 @@ export class NicknameChangeDialog extends Dialog {
   openForMember(member: GuildMember) {
     this.nnInput.setPlaceholderText(member.user.username);
     this.nnInput.setText(member.nickname || '');
-    if (!member.nickname) this.nnInput.clear();
+
+    if (!member.nickname) {
+      this.nnInput.clear();
+    }
+
     this.member = member;
     this.show();
   }

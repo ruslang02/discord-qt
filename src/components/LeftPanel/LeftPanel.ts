@@ -1,6 +1,4 @@
-import {
-  Direction, QBoxLayout, QStackedWidget, QWidget,
-} from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QStackedWidget, QWidget } from '@nodegui/nodegui';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../utilities/Events';
 import { DMPanel } from '../DMPanel/DMPanel';
@@ -29,18 +27,19 @@ export class LeftPanel extends QWidget {
         case 'dm':
           this.container.setCurrentWidget(this.dmPanel);
           break;
+
         case 'guild':
           this.container.setCurrentWidget(this.guildPanel);
           break;
+
         default:
       }
     });
   }
 
   private initLeftPanel() {
-    const {
-      guildPanel, dmPanel, userPanel, voicePanel, container, controls,
-    } = this;
+    const { guildPanel, dmPanel, userPanel, voicePanel, container, controls } = this;
+
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
     this.setMaximumSize(240, MAX_QSIZE);

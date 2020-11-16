@@ -27,7 +27,9 @@ export class SettingsCheckBox extends QWidget {
     this.setChecked(false);
   }
 
-  text() { return this.label.text(); }
+  text() {
+    return this.label.text();
+  }
 
   setText(text: string) {
     this.label.setText(text);
@@ -35,7 +37,9 @@ export class SettingsCheckBox extends QWidget {
 
   private _checked = false;
 
-  isChecked() { return this._checked; }
+  isChecked() {
+    return this._checked;
+  }
 
   setChecked(checked: boolean) {
     this.checkbox.setPixmap(checked ? this.ch : this.unch);
@@ -44,6 +48,7 @@ export class SettingsCheckBox extends QWidget {
 
   private initComponent() {
     const { layout, label, checkbox } = this;
+
     this.setObjectName('SCheckBox');
     this.setLayout(layout);
     this.setCursor(CursorShape.PointingHandCursor);
@@ -51,6 +56,7 @@ export class SettingsCheckBox extends QWidget {
     label.setAlignment(AlignmentFlag.AlignVCenter);
     checkbox.setObjectName('CheckBox');
     const effect = new QGraphicsDropShadowEffect();
+
     effect.setBlurRadius(5);
     effect.setXOffset(0);
     effect.setYOffset(0);

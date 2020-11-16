@@ -10,20 +10,35 @@ i18n.configure({
   locales: ['de-DE', 'en-US', 'ru-RU'],
   defaultLocale: 'en-US',
 
-  logDebugFn() { },
-  logWarnFn() { },
+  logDebugFn() {},
+  logWarnFn() {},
   logErrorFn(msg) {
     console.log('[i18n]', msg);
   },
+
   // @ts-ignore
-  missingKeyFn(locale, value) {
+  missingKeyFn(locale: string, value: string) {
     console.error('[i18n]', `Translation missing for word "${value}" in locale "${locale}".`);
+
     return value;
   },
 });
+
 export const app = new Application();
 export const MAX_QSIZE = 16777215;
-export const PIXMAP_EXTS = ['BMP', 'GIF', 'JPG', 'JPEG', 'PNG', 'PBM', 'PGM', 'PPM', 'XBM', 'XPM', 'SVG'];
+export const PIXMAP_EXTS = [
+  'BMP',
+  'GIF',
+  'JPG',
+  'JPEG',
+  'PNG',
+  'PBM',
+  'PGM',
+  'PPM',
+  'XBM',
+  'XPM',
+  'SVG',
+];
 app.start().catch(console.error);
 
 process.on('unhandledRejection', console.error.bind(console, 'Promise rejected.'));

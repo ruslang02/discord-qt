@@ -1,5 +1,11 @@
 import {
-  AlignmentFlag, Direction, Orientation, QBoxLayout, QLabel, QProgressBar, QSlider,
+  AlignmentFlag,
+  Direction,
+  Orientation,
+  QBoxLayout,
+  QLabel,
+  QProgressBar,
+  QSlider,
 } from '@nodegui/nodegui';
 import { ChildProcessWithoutNullStreams, execSync } from 'child_process';
 import { __ } from 'i18n';
@@ -48,8 +54,10 @@ export class VoicePage extends Page {
 
   private createHeader(id: string) {
     const label = new QLabel(this);
+
     label.setObjectName('Header3');
     label.setText(__(id));
+
     return label;
   }
 
@@ -62,10 +70,15 @@ export class VoicePage extends Page {
   private openRecorder() {
     this.onClosed();
     this.recordTester = createRecordStream({ device: this.inDevice.currentText() });
-    const noiseReductor = new NoiseReductor(() => {}, (loudness) => {
-      this.sensCheck.setValue(loudness * (app.config.voiceSettings.inputVolume ?? 100) * 0.1);
-    });
+    const noiseReductor = new NoiseReductor(
+      () => {},
+      (loudness) => {
+        this.sensCheck.setValue(loudness * (app.config.voiceSettings.inputVolume ?? 100) * 0.1);
+      },
+    );
+
     const tester = this.recordTester.stdout.pipe(noiseReductor);
+
     this.recordTimer = setInterval(() => {
       tester.read();
     }, 50);
@@ -90,8 +103,12 @@ export class VoicePage extends Page {
   private loadingConfig = false;
 
   private saveConfig() {
-    if (!app.configManager.isLoaded || this.loadingConfig) return;
+    if (!app.configManager.isLoaded || this.loadingConfig) {
+      return;
+    }
+
     const settings = { ...app.config.voiceSettings };
+
     settings.inputDevice = this.inDevice.currentText();
     settings.outputDevice = this.outDevice.currentText();
     settings.inputVolume = this.inVolume.value();
@@ -102,43 +119,67 @@ export class VoicePage extends Page {
   }
 
   private updateSinks() {
-    const {
-      inDevice, outDevice,
-    } = this;
-    if (process.platform !== 'linux') return;
+    const { inDevice, outDevice } = this;
+
+    if (process.platform !== 'linux') {
+      return;
+    }
+
     this.loadingConfig = true;
     inDevice.clear();
     outDevice.clear();
 
     try {
       const sourcesOut = execSync('pactl list sources short').toString();
-      const sources = sourcesOut.split('\n').map((value) => value.split('\t')[1]).filter((value) => value);
+      const sources = sourcesOut
+        .split('\n')
+        .map((value) => value.split('\t')[1])
+        .filter((value) => value);
+
       inDevice.addItems(sources);
 
       const sinksOut = execSync('pactl list sinks short').toString();
-      const sinks = sinksOut.split('\n').map((value) => value.split('\t')[1]).filter((value) => value);
+      const sinks = sinksOut
+        .split('\n')
+        .map((value) => value.split('\t')[1])
+        .filter((value) => value);
+
       outDevice.addItems(sinks);
     } catch (e) {
       error('Could not update PulseAudio sinks.', e);
     }
+
     this.loadingConfig = false;
   }
 
   private initPage() {
     const {
-      createHeader, updateSinks, saveConfig,
-      title, header, layout, inDevice, inVolume, outDevice, outVolume, sensVal, sensCheck,
+      createHeader,
+      updateSinks,
+      saveConfig,
+      title,
+      header,
+      layout,
+      inDevice,
+      inVolume,
+      outDevice,
+      outVolume,
+      sensVal,
+      sensCheck,
     } = this;
+
     header.setObjectName('Header2');
     header.setText(title);
     layout.addWidget(header);
 
     if (process.platform !== 'linux') {
       const pnsLabel = new DLabel(this);
+
       pnsLabel.setText(__('PLATFORM_NOT_SUPPORTED'));
       pnsLabel.setAlignment(AlignmentFlag.AlignCenter);
       layout.addWidget(pnsLabel);
       layout.addStretch(1);
+
       return;
     }
 
@@ -156,6 +197,7 @@ export class VoicePage extends Page {
       saveConfig.call(this);
       this.openRecorder();
     });
+
     inVolume.setOrientation(Orientation.Horizontal);
     inVolume.addEventListener('valueChanged', saveConfig.bind(this));
     outVolume.setOrientation(Orientation.Horizontal);
