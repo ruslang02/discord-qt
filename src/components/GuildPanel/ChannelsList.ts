@@ -235,7 +235,7 @@ export class ChannelsList extends QListWidget {
 
     debug(`Loading ${channels.size} channels...`);
 
-    const sortedChannels = channels.sort((a, b) => a.rawPosition - b.rawPosition).values();
+    const sortedChannels = channels.sort((a, b) => b.rawPosition - a.rawPosition).values();
 
     for (const channel of sortedChannels) {
       // Get row number to insert the channel

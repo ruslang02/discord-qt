@@ -41,7 +41,7 @@ export class DMUsersList extends QListWidget {
       client.on(Events.MESSAGE_CREATE, this.handleNewMessage.bind(this));
     });
 
-    app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView);
+    app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
   }
 
   private handleNewMessage(message: Message) {
@@ -80,8 +80,7 @@ export class DMUsersList extends QListWidget {
     if (view === 'dm' && options && options.dm) {
       const button = this.channels.get(options.dm);
 
-      // TODO: Check if it work
-      // this.active?.setActivated(false);
+      this.active?.setActivated(false);
       button?.setActivated(true);
       this.active = button;
     }

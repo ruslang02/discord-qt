@@ -7,20 +7,24 @@ const { DefinePlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const globImporter = require('node-sass-glob-importer');
+
 const { readdirSync } = fs;
 
 let __BUILDNUM__;
+
 try {
   __BUILDNUM__ = childProcess.execSync('git rev-list HEAD --count').toString()
 } catch (e) {
   __BUILDNUM__ = 0;
 }
+
 module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
   const themes = Object.fromEntries(readdirSync('./src/themes').map(value => [
     value.replace('.scss', ''),
-    './src/themes/' + value
+    `./src/themes/${value}`
   ]));
+
   return {
     mode: isDev ? 'development' : 'production',
     entry: {
@@ -80,7 +84,7 @@ module.exports = (_env, argv) => {
             {
               loader: MiniCssExtractPlugin.loader,
             },
-            'css-loader',
+            'css-loader?url=false',
             {
               loader: 'sass-loader',
               options: {

@@ -16,7 +16,7 @@
     "discord-qt": "./launch.js"
   },
   "scripts": {
-    "build": "webpack",
+    "build": "webpack --colors",
     "build:prod": "webpack -p",
     "start": "qode ./dist/index.js",
     "start:debug": "qode --max-old-space-size=128 --inspect=0.0.0.0:9229 ./dist/index.js",

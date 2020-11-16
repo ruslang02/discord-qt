@@ -60,7 +60,7 @@ export class ClientManager {
     this.client.on(Events.DEBUG, debug);
     this.client.on(Events.RAW, debug);
     this.client.on(Events.WARN, warn);
-    this.client.on(Events.MESSAGE_CREATE, async (message) => {
+    this.client.on(Events.MESSAGE_CREATE, async (message: any) => {
       if (message.author === this.client.user) {
         return;
       }
