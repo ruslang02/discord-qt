@@ -29,6 +29,7 @@ export class MyAccountPage extends Page {
     if (!app.client.user) {
       return;
     }
+
     this.unabel.setText(app.client.user.tag || '');
     this.emabel.setText(app.client.user.email || '');
     pictureWorker
@@ -46,11 +47,13 @@ export class MyAccountPage extends Page {
   private initPage() {
     const { layout, title, avatar, unabel, emabel } = this;
     const header = new QLabel();
+
     header.setObjectName('Header2');
     header.setText(title);
 
     const card = new QWidget(this);
     const cardLayout = new QBoxLayout(Direction.LeftToRight);
+
     cardLayout.setSpacing(20);
     cardLayout.setContentsMargins(20, 20, 20, 20);
     card.setLayout(cardLayout);
@@ -58,14 +61,17 @@ export class MyAccountPage extends Page {
     avatar.setMinimumSize(100, 100);
     const info = new QWidget();
     const infout = new QBoxLayout(Direction.TopToBottom);
+
     infout.setContentsMargins(0, 2, 0, 2);
     infout.setSpacing(4);
     info.setLayout(infout);
     const unbold = new QLabel();
+
     unbold.setText(__('USERNAME'));
     unbold.setObjectName('Bold');
     unabel.setObjectName('Normal');
     const embold = new QLabel();
+
     embold.setText(__('EMAIL'));
     embold.setObjectName('Bold');
     emabel.setObjectName('Normal');
@@ -75,8 +81,10 @@ export class MyAccountPage extends Page {
     infout.addWidget(embold);
     infout.addWidget(emabel);
     const editet = new QWidget();
+
     editet.setLayout(new QBoxLayout(Direction.TopToBottom));
     const editbn = new DColorButton();
+
     editbn.setText(__('EDIT'));
     editbn.hide();
     editbn.setMinimumSize(60, 32);
@@ -88,10 +96,12 @@ export class MyAccountPage extends Page {
     cardLayout.addWidget(editet);
 
     const twoFAHeader = new QLabel();
+
     twoFAHeader.setObjectName('Header2');
     twoFAHeader.setText(__('TWO_FA'));
 
     const twoFAHelper = new DLabel(this);
+
     twoFAHelper.setText(
       __('TWO_FA_UNAVAILABLE', {
         tfaURL: 'https://discord.com/channels/@me/settings',

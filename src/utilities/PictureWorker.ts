@@ -42,13 +42,17 @@ class PictureWorker {
    */
   loadImage(url: string, options?: Options): Promise<string> {
     const { callbacks, worker } = this;
+
     if ((url || '').toString().trim() === '') {
       debug('An empty URL was requested.');
+
       return Promise.reject(new Error('URL was empty or null.'));
     }
+
     const opts = { roundify: app.config.roundifyAvatars, ...(options || {}) };
 
     const uri = new URL(url);
+
     if (uri.hostname === 'cdn.discordapp.com') {
       if (extname(uri.pathname).toLowerCase() !== '.png') {
         opts.roundify = false;
@@ -59,9 +63,12 @@ class PictureWorker {
 
     uri.searchParams.append('roundify', opts.roundify ? 'true' : 'false');
     const urlHref = uri.href;
+
     debug(`Sending ${urlHref}...`);
+
     return new Promise((resolve, reject) => {
       const cb = callbacks.get(urlHref);
+
       if (cb !== undefined) {
         callbacks.set(urlHref, {
           reject,
@@ -70,8 +77,10 @@ class PictureWorker {
             resolve(b);
           },
         });
+
         return;
       }
+
       worker.postMessage({ url: urlHref });
       callbacks.set(urlHref, { resolve, reject });
     });
@@ -83,18 +92,25 @@ class PictureWorker {
    */
   private resolveImage(result: { url: string; path: string }) {
     const { url, path } = result;
+
     if (typeof url !== 'string') {
       return debug('URL was strange:', url);
     }
+
     const cb = this.callbacks.get(url);
+
     if (!cb) {
       return debug('There was no callback for', url);
     }
+
     if (!path || !path.length) {
       debug(`Couldn't load URL: ${url}, throwing error...`);
+
       return cb.reject("Couldn't get path.");
     }
+
     this.callbacks.delete(url);
+
     return cb.resolve(path);
   }
 }

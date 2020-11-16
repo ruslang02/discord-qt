@@ -36,27 +36,33 @@ export class SectionList extends QScrollArea {
       this.active?.setProperty('active', false);
       this.active?.repolish();
       const page = [...this.pageButtons.keys()].find((p) => p.title === pageTitle);
+
       if (!page) {
         return;
       }
+
       this.active = this.pageButtons.get(page);
       this.active?.setProperty('active', true);
       this.active?.repolish();
     });
+
     app.emit(Events.OPEN_SETTINGS_PAGE, __('ACCOUNTS'));
   }
 
   private initComponent() {
     const { layout } = this;
+
     layout.setContentsMargins(20, 60, 15, 60);
     layout.setSpacing(0);
   }
 
   private initPages() {
     const { layout, pageButtons } = this;
+
     for (const elem of this.elements) {
       if (elem instanceof Page) {
         const btn = new QPushButton();
+
         btn.setText(elem.title);
         btn.setObjectName('PageButton');
         btn.setCursor(CursorShape.PointingHandCursor);
@@ -67,6 +73,7 @@ export class SectionList extends QScrollArea {
         layout.addWidget(elem);
       }
     }
+
     layout.addStretch(1);
   }
 }

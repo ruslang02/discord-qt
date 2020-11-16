@@ -35,6 +35,7 @@ export class MainTitleBar extends DTitleBar {
       if (!['dm', 'guild'].includes(view)) {
         return;
       }
+
       if (view === 'dm' && options?.dm) {
         this.handleDMOpen(options.dm);
       } else if (view === 'guild' && options?.channel) {
@@ -44,8 +45,10 @@ export class MainTitleBar extends DTitleBar {
         this.handleClear();
       }
     });
+
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
       const { Events } = Constants;
+
       client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
         if (this.channel?.type === 'dm' && this.channel.recipient.id === presence.userID) {
           this.updateStatus();
@@ -65,6 +68,7 @@ export class MainTitleBar extends DTitleBar {
     nicknamesBar.setObjectName('NicknamesBar');
 
     const searchEdit = new DLineEdit();
+
     searchEdit.setInlineStyle('width: 136px; height: 24px; margin-left: 4px; margin-right: 4px;');
     searchEdit.setPlaceholderText(__('SEARCH'));
     searchEdit.hide();
@@ -74,6 +78,7 @@ export class MainTitleBar extends DTitleBar {
       iconQSize: new QSize(24, 24),
       tooltipText: __('PINNED_MESSAGES'),
     });
+
     pinBtn.hide();
 
     const helpBtn = new DIconButton({
@@ -81,6 +86,7 @@ export class MainTitleBar extends DTitleBar {
       iconQSize: new QSize(24, 24),
       tooltipText: __('HELP'),
     });
+
     helpBtn.addEventListener('clicked', () => open(repository.url));
 
     layout.addWidget(iconLabel);
@@ -94,6 +100,7 @@ export class MainTitleBar extends DTitleBar {
 
   private updateStatus() {
     const { channel, statusLabel } = this;
+
     if (channel instanceof DMChannel) {
       statusLabel.setText('●');
       statusLabel.setInlineStyle(
@@ -104,6 +111,7 @@ export class MainTitleBar extends DTitleBar {
 
   private handleClear() {
     const { userNameLabel, statusLabel, iconLabel } = this;
+
     iconLabel.hide();
     userNameLabel.setText('');
     statusLabel.hide();
@@ -111,6 +119,7 @@ export class MainTitleBar extends DTitleBar {
 
   private handleDMOpen(channel: DMChannel) {
     const { userNameLabel, statusLabel, iconLabel, atPixmap } = this;
+
     this.channel = channel;
     iconLabel.setPixmap(atPixmap);
     iconLabel.show();
@@ -121,9 +130,11 @@ export class MainTitleBar extends DTitleBar {
 
   private handleGuildOpen(channel: GuildChannel) {
     const { userNameLabel, statusLabel, iconLabel, poundPixmap } = this;
+
     if (channel.type !== 'text' && channel.type !== 'news') {
       return;
     }
+
     this.channel = channel as TextChannel | NewsChannel;
     iconLabel.setPixmap(poundPixmap);
     iconLabel.show();

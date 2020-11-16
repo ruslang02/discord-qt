@@ -16,6 +16,7 @@ export class UserPanelMenu extends QMenu {
   private initMenu() {
     for (const status of <PresenceStatusData[]>['online', 'idle', 'dnd', 'invisible']) {
       const item = new QAction();
+
       item.setText(__(`STATUS_${status.toUpperCase()}`));
       item.setIcon(new QIcon(join(__dirname, `assets/icons/status-${status}.png`)));
       item.addEventListener('triggered', () => app.client.user?.setPresence({ status }));
@@ -23,9 +24,12 @@ export class UserPanelMenu extends QMenu {
       // @ts-ignore
       this.nodeParent.updatePresence();
     }
+
     this.addSeparator();
+
     {
       const item = new QAction();
+
       item.setText(__('CUSTOM_STATUS_EDIT_CUSTOM_STATUS_PLACEHOLDER'));
       item.setIcon(new QIcon(join(__dirname, 'assets/icons/emoticon-outline.png')));
       item.addEventListener('triggered', () => app.window.dialogs.customStatus.show());

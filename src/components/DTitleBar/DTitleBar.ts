@@ -5,6 +5,7 @@ export class DTitleBar extends QWidget {
 
   constructor() {
     super();
+
     this.setObjectName('DTitleBar');
     this.setLayout(this.controls);
   }

@@ -20,9 +20,11 @@ export class ConfigManager {
 
   async load() {
     const { file } = this;
+
     this.isLoaded = false;
     // @ts-ignore
     let config: IConfig = {};
+
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
@@ -34,6 +36,7 @@ export class ConfigManager {
         error('Config file could not be used, returning to default values...');
       }
     }
+
     this.config = {
       accounts: config.accounts ?? [],
       roundifyAvatars: config.roundifyAvatars ?? true,
@@ -48,9 +51,11 @@ export class ConfigManager {
       userLocalGuildSettings: config.userLocalGuildSettings ?? {},
       voiceSettings: config.voiceSettings ?? {},
     };
+
     if (config.debug === true) {
       log('Loaded config:', config);
     }
+
     this.isLoaded = true;
   }
 

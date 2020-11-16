@@ -1,34 +1,42 @@
 #DChannelButton {
   border-radius: 4px;
+
   #Indicator {
     color: $interactive-active;
   }
+
   *,
   QLabel {
     color: $channels-default;
     background: none;
   }
-  &[hover="true"] {
+
+  &[hover='true'] {
     background-color: $background-modifier-hover;
+
     *,
     QLabel {
       color: $interactive-hover;
     }
   }
-  &[active="true"] {
+
+  &[active='true'] {
     background-color: $background-modifier-selected;
+
     *,
     QLabel {
       color: $interactive-active;
     }
   }
-  &[unread="true"] {
+
+  &[unread='true'] {
     *,
     QLabel {
       color: $interactive-active;
     }
   }
-  &[muted="true"] {
+
+  &[muted='true'] {
     *,
     QLabel {
       color: $interactive-muted;

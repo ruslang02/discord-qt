@@ -43,6 +43,7 @@ export class AppearancePage extends Page {
 
   private async initPage() {
     const { title, header, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, layout } = this;
+
     header.setObjectName('Header2');
     header.setText(title);
     layout.addWidget(header);
@@ -56,18 +57,23 @@ export class AppearancePage extends Page {
         checkbox.setText(text);
         checkbox.addEventListener(WidgetEventTypes.MouseButtonRelease, async () => {
           const checked = checkbox.isChecked();
+
           checkbox.setChecked(!checked);
           // @ts-ignore
           app.config[id] = !checked;
           void app.configManager.save();
         });
+
         layout.addWidget(checkbox);
       });
+
     const themeLabel = new QLabel(this);
+
     themeLabel.setObjectName('Header3');
     themeLabel.setText(`\r\n${__('THEME')}`);
 
     const langLabel = new QLabel(this);
+
     langLabel.setObjectName('Header3');
     langLabel.setText(`\r\n${__('LANGUAGE')}`);
 
@@ -77,27 +83,35 @@ export class AppearancePage extends Page {
 
     themeSel.addEventListener('currentTextChanged', async (text) => {
       const path = join(__dirname, 'themes', `${text}.theme.css`);
+
       if (!existsSync(path)) {
         return;
       }
+
       app.config.theme = text;
       await app.configManager.save();
       await app.window.loadStyles();
     });
+
     langSel.addEventListener('currentIndexChanged', async (index) => {
       const locale = langSel.itemData(index).toString();
       const path = join(__dirname, 'locales', `${locale}.json`);
+
       if (!existsSync(path)) {
         return;
       }
+
       app.config.locale = locale;
       await app.configManager.save();
       setLocale(locale);
     });
+
     const restartNotice = new QLabel(this);
+
     restartNotice.setText(__('LANGUAGE_RESTART_REQUIRED'));
     restartNotice.setInlineStyle('color: #f04747');
     const clearCacheBtn = new DColorButton();
+
     clearCacheBtn.setText(__('CLEAR_CACHE'));
     clearCacheBtn.setMinimumSize(0, 36);
     clearCacheBtn.addEventListener('clicked', () => {
@@ -116,6 +130,7 @@ export class AppearancePage extends Page {
         })
         .catch(error.bind(this, "Couldn't clear cache directory."));
     });
+
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);
     layout.addWidget(langLabel);
@@ -130,9 +145,11 @@ export class AppearancePage extends Page {
   private async loadThemes() {
     try {
       const themes = await readdir('./dist/themes', { withFileTypes: true });
+
       themes.forEach((theme) => {
         if (theme.name.endsWith('.theme.css')) {
           const myThemeName = theme.name.replace('.theme.css', '');
+
           this.themeSel.addItem(undefined, myThemeName, undefined);
         }
       });
@@ -144,17 +161,21 @@ export class AppearancePage extends Page {
   private async loadLanguages() {
     try {
       const locales = await readdir('./dist/locales', { withFileTypes: true });
+
       this.langs = await Promise.all(
         locales.map(async (locale) => {
           const localeName = locale.name.replace('.json', '');
+
           try {
             const file = JSON.parse(
               (await readFile(join('./dist/locales/', locale.name))).toString(),
             );
+
             this.langSel.addItem(undefined, file['locale.name'], new QVariant(localeName));
           } catch (e) {
             warn(`[AppearancePage] Locale file "${locale.name}" can not be read.`);
           }
+
           return localeName;
         }),
       );
@@ -166,13 +187,16 @@ export class AppearancePage extends Page {
   private loadConfig() {
     const { enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel } = this;
     const { debug, processMarkDown, enableAvatars, roundifyAvatars, theme } = app.config;
+
     enavcx.setChecked(enableAvatars as boolean);
     rdavcx.setChecked(roundifyAvatars as boolean);
     prmdcx.setChecked(processMarkDown as boolean);
     dbgcx.setChecked(debug as boolean);
+
     if (typeof theme === 'string') {
       themeSel.setCurrentText(theme);
     }
+
     langSel.setCurrentIndex(this.langs.indexOf(getLocale()));
   }
 }

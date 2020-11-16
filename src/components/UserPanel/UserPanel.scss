@@ -5,29 +5,33 @@
     font-size: 14px;
     line-height: 18px;
   }
+
   #DiscLabel {
     color: $header-secondary;
     font-size: 12px;
     line-height: 13px;
   }
+
   #DIconButton {
     background: none;
     border: none;
     border-radius: 5px;
     font-size: 24px;
     color: rgb(116, 127, 141);
+
     &:hover {
       background: $background-modifier-selected;
     }
+
     &::menu-indicator {
       width: 0px;
     }
   }
-  #UserMenu {
-    &::item {
-      padding: 6px 25px 6px 15px;
-    }
+
+  #UserMenu::item {
+    padding: 6px 25px 6px 15px;
   }
+
   #StatusCircle {
     border: 3px solid $background-secondary-alt;
     border-radius: 8px;

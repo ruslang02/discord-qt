@@ -37,12 +37,34 @@
     "no-bitwise": "off",
     "no-console": "off",
     "no-empty": "off",
-    "no-shadow": "off",
+    "no-fallthrough": "off",
+    "no-multiple-empty-lines": "error",
     "no-restricted-syntax": "off",
+    "no-shadow": "off",
     "no-underscore-dangle": "off",
     "no-unused-vars": "off",
     "no-useless-constructor": "off",
-    "no-void": "off"
+    "no-void": "off",
+    "padding-line-between-statements": [ // See docs
+      "warn",
+      { "blankLine": "always", "prev": "*", "next": "return" }, // return
+
+      { "blankLine": "always", "prev": "*", "next": "class" }, // class
+
+      { "blankLine": "always", "prev": ["const", "let", "var"], "next": "*" }, // Variable declaration
+      { "blankLine": "any", "prev": ["const", "let", "var"], "next": ["const", "let", "var"] },
+
+      { "blankLine": "always", "prev": ["case", "default"], "next": "*" }, // case in switch
+
+      { "blankLine": "always", "prev": "*", "next": ["try", "switch", "for", "block-like"] }, // blocks (try, switch, if, while, for, {})
+      { "blankLine": "always", "prev": ["try", "switch", "for", "block-like"], "next": "*" },
+
+      { // Multiline
+        "blankLine": "always",
+        "prev": ["multiline-const", "multiline-expression", "multiline-let"],
+        "next": "*"
+      }
+    ]
   },
 
   "settings": {

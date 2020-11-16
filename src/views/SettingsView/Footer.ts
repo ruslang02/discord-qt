@@ -28,12 +28,14 @@ export class Footer extends QWidget {
       iconQSize: new QSize(24, 24),
       tooltipText: 'GitHub',
     });
+
     github.setFixedSize(24, 24);
     const label = new QLabel();
     const me = (await import('../../../package.json')) as {
       version: string;
       repository: { url: string };
     };
+
     github.addEventListener('clicked', () => open(me.repository.url));
     // @ts-ignore
     label.setText(
@@ -41,6 +43,7 @@ export class Footer extends QWidget {
         process.versions.node
       }<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`,
     );
+
     label.setOpenExternalLinks(true);
     label.setObjectName('Footer');
     label.setTextInteractionFlags(TextInteractionFlag.TextBrowserInteraction);

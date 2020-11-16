@@ -17,7 +17,8 @@ const paths = [
 ];
 
 function getFilesFromPath(path, extension) {
-  let files = fs.readdirSync(path);
+  const files = fs.readdirSync(path);
+
   return files.filter(file => file.match(new RegExp(`.*\.(${extension})`, 'ig')));
 }
 
@@ -39,7 +40,8 @@ process.execSync(`ln -s /usr/lib/${safeAppName}/qode '${BIN_DIR}'`);
 
 console.log('Copying .desktop file...');
 const from = path.join(BUILD_DIR, getFilesFromPath(BUILD_DIR, '.desktop')[0]);
-const to = path.join(__dirname, 'deb-struct/usr/share/applications/', safeAppName + '.desktop')
+const to = path.join(__dirname, 'deb-struct/usr/share/applications/', `${safeAppName  }.desktop`)
+
 process.execSync(`cp '${from}' '${to}'`);
 
 console.log('Generating Debian package...');

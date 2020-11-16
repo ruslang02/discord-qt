@@ -4,6 +4,7 @@
   } @else {
     background-color: $background-primary;
   }
+
   border-bottom: 1px solid $background-secondary-alt;
 
   #UserNameLabel {
@@ -11,6 +12,7 @@
     font-weight: bold;
     color: $header-primary;
   }
+
   #StatusLabel {
     font-size: 12px;
     font-weight: 500;

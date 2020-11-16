@@ -19,12 +19,14 @@ export class DMPanel extends QWidget {
 
   private initComponent() {
     const { titleBar, actionsMenu, usersList, controls } = this;
+
     this.setLayout(controls);
     this.setObjectName('DMPanel');
     controls.setSpacing(0);
     controls.setContentsMargins(0, 0, 0, 0);
 
-    [titleBar, actionsMenu].forEach((w) => controls.addWidget(w));
+    controls.addWidget(titleBar);
+    controls.addWidget(actionsMenu);
     controls.addWidget(usersList, 1);
 
     titleBar.raise();

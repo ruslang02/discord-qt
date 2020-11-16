@@ -21,6 +21,7 @@ export class ConfirmLeaveGuildDialog extends Dialog {
 
   private init() {
     const layout = new QBoxLayout(Direction.TopToBottom);
+
     this.description.setWordWrap(true);
     this.description.setObjectName('Normal');
     layout.setSpacing(8);
@@ -31,15 +32,19 @@ export class ConfirmLeaveGuildDialog extends Dialog {
 
   private initFooter() {
     const footer = new QWidget(this);
+
     footer.setObjectName('Footer');
     const footLayout = new QBoxLayout(Direction.LeftToRight);
+
     footLayout.addStretch(1);
     footLayout.setContentsMargins(16, 16, 16, 16);
     const leaveBtn = new DColorButton(DColorButtonColor.RED);
+
     leaveBtn.setText(__('LEAVE_SERVER'));
     leaveBtn.setMinimumSize(96, 38);
     leaveBtn.addEventListener('clicked', async () => {
       leaveBtn.setEnabled(false);
+
       try {
         await this.guild?.leave();
         app.emit(Events.SWITCH_VIEW, 'dm');
@@ -47,9 +52,12 @@ export class ConfirmLeaveGuildDialog extends Dialog {
       } finally {
         leaveBtn.setEnabled(true);
       }
+
       this.hide();
     });
+
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
+
     cancelBtn.setText(__('CANCEL'));
     cancelBtn.setMinimumSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());
@@ -62,6 +70,7 @@ export class ConfirmLeaveGuildDialog extends Dialog {
   openForGuild(guild: Guild) {
     this.guild = guild;
     const { name } = guild;
+
     this.header.setText(__('LEAVE_SERVER_TITLE', { name }));
     this.description.setText(__('LEAVE_SERVER_BODY', { name }));
     this.show();

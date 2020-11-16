@@ -1,15 +1,9 @@
 import {
-  ClientUser,
-  Constants,
-  DQConstants,
-  Guild,
-  PresenceStatus,
-  Snowflake,
-  Util,
+  ClientUser, Constants, DQConstants, Guild, PresenceStatus, Snowflake, Util,
 } from 'discord.js';
 import { CustomStatus } from '../utilities/CustomStatus';
 
-type FriendsSources = { all: boolean; mutualGuilds: boolean; mutualFriends: boolean };
+type FriendsSources = { all: boolean, mutualGuilds: boolean, mutualFriends: boolean };
 
 /**
  * A wrapper around the ClientUser's settings.
@@ -27,8 +21,7 @@ export class ClientUserSettings {
 
   public enableTTSCommand: boolean = false;
 
-  public explicitContentFilter: 'DISABLED' | 'NON_FRIENDS' | 'FRIENDS_AND_NON_FRIENDS' | string =
-    'DISABLED';
+  public explicitContentFilter: 'DISABLED' | 'NON_FRIENDS' | 'FRIENDS_AND_NON_FRIENDS' | string = 'DISABLED';
 
   public friendsSources: FriendsSources = { all: false, mutualFriends: false, mutualGuilds: false };
 
@@ -56,7 +49,10 @@ export class ClientUserSettings {
 
   private user: ClientUser;
 
-  constructor(user: ClientUser, data: any) {
+  constructor(
+    user: ClientUser,
+    data: any,
+  ) {
     this.user = user;
     this._patch(data);
   }
@@ -68,14 +64,10 @@ export class ClientUserSettings {
    * @private
    */
   _patch(data: any) {
-    for (const key of Object.keys(((Constants as unknown) as DQConstants).UserSettingsMap)) {
-      const value = ((Constants as unknown) as DQConstants).UserSettingsMap[key];
+    for (const key of Object.keys((Constants as unknown as DQConstants).UserSettingsMap)) {
+      const value = (Constants as unknown as DQConstants).UserSettingsMap[key];
       // @ts-ignore: Object assignment.
-      if (key in data && typeof value === 'function') {
-        this[value.name] = value(data[key]);
-      } else {
-        this[value] = data[key];
-      }
+      if (key in data && typeof value === 'function') this[value.name] = value(data[key]); else this[value] = data[key];
     }
   }
 
@@ -110,9 +102,7 @@ export class ClientUserSettings {
    */
   addRestrictedGuild(guild: Guild) {
     const temp = Object.assign([], this.restrictedGuilds);
-    if (temp.includes(guild.id)) {
-      return Promise.reject(new Error('Guild is already restricted'));
-    }
+    if (temp.includes(guild.id)) return Promise.reject(new Error('Guild is already restricted'));
     temp.push(guild.id);
     return this.update('restricted_guilds', temp).then(() => guild);
   }
@@ -125,9 +115,7 @@ export class ClientUserSettings {
   removeRestrictedGuild(guild: Guild) {
     const temp = Object.assign([], this.restrictedGuilds);
     const index = temp.indexOf(guild.id);
-    if (index < 0) {
-      return Promise.reject(new Error('Guild is not restricted'));
-    }
+    if (index < 0) return Promise.reject(new Error('Guild is not restricted'));
     temp.splice(index, 1);
     return this.update('restricted_guilds', temp).then(() => guild);
   }

@@ -40,8 +40,6 @@ export class ChannelsList extends QListWidget {
 
   private buttons = new Map<string, ChannelButton>();
 
-  // private listItems = new Set<QListWidgetItem>();
-
   private vcMembers = new Map<string, ChannelMembers>();
 
   private categories = new Map<string, QLabel>();
@@ -52,13 +50,17 @@ export class ChannelsList extends QListWidget {
 
   private rateTimer?: any;
 
+  private minSize = new QSize(150, 36);
+
   constructor() {
     super();
+
     this.setFrameShape(Shape.NoFrame);
     this.setObjectName('ChannelsList');
     this.setVerticalScrollMode(1);
     this.setSpacing(0);
     this.setHorizontalScrollBarPolicy(ScrollBarPolicy.ScrollBarAlwaysOff);
+
     app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
     app.on(AppEvents.NEW_CLIENT, this.handleEvents.bind(this));
     app.on(AppEvents.CONFIG_UPDATE, () => this.updateState());
@@ -66,26 +68,32 @@ export class ChannelsList extends QListWidget {
 
   private handleEvents(client: Client) {
     const { Events } = (Constants as unknown) as DQConstants;
+
     client.on(Events.MESSAGE_ACK, (channel) => {
       const button = this.buttons.get(channel.id);
+
       if (button) {
         button.setUnread(false);
       }
     });
+
     client.on(Events.MESSAGE_CREATE, (message) => {
       const button = this.buttons.get(message.channel.id);
+
       if (button) {
         button.setUnread(true);
       }
     });
+
     client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
   }
 
-  private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
-    for (const state of [o, n]) {
+  private handleVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
+    for (const state of [oldState, newState]) {
       const component = this.vcMembers.get(state.channelID || '');
+
       if (component) {
-        component.handleVoiceStateUpdate(o, n);
+        component.handleVoiceStateUpdate(oldState, newState);
       }
     }
   }
@@ -94,7 +102,9 @@ export class ChannelsList extends QListWidget {
     if (view !== 'guild' || !options) {
       return;
     }
+
     let newGuild;
+
     if (options.guild) {
       newGuild = options.guild;
     } else if (options.channel) {
@@ -102,40 +112,47 @@ export class ChannelsList extends QListWidget {
     } else {
       return;
     }
+
     if (newGuild.id !== this.guild?.id) {
       this.loadChannels(newGuild);
     }
+
     if (options.channel) {
       const chan = this.buttons.get(options.channel.id);
-      this.active?.setActivated(false);
+
       chan?.setActivated(true);
+
+      this.active?.setActivated(false);
       this.active = chan;
     } else {
-      this.active = undefined;
+      delete this.active;
     }
   }
-
-  private minSize = new QSize(150, 36);
 
   private updateState() {
     if (!this.guild) {
       return;
     }
+
     const settings = app.config.userLocalGuildSettings[this.guild.id];
+
     for (const item of <IterableIterator<QListWidgetItem>>this.items.values()) {
       const channel = app.client.channels.resolve(item.text());
+
       if (channel instanceof GuildChannel) {
-        const isOpen = !settings?.collapsedCategories?.includes(channel.parentID || '');
         if (!channel || item.native.destroyed) {
           return;
         }
-        this.setRowHidden(
-          this.row(item),
-          !isOpen || (!!channel.muted && (settings?.hideMutedChannels ?? false)),
-        );
+
+        const isCollapsed = settings?.collapsedCategories?.includes(channel.parentID || '');
+        const isMuteAndHidden = !!channel.muted && !!settings?.hideMutedChannels;
+
+        this.setRowHidden(this.row(item), isCollapsed || isMuteAndHidden);
       }
+
       if (channel instanceof CategoryChannel) {
         const arrow = settings?.collapsedCategories?.includes(channel.id) ? '►' : '▼';
+
         this.categories
           .get(channel.id)
           ?.setText(`<html>${arrow}&nbsp;&nbsp;${channel.name}</html>`);
@@ -144,15 +161,17 @@ export class ChannelsList extends QListWidget {
   }
 
   private toggleCategory(guildId: Snowflake, categoryId: Snowflake) {
-    const s = { ...app.config.userLocalGuildSettings[guildId] };
-    s.collapsedCategories = [...(s.collapsedCategories || [])] as string[];
-    if (s.collapsedCategories.includes(categoryId)) {
-      s.collapsedCategories = s.collapsedCategories.filter((id) => id !== categoryId);
+    const settings = app.config.userLocalGuildSettings[guildId] || {};
+
+    settings.collapsedCategories = settings.collapsedCategories || [];
+
+    if (settings.collapsedCategories.includes(categoryId)) {
+      settings.collapsedCategories = settings.collapsedCategories.filter((id) => id !== categoryId);
     } else {
-      s.collapsedCategories = [...s.collapsedCategories, categoryId];
+      settings.collapsedCategories.push(categoryId);
     }
 
-    app.config.userLocalGuildSettings[guildId] = s;
+    app.config.userLocalGuildSettings[guildId] = settings;
     void app.configManager.save();
 
     this.updateState();
@@ -160,15 +179,15 @@ export class ChannelsList extends QListWidget {
 
   private loadChannels(guild: Guild) {
     this.guild = guild;
+
     if (this.ratelimit) {
       return;
     }
+
     this.ratelimit = true;
+
     if (this.rateTimer) {
       clearTimeout(this.rateTimer);
-    }
-    if (!guild) {
-      return;
     }
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
@@ -177,7 +196,6 @@ export class ChannelsList extends QListWidget {
     this.nodeChildren.clear();
     this.buttons.clear();
     this.items.clear();
-    // this.listItems.clear();
     this.vcMembers.clear();
 
     const [categories, channels] = guild.channels.cache
@@ -186,55 +204,80 @@ export class ChannelsList extends QListWidget {
       Collection<string, CategoryChannel>,
       Collection<string, GuildChannel>,
     ];
+
     debug(`Loading ${categories.size} categories...`);
-    for (const category of categories.sort((a, b) => a.rawPosition - b.rawPosition).values()) {
-      const item = new QListWidgetItem();
+
+    const sortedCategories = categories.sort((a, b) => a.rawPosition - b.rawPosition).values();
+
+    for (const category of sortedCategories) {
       const label = new QLabel(this);
+
       label.setObjectName('CategoryHeader');
+      label.setMinimumSize(0, 30);
+      label.setCursor(CursorShape.PointingHandCursor);
+      label.adjustSize();
       label.addEventListener(
         WidgetEventTypes.MouseButtonPress,
         this.toggleCategory.bind(this, guild.id, category.id),
       );
-      label.setMinimumSize(0, 30);
-      label.setCursor(CursorShape.PointingHandCursor);
+
+      const item = new QListWidgetItem();
+
       item.setText(category.id);
       item.setFlags(~ItemFlag.ItemIsEnabled);
-      this.addItem(item);
       item.setSizeHint(label.size());
+
+      this.addItem(item);
       this.setItemWidget(item, label);
+
       this.categories.set(category.id, label);
-      label.adjustSize();
     }
 
     debug(`Loading ${channels.size} channels...`);
-    for (const channel of channels.sort((a, b) => b.rawPosition - a.rawPosition).values()) {
-      const btn = new ChannelButton(this);
-      const item = new QListWidgetItem();
+
+    const sortedChannels = channels.sort((a, b) => a.rawPosition - b.rawPosition).values();
+
+    for (const channel of sortedChannels) {
+      // Get row number to insert the channel
       const parentItems = channel.parentID ? this.findItems(channel.parentID, 0) : [];
       const row = parentItems && parentItems.length ? this.row(parentItems[0]) + 1 : 0;
+
+      const item = new QListWidgetItem();
+
       item.setFlags(~ItemFlag.ItemIsEnabled);
-      btn.loadChannel(channel);
-      btn.setFixedSize(232, 32);
-      if (channel.muted) {
-        btn.setMuted(true);
-      }
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(row, item);
+
+      const btn = new ChannelButton(this);
+
+      btn.loadChannel(channel);
+      btn.setFixedSize(232, 32);
+
+      if (channel.muted) {
+        btn.setMuted(true);
+      }
+
       this.setItemWidget(item, btn);
-      this.buttons.set(channel.id, btn);
-      btn.addEventListener(WidgetEventTypes.DeferredDelete, () => this.buttons.delete(channel.id));
+
       btn.addEventListener('customContextMenuRequested', (pos) => {
         this.menu.setChannel(channel);
         this.menu.popup(btn.mapToGlobal(new QPoint(pos.x, pos.y)));
       });
+
+      this.buttons.set(channel.id, btn);
+      btn.addEventListener(WidgetEventTypes.DeferredDelete, () => this.buttons.delete(channel.id));
+
       if (channel.type === 'voice') {
         const members = new ChannelMembers(channel as VoiceChannel);
+
+        this.vcMembers.set(channel.id, members);
+
         const memitem = new QListWidgetItem();
+
         memitem.setText(channel.id);
         this.insertItem(row + 1, memitem);
         this.setItemWidget(memitem, members);
-        this.vcMembers.set(channel.id, members);
         members.setItem(memitem);
       }
     }
@@ -243,6 +286,7 @@ export class ChannelsList extends QListWidget {
 
     this.rateTimer = setTimeout(() => {
       this.ratelimit = false;
+
       if (guild !== this.guild && this.guild) {
         this.loadChannels(this.guild);
       }

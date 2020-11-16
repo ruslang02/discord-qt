@@ -38,6 +38,7 @@ export class Dialog extends QWidget {
       const event = new QMouseEvent(e as NativeElement);
       const pos = this.window.mapToParent(this.p0);
       const size = this.window.size();
+
       if (
         event.x() < pos.x() ||
         event.x() > pos.x() + size.width() ||
@@ -61,11 +62,13 @@ export class Dialog extends QWidget {
       WidgetEventTypes.Resize,
       this.resizeToWindow.bind(this),
     );
+
     this.resizeToWindow();
   }
 
   protected resizeToWindow() {
     const size = (this.nodeParent as RootWindow).size();
+
     this.setGeometry(0, 0, size.width(), size.height());
   }
 
@@ -75,8 +78,10 @@ export class Dialog extends QWidget {
     controls.setContentsMargins(0, 0, 0, 0);
 
     const hLayout = new QBoxLayout(Direction.LeftToRight);
+
     hLayout.addStretch(1);
     const vLayout = new QBoxLayout(Direction.TopToBottom);
+
     vLayout.addStretch(1);
     vLayout.addWidget(window);
     vLayout.addStretch(1);
@@ -90,6 +95,7 @@ export class Dialog extends QWidget {
     closeBtn.addEventListener('clicked', () => this.hide());
 
     const headLayout = new QBoxLayout(Direction.LeftToRight);
+
     headLayout.setContentsMargins(16, 16, 16, 16);
     headLayout.addWidget(header, 1);
     headLayout.addWidget(closeBtn);

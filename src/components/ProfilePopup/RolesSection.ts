@@ -34,6 +34,7 @@ export class RolesSection extends QWidget {
 
   private initComponent() {
     const { label, rolesList, topRole, layout, topRoleCircle, topRoleLabel } = this;
+
     layout.setContentsMargins(16, 8, 16, 8);
     layout.setSpacing(8);
     label.setObjectName('SectionHeader');
@@ -41,12 +42,14 @@ export class RolesSection extends QWidget {
     label.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       this.setOpened(!this.isOpened);
     });
+
     rolesList.setObjectName('RolesList');
     rolesList.setMaximumSize(MAX_QSIZE, 150);
     rolesList.setFrameShape(Shape.NoFrame);
     rolesList.setVerticalScrollMode(1);
     const mainRolesLayout = new QBoxLayout(Direction.LeftToRight);
     const topRoleLayout = new QBoxLayout(Direction.LeftToRight);
+
     topRole.setObjectName('RoleBadge');
     topRole.setMinimumSize(0, 22);
     topRole.setMaximumSize(MAX_QSIZE, 22);
@@ -71,28 +74,35 @@ export class RolesSection extends QWidget {
 
   setOpened(value: boolean) {
     const { label, rolesList } = this;
+
     if (label.text() === __('NO_ROLES') && value !== false) {
       return;
     }
+
     label.setText(`${__('ROLES')}&nbsp;<font size=2>${value ? '▲' : '▼'}</font>`);
+
     if (value) {
       rolesList.show();
     } else {
       rolesList.hide();
     }
+
     this.isOpened = value;
   }
 
   loadRoles(roles: GuildMemberRoleManager | undefined) {
     const { label, rolesList, topRole, topRoleCircle, topRoleLabel } = this;
+
     if (roles) {
       this.show();
     } else {
       label.setText(__('NO_ROLES'));
       this.hide();
     }
+
     this.setOpened(false);
     rolesList.clear();
+
     if (!roles) {
       return;
     }
@@ -105,6 +115,7 @@ export class RolesSection extends QWidget {
     } else {
       topRole.hide();
     }
+
     roles.cache
       .array()
       .sort((a, b) => a.position - b.position)
@@ -112,7 +123,9 @@ export class RolesSection extends QWidget {
         if (a.name === '@everyone') {
           return;
         }
+
         const item = new QListWidgetItem(a.name);
+
         rolesList.addItem(item);
       });
   }

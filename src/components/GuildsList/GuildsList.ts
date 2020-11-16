@@ -41,21 +41,27 @@ export class GuildsList extends QListWidget {
 
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
       const { Events } = (Constants as unknown) as DQConstants;
+
       client.on(Events.CLIENT_READY, async () => {
         await this.loadGuilds();
         app.emit(AppEvents.SWITCH_VIEW, 'dm');
       });
+
       client.on(Events.GUILD_DELETE, (guild) => {
         // this.guilds.get(guild)?.hide();
         const search = this.findItems(guild.id, MatchFlag.MatchExactly);
+
         if (search && search.length) {
           const row = this.row(search[0]);
+
           this.takeItem(row);
         }
       });
+
       client.on(Events.GUILD_CREATE, (guild) => {
         const btn = new GuildButton(guild, this);
         const item = new QListWidgetItem();
+
         item.setFlags(~ItemFlag.ItemIsEnabled);
         this.insertItem(2, item);
         this.setItemWidget(item, btn);
@@ -63,18 +69,23 @@ export class GuildsList extends QListWidget {
         this.updateGuildAck(guild);
         void btn.loadAvatar();
       });
+
       client.on(Events.MESSAGE_ACK, (channel) => this.updateGuildAck(channel.guild));
-      client.on(
-        Events.MESSAGE_CREATE,
-        (message) => message.channel.type !== 'dm' && this.updateGuildAck(message.channel.guild),
-      );
+
+      client.on(Events.MESSAGE_CREATE, (message) => {
+        if (message.channel.type !== 'dm') {
+          this.updateGuildAck(message.channel.guild);
+        }
+      });
     });
 
     app.on(AppEvents.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (!['dm', 'guild'].includes(view)) {
         return;
       }
+
       this.mpBtn.setProperty('active', false);
+
       if (view === 'dm') {
         this.active?.setActive(false);
         // @ts-ignore
@@ -83,11 +94,14 @@ export class GuildsList extends QListWidget {
         this.active = this.mpBtn;
       } else if (view === 'guild' && options) {
         const guild = options.guild || options.channel?.guild;
+
         if (!guild) {
           return;
         }
+
         this.active?.setActive(false);
         const active = this.guilds.get(guild);
+
         active?.setActive(true);
         this.active = active;
       }
@@ -96,24 +110,29 @@ export class GuildsList extends QListWidget {
 
   private updateGuildAck(guild: Guild) {
     const btn = this.guilds.get(guild);
+
     if (!btn) {
       return;
     }
+
     btn.setUnread(!guild.acknowledged);
   }
 
   private addMainPageButton() {
     const mpBtn = new QPushButton(this);
     const mpBtnItem = new QListWidgetItem();
+
     mpBtn.setObjectName('PageButton');
     mpBtn.setIcon(this.mainIcon);
     mpBtn.setIconSize(new QSize(28, 28));
     mpBtn.setFixedSize(72, 68);
+
     // @ts-ignore
     mpBtn.setActive = (value: boolean) => {
       mpBtn.setProperty('active', value);
       mpBtn.repolish();
     };
+
     mpBtn.setCursor(new QCursor(CursorShape.PointingHandCursor));
     mpBtn.setProperty('toolTip', __('DIRECT_MESSAGES'));
     mpBtn.addEventListener('clicked', () => app.emit(AppEvents.SWITCH_VIEW, 'dm'));
@@ -121,6 +140,7 @@ export class GuildsList extends QListWidget {
     mpBtnItem.setSizeHint(mpBtn.size());
     const hrItem = new QListWidgetItem();
     const hr = new QWidget(this);
+
     hr.setObjectName('Separator');
     hr.setMaximumSize(MAX_QSIZE, 10);
     hrItem.setSizeHint(new QSize(1, 10));
@@ -145,6 +165,7 @@ export class GuildsList extends QListWidget {
       .forEach((guild) => {
         const btn = new GuildButton(guild, this);
         const item = new QListWidgetItem();
+
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setSizeHint(btn.size());
         item.setText(guild.id);
@@ -153,6 +174,7 @@ export class GuildsList extends QListWidget {
         this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
       });
+
     void this.loadAvatars();
   }
 
@@ -166,17 +188,23 @@ export class GuildsList extends QListWidget {
     if (this.ratelimited) {
       return;
     }
+
     this.ratelimited = true;
+
     if (this.ratetimer) {
       clearTimeout(this.ratetimer);
     }
+
     this.ratetimer = setTimeout(() => {
       this.ratelimited = false;
     }, 100);
+
     const height = app.window.size().height();
+
     for (const btn of this.guilds.values()) {
       if (btn.loadAvatar && !btn.hasPixmap) {
         const iy = btn.mapToParent(this.p0).y();
+
         if (iy > 0 && iy < height) {
           void btn.loadAvatar();
         }

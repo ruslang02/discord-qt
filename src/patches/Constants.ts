@@ -1,12 +1,16 @@
 const Constants = require('discord.js/src/util/Constants');
-
 export const UserEventsMap = {
   MESSAGE_ACK: 'messageAck',
   USER_GUILD_SETTINGS_UPDATE: 'userGuildSettingsUpdate',
   USER_NOTE_UPDATE: 'userNoteUpdate',
-  USER_SETTINGS_UPDATE: 'userSettingsUpdate',
+  USER_SETTINGS_UPDATE: 'userSettingsUpdate'
 } as const;
-export const MessageNotificationTypes = ['EVERYTHING', 'MENTIONS', 'NOTHING', 'INHERIT'] as const;
+export const MessageNotificationTypes = [
+  'EVERYTHING',
+  'MENTIONS',
+  'NOTHING',
+  'INHERIT',
+] as const;
 const DQConstants = {
   ExplicitContentFilterTypes: ['DISABLED', 'NON_FRIENDS', 'FRIENDS_AND_NON_FRIENDS'],
   UserSettingsMap: {
@@ -56,8 +60,7 @@ const DQConstants = {
     channel_overrides: 'channelOverrides',
   },
   MessageNotificationTypes,
-  UserAgent:
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.4.5 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36',
-};
+  UserAgent: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.4.5 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36'
+}
 
 Object.assign(Constants, DQConstants);

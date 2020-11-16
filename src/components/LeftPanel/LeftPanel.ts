@@ -27,9 +27,11 @@ export class LeftPanel extends QWidget {
         case 'dm':
           this.container.setCurrentWidget(this.dmPanel);
           break;
+
         case 'guild':
           this.container.setCurrentWidget(this.guildPanel);
           break;
+
         default:
       }
     });
@@ -37,6 +39,7 @@ export class LeftPanel extends QWidget {
 
   private initLeftPanel() {
     const { guildPanel, dmPanel, userPanel, voicePanel, container, controls } = this;
+
     this.setLayout(controls);
     this.setObjectName('LeftPanel');
     this.setMaximumSize(240, MAX_QSIZE);

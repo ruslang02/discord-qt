@@ -15,15 +15,18 @@ export class Tray extends QSystemTrayIcon {
     this.initTray();
     app.on(AppEvents.NEW_CLIENT, (client) => {
       const { Events } = Constants;
+
       this.update();
       client.on(Events.USER_UPDATE, this.update.bind(this));
       client.on(Events.CLIENT_READY, this.update.bind(this));
     });
+
     app.on(AppEvents.READY, this.update.bind(this));
   }
 
   private initTray() {
     const { menu } = this;
+
     this.initTrayMenu();
     this.setIcon(app.icon);
     this.addEventListener('activated', Tray.handleShowApp);
@@ -37,6 +40,7 @@ export class Tray extends QSystemTrayIcon {
     if (reason && reason !== QSystemTrayIconActivationReason.Trigger) {
       return;
     }
+
     app.window.showNormal();
     app.window.activateWindow();
     app.window.raise();
@@ -44,6 +48,7 @@ export class Tray extends QSystemTrayIcon {
 
   private initTrayMenu() {
     const { menu, accMenu, tagAction } = this;
+
     tagAction.setText('Not logged in');
     tagAction.setEnabled(false);
     tagAction.setIcon(app.icon);
@@ -51,19 +56,25 @@ export class Tray extends QSystemTrayIcon {
 
     {
       const item = new QAction(menu);
+
       item.setText('Switch to...');
       item.setMenu(accMenu);
       menu.addAction(item);
     }
+
     menu.addSeparator();
+
     {
       const item = new QAction(menu);
+
       item.setText('Open');
       item.addEventListener('triggered', Tray.handleShowApp.bind(this, undefined));
       menu.addAction(item);
     }
+
     {
       const item = new QAction(menu);
+
       item.setText('Quit');
       item.addEventListener('triggered', () => app.application.exit(0));
       menu.addAction(item);
@@ -72,17 +83,23 @@ export class Tray extends QSystemTrayIcon {
 
   private update() {
     const { accMenu } = this;
+
     if (!app.config.accounts) {
       return;
     }
+
     accMenu.actions.forEach((a) => accMenu.removeAction(a));
+
     for (const account of app.config.accounts) {
       const item = new QAction();
+
       item.setText(`${account.username}#${account.discriminator}`);
       item.addEventListener('triggered', () => app.clientManager.load(account));
       accMenu.addAction(item);
     }
+
     const tag = app.client?.user?.tag;
+
     this.tagAction.setText(tag ? `Logged in as ${tag}` : 'Not logged in');
   }
 }

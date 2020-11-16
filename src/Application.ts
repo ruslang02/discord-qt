@@ -54,12 +54,15 @@ export class Application extends ApplicationEventEmitter {
         case 'dm':
           this.currentGuildId = undefined;
           break;
+
         case 'guild':
           this.currentGuildId = options?.channel?.guild.id || options?.guild?.id;
           break;
+
         default:
       }
     });
+
     (global as any).config = this.config;
   }
 
@@ -78,9 +81,11 @@ export class Application extends ApplicationEventEmitter {
   public quit() {
     log('Bye.');
     this.tray?.hide();
+
     if (this.client) {
       this.client.destroy();
     }
+
     this.application.quit();
   }
 
@@ -88,6 +93,7 @@ export class Application extends ApplicationEventEmitter {
     if (!existsSync(FONTS_PATH)) {
       return;
     }
+
     for (const file of await readdir(FONTS_PATH)) {
       QFontDatabase.addApplicationFont(join(FONTS_PATH, file));
     }

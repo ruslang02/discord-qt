@@ -1,13 +1,16 @@
 #GuildsList {
   background: $background-tertiary;
+
   &::item {
     background-color: $background-tertiary;
     border: none;
     color: transparent;
   }
+
   QScrollBar:vertical {
     width: 0px;
   }
+
   #PageButton {
     border-radius: 24px;
     font-size: 18px;
@@ -15,15 +18,18 @@
     background-color: $background-primary;
     border: none;
     color: $header-primary;
+
     &:hover,
-    &[active="true"] {
+    &[active='true'] {
       background-color: $blurple;
     }
   }
+
   #UnreadIndicator {
     border-radius: 4px;
     background: $header-primary;
   }
+
   #Separator {
     height: 2px;
     background-color: $background-modifier-accent;

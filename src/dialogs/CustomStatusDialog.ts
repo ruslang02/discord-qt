@@ -52,19 +52,25 @@ export class CustomStatusDialog extends Dialog {
     if (!app.client?.user) {
       return;
     }
+
     super.show();
     this.statusLabel.setText(
       __('CUSTOM_STATUS_MODAL_BODY', { username: app.client?.user?.username || '' }),
     );
+
     this.statusInput.setText(app.client.user.customStatus?.text || '');
     const eid = app.client.user.customStatus?.emoji_id;
+
     if (!eid) {
       return;
     }
+
     const emoji = app.client.emojis.resolve(eid);
+
     if (!emoji) {
       return;
     }
+
     void this.loadEmoji(emoji);
   }
 
@@ -78,6 +84,7 @@ export class CustomStatusDialog extends Dialog {
         emoji_id: emoji.id || undefined,
         emoji_name: emoji.name,
       });
+
       this.emoji = emoji;
       this.emojiInput.setPixmap(new QPixmap(emojiFile).scaled(32, 32, 1, 1));
     } catch (e) {
@@ -88,24 +95,29 @@ export class CustomStatusDialog extends Dialog {
   private init() {
     const { statusLabel, emojiInput, statusInput, clearLabel, clearInput } = this;
     const layout = new QBoxLayout(Direction.TopToBottom);
+
     layout.setSpacing(8);
     layout.setContentsMargins(16, 0, 16, 16);
     const statusLayout = new QBoxLayout(Direction.LeftToRight);
     const emojiPicker = new EmojiPicker(emojiInput);
+
     emojiInput.setObjectName('DTextEdit');
     emojiInput.setFixedSize(48, 48);
     emojiInput.setCursor(CursorShape.PointingHandCursor);
     emojiInput.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       const map = emojiInput.mapToGlobal(this.p0);
       const point = new QPoint(map.x(), map.y() + emojiInput.size().height());
+
       emojiPicker.popup(point);
       emojiPicker.events.once('emoji', async (emoji: Emoji) => {
         await this.loadEmoji(emoji);
         emojiPicker.hide();
       });
     });
+
     statusInput.setPlaceholderText(__('CUSTOM_STATUS_MODAL_PLACEHOLDER'));
     const resetButton = new DColorButton(DColorButtonColor.RED_TEXT);
+
     resetButton.setText('×');
     resetButton.setFixedSize(38, 38);
     resetButton.setInlineStyle('font-size: 32px; padding: 0');
@@ -114,6 +126,7 @@ export class CustomStatusDialog extends Dialog {
         ?.setCustomStatus(undefined)
         .catch((e) => error("Couldn't reset custom status.", e));
     });
+
     statusLayout.setSpacing(5);
     statusLayout.setContentsMargins(0, 0, 0, 0);
     statusLayout.addWidget(emojiInput);
@@ -129,6 +142,7 @@ export class CustomStatusDialog extends Dialog {
       __('CUSTOM_STATUS_HOURS', { hours: '1' }),
       __('CUSTOM_STATUS_MINUTES', { minutes: '30' }),
     ]);
+
     clearLabel.setText(__('CUSTOM_STATUS_CLEAR_AFTER'));
     clearLabel.setBuddy(clearInput);
     layout.addWidget(statusLabel);
@@ -140,33 +154,42 @@ export class CustomStatusDialog extends Dialog {
 
   private initFooter() {
     const footer = new QWidget(this);
+
     footer.setObjectName('Footer');
     const footLayout = new QBoxLayout(Direction.LeftToRight);
+
     footLayout.addStretch(1);
     footLayout.setContentsMargins(16, 16, 16, 16);
     const saveBtn = new DColorButton(DColorButtonColor.BLURPLE);
+
     saveBtn.setText('Save');
     saveBtn.setFixedSize(96, 38);
     saveBtn.addEventListener('clicked', () => {
       let date: Date | null = new Date();
+
       switch (this.clearInput.currentIndex()) {
         case 0:
           date.setDate(date.getDate() + 1);
           date.setHours(0, 0, 0, 0);
           break;
+
         case 1:
           date.setHours(date.getHours() + 4);
           break;
+
         case 2:
           date.setHours(date.getHours() + 1);
           break;
+
         case 3:
           date.setMinutes(date.getMinutes() + 30);
           break;
+
         default:
           date = null;
           break;
       }
+
       app.client.user
         ?.setCustomStatus({
           emoji_id: this.emoji?.id || undefined,
@@ -175,9 +198,12 @@ export class CustomStatusDialog extends Dialog {
           text: this.statusInput.text(),
         })
         .catch((e) => error("Couldn't update custom status.", e));
+
       this.hide();
     });
+
     const cancelBtn = new DColorButton(DColorButtonColor.WHITE_TEXT);
+
     cancelBtn.setText(__('CANCEL'));
     cancelBtn.setMinimumSize(80, 38);
     cancelBtn.addEventListener('clicked', () => this.hide());

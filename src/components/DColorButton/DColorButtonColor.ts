@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 export enum DColorButtonColor {
   BLURPLE = 0,
   RED = 1,

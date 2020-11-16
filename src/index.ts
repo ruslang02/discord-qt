@@ -15,12 +15,15 @@ i18n.configure({
   logErrorFn(msg) {
     console.log('[i18n]', msg);
   },
+
   // @ts-ignore
-  missingKeyFn(locale, value) {
+  missingKeyFn(locale: string, value: string) {
     console.error('[i18n]', `Translation missing for word "${value}" in locale "${locale}".`);
+
     return value;
   },
 });
+
 export const app = new Application();
 export const MAX_QSIZE = 16777215;
 export const PIXMAP_EXTS = [

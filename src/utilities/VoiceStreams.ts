@@ -57,25 +57,33 @@ function processOption(opts: { device?: string }, value: string): string {
   switch (value) {
     case APP_NAME:
       return app.name;
+
     case PLAYBACK_DEVICE:
       return opts.device || app.config.voiceSettings.outputDevice || 'default';
+
     case RECORD_DEVICE:
       return opts.device || app.config.voiceSettings.inputDevice || 'default';
+
     default:
   }
+
   return value;
 }
 
 export function createPlaybackStream(opts = {}) {
   const options = PLAYBACK_OPTIONS.map(processOption.bind(global, opts));
   const stream = ChildProcess.spawn(FFmpeg.getInfo().command, options);
+
   stream.stderr.on('data', (chunk) => debug('[Playback ffmpeg]', chunk.toString()));
+
   return stream;
 }
 
 export function createRecordStream(opts = {}) {
   const options = RECORD_OPTIONS.map(processOption.bind(global, opts));
   const stream = ChildProcess.spawn(FFmpeg.getInfo().command, options);
+
   stream.stderr.on('data', (chunk) => debug('[Record ffmpeg]', chunk.toString()));
+
   return stream;
 }

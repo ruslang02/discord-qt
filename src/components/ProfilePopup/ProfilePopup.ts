@@ -47,15 +47,19 @@ export class ProfilePopup extends QMenu {
       if (this.adjustTimer) {
         clearInterval(this.adjustTimer);
       }
+
       this.adjustTimer = setInterval(() => this.adjustSize(), 10);
     });
+
     this.addEventListener(WidgetEventTypes.Close, () => {
       clearInterval(this.adjustTimer);
     });
+
     this.addEventListener(WidgetEventTypes.Resize, () => {
       if (!this.isVisible() || !this.p) {
         return;
       }
+
       this.realign(this.p);
     });
 
@@ -71,10 +75,13 @@ export class ProfilePopup extends QMenu {
     const tsize = this.size();
     const point = new QPoint(p.x(), p.y());
     const diff = w.mapToGlobal(this.p0).y() + w.size().height() - p.y() - tsize.height();
+
     if (diff < 0) {
       point.setY(point.y() + diff - 10);
     }
+
     this.move(point.x(), point.y());
+
     return point;
   }
 
@@ -85,17 +92,22 @@ export class ProfilePopup extends QMenu {
 
   loadProfile(userId: Snowflake, guildId?: Snowflake): boolean {
     const user = app.client.users.resolve(userId);
+
     if (!user) {
       return false;
     }
+
     const member = guildId
       ? app.client.guilds.resolve(guildId)?.members.resolve(userId) || undefined
       : undefined;
+
     const isPlaying = this.presence.load(user.presence);
+
     this.profile.setPlaying(isPlaying);
     void this.profile.loadProfile(member || user);
     this.rolesSection.loadRoles(member?.roles);
     this.noteSection.loadNote(user);
+
     return true;
   }
 

@@ -53,11 +53,13 @@ export class ProfilePresence extends QWidget {
 
   private initComponent() {
     const { layout, header, label1, label2, label3, lImage, sImage } = this;
+
     header.setObjectName('Header');
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(8);
     [label1, label2, label3].forEach((label) => label.setObjectName('Label'));
     const dLayout = new QBoxLayout(Direction.LeftToRight);
+
     dLayout.setContentsMargins(0, 0, 0, 0);
     dLayout.setSpacing(0);
     lImage.setMaximumSize(70, 65);
@@ -69,6 +71,7 @@ export class ProfilePresence extends QWidget {
     sImage.setAlignment(AlignmentFlag.AlignCenter);
 
     const lLayout = new QBoxLayout(Direction.TopToBottom);
+
     lLayout.setContentsMargins(0, 0, 0, 0);
     lLayout.setSpacing(0);
 
@@ -77,6 +80,7 @@ export class ProfilePresence extends QWidget {
       label.setMaximumSize(MAX_QSIZE, 19);
       lLayout.addWidget(label);
     });
+
     lLayout.addSpacing(3);
     dLayout.addWidget(lImage);
     dLayout.addLayout(lLayout, 1);
@@ -92,62 +96,79 @@ export class ProfilePresence extends QWidget {
    */
   load(presence: Presence) {
     const { header, label1, label2, label3, lImage, sImage } = this;
+
     this.presence = presence;
     const activity = presence.activities.find((a) => a.type !== 'CUSTOM_STATUS');
+
     if (!activity) {
       this.hide();
+
       return false;
     }
+
     header.setText(
       __(ProfilePresence.ActivityTypeText.get(activity.type) || '', {
         name: activity.name,
         platform: activity.name,
       }),
     );
+
     switch (activity.type) {
       case 'PLAYING':
         label1.setText(`<b>${activity.name}</b>`);
         label1.show();
+
         if (activity.details) {
           label2.show();
         } else {
           label2.hide();
         }
+
         label2.setText(activity.details || '');
         label3.hide();
         break;
+
       case 'LISTENING':
         if (activity.details) {
           label1.show();
         } else {
           label1.hide();
         }
+
         label1.setText(`<b>${activity.details}</b>`);
+
         if (activity.state) {
           label2.show();
         } else {
           label2.hide();
         }
+
         label2.setText(activity.state || '');
+
         if (activity.assets?.largeText) {
           label3.show();
         } else {
           label3.hide();
         }
+
         label3.setText(activity.assets?.largeText || '');
         break;
+
       default:
         if (activity.details) {
           label1.show();
         } else {
           label1.hide();
         }
+
         label1.setText(`<b>${activity.details}</b>`);
+
         if (activity.state) {
           label2.show();
         } else {
           label2.hide();
         }
+
         label2.setText(activity.state || '');
         label3.hide();
     }
@@ -156,6 +177,7 @@ export class ProfilePresence extends QWidget {
     sImage.setProperty('toolTip', activity.assets?.smallText || '');
 
     const lImageUrl = activity.assets?.largeImageURL({ size: 256, format: 'png' });
+
     if (lImageUrl) {
       pictureWorker
         .loadImage(lImageUrl, { roundify: false })
@@ -167,6 +189,7 @@ export class ProfilePresence extends QWidget {
     }
 
     const sImageUrl = activity.assets?.smallImageURL({ size: 64, format: 'png' });
+
     if (sImageUrl) {
       pictureWorker
         .loadImage(sImageUrl, { roundify: true })
@@ -178,6 +201,7 @@ export class ProfilePresence extends QWidget {
     }
 
     this.show();
+
     return true;
   }
 }

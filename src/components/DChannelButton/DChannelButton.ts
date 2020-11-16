@@ -23,6 +23,7 @@ export class DChannelButton extends QPushButton {
 
   constructor(parent: any) {
     super(parent);
+
     this.setObjectName('DChannelButton');
     this.setLayout(this.layout);
     this.layout.setContentsMargins(8, 4, 8, 4);
@@ -39,6 +40,7 @@ export class DChannelButton extends QPushButton {
     if (this.native.destroyed) {
       return;
     }
+
     this._muted = muted;
     this.setProperty('muted', muted);
     [this, ...this.labels].forEach((w) => w.repolish());
@@ -52,6 +54,7 @@ export class DChannelButton extends QPushButton {
     if (this.native.destroyed) {
       return;
     }
+
     this._unread = unread;
     this.setProperty('unread', unread);
     [this, ...this.labels].forEach((w) => w.repolish());
@@ -65,6 +68,7 @@ export class DChannelButton extends QPushButton {
     if (this.native.destroyed) {
       return;
     }
+
     this._hovered = hovered;
     this.setProperty('hover', hovered);
     [this, ...this.labels].forEach((w) => w.repolish());
@@ -78,6 +82,7 @@ export class DChannelButton extends QPushButton {
     if (this.native.destroyed) {
       return;
     }
+
     this._activated = activated;
     this.setProperty('active', activated);
     [this, ...this.labels].forEach((w) => w.repolish());

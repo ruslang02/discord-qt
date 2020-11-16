@@ -10,10 +10,12 @@ export function roundifyPng(buf: Buffer): Promise<Buffer | null> {
           console.error(err);
           resolve(null);
         }
+
         for (let y = 0; y < that.height; y += 1) {
           for (let x = 0; x < that.width; x += 1) {
             const idx = (that.width * y + x) << 2;
             const radius = that.height / 2;
+
             if (
               y >= Math.sqrt(radius ** 2 - (x - radius) ** 2) + radius ||
               y <= -Math.sqrt(radius ** 2 - (x - radius) ** 2) + radius
@@ -22,6 +24,7 @@ export function roundifyPng(buf: Buffer): Promise<Buffer | null> {
             }
           }
         }
+
         resolve(PNG.sync.write(that));
       })
       .on('error', () => resolve(null));

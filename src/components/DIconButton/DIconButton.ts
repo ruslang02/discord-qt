@@ -12,9 +12,16 @@ export class DIconButton extends QPushButton {
 
   qiconOff = new QIcon();
 
-  constructor(options: { iconPath: string; tooltipText: string; iconQSize: QSize }) {
+  constructor({
+    iconPath,
+    tooltipText,
+    iconQSize,
+  }: {
+    iconPath: string;
+    tooltipText: string;
+    iconQSize: QSize;
+  }) {
     super();
-    const { iconPath, tooltipText, iconQSize } = options;
 
     this.setObjectName('DIconButton');
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));

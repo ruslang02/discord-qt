@@ -18,9 +18,11 @@ export class NoiseReductor extends Transform {
     const N = chunk.length;
     const sum = chunk.reduce((prev, cur) => prev + cur, 0);
     const loudness = Math.sqrt(sum / N);
+
     if (this.onLoudnessChanged) {
       this.onLoudnessChanged(loudness);
     }
+
     if (loudness < this.sensivity) {
       if (!this.timer) {
         this.timer = setTimeout(() => {
@@ -34,6 +36,7 @@ export class NoiseReductor extends Transform {
       this.muted = false;
       this.onSetSpeaking(true);
     }
+
     callback(null, this.muted ? Buffer.alloc(chunk.length, 0) : chunk);
   }
 

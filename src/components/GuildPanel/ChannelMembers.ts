@@ -2,6 +2,7 @@ import {
   AlignmentFlag,
   ContextMenuPolicy,
   Direction,
+  ItemFlag,
   QBoxLayout,
   QLabel,
   QListWidget,
@@ -31,6 +32,7 @@ export class ChannelMembers extends QListWidget {
 
   constructor(private channel: VoiceChannel) {
     super();
+
     this.setMinimumSize(240, 0);
     this.setUniformItemSizes(true);
     this.setFrameShape(0);
@@ -44,10 +46,13 @@ export class ChannelMembers extends QListWidget {
     if (this.native.destroyed || !o.member) {
       return;
     }
+
     if (n.connection && n.connection !== this.connection) {
       this.connection = n.connection;
+
       n.connection.on('speaking', (user, speaking) => {
         const ubtn = this.buttons.get(user.id);
+
         if (ubtn) {
           ubtn.setStyleSheet(
             speaking.bitfield === 1
@@ -57,28 +62,36 @@ export class ChannelMembers extends QListWidget {
         }
       });
     }
+
     if (o.channel === this.channel && n.channel !== this.channel) {
-      try {
-        const item = this.findItems(o.member.user.id, 0)[0];
-        this.buttons.get(o.member.user.id)?.hide();
-        this.buttons.delete(o.member.user.id);
-        this.takeItem(this.row(item));
-      } catch (e) {}
+      this.buttons.get(o.member.user.id)?.hide();
+      this.buttons.delete(o.member.user.id);
+
+      const item = this.findItems(o.member.user.id, 0)[0];
+
+      this.takeItem(this.row(item));
+
       if (o.member.user.id === app.client.user?.id) {
         this.buttons.forEach((btn) => btn.setStyleSheet(''));
       }
     }
+
     if (o.channel !== this.channel && n.channel === this.channel) {
-      const item = new QListWidgetItem();
       const btn = this.buttons.get(o.member.user.id) || this.createButton(o.member);
+
       this.layout.addWidget(btn);
+      this.buttons.set(o.member.user.id, btn);
+
+      const item = new QListWidgetItem();
+
       item.setSizeHint(btn.size());
-      item.setFlags(~32);
+      item.setFlags(~ItemFlag.ItemIsEnabled);
       item.setText(o.member.user.id);
+
       this.addItem(item);
       this.setItemWidget(item, btn);
-      this.buttons.set(o.member.user.id, btn);
     }
+
     this.adjustSize();
   }
 
@@ -94,32 +107,41 @@ export class ChannelMembers extends QListWidget {
   private createButton(member: GuildMember) {
     const btn = new DChannelButton(this);
     const avatar = new QLabel(btn);
+
     avatar.setFixedSize(24, 24);
     avatar.setObjectName('Avatar');
     avatar.setAlignment(AlignmentFlag.AlignCenter);
+
     btn.layout.setSpacing(8);
     btn.setFixedSize(200, 30);
     btn.addEventListener('clicked', () => {
       const map = btn.mapToGlobal(this.p0);
+
       map.setX(map.x() + 200);
       app.emit(AppEvents.OPEN_USER_PROFILE, member.id, member.guild.id, map);
     });
+
     // @ts-ignore
     btn.avatar = avatar;
     btn.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    btn.layout.setContentsMargins(8, 0, 0, 0);
     btn.addEventListener('customContextMenuRequested', ({ x, y }) => {
       app.emit(AppEvents.OPEN_USER_MENU, member, btn.mapToGlobal(new QPoint(x, y)));
     });
-    btn.layout.setContentsMargins(8, 0, 0, 0);
+
     const memberName = new QLabel(btn);
-    btn.labels.push(memberName);
+
     memberName.setText(member.nickname || member.user.username);
+
+    btn.labels.push(memberName);
     btn.layout.addWidget(avatar);
     btn.layout.addWidget(memberName, 1);
+
     pictureWorker
       .loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }))
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1)))
       .catch(error.bind(console, "Couldn't load avatar."));
+
     return btn;
   }
 
@@ -130,17 +152,24 @@ export class ChannelMembers extends QListWidget {
    */
   loadChannel(channel: VoiceChannel) {
     this.buttons.clear();
+
     for (const member of channel.members.values()) {
       const item = new QListWidgetItem();
+
       item.setFlags(~32);
       item.setText(member.id);
+
       const btn = this.createButton(member);
+
       this.layout.addWidget(btn);
+
       this.addItem(item);
       this.setItemWidget(item, btn);
       item.setSizeHint(btn.size());
+
       this.buttons.set(member.user.id, btn);
     }
+
     setTimeout(() => this.adjustSize(), 0);
   }
 }

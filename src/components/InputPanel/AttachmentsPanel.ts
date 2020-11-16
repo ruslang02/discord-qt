@@ -42,6 +42,7 @@ export class AttachmentsPanel extends QWidget {
     for (const file of files) {
       this.files.add(file);
     }
+
     this.updateComponent();
   }
 
@@ -59,24 +60,30 @@ export class AttachmentsPanel extends QWidget {
 
   private updateComponent() {
     const { layout } = this;
+
     (layout.nodeChildren as Set<QWidget>).forEach((w) => {
       w.hide();
       layout.removeWidget(w);
     });
+
     for (const file of this.files) {
       const attach = new QLabel(this);
+
       attach.setFixedSize(120, 60);
       attach.setAlignment(AlignmentFlag.AlignCenter);
       attach.setProperty('toolTip', __('RIGHT_CLICK_REMOVE'));
       attach.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
         const event = new QMouseEvent(e as any);
+
         if ((event.button() & MouseButton.RightButton) === MouseButton.RightButton) {
           this.files.delete(file);
           this.updateComponent();
         }
       });
+
       const url = pathToFileURL(file);
       const ext = extname(file).replace(/\./g, '').toUpperCase();
+
       if (!PIXMAP_EXTS.includes(ext)) {
         attach.setPixmap(AttachmentsPanel.fileIcon);
       } else {
@@ -84,6 +91,7 @@ export class AttachmentsPanel extends QWidget {
           .loadImage(url.href, { roundify: false })
           .then((path) => {
             const pix = new QPixmap(path);
+
             if (pix.width() < 1) {
               attach.setPixmap(AttachmentsPanel.fileIcon);
             } else {
@@ -98,6 +106,7 @@ export class AttachmentsPanel extends QWidget {
 
       this.layout.insertWidget(this.layout.nodeChildren.size, attach);
     }
+
     if (this.files.size) {
       this.show();
     } else {

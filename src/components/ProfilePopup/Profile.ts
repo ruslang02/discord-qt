@@ -73,9 +73,11 @@ export class Profile extends QWidget {
     const { avatar, username, nickname, custom, unreadInd } = this;
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;
+
     if (!user) {
       return;
     }
+
     this.setMinimumSize(250, 0);
     unreadInd.setProperty('color', user.presence.status);
     unreadInd.repolish();
@@ -84,6 +86,7 @@ export class Profile extends QWidget {
       .loadImage(user.displayAvatarURL({ format: 'png', size: 256 }))
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)))
       .catch(() => error(`Profile image for ${user.tag} could not be loaded.`));
+
     if (member?.nickname) {
       username.show();
       nickname.setText(`<span style='font-weight:600'>${member.nickname}</span>`);
@@ -92,8 +95,10 @@ export class Profile extends QWidget {
       nickname.setText(
         `<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`,
       );
+
       username.hide();
     }
+
     this.repolish();
     void custom.loadStatus(user);
   }

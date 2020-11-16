@@ -22,14 +22,17 @@ export class ClientManager {
     if (this.client) {
       this.client.destroy();
     }
+
     this.client = new Client(clientOptions);
     this.bindEvents();
     app.emit(AppEvents.NEW_CLIENT, this.client);
+
     try {
       await this.client.login(account.token);
       this.client.user
         ?.setCustomStatus(this.client.user.settings?.customStatus || undefined)
         .catch((e) => error("Couldn't update custom status on ready.", e));
+
       app.emit(AppEvents.SWITCH_VIEW, 'dm');
     } catch (e) {
       if (e instanceof HTTPError) {
@@ -45,12 +48,14 @@ export class ClientManager {
           'app-name': app.name,
         });
       }
+
       debug("Couldn't log in", e);
     }
   }
 
   private bindEvents() {
     const { Events } = Constants;
+
     this.client.on(Events.ERROR, error);
     this.client.on(Events.DEBUG, debug);
     this.client.on(Events.RAW, debug);
@@ -59,12 +64,14 @@ export class ClientManager {
       if (message.author === this.client.user) {
         return;
       }
+
       if (
         message.channel.type !== 'dm' &&
         (message.channel.muted || message.channel.messageNotifications !== 'EVERYTHING')
       ) {
         return;
       }
+
       notify({
         title: message.member?.nickname || message.author.username,
         message: message.cleanContent,

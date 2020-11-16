@@ -48,6 +48,7 @@ export class SettingsCheckBox extends QWidget {
 
   private initComponent() {
     const { layout, label, checkbox } = this;
+
     this.setObjectName('SCheckBox');
     this.setLayout(layout);
     this.setCursor(CursorShape.PointingHandCursor);
@@ -55,6 +56,7 @@ export class SettingsCheckBox extends QWidget {
     label.setAlignment(AlignmentFlag.AlignVCenter);
     checkbox.setObjectName('CheckBox');
     const effect = new QGraphicsDropShadowEffect();
+
     effect.setBlurRadius(5);
     effect.setXOffset(0);
     effect.setYOffset(0);
