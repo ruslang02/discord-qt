@@ -58,6 +58,11 @@ export class DMUsersList extends QListWidget {
     }
 
     const items = this.findItems(dm.id, MatchFlag.MatchExactly);
+  
+    if (!items.length) {
+      return;
+    }
+
     const newItem = new QListWidgetItem();
 
     newItem.setSizeHint(new QSize(224, 44));
@@ -66,9 +71,9 @@ export class DMUsersList extends QListWidget {
     this.insertItem(0, newItem);
     this.setItemWidget(newItem, btn);
 
-    const row = this.row(items[1]);
+    const row = this.row(items[0]);
 
-    this.takeItem(row + 1);
+    this.takeItem(row);
   }
 
   private handleSwitchView(view: string, options?: ViewOptions) {
@@ -87,7 +92,7 @@ export class DMUsersList extends QListWidget {
   }
 
   async loadAvatars() {
-    if (this.isLoading) {
+    if (this.isLoading || this.native.destroyed) {
       return;
     }
 

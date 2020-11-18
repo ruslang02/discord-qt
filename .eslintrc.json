@@ -7,8 +7,7 @@
   "extends": [
     "airbnb-base",
     "prettier",
-    "prettier/@typescript-eslint",
-    "prettier/react"
+    "prettier/@typescript-eslint"
   ],
 
   "globals": {
@@ -40,11 +39,8 @@
     "no-fallthrough": "off",
     "no-multiple-empty-lines": "error",
     "no-restricted-syntax": "off",
-    "no-shadow": "off",
     "no-underscore-dangle": "off",
-    "no-unused-vars": "off",
-    "no-useless-constructor": "off",
-    "no-void": "off",
+    "no-void": ["error", { "allowAsStatement": true }],
     "padding-line-between-statements": [ // See docs
       "warn",
       { "blankLine": "always", "prev": "*", "next": "return" }, // return

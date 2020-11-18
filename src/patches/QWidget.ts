@@ -10,7 +10,7 @@ const consts = Object.getOwnPropertyNames(addon.default);
 
 const noop = () => {};
 
-const { debug, warn } = createLogger('Qt');
+const { debug, trace } = createLogger('Qt');
 
 for (const object of consts) {
   addon.default[object] = new Proxy(addon.default[object], {
@@ -40,7 +40,7 @@ for (const object of consts) {
           }
 
           if (target.destroyed || [...args].some((a) => a.destroyed)) {
-            warn(
+            trace(
               `Method ${String(prop)} was called of a dereferenced object of type ${
                 target.constructor.name
               }`,

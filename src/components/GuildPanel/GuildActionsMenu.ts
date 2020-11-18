@@ -61,7 +61,7 @@ export class GuildActionsMenu extends QMenu {
       app.window.dialogs.nicknameChange.openForMember(member);
     });
 
-    this.addComponent('HIDE_MUTED_CHANNEL', async () => {
+    this.addComponent('HIDE_MUTED_CHANNELS', async () => {
       if (!this.guild) {
         return;
       }
