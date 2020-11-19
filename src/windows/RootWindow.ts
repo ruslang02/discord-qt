@@ -68,12 +68,12 @@ export class RootWindow extends QMainWindow {
           }
 
           const guild = options.guild || (options.channel?.guild as Guild);
-          const settings = { ...app.config.userLocalGuildSettings[guild.id] };
+          const settings = app.config.get('userLocalGuildSettings')[guild.id] || {};
 
           if (options.channel) {
             settings.lastViewedChannel = options.channel.id;
-            app.config.userLocalGuildSettings[guild.id] = settings;
-            void app.configManager.save();
+
+            void app.config.save();
           } else {
             const lastViewedChannelId = settings.lastViewedChannel || '';
             const firstChannel =
@@ -97,7 +97,7 @@ export class RootWindow extends QMainWindow {
     });
 
     app.on(AppEvents.READY, () => {
-      const autoAccount = app.config.accounts?.find((a) => a.autoLogin);
+      const autoAccount = app.config.get('accounts').find((a) => a.autoLogin);
 
       if (autoAccount) {
         void app.clientManager.load(autoAccount);
@@ -125,7 +125,7 @@ export class RootWindow extends QMainWindow {
     this.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
     this.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyPress.bind(this));
     this.addEventListener(WidgetEventTypes.Close, () => {
-      if (!app.config.minimizeToTray) {
+      if (!app.config.get('minimizeToTray')) {
         app.application.exit(0);
       }
     });
@@ -139,7 +139,7 @@ export class RootWindow extends QMainWindow {
   }
 
   async loadStyles() {
-    const stylePath = path.join(__dirname, 'themes', `${app.config.theme}.theme.css`);
+    const stylePath = path.join(__dirname, 'themes', `${app.config.get('theme')}.theme.css`);
 
     if (!existsSync(stylePath)) {
       return;

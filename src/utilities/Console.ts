@@ -3,7 +3,7 @@ import { app } from '..';
 export function createLogger(prefix: string) {
   return {
     debug: (...args: any[]) => {
-      if (app.config.debug) {
+      if (app.config.get('debug')) {
         console.log(`[${prefix}]`, ...args);
       }
     },

@@ -33,7 +33,7 @@ export class Application extends ApplicationEventEmitter {
 
   pluginManager = new PluginManager();
 
-  configManager = new ConfigManager(CONFIG_PATH);
+  config = new ConfigManager(CONFIG_PATH);
 
   application = QApplication.instance();
 
@@ -68,13 +68,17 @@ export class Application extends ApplicationEventEmitter {
 
   public async start() {
     this.tray = new Tray();
+
     await this.loadFonts();
-    this.configManager = new ConfigManager(CONFIG_PATH);
-    await this.configManager.load();
-    i18n.setLocale(this.config.locale || 'en-US');
+    await this.config.load();
+
+    i18n.setLocale(this.config.get('locale') || 'en-US');
+
     this.window = new RootWindow();
     this.window.show();
+
     void this.pluginManager.reload();
+
     this.emit(AppEvents.READY);
   }
 
@@ -113,9 +117,5 @@ export class Application extends ApplicationEventEmitter {
 
   public get plugins() {
     return this.pluginManager.plugins;
-  }
-
-  public get config() {
-    return this.configManager.config;
   }
 }

@@ -53,7 +53,7 @@ export class UserPanel extends QWidget {
     this.initComponent();
     app.on(AppEvents.NEW_CLIENT, this.bindEvents.bind(this));
     app.on(AppEvents.READY, () => {
-      if (!app.config.enableAvatars) {
+      if (!app.config.get('enableAvatars')) {
         this.avatar.hide();
       }
     });

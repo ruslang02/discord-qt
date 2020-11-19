@@ -54,15 +54,17 @@ const RECORD_OPTIONS = [
 ];
 
 function processOption(opts: { device?: string }, value: string): string {
+  const voiceSettings = app.config.get('voiceSettings');
+
   switch (value) {
     case APP_NAME:
       return app.name;
 
     case PLAYBACK_DEVICE:
-      return opts.device || app.config.voiceSettings.outputDevice || 'default';
+      return opts.device || voiceSettings.outputDevice || 'default';
 
     case RECORD_DEVICE:
-      return opts.device || app.config.voiceSettings.inputDevice || 'default';
+      return opts.device || voiceSettings.inputDevice || 'default';
 
     default:
   }

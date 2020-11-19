@@ -49,7 +49,7 @@ class PictureWorker {
       return Promise.reject(new Error('URL was empty or null.'));
     }
 
-    const opts = { roundify: app.config.roundifyAvatars, ...(options || {}) };
+    const opts = { roundify: app.config.get('roundifyAvatars'), ...(options || {}) };
 
     const uri = new URL(url);
 

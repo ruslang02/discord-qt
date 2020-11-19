@@ -11,7 +11,7 @@ const { log, error } = createLogger('Config');
 export class ConfigManager {
   isLoaded = false;
 
-  config = {} as IConfig;
+  private config = {} as IConfig;
 
   constructor(private file: string) {
     mkdirSync(dirname(file), { recursive: true });
@@ -70,7 +70,7 @@ export class ConfigManager {
   async save() {
     try {
       await writeFile(join(this.file), JSON.stringify(this.config));
-      app.emit(Events.CONFIG_UPDATE, this.config);
+      app.emit(Events.CONFIG_UPDATE, this);
     } catch (e) {
       error(e);
     }

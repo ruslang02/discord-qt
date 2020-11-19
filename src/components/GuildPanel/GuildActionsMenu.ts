@@ -66,12 +66,13 @@ export class GuildActionsMenu extends QMenu {
         return;
       }
 
-      const settings = app.config.userLocalGuildSettings[this.guild.id] || {};
+      const userLocalGuildSettings = app.config.get('userLocalGuildSettings');
+      const settings = userLocalGuildSettings[this.guild.id] || {};
 
       settings.hideMutedChannels = !(settings.hideMutedChannels ?? false);
 
-      app.config.userLocalGuildSettings[this.guild.id] = settings;
-      void app.configManager.save();
+      userLocalGuildSettings[this.guild.id] = settings;
+      void app.config.save();
 
       this.updateComponents();
     });
@@ -96,7 +97,7 @@ export class GuildActionsMenu extends QMenu {
       .get('LEAVE_SERVER')
       ?.setProperty('visible', this.guild.ownerID !== app.client.user?.id);
 
-    const settings = app.config.userLocalGuildSettings[this.guild.id] || {};
+    const settings = app.config.get('userLocalGuildSettings')[this.guild.id] || {};
 
     settings.hideMutedChannels = settings.hideMutedChannels ?? false;
 

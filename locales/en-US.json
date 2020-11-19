@@ -149,5 +149,7 @@
   "FORM_LABEL_INPUT_SENSITIVTY": "Input Sensitivity",
   "VOICE": "Voice",
   "MINIMIZE_TO_TRAY": "Minimize window to tray when closing",
-  "SYSTEM": "System"
+  "SYSTEM": "System",
+  "OPEN": "Open",
+  "QUIT": "Quit"
 }

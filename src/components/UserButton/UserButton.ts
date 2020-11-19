@@ -156,7 +156,7 @@ export class UserButton extends DChannelButton {
       statusInd,
     } = this;
 
-    if (!app.config.enableAvatars) {
+    if (!app.config.get('enableAvatars')) {
       avatar.hide();
     }
 
@@ -198,7 +198,7 @@ export class UserButton extends DChannelButton {
    * Loads the image in the avatar.
    */
   async loadAvatar() {
-    if (!app.config.enableAvatars || !this.user || this.hasPixmap) {
+    if (!app.config.get('enableAvatars') || !this.user || this.hasPixmap) {
       return;
     }
 

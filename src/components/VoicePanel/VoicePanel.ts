@@ -25,9 +25,9 @@ import { join } from 'path';
 import { VolumeTransformer } from 'prism-media';
 import { pipeline, Transform } from 'stream';
 import { app } from '../..';
+import { ConfigManager } from '../../utilities/ConfigManager';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
-import { IConfig } from '../../utilities/IConfig';
 import { createPlaybackStream, createRecordStream } from '../../utilities/VoiceStreams';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { NoiseReductor } from './NoiseReductor';
@@ -91,28 +91,30 @@ export class VoicePanel extends QWidget {
     app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
   }
 
-  private handleConfigUpdate(config: IConfig) {
+  private handleConfigUpdate(config: ConfigManager) {
+    const voiceSettings = config.get('voiceSettings');
+
     for (const entries of this.streams.entries()) {
-      const settings = config.userVolumeSettings[entries[0].id] || {};
+      const settings = config.get('userVolumeSettings')[entries[0].id] || {};
 
       settings.volume = settings.volume ?? 100;
       settings.muted = settings.muted ?? false;
       entries[1].setVolume(settings.muted ? 0 : settings.volume);
     }
 
-    if (this.currentPlaybackDevice !== (app.config.voiceSettings.outputDevice || 'default')) {
-      this.currentPlaybackDevice = app.config.voiceSettings.outputDevice || 'default';
+    if (this.currentPlaybackDevice !== (voiceSettings.outputDevice || 'default')) {
+      this.currentPlaybackDevice = voiceSettings.outputDevice || 'default';
       this.initPlayback();
     }
 
-    if (this.currentRecordDevice !== (app.config.voiceSettings.inputDevice || 'default')) {
-      this.currentRecordDevice = app.config.voiceSettings.inputDevice || 'default';
+    if (this.currentRecordDevice !== (voiceSettings.inputDevice || 'default')) {
+      this.currentRecordDevice = voiceSettings.inputDevice || 'default';
       this.initRecord();
     }
 
-    this.playbackVolumeTransformer?.setVolume((config.voiceSettings.outputVolume || 100) / 100);
-    this.recordVolumeTransformer?.setVolume((config.voiceSettings.inputVolume || 100) / 100);
-    this.recordNoiseReductor?.setSensivity(config.voiceSettings.inputSensitivity || 0);
+    this.playbackVolumeTransformer?.setVolume((voiceSettings.outputVolume || 100) / 100);
+    this.recordVolumeTransformer?.setVolume((voiceSettings.inputVolume || 100) / 100);
+    this.recordNoiseReductor?.setSensivity(voiceSettings.inputSensitivity || 0);
   }
 
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
@@ -196,8 +198,9 @@ export class VoicePanel extends QWidget {
     });
 
     if (stream) {
-      const volume = app.config.userVolumeSettings[member.id]?.volume ?? 100;
-      const muted = app.config.userVolumeSettings[member.id]?.muted ?? false;
+      const userVolumeSettings = app.config.get('userVolumeSettings');
+      const volume = userVolumeSettings[member.id]?.volume ?? 100;
+      const muted = userVolumeSettings[member.id]?.muted ?? false;
       const input = new Input({
         ...MIXER_OPTIONS,
         volume: muted ? 0 : volume,

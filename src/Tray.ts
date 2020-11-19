@@ -1,5 +1,6 @@
 import { QAction, QMenu, QSystemTrayIcon, QSystemTrayIconActivationReason } from '@nodegui/nodegui';
 import { Constants } from 'discord.js';
+import { __ } from 'i18n';
 import { app } from '.';
 import { Events as AppEvents } from './utilities/Events';
 
@@ -46,6 +47,15 @@ export class Tray extends QSystemTrayIcon {
     app.window.raise();
   }
 
+  private addItem(text: string, callback: () => void) {
+    const { menu } = this;
+    const item = new QAction(menu);
+
+    item.setText(text);
+    item.addEventListener('triggered', callback);
+    menu.addAction(item);
+  }
+
   private initTrayMenu() {
     const { menu, accMenu, tagAction } = this;
 
@@ -64,33 +74,20 @@ export class Tray extends QSystemTrayIcon {
 
     menu.addSeparator();
 
-    {
-      const item = new QAction(menu);
-
-      item.setText('Open');
-      item.addEventListener('triggered', Tray.handleShowApp.bind(this, undefined));
-      menu.addAction(item);
-    }
-
-    {
-      const item = new QAction(menu);
-
-      item.setText('Quit');
-      item.addEventListener('triggered', () => app.application.exit(0));
-      menu.addAction(item);
-    }
+    this.addItem(__('OPEN'), Tray.handleShowApp.bind(this, undefined));
+    this.addItem(__('QUIT'), () => app.application.exit(0));
   }
 
   private update() {
     const { accMenu } = this;
 
-    if (!app.config.accounts) {
+    if (!app.config.get('accounts')) {
       return;
     }
 
     accMenu.actions.forEach((a) => accMenu.removeAction(a));
 
-    for (const account of app.config.accounts) {
+    for (const account of app.config.get('accounts')) {
       const item = new QAction();
 
       item.setText(`${account.username}#${account.discriminator}`);

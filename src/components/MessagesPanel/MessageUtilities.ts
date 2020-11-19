@@ -157,7 +157,7 @@ export async function processMentions(content: string, message: Message) {
  * @param content String to process.
  */
 export function processMarkdown(content: string) {
-  if (!app.config.processMarkDown) {
+  if (!app.config.get('processMarkDown')) {
     return content.replace(/\n/g, '<br/>');
   }
 
