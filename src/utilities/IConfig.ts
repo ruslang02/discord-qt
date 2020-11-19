@@ -33,6 +33,8 @@ export interface IConfig {
 
   locale: string;
 
+  minimizeToTray: boolean;
+
   processMarkDown: boolean;
 
   enableAvatars: boolean;

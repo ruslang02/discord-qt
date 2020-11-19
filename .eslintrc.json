@@ -39,6 +39,7 @@
     "no-fallthrough": "off",
     "no-multiple-empty-lines": "error",
     "no-restricted-syntax": "off",
+    "no-shadow": "off", // Prevent conflicts with @typescript-eslint/no-shadow
     "no-underscore-dangle": "off",
     "no-void": ["error", { "allowAsStatement": true }],
     "padding-line-between-statements": [ // See docs

@@ -58,7 +58,7 @@ export class DMUsersList extends QListWidget {
     }
 
     const items = this.findItems(dm.id, MatchFlag.MatchExactly);
-  
+
     if (!items.length) {
       return;
     }

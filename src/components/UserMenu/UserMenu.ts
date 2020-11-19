@@ -38,7 +38,7 @@ export class UserMenu extends QMenu {
       this.userVol.setMinimumSize(this.size().width() - 14, 0);
     });
 
-    this.addEventListener(WidgetEventTypes.Close, () => void app.configManager.save());
+    this.addEventListener(WidgetEventTypes.Close, () => app.configManager.save());
     app.on(Events.OPEN_USER_MENU, this.popout.bind(this));
   }
 

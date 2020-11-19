@@ -145,5 +145,7 @@
   "FORM_LABEL_OUTPUT_DEVICE": "Устройство вывода",
   "FORM_LABEL_INPUT_VOLUME": "Громкость микрофона",
   "FORM_LABEL_OUTPUT_VOLUME": "Громкость звука",
-  "VOICE": "Голос"
+  "VOICE": "Голос",
+  "MINIMIZE_TO_TRAY": "Минимизация окна в лоток при закрытии",
+  "SYSTEM": "Система"
 }

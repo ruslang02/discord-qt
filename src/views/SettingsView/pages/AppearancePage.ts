@@ -55,10 +55,11 @@ export class AppearancePage extends Page {
     ] // @ts-ignore
       .forEach(([checkbox, id, text]: [SettingsCheckBox, string, string]) => {
         checkbox.setText(text);
-        checkbox.addEventListener(WidgetEventTypes.MouseButtonRelease, async () => {
+        checkbox.addEventListener(WidgetEventTypes.MouseButtonRelease, () => {
           const checked = checkbox.isChecked();
 
           checkbox.setChecked(!checked);
+
           // @ts-ignore
           app.config[id] = !checked;
           void app.configManager.save();
@@ -188,10 +189,10 @@ export class AppearancePage extends Page {
     const { enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel } = this;
     const { debug, processMarkDown, enableAvatars, roundifyAvatars, theme } = app.config;
 
-    enavcx.setChecked(enableAvatars as boolean);
-    rdavcx.setChecked(roundifyAvatars as boolean);
-    prmdcx.setChecked(processMarkDown as boolean);
-    dbgcx.setChecked(debug as boolean);
+    enavcx.setChecked(enableAvatars);
+    rdavcx.setChecked(roundifyAvatars);
+    prmdcx.setChecked(processMarkDown);
+    dbgcx.setChecked(debug);
 
     if (typeof theme === 'string') {
       themeSel.setCurrentText(theme);
