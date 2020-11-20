@@ -1,7 +1,7 @@
 import { QPoint } from '@nodegui/nodegui';
 import { Client, GuildMember, Message, User, VoiceChannel } from 'discord.js';
 import { ViewOptions } from '../views/ViewOptions';
-import { IConfig } from './IConfig';
+import { ConfigManager } from './ConfigManager';
 
 type ValueOf<T> = T[keyof T];
 
@@ -20,7 +20,7 @@ export const Events = {
 } as const;
 
 export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
-  configUpdate: [IConfig];
+  configUpdate: [ConfigManager];
   joinVoiceChannel: [VoiceChannel];
   loginFailed: [];
   mentionUser: [string];

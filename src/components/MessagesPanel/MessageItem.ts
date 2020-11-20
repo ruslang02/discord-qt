@@ -159,7 +159,7 @@ export class MessageItem extends QWidget {
       }
     });
 
-    if (!app.config.enableAvatars) {
+    if (!app.config.get('enableAvatars')) {
       avatar.hide();
     }
 

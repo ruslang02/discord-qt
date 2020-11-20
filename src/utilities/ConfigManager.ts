@@ -11,8 +11,7 @@ const { log, error } = createLogger('Config');
 export class ConfigManager {
   isLoaded = false;
 
-  // @ts-ignore
-  config: IConfig = {};
+  private config = {} as IConfig;
 
   constructor(private file: string) {
     mkdirSync(dirname(file), { recursive: true });
@@ -22,16 +21,16 @@ export class ConfigManager {
     const { file } = this;
 
     this.isLoaded = false;
-    // @ts-ignore
-    let config: IConfig = {};
+
+    let config = {} as IConfig;
 
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
       if (!existsSync(file)) {
-        writeFile(file, '{}', 'utf8').catch((e) =>
-          error('Missing permissions on the config file.', e),
-        );
+        writeFile(file, '{}', 'utf8').catch((e) => {
+          error('Missing permissions on the config file.', e);
+        });
       } else {
         error('Config file could not be used, returning to default values...');
       }
@@ -43,6 +42,7 @@ export class ConfigManager {
       fastLaunch: config.fastLaunch ?? false,
       debug: config.debug ?? false,
       enableAvatars: config.enableAvatars ?? true,
+      minimizeToTray: config.minimizeToTray ?? true,
       processMarkDown: config.processMarkDown ?? true,
       theme: config.theme ?? 'dark',
       locale: config.locale ?? 'en-US',
@@ -59,10 +59,18 @@ export class ConfigManager {
     this.isLoaded = true;
   }
 
+  get<T extends keyof IConfig>(id: T): IConfig[T] {
+    return this.config[id];
+  }
+
+  set<T extends keyof IConfig>(id: T, value: IConfig[T]) {
+    this.config[id] = value;
+  }
+
   async save() {
     try {
       await writeFile(join(this.file), JSON.stringify(this.config));
-      app.emit(Events.CONFIG_UPDATE, this.config);
+      app.emit(Events.CONFIG_UPDATE, this);
     } catch (e) {
       error(e);
     }

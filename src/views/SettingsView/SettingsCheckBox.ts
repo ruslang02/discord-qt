@@ -9,6 +9,8 @@ import {
   QWidget,
 } from '@nodegui/nodegui';
 import { join } from 'path';
+import { app } from '../..';
+import { IConfig } from '../../utilities/IConfig';
 
 export class SettingsCheckBox extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);
@@ -41,7 +43,13 @@ export class SettingsCheckBox extends QWidget {
     return this._checked;
   }
 
-  setChecked(checked: boolean) {
+  /**
+   * Set check status
+   * @param value Boolean, or name of the config
+   */
+  setChecked(value: boolean | keyof IConfig) {
+    const checked = typeof value === 'string' ? (app.config.get(value) as boolean) : value;
+
     this.checkbox.setPixmap(checked ? this.ch : this.unch);
     this._checked = checked;
   }

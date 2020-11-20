@@ -14,9 +14,9 @@ import { app, MAX_QSIZE } from '../../..';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
 import { DLabel } from '../../../components/DLabel/DLabel';
 import { NoiseReductor } from '../../../components/VoicePanel/NoiseReductor';
+import { ConfigManager } from '../../../utilities/ConfigManager';
 import { createLogger } from '../../../utilities/Console';
 import { Events } from '../../../utilities/Events';
-import { IConfig } from '../../../utilities/IConfig';
 import { createRecordStream } from '../../../utilities/VoiceStreams';
 import { Divider } from '../Divider';
 import { Page } from './Page';
@@ -73,7 +73,9 @@ export class VoicePage extends Page {
     const noiseReductor = new NoiseReductor(
       () => {},
       (loudness) => {
-        this.sensCheck.setValue(loudness * (app.config.voiceSettings.inputVolume ?? 100) * 0.1);
+        this.sensCheck.setValue(
+          loudness * (app.config.get('voiceSettings').inputVolume ?? 100) * 0.1,
+        );
       },
     );
 
@@ -90,7 +92,9 @@ export class VoicePage extends Page {
     this.recordTester = undefined;
   }
 
-  private loadConfig({ voiceSettings: v }: IConfig) {
+  private loadConfig(config: ConfigManager) {
+    const v = config.get('voiceSettings');
+
     this.loadingConfig = true;
     this.inDevice.setCurrentText(v.inputDevice ?? 'default');
     this.outDevice.setCurrentText(v.outputDevice ?? 'default');
@@ -103,19 +107,19 @@ export class VoicePage extends Page {
   private loadingConfig = false;
 
   private saveConfig() {
-    if (!app.configManager.isLoaded || this.loadingConfig) {
+    if (!app.config.isLoaded || this.loadingConfig) {
       return;
     }
 
-    const settings = { ...app.config.voiceSettings };
+    const settings = app.config.get('voiceSettings');
 
     settings.inputDevice = this.inDevice.currentText();
     settings.outputDevice = this.outDevice.currentText();
     settings.inputVolume = this.inVolume.value();
     settings.outputVolume = this.outVolume.value();
     settings.inputSensitivity = this.sensVal.value() / 10;
-    app.config.voiceSettings = settings;
-    void app.configManager.save();
+
+    void app.config.save();
   }
 
   private updateSinks() {

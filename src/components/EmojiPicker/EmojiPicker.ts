@@ -247,10 +247,12 @@ export class EmojiPicker extends QMenu {
       return;
     }
 
-    if (app.config.recentEmojis) {
+    const recentEmojis = app.config.get('recentEmojis');
+
+    if (recentEmojis) {
       let add = true;
 
-      app.config.recentEmojis = app.config.recentEmojis.map((obj) => {
+      const newEmojis = recentEmojis.map((obj) => {
         const o = obj;
 
         if (o[0] === emojiId) {
@@ -262,10 +264,12 @@ export class EmojiPicker extends QMenu {
       });
 
       if (add) {
-        app.config.recentEmojis.push([emojiId, 1]);
+        newEmojis.push([emojiId, 1]);
       }
 
-      void app.configManager.save();
+      app.config.set('recentEmojis', newEmojis);
+
+      void app.config.save();
     }
 
     this.events.emit('emoji', emoji, this.controlPressed);

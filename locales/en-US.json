@@ -147,5 +147,9 @@
   "FORM_LABEL_INPUT_VOLUME": "Input Volume",
   "FORM_LABEL_OUTPUT_VOLUME": "Output Volume",
   "FORM_LABEL_INPUT_SENSITIVTY": "Input Sensitivity",
-  "VOICE": "Voice"
+  "VOICE": "Voice",
+  "MINIMIZE_TO_TRAY": "Minimize window to tray when closing",
+  "SYSTEM": "System",
+  "OPEN": "Open",
+  "QUIT": "Quit"
 }

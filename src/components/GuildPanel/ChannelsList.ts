@@ -134,7 +134,7 @@ export class ChannelsList extends QListWidget {
       return;
     }
 
-    const settings = app.config.userLocalGuildSettings[this.guild.id];
+    const settings = app.config.get('userLocalGuildSettings')[this.guild.id];
 
     for (const item of <IterableIterator<QListWidgetItem>>this.items.values()) {
       const channel = app.client.channels.resolve(item.text());
@@ -161,7 +161,8 @@ export class ChannelsList extends QListWidget {
   }
 
   private toggleCategory(guildId: Snowflake, categoryId: Snowflake) {
-    const settings = app.config.userLocalGuildSettings[guildId] || {};
+    const userLocalGuildSettings = app.config.get('userLocalGuildSettings');
+    const settings = userLocalGuildSettings[guildId] || {};
 
     settings.collapsedCategories = settings.collapsedCategories || [];
 
@@ -171,8 +172,8 @@ export class ChannelsList extends QListWidget {
       settings.collapsedCategories.push(categoryId);
     }
 
-    app.config.userLocalGuildSettings[guildId] = settings;
-    void app.configManager.save();
+    userLocalGuildSettings[guildId] = settings;
+    void app.config.save();
 
     this.updateState();
   }

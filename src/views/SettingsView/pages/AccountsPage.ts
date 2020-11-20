@@ -47,7 +47,7 @@ export class AccountsPage extends Page {
   private checkEmpty() {
     const { noAcLbl } = this;
 
-    if (!app.config.accounts?.length) {
+    if (!app.config.get('accounts').length) {
       this.accountsLayout.insertWidget(0, noAcLbl, 0);
       noAcLbl.show();
     } else {
@@ -76,7 +76,7 @@ export class AccountsPage extends Page {
     noAcLbl.setInlineStyle('font-size: 16px; color: #72767d;');
     noAcLbl.setText(__('NO_ACCOUNTS_PLACEHOLDER'));
     this.checkEmpty();
-    app.config.accounts?.forEach(this.processAccount.bind(this));
+    app.config.get('accounts').forEach(this.processAccount.bind(this));
   }
 
   checkboxes: SettingsCheckBox[] = [];
@@ -121,10 +121,15 @@ export class AccountsPage extends Page {
     deleteBtn.setText(__('DELETE'));
     deleteBtn.setMinimumSize(0, 32);
     deleteBtn.addEventListener('clicked', () => {
-      app.config.accounts = app.config.accounts?.filter((v) => v !== account);
+      app.config.set(
+        'accounts',
+        app.config.get('accounts').filter((v) => v !== account),
+      );
+
       accWidget.hide();
       this.accountsLayout.removeWidget(accWidget);
-      void app.configManager.save();
+
+      void app.config.save();
       this.checkEmpty();
     });
 
@@ -157,19 +162,25 @@ export class AccountsPage extends Page {
     checkbox.layout.setContentsMargins(20, 15, 20, 15);
     this.checkboxes.push(checkbox);
     checkbox.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
-      if (!app.config.accounts) {
+      const accounts = app.config.get('accounts');
+
+      if (!accounts) {
         return;
       }
 
-      const isAutoLogin = app.config.accounts[i].autoLogin;
+      const isAutoLogin = accounts[i].autoLogin;
 
       this.checkboxes.forEach((c, j) => c.setChecked(i === j ? !isAutoLogin : false));
-      app.config.accounts = app.config.accounts.map((acc, j) => ({
-        ...acc,
-        autoLogin: i === j ? !isAutoLogin : false,
-      }));
 
-      void app.configManager.save();
+      app.config.set(
+        'accounts',
+        accounts.map((acc, j) => ({
+          ...acc,
+          autoLogin: i === j ? !isAutoLogin : false,
+        })),
+      );
+
+      void app.config.save();
     });
 
     const shadow = new QGraphicsDropShadowEffect();
@@ -217,7 +228,9 @@ export class AccountsPage extends Page {
     let isLoggingIn = false;
 
     addButton.addEventListener('clicked', async () => {
-      if (isLoggingIn || !app.config.accounts) {
+      const accounts = app.config.get('accounts');
+
+      if (isLoggingIn || !accounts) {
         return;
       }
 
@@ -245,10 +258,12 @@ export class AccountsPage extends Page {
           autoLogin: false,
         } as Account;
 
-        this.processAccount(account, app.config.accounts.length);
-        app.config.accounts.push(account);
+        this.processAccount(account, accounts.length);
+        accounts.push(account);
+
         await client.destroy();
-        void app.configManager.save();
+
+        void app.config.save();
       } catch (e) {
         errorMsg.setText(e.message);
         errorMsg.show();
@@ -261,12 +276,15 @@ export class AccountsPage extends Page {
 
     addTokenField.setMinimumSize(0, 32);
     addBlock.setLayout(addLayout);
+
     addLayout.addWidget(addTokenField, 1);
     addLayout.addWidget(addButton);
+
     layout.addWidget(headerLabel);
     layout.addWidget(helpLabel);
     layout.addWidget(addBlock);
     layout.addWidget(errorMsg);
+
     errorMsg.hide();
     const divider = new Divider();
 
