@@ -131,7 +131,7 @@ export class ChannelMembers extends QListWidget {
 
     const memberName = new QLabel(btn);
 
-    memberName.setText(member.nickname || member.user.username);
+    memberName.setText(member.displayName);
 
     btn.labels.push(memberName);
     btn.layout.addWidget(avatar);

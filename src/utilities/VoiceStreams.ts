@@ -20,8 +20,6 @@ const PLAYBACK_OPTIONS = [
   '2',
   '-loglevel',
   'quiet',
-  '-guess_layout_max',
-  '0',
   '-i',
   '-',
   '-f',
@@ -36,8 +34,6 @@ const PLAYBACK_OPTIONS = [
 const RECORD_OPTIONS = [
   '-name',
   APP_NAME,
-  '-frame_size',
-  '960',
   '-f',
   'pulse',
   '-i',

@@ -100,8 +100,7 @@ export async function processMentions(content: string, message: Message) {
       if (message.guild) {
         const member = message.guild.members.resolve(id);
         const memberName =
-          member?.nickname ||
-          member?.user.username ||
+          member?.displayName ||
           app.client.users.resolve(id)?.username ||
           'unknown-user';
 

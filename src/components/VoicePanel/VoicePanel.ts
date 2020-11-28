@@ -13,7 +13,6 @@ import { ChildProcessWithoutNullStreams } from 'child_process';
 import {
   Client,
   Constants,
-  DQConstants,
   GuildMember,
   VoiceChannel,
   VoiceConnection,
@@ -83,7 +82,7 @@ export class VoicePanel extends QWidget {
     this.hide();
     app.on(AppEvents.JOIN_VOICE_CHANNEL, this.joinChannel.bind(this));
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-      const { Events } = (Constants as unknown) as DQConstants;
+      const { Events } = Constants;
 
       client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate.bind(this));
     });

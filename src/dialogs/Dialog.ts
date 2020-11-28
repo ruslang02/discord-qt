@@ -12,7 +12,7 @@ import {
 import { __ } from 'i18n';
 import { join } from 'path';
 import { DIconButton } from '../components/DIconButton/DIconButton';
-import { RootWindow } from '../windows/RootWindow';
+import { MainWindow } from '../windows/MainWindow/MainWindow';
 
 export class Dialog extends QWidget {
   protected window = new QWidget(this);
@@ -58,7 +58,7 @@ export class Dialog extends QWidget {
   }
 
   protected initEvents() {
-    (this.nodeParent as RootWindow).addEventListener(
+    (this.nodeParent as MainWindow).addEventListener(
       WidgetEventTypes.Resize,
       this.resizeToWindow.bind(this),
     );
@@ -67,7 +67,7 @@ export class Dialog extends QWidget {
   }
 
   protected resizeToWindow() {
-    const size = (this.nodeParent as RootWindow).size();
+    const size = (this.nodeParent as MainWindow).size();
 
     this.setGeometry(0, 0, size.width(), size.height());
   }

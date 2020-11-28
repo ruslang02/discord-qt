@@ -12,7 +12,8 @@ import { createLogger } from './utilities/Console';
 import { Events as AppEvents } from './utilities/Events';
 import { paths } from './utilities/Paths';
 import { PluginManager } from './utilities/PluginManager';
-import { RootWindow } from './windows/RootWindow';
+import { MainWindow } from './windows/MainWindow/MainWindow';
+import { OverlayWindow } from './windows/OverlayWindow/OverlayWindow';
 
 const { readdir } = promises;
 
@@ -74,8 +75,10 @@ export class Application extends ApplicationEventEmitter {
 
     i18n.setLocale(this.config.get('locale') || 'en-US');
 
-    this.window = new RootWindow();
+    this.window = new MainWindow();
     this.window.show();
+
+    // this.overlay = new OverlayWindow();
 
     void this.pluginManager.reload();
 
@@ -103,12 +106,20 @@ export class Application extends ApplicationEventEmitter {
     }
   }
 
-  public get window(): RootWindow {
+  public get window(): MainWindow {
     return (global as any).win;
   }
 
-  public set window(v: RootWindow) {
+  public set window(v: MainWindow) {
     (global as any).win = v;
+  }
+
+  public get overlay(): OverlayWindow {
+    return (global as any).overlay;
+  }
+
+  public set overlay(v: OverlayWindow) {
+    (global as any).overlay = v;
   }
 
   public get client(): Client {

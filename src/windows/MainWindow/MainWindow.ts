@@ -11,23 +11,23 @@ import {
 import { Guild, GuildChannel } from 'discord.js';
 import { existsSync, promises } from 'fs';
 import path from 'path';
-import { app } from '..';
-import { ProfilePopup } from '../components/ProfilePopup/ProfilePopup';
-import { UserMenu } from '../components/UserMenu/UserMenu';
-import { AcceptInviteDialog } from '../dialogs/AcceptInviteDialog';
-import { ConfirmLeaveGuildDialog } from '../dialogs/ConfirmLeaveGuildDialog';
-import { CustomStatusDialog } from '../dialogs/CustomStatusDialog';
-import { NicknameChangeDialog } from '../dialogs/NicknameChangeDialog';
-import { createLogger } from '../utilities/Console';
-import { Events as AppEvents } from '../utilities/Events';
-import { MainView } from '../views/MainView/MainView';
-import { SettingsView } from '../views/SettingsView/SettingsView';
+import { app } from '../..';
+import { ProfilePopup } from '../../components/ProfilePopup/ProfilePopup';
+import { UserMenu } from '../../components/UserMenu/UserMenu';
+import { AcceptInviteDialog } from '../../dialogs/AcceptInviteDialog';
+import { ConfirmLeaveGuildDialog } from '../../dialogs/ConfirmLeaveGuildDialog';
+import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
+import { NicknameChangeDialog } from '../../dialogs/NicknameChangeDialog';
+import { createLogger } from '../../utilities/Console';
+import { Events as AppEvents } from '../../utilities/Events';
+import { MainView } from '../../views/MainView/MainView';
+import { SettingsView } from '../../views/SettingsView/SettingsView';
 
 const { readFile } = promises;
 
 const { error } = createLogger('RootWindow');
 
-export class RootWindow extends QMainWindow {
+export class MainWindow extends QMainWindow {
   private root = new QStackedWidget(this);
 
   dialogs = {

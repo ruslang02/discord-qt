@@ -209,45 +209,59 @@ export class MessageItem extends QWidget {
    * Loads all images in the message.
    */
   renderImages() {
-    const { message, avatar } = this;
+    const { message } = this;
 
     if (!message || this.alreadyRendered) {
       return;
     }
-
-    void (async () => {
-      const cachePixmap = avatarCache.get(message.author.id);
-
-      if (cachePixmap) {
-        avatar.setPixmap(cachePixmap);
-
-        return;
-      }
-
-      try {
-        const image = await pictureWorker.loadImage(
-          message.author.displayAvatarURL({ format: 'png', size: 256 }),
-        );
-
-        const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
-
-        avatar.setPixmap(pixmap);
-        avatarCache.set(message.author.id, pixmap);
-      } catch (e) {
-        error(`Couldn't load avatar image for user ${message.author.tag}`);
-      }
-    })();
 
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());
 
     if (this.contentNoEmojis) {
       processEmojis(this.contentNoEmojis)
-        .then((content) => this.contentLabel.setText(content))
+        .then((content) => !this.contentLabel.native.destroyed && this.contentLabel.setText(content))
         .catch(error.bind(error, "Couldn't load emoji."));
     }
 
     this.alreadyRendered = true;
+    void this.loadAvatar();
+  }
+
+  /**
+   * Loads user avatar asynchronously.
+   */
+  async loadAvatar() {
+    const { message, avatar } = this;
+
+    if (!message || avatar.native.destroyed) {
+      return;
+    }
+
+    const cachePixmap = avatarCache.get(message.author.id);
+
+    if (cachePixmap) {
+      avatar.setPixmap(cachePixmap);
+
+      return;
+    }
+
+    try {
+      const image = await pictureWorker.loadImage(
+        message.author.displayAvatarURL({ format: 'png', size: 256 }),
+      );
+
+      if (avatar.native.destroyed) {
+        return;
+      }
+
+      const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
+
+      avatar.setPixmap(pixmap);
+      avatarCache.set(message.author.id, pixmap);
+    } catch (e) {
+      error(`Couldn't load avatar image for user ${message.author.tag}`);
+    }
   }
 
   /**
@@ -263,7 +277,7 @@ export class MessageItem extends QWidget {
     userNameLabel.setText(member?.nickname || user.username);
     dateLabel.setText(message.createdAt.toLocaleString());
 
-    if (message.system) {
+    if (message.system && message.type !== undefined) {
       this.loadSystemMessage(message);
     } else if (message.content.trim() === '') {
       contentLabel.hide();

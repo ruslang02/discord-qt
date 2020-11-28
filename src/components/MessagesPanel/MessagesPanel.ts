@@ -65,7 +65,15 @@ export class MessagesPanel extends QScrollArea {
           await widget.loadMessage(message);
           this.items.push(widget);
           this.lowestWidget = widget;
-          setTimeout(() => this.isBottom(lowest) && this.ensureVisible(0, MAX_QSIZE), 100);
+          setTimeout(
+            () =>
+              !this.native.destroyed &&
+              !lowest?.native.destroyed &&
+              this.isBottom(lowest) &&
+              this.ensureVisible(0, MAX_QSIZE),
+            100,
+          );
+
           this.initAckTimer();
         }
       });
@@ -208,6 +216,10 @@ export class MessagesPanel extends QScrollArea {
     }
 
     this.ackTimer = setTimeout(async () => {
+      if (this.native.destroyed) {
+        return;
+      }
+
       if (this.channel && !this.channel.acknowledged) {
         if (this.isBottom()) {
           this.channel.acknowledge().catch((e) => error("Couldn't mark the channel as read.", e));
