@@ -1,4 +1,4 @@
-import { QLabel, QPixmap, QSize, QWidget } from '@nodegui/nodegui';
+import { QLabel, QPixmap, QSize, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
 import { Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel } from 'discord.js';
 import { __ } from 'i18n';
 import open from 'open';
@@ -120,6 +120,10 @@ export class MainTitleBar extends DTitleBar {
       membersBtn,
       helpBtn,
     } = this;
+
+    this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
+      app.emit(AppEvents.TOGGLE_DRAWER, false);
+    })
 
     controls.setSpacing(6);
     controls.setContentsMargins(16, 12, 16, 12);

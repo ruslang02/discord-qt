@@ -30,6 +30,8 @@ export class MessagesPanel extends QScrollArea {
 
   private items: MessageItem[] = [];
 
+  private loadMessageCount = 30;
+
   constructor(parent?: any) {
     super(parent);
     this.setObjectName('MessagesPanel');
@@ -77,6 +79,10 @@ export class MessagesPanel extends QScrollArea {
           this.initAckTimer();
         }
       });
+    });
+
+    app.on(Events.CONFIG_UPDATE, (config) => {
+      this.loadMessageCount = config.get('isMobile') ? 20 : 30;
     });
   }
 
@@ -141,14 +147,17 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private async loadMessages(before: MessageItem) {
-    const { channel } = this;
+    const { channel, loadMessageCount: limit } = this;
     const height = this.size().height();
 
     if (!channel) {
       return;
     }
 
-    const messages = (await channel.messages.fetch({ before: before.message?.id }))
+    const messages = (await channel.messages.fetch({
+      before: before.message?.id,
+      limit,
+    }))
       .array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
@@ -239,6 +248,8 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private async handleChannelOpen(channel: DMChannel | GuildChannel) {
+    const { loadMessageCount: limit } = this;
+
     this.channel = channel as TextChannel | NewsChannel | DMChannel;
 
     if (this.ratelimit || this.isLoading || !['news', 'text', 'dm'].includes(channel.type)) {
@@ -267,8 +278,8 @@ export class MessagesPanel extends QScrollArea {
     this.initRoot();
 
     try {
-      if (this.channel.messages.cache.size < 30) {
-        await this.channel.messages.fetch({ limit: 30 });
+      if (this.channel.messages.cache.size < limit) {
+        await this.channel.messages.fetch({ limit });
       }
     } catch (e) {
       error(`Couldn't load messages for channel ${channel.id}`, e);
@@ -281,7 +292,7 @@ export class MessagesPanel extends QScrollArea {
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();
 
-    messages.length = Math.min(messages.length, 30);
+    messages.length = Math.min(messages.length, limit);
     const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
     const promises = messages.map((message, i) => {
       const widget = new MessageItem(this.root);
@@ -306,7 +317,7 @@ export class MessagesPanel extends QScrollArea {
       this.isLoading = false;
       void this.handleWheel(true);
       clearInterval(scrollTimer);
-    }, 200);
+    }, 500);
 
     this.initAckTimer();
   }

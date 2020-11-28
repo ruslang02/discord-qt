@@ -35,8 +35,13 @@ export class MainView extends QWidget {
     this.initView();
 
     this.leftPanel.raise();
+    this.guildsList.raise();
 
     app.on(Events.TOGGLE_DRAWER, (value) => {
+      if (!app.config.get('isMobile')) {
+        return;
+      }
+
       if (value) {
         this.guildsList.show();
         this.leftPanel.show();

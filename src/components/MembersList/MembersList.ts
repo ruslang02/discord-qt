@@ -24,6 +24,10 @@ export class MembersList extends QListWidget {
 
   private viewHidden = false;
 
+  private get isShown() {
+    return !this.configHidden && !this.viewHidden;
+  }
+
   constructor() {
     super();
     this.setObjectName('MembersList');
@@ -37,10 +41,11 @@ export class MembersList extends QListWidget {
       if (view === 'dm' || (view === 'guild' && !options?.channel)) {
         this.viewHidden = true;
       } else if (view === 'guild' && options?.channel) {
-        if (options.channel !== this.channel) {
+        if (this.isShown && options.channel !== this.channel) {
           this.loadList(options.channel);
         }
-  
+
+        this.channel = options.channel as TextChannel;
         this.viewHidden = false;
       }
 
@@ -54,8 +59,12 @@ export class MembersList extends QListWidget {
   }
 
   private updateVisibility() {
-    if (!this.configHidden && !this.viewHidden) {
+    if (this.isShown) {
       this.show();
+
+      if (this.channel) {
+        this.loadList(this.channel);
+      }
     } else {
       this.hide();
     }

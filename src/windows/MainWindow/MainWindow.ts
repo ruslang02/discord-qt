@@ -161,6 +161,16 @@ export class MainWindow extends QMainWindow {
         })
       }
 
+      if (app.config.get('isMobile')) {
+        stylesheet += `
+        QScrollBar:horizontal { height: 16px; }
+        QScrollBar:vertical { width: 16px; }
+        QScrollBar::handle { border-radius: 4px; }
+        #MessagesPanel QScrollBar:vertical {
+          width: 24px;
+        }`;
+      }
+
       this.setStyleSheet(stylesheet);
     } catch (e) {
       error("Couldn't load the stylesheet.", e);
