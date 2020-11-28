@@ -21,11 +21,12 @@
   "MESSAGE_RECIPIENT_REMOVE": "был удалён из группового чата.",
   "MESSAGE_CALL": "позвонил.",
   "MESSAGE_PINS_ADD": "закрепил сообщение в этом канале.",
-  "LANGUAGE_RESTART_REQUIRED": "Вам необходимо перезапустить приложение, чтобы изменения языка вошли в силу.",
+  "OPTION_RESTART_REQUIRED": "Вам необходимо перезапустить приложение, чтобы изменения вошли в силу.",
   "CLEAR_CACHE": "Очистить кэш",
   "CLEAR_CACHE_SUCCESS": "Кэш был успешно освобожден.",
   "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Ура! Больше места на диске!",
   "EMOJI_PICKER_PRO_TIP_BODY": "Вставляйте эмодзи как картинки при помощи <code>Ctrl</code>.",
+  "OPTIMIZE_FOR_MOBILE": "Оптимизировать интерфейс под мобильные устройства",
 
   "SEARCH_FOR_EMOJI": "Найдите идеальный эмодзи",
   "CONNECTION_STATUS_CONNECTING": "Подключение",
@@ -146,8 +147,10 @@
   "FORM_LABEL_INPUT_VOLUME": "Громкость микрофона",
   "FORM_LABEL_OUTPUT_VOLUME": "Громкость звука",
   "VOICE": "Голос",
-  "MINIMIZE_TO_TRAY": "Минимизация окна в лоток при закрытии",
+  "MINIMIZE_TO_TRAY": "Минимизация окна в системный трей при закрытии",
   "SYSTEM": "Система",
-  "OPEN": "открывать",
-  "QUIT": "увольняться"
+  "OPEN": "Открыть",
+  "QUIT": "Закрыть",
+  "MEMBER_LIST": "Список участников",
+  "ACCESSIBILITY_ZOOM_LEVEL_LABEL": "Уровень масштабирования"
 }

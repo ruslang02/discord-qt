@@ -16,7 +16,6 @@ export abstract class Page extends QWidget {
     super();
     this.setObjectName('Page');
     this.setLayout(this.layout);
-    this.setMinimumSize(740, 0);
     this.setMaximumSize(740, MAX_QSIZE);
     this.layout.setContentsMargins(40, 60, 40, 80);
     this.layout.setSpacing(0);
