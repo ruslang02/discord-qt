@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import './utilities/PreLaunchConfigManager';
 import './patches';
 import 'opusscript';
 import i18n from 'i18n';

@@ -4,6 +4,7 @@ import { __ } from 'i18n';
 import open from 'open';
 import path from 'path';
 import { app } from '../..';
+import { ConfigManager } from '../../utilities/ConfigManager';
 import { Events as AppEvents } from '../../utilities/Events';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { ViewOptions } from '../../views/ViewOptions';
@@ -28,6 +29,34 @@ export class MainTitleBar extends DTitleBar {
 
   private poundPixmap = new QPixmap(path.join(__dirname, './assets/icons/pound.png'));
 
+  private drawerBtn = new DIconButton({
+    iconPath: path.join(__dirname, './assets/icons/menu.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: '',
+    isCheckbox: true,
+    checked: true
+  });
+
+  private pinBtn = new DIconButton({
+    iconPath: path.join(__dirname, './assets/icons/pin.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: __('PINNED_MESSAGES'),
+  });
+
+  private membersBtn = new DIconButton({
+    iconPath: path.join(__dirname, './assets/icons/account-multiple.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: __('MEMBER_LIST'),
+    isCheckbox: true,
+    checked: true,
+  });
+
+  private helpBtn = new DIconButton({
+    iconPath: path.join(__dirname, './assets/icons/help-circle.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: __('HELP'),
+  });
+
   constructor() {
     super();
     this.initComponent();
@@ -38,8 +67,12 @@ export class MainTitleBar extends DTitleBar {
 
       if (view === 'dm' && options?.dm) {
         this.handleDMOpen(options.dm);
+        app.emit(AppEvents.TOGGLE_DRAWER, false);
+        this.membersBtn.hide();
       } else if (view === 'guild' && options?.channel) {
         this.handleGuildOpen(options.channel);
+        app.emit(AppEvents.TOGGLE_DRAWER, false);
+        this.membersBtn.show();
       } else {
         this.channel = undefined;
         this.handleClear();
@@ -54,14 +87,42 @@ export class MainTitleBar extends DTitleBar {
           this.updateStatus();
         }
       });
+
+      this.handleConfigUpdate(app.config);
     });
+
+    app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
+
+    app.on(AppEvents.TOGGLE_DRAWER, (value) => {
+      this.drawerBtn.setChecked(value);
+    })
+  }
+
+  private handleConfigUpdate(config: ConfigManager) {
+    if (config.get('isMobile')) {
+      this.helpBtn.hide();
+      this.drawerBtn.show();
+    } else {
+      this.helpBtn.show();
+      this.drawerBtn.hide();
+    }
   }
 
   private initComponent() {
-    const { userNameLabel, statusLabel, nicknamesBar, controls: layout, iconLabel } = this;
+    const {
+      userNameLabel,
+      statusLabel,
+      nicknamesBar,
+      controls,
+      iconLabel,
+      drawerBtn,
+      pinBtn,
+      membersBtn,
+      helpBtn,
+    } = this;
 
-    layout.setSpacing(6);
-    layout.setContentsMargins(16, 12, 16, 12);
+    controls.setSpacing(6);
+    controls.setContentsMargins(16, 12, 16, 12);
 
     userNameLabel.setObjectName('UserNameLabel');
     statusLabel.setObjectName('StatusLabel');
@@ -73,29 +134,30 @@ export class MainTitleBar extends DTitleBar {
     searchEdit.setPlaceholderText(__('SEARCH'));
     searchEdit.hide();
 
-    const pinBtn = new DIconButton({
-      iconPath: path.join(__dirname, './assets/icons/pin.png'),
-      iconQSize: new QSize(24, 24),
-      tooltipText: __('PINNED_MESSAGES'),
+    drawerBtn.addEventListener('clicked', (value) => {
+      app.emit(AppEvents.TOGGLE_DRAWER, value);
     });
+
+    drawerBtn.setInlineStyle('margin: 0 15px 0 5px');
 
     pinBtn.hide();
 
-    const helpBtn = new DIconButton({
-      iconPath: path.join(__dirname, './assets/icons/help-circle.png'),
-      iconQSize: new QSize(24, 24),
-      tooltipText: __('HELP'),
+    membersBtn.addEventListener('clicked', (value) => {
+      app.config.set('hideMembersList', value);
+      void app.config.save();
     });
 
     helpBtn.addEventListener('clicked', () => open(repository.url));
 
-    layout.addWidget(iconLabel);
-    layout.addWidget(userNameLabel);
-    layout.addWidget(statusLabel);
-    layout.addWidget(nicknamesBar, 1);
-    layout.addWidget(pinBtn);
-    layout.addWidget(searchEdit);
-    layout.addWidget(helpBtn);
+    controls.addWidget(drawerBtn);
+    controls.addWidget(iconLabel);
+    controls.addWidget(userNameLabel);
+    controls.addWidget(statusLabel);
+    controls.addWidget(nicknamesBar, 1);
+    controls.addWidget(pinBtn);
+    controls.addWidget(membersBtn);
+    controls.addWidget(searchEdit);
+    controls.addWidget(helpBtn);
   }
 
   private updateStatus() {

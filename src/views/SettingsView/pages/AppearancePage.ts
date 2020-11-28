@@ -1,24 +1,23 @@
 import { QLabel, QVariant } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
 import { getLocale, setLocale, __ } from 'i18n';
-import { notify } from 'node-notifier';
 import { basename, join } from 'path';
 import { app } from '../../..';
-import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
 import { Events } from '../../../utilities/Events';
-import { paths } from '../../../utilities/Paths';
 import { createLogger } from '../../../utilities/Console';
 import { SettingsCheckBox } from '../SettingsCheckBox';
 import { Page } from './Page';
 
-const { readdir, readFile, rmdir } = promises;
+const { readdir, readFile } = promises;
 const { error, warn } = createLogger(basename(__filename, '.ts'));
 
 export class AppearancePage extends Page {
   title = __('APPEARANCE');
 
   private header = new QLabel();
+
+  private ismbcx = new SettingsCheckBox(this); // Process MD checkbox
 
   private prmdcx = new SettingsCheckBox(this); // Process MD checkbox
 
@@ -32,6 +31,8 @@ export class AppearancePage extends Page {
 
   private langSel = new DComboBox(this); // Language combo box
 
+  private zoomSel = new DComboBox(this); // Zoom level combo box
+
   private langs: string[] = [];
 
   constructor() {
@@ -42,12 +43,13 @@ export class AppearancePage extends Page {
   }
 
   private async initPage() {
-    const { title, header, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, layout } = this;
+    const { title, header, enavcx, rdavcx, ismbcx, prmdcx, dbgcx, themeSel, langSel, zoomSel, layout } = this;
 
     header.setObjectName('Header2');
     header.setText(title);
     layout.addWidget(header);
 
+    this.addSimpleCheckbox(ismbcx, 'isMobile', __('OPTIMIZE_FOR_MOBILE'));
     this.addSimpleCheckbox(prmdcx, 'processMarkDown', __('PROCESS_MARKDOWN_DESCRIPTION'));
     this.addSimpleCheckbox(enavcx, 'enableAvatars', __('ENABLE_AVATARS_DESCRIPTION'));
     this.addSimpleCheckbox(rdavcx, 'roundifyAvatars', __('ROUNDIFY_AVATARS_DESCRIPTION'));
@@ -62,6 +64,13 @@ export class AppearancePage extends Page {
 
     langLabel.setObjectName('Header3');
     langLabel.setText(`\r\n${__('LANGUAGE')}`);
+
+    const zoomLabel = new QLabel(this);
+
+    zoomLabel.setObjectName('Header3');
+    zoomLabel.setText(`\r\n${__('ACCESSIBILITY_ZOOM_LEVEL_LABEL')}`);
+
+    zoomSel.addItems(['1.0', '1.5', '2.0', '2.5', '3.0']);
 
     await this.loadThemes();
     await this.loadLanguages();
@@ -92,39 +101,19 @@ export class AppearancePage extends Page {
       setLocale(locale);
     });
 
-    const restartNotice = new QLabel(this);
-
-    restartNotice.setText(__('LANGUAGE_RESTART_REQUIRED'));
-    restartNotice.setInlineStyle('color: #f04747');
-    const clearCacheBtn = new DColorButton();
-
-    clearCacheBtn.setText(__('CLEAR_CACHE'));
-    clearCacheBtn.setMinimumSize(0, 36);
-    clearCacheBtn.addEventListener('clicked', () => {
-      rmdir(paths.cache, { recursive: true })
-        .then(() => {
-          notify({
-            title: __('CLEAR_CACHE_SUCCESS'),
-            message: __('CLEAR_CACHE_MOTIVATIONAL_MESSAGE'),
-            icon: app.iconPath,
-            // @ts-ignore
-            type: 'info',
-            category: 'im',
-            hint: 'string:desktop-entry:discord-qt',
-            'app-name': app.name,
-          });
-        })
-        .catch(error.bind(this, "Couldn't clear cache directory."));
+    zoomSel.addEventListener('currentTextChanged', async (text) => {
+      app.config.set('zoomLevel', text);
+      await app.config.save();
     });
 
     layout.addWidget(themeLabel);
     layout.addWidget(themeSel);
     layout.addWidget(langLabel);
     layout.addWidget(langSel);
-    layout.addWidget(restartNotice);
-    layout.addSpacing(10);
-    layout.addWidget(clearCacheBtn);
-    clearCacheBtn.setFlexNodeSizeControlled(false);
+    layout.addWidget(this.addRestartRequiredLabel());
+    layout.addWidget(zoomLabel);
+    layout.addWidget(zoomSel);
+    layout.addWidget(this.addRestartRequiredLabel());
     layout.addStretch(1);
   }
 
@@ -171,7 +160,7 @@ export class AppearancePage extends Page {
   }
 
   private loadConfig() {
-    const { enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel } = this;
+    const { enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, zoomSel } = this;
 
     enavcx.setChecked('enableAvatars');
     rdavcx.setChecked('roundifyAvatars');
@@ -183,6 +172,8 @@ export class AppearancePage extends Page {
     if (typeof theme === 'string') {
       themeSel.setCurrentText(theme);
     }
+
+    zoomSel.setCurrentText(app.config.get('zoomLevel'))
 
     langSel.setCurrentIndex(this.langs.indexOf(getLocale()));
   }

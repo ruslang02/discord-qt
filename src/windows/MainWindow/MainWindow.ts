@@ -25,6 +25,10 @@ import { SettingsView } from '../../views/SettingsView/SettingsView';
 
 const { readFile } = promises;
 
+const { TARGET_COLOR_SPACE } = process.env;
+
+const convertToBGR = TARGET_COLOR_SPACE === 'BGR';
+
 const { error } = createLogger('RootWindow');
 
 export class MainWindow extends QMainWindow {
@@ -110,8 +114,7 @@ export class MainWindow extends QMainWindow {
   protected initializeWindow() {
     this.setWindowTitle(app.name);
     this.setObjectName('RootWindow');
-    this.setMinimumSize(1000, 500);
-    this.resize(1200, 600);
+    this.setMinimumSize(300, 200);
     this.setAttribute(WidgetAttribute.WA_AlwaysShowToolTips, true);
     this.setCentralWidget(this.root);
 
@@ -146,7 +149,17 @@ export class MainWindow extends QMainWindow {
     }
 
     try {
-      const stylesheet = await readFile(stylePath, 'utf8');
+      let stylesheet = await readFile(stylePath, 'utf8');
+
+      if (convertToBGR) {
+        stylesheet = stylesheet.replace(/#([0-9a-f]+);/g, (_match, hex) => {
+          if (hex.length === 3) {
+            return `#${hex[2] + hex[1] + hex[0]};`;
+          }
+
+          return `#${hex[4] + hex[5] + hex[2] + hex[3] + hex[0] + hex[1]};`;
+        })
+      }
 
       this.setStyleSheet(stylesheet);
     } catch (e) {

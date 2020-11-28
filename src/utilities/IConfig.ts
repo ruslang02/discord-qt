@@ -39,6 +39,12 @@ export interface IConfig {
 
   enableAvatars: boolean;
 
+  isMobile: boolean;
+
+  zoomLevel: string;
+
+  hideMembersList: boolean;
+
   theme: string;
 
   recentEmojis: RecentEmoji[];

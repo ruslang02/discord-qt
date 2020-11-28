@@ -20,6 +20,10 @@ const { debug } = createLogger('MembersList');
 export class MembersList extends QListWidget {
   private channel?: TextChannel | NewsChannel;
 
+  private configHidden = false;
+
+  private viewHidden = false;
+
   constructor() {
     super();
     this.setObjectName('MembersList');
@@ -31,19 +35,30 @@ export class MembersList extends QListWidget {
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view === 'dm' || (view === 'guild' && !options?.channel)) {
-        this.hide();
-
-        return;
-      }
-
-      if (view === 'guild' && options?.channel) {
+        this.viewHidden = true;
+      } else if (view === 'guild' && options?.channel) {
         if (options.channel !== this.channel) {
           this.loadList(options.channel);
         }
-
-        this.show();
+  
+        this.viewHidden = false;
       }
+
+      this.updateVisibility();
     });
+
+    app.on(Events.CONFIG_UPDATE, (config) => {
+      this.configHidden = config.get('hideMembersList');
+      this.updateVisibility();
+    })
+  }
+
+  private updateVisibility() {
+    if (!this.configHidden && !this.viewHidden) {
+      this.show();
+    } else {
+      this.hide();
+    }
   }
 
   private loadList(channel: GuildChannel) {

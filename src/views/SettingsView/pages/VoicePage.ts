@@ -159,7 +159,6 @@ export class VoicePage extends Page {
   private initPage() {
     const {
       createHeader,
-      updateSinks,
       saveConfig,
       title,
       header,
@@ -241,6 +240,5 @@ export class VoicePage extends Page {
     layout.addLayout(sensLayout);
 
     layout.addStretch(1);
-    updateSinks.call(this);
   }
 }

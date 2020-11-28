@@ -1,4 +1,5 @@
-import { Direction, QBoxLayout, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
+import { Direction, QBoxLayout, QLabel, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
+import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../../..';
 import { createLogger } from '../../../utilities/Console';
 import { IConfig } from '../../../utilities/IConfig';
@@ -49,5 +50,14 @@ export abstract class Page extends QWidget {
     });
 
     layout.addWidget(checkbox);
+  }
+
+  protected addRestartRequiredLabel() {
+    const restartNotice = new QLabel(this);
+
+    restartNotice.setText(__('OPTION_RESTART_REQUIRED'));
+    restartNotice.setInlineStyle('color: #f04747');
+
+    return restartNotice;
   }
 }

@@ -4,7 +4,7 @@ import { dirname, join } from 'path';
 import { fileURLToPath, URL } from 'url';
 import { isMainThread, parentPort } from 'worker_threads';
 import { httpsGet } from './HttpsGet';
-import { roundifyPng } from './RoundifyPng';
+import { processPng } from './ProcessPng';
 
 const { readFile, writeFile, mkdir } = promises;
 const paths = envPaths('discord', { suffix: 'qt' });
@@ -24,9 +24,7 @@ async function handleRequest(url: string) {
   let buffer = await (uri.protocol === 'file:' ? readFile(fileURLToPath(url)) : httpsGet(url));
 
   if (buffer && buffer.length) {
-    if (roundify) {
-      buffer = await roundifyPng(buffer);
-    }
+    buffer = await processPng(buffer, roundify);
 
     await writeFile(path, buffer as Buffer);
 
