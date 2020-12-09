@@ -1,8 +1,8 @@
 import { QLabel } from '@nodegui/nodegui';
 import { promises } from 'fs';
-import { __ } from 'i18n';
 import { notify } from 'node-notifier';
 import { basename } from 'path';
+import { __ } from '../../../utilities/StringProvider';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { createLogger } from '../../../utilities/Console';

@@ -10,7 +10,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Client } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../../utilities/StringProvider';
 import { app } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../../../components/DColorButton/DColorButtonColor';
@@ -113,7 +113,7 @@ export class AccountsPage extends Page {
 
     uname.setObjectName('UserName');
     uname.setText(
-      `<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`,
+      `<html>${account.username}<font color="#72767d">#${account.discriminator}</font></html>`
     );
 
     const deleteBtn = new DColorButton(DColorButtonColor.RED);
@@ -123,7 +123,7 @@ export class AccountsPage extends Page {
     deleteBtn.addEventListener('clicked', () => {
       app.config.set(
         'accounts',
-        app.config.get('accounts').filter((v) => v !== account),
+        app.config.get('accounts').filter((v) => v !== account)
       );
 
       accWidget.hide();
@@ -177,7 +177,7 @@ export class AccountsPage extends Page {
         accounts.map((acc, j) => ({
           ...acc,
           autoLogin: i === j ? !isAutoLogin : false,
-        })),
+        }))
       );
 
       void app.config.save();
@@ -215,7 +215,7 @@ export class AccountsPage extends Page {
       __('ACCOUNTS_PAGE_HELPER', {
         guideURL:
           'https://github.com/Tyrrrz/DiscordChatExporter/wiki/Obtaining-Token-and-Channel-IDs',
-      }),
+      })
     );
 
     const addTokenField = new DLineEdit();

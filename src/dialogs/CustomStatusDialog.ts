@@ -9,7 +9,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Emoji } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../utilities/StringProvider';
 import { app } from '..';
 import { DColorButton } from '../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
@@ -55,7 +55,7 @@ export class CustomStatusDialog extends Dialog {
 
     super.show();
     this.statusLabel.setText(
-      __('CUSTOM_STATUS_MODAL_BODY', { username: app.client?.user?.username || '' }),
+      __('CUSTOM_STATUS_MODAL_BODY', { username: app.client?.user?.username || '' })
     );
 
     this.statusInput.setText(app.client.user.customStatus?.text || '');

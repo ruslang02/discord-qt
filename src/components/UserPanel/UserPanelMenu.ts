@@ -1,8 +1,9 @@
 import { QAction, QIcon, QMenu, WidgetAttribute } from '@nodegui/nodegui';
 import { PresenceStatusData } from 'discord.js';
-import { __ } from 'i18n';
 import { join } from 'path';
 import { app } from '../..';
+import { PhraseID } from '../../utilities/PhraseID';
+import { __ } from '../../utilities/StringProvider';
 
 export class UserPanelMenu extends QMenu {
   constructor(parent?: any) {
@@ -17,7 +18,7 @@ export class UserPanelMenu extends QMenu {
     for (const status of <PresenceStatusData[]>['online', 'idle', 'dnd', 'invisible']) {
       const item = new QAction();
 
-      item.setText(__(`STATUS_${status.toUpperCase()}`));
+      item.setText(__(`STATUS_${status.toUpperCase()}` as PhraseID));
       item.setIcon(new QIcon(join(__dirname, `assets/icons/status-${status}.png`)));
       item.addEventListener('triggered', () => app.client.user?.setPresence({ status }));
       this.addAction(item);

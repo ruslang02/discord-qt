@@ -115,9 +115,8 @@ ClientUser.prototype.acceptInvite = async function acceptInvite(code: { id: stri
           reject(new Error('Accepting invite timed out'));
         }, 120e3);
       })
-      .catch((e: Error) => {
-        console.error(e);
+      .catch(() => {
         reject(new Error('Invite code is not valid'));
-      }),
+      })
   );
 };

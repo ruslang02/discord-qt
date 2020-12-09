@@ -1,9 +1,9 @@
 import { CursorShape, QLabel, QPoint, TextInteractionFlag } from '@nodegui/nodegui';
 import { DMChannel, Guild, GuildChannel, TextChannel } from 'discord.js';
-import { __ } from 'i18n';
 import open from 'open';
 import { basename, extname } from 'path';
 import { URL } from 'url';
+import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
 import { MarkdownStyles } from '../../utilities/MarkdownStyles';
@@ -35,7 +35,7 @@ export class DLabel extends QLabel {
           Events.OPEN_USER_PROFILE,
           url.hostname,
           app.currentGuildId,
-          this.mapToGlobal(this.p0),
+          this.mapToGlobal(this.p0)
         );
 
         break;
@@ -105,7 +105,7 @@ export class DLabel extends QLabel {
             ? `${__('EMOJI_POPOUT_JOINED_GUILD_EMOJI_DESCRIPTION')} <b>${serverName}</b>`
             : __('EMOJI_POPOUT_PREMIUM_UNJOINED_PRIVATE_GUILD_DESCRIPTION')
         }
-          </html>`,
+          </html>`
       );
     }
   }

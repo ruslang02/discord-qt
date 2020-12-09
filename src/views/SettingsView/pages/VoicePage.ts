@@ -8,7 +8,6 @@ import {
   QSlider,
 } from '@nodegui/nodegui';
 import { ChildProcessWithoutNullStreams, execSync } from 'child_process';
-import { __ } from 'i18n';
 import { basename } from 'path';
 import { app, MAX_QSIZE } from '../../..';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
@@ -17,6 +16,8 @@ import { NoiseReductor } from '../../../components/VoicePanel/NoiseReductor';
 import { ConfigManager } from '../../../utilities/ConfigManager';
 import { createLogger } from '../../../utilities/Console';
 import { Events } from '../../../utilities/Events';
+import { PhraseID } from '../../../utilities/PhraseID';
+import { __ } from '../../../utilities/StringProvider';
 import { createRecordStream } from '../../../utilities/VoiceStreams';
 import { Divider } from '../Divider';
 import { Page } from './Page';
@@ -52,7 +53,7 @@ export class VoicePage extends Page {
     app.on(Events.CONFIG_UPDATE, this.loadConfig.bind(this));
   }
 
-  private createHeader(id: string) {
+  private createHeader(id: PhraseID) {
     const label = new QLabel(this);
 
     label.setObjectName('Header3');
@@ -74,9 +75,9 @@ export class VoicePage extends Page {
       () => {},
       (loudness) => {
         this.sensCheck.setValue(
-          loudness * (app.config.get('voiceSettings').inputVolume ?? 100) * 0.1,
+          loudness * (app.config.get('voiceSettings').inputVolume ?? 100) * 0.1
         );
-      },
+      }
     );
 
     const tester = this.recordTester.stdout.pipe(noiseReductor);

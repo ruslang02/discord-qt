@@ -14,10 +14,10 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Client, Constants, DQConstants, Guild } from 'discord.js';
-import { __ } from 'i18n';
 import path from 'path';
 import { app, MAX_QSIZE } from '../..';
 import { Events as AppEvents } from '../../utilities/Events';
+import { __ } from '../../utilities/StringProvider';
 import { ViewOptions } from '../../views/ViewOptions';
 import { GuildButton } from './GuildButton';
 

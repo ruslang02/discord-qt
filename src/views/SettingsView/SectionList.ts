@@ -6,7 +6,7 @@ import {
   QScrollArea,
   Shape,
 } from '@nodegui/nodegui';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../utilities/Events';
 import { Page } from './pages/Page';

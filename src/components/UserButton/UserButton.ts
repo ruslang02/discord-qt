@@ -9,13 +9,14 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { ActivityType, Client, Constants, GuildMember, Presence, User } from 'discord.js';
-import { __ } from 'i18n';
 import { app, MAX_QSIZE } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
+import { PhraseID } from '../../utilities/PhraseID';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from '../../utilities/StringProvider';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
 const { error } = createLogger('UserButton');
@@ -26,7 +27,7 @@ const p0 = new QPoint(0, 0);
  * Represents a button with user's avatar, name and current status.
  */
 export class UserButton extends DChannelButton {
-  private static ActivityTypeText: Map<ActivityType, string> = new Map([
+  private static ActivityTypeText: Map<ActivityType, PhraseID> = new Map([
     ['LISTENING', 'LISTENING_TO'],
     ['PLAYING', 'PLAYING_GAME'],
     ['WATCHING', 'WATCHING'],
@@ -206,7 +207,7 @@ export class UserButton extends DChannelButton {
 
     try {
       const path = await pictureWorker.loadImage(
-        this.user.displayAvatarURL({ format: 'png', size: 256 }),
+        this.user.displayAvatarURL({ format: 'png', size: 256 })
       );
 
       if (this.native.destroyed) {
@@ -242,7 +243,7 @@ export class UserButton extends DChannelButton {
       if (type === 'CUSTOM_STATUS') {
         status = state || '';
       } else {
-        status = __(UserButton.ActivityTypeText.get(type) || '', { name, game: name });
+        status = __(UserButton.ActivityTypeText.get(type) as PhraseID, { name, game: name });
       }
 
       this.statusLabel.setText(status);

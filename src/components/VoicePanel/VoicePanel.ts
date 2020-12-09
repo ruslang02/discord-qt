@@ -18,7 +18,6 @@ import {
   VoiceConnection,
   VoiceState,
 } from 'discord.js';
-import { __ } from 'i18n';
 import open from 'open';
 import { join } from 'path';
 import { VolumeTransformer } from 'prism-media';
@@ -27,6 +26,7 @@ import { app } from '../..';
 import { ConfigManager } from '../../utilities/ConfigManager';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
+import { __ } from '../../utilities/StringProvider';
 import { createPlaybackStream, createRecordStream } from '../../utilities/VoiceStreams';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { NoiseReductor } from './NoiseReductor';
@@ -245,7 +245,7 @@ export class VoicePanel extends QWidget {
         type: 's16le',
       })) as unknown) as Transform, // Change the volume
       (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
-      (err) => err && debug("Couldn't finish playback pipeline.", err),
+      (err) => err && debug("Couldn't finish playback pipeline.", err)
     );
 
     for (const member of channel.members.filter((m) => m.user !== app.client.user).values()) {
@@ -267,7 +267,7 @@ export class VoicePanel extends QWidget {
       })) as unknown) as Transform,
       // Change the volume
       (this.recordNoiseReductor = new NoiseReductor(this.onSpeaking.bind(this))), // Audio gate
-      (err) => err && debug("Couldn't finish recording pipeline.", err),
+      (err) => err && debug("Couldn't finish recording pipeline.", err)
     );
 
     this.connection.play(recorder, { bitrate: 256, type: 'converted', highWaterMark: 0 });

@@ -1,6 +1,6 @@
 import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { GuildMember } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../utilities/StringProvider';
 import { DColorButton } from '../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';

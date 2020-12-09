@@ -1,4 +1,4 @@
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
 import { DMUsersList } from './DMUsersList';

@@ -203,7 +203,7 @@ export class ChannelsList extends QListWidget {
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
       .partition((a) => a.type === 'category') as [
       Collection<string, CategoryChannel>,
-      Collection<string, GuildChannel>,
+      Collection<string, GuildChannel>
     ];
 
     debug(`Loading ${categories.size} categories...`);
@@ -219,7 +219,7 @@ export class ChannelsList extends QListWidget {
       label.adjustSize();
       label.addEventListener(
         WidgetEventTypes.MouseButtonPress,
-        this.toggleCategory.bind(this, guild.id, category.id),
+        this.toggleCategory.bind(this, guild.id, category.id)
       );
 
       const item = new QListWidgetItem();

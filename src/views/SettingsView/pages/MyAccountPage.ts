@@ -1,6 +1,6 @@
 import { Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { Client, Constants } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../../utilities/StringProvider';
 import { app, MAX_QSIZE } from '../../..';
 import { DColorButton } from '../../../components/DColorButton/DColorButton';
 import { DLabel } from '../../../components/DLabel/DLabel';
@@ -105,7 +105,7 @@ export class MyAccountPage extends Page {
     twoFAHelper.setText(
       __('TWO_FA_UNAVAILABLE', {
         tfaURL: 'https://discord.com/channels/@me/settings',
-      }),
+      })
     );
 
     layout.addWidget(header);

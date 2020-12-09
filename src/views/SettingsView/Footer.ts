@@ -41,7 +41,7 @@ export class Footer extends QWidget {
     label.setText(
       `${app.name} ${me.version}${__BUILDNUM__ !== 0 ? ` (build ${__BUILDNUM__})` : ''}<br>node ${
         process.versions.node
-      }<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`,
+      }<br>qode ${process.versions.qode}<br>${process.platform} ${process.arch}`
     );
 
     label.setOpenExternalLinks(true);

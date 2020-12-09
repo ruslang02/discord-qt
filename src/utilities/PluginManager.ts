@@ -40,7 +40,7 @@ export class PluginManager {
   recursiveSearch(root: string): Promise<any>[] {
     mkdirSync(root, { recursive: true });
     const dirs = readdirSync(root, { withFileTypes: true }).filter(
-      (dir) => !['.git', 'node_modules'].includes(dir.name),
+      (dir) => !['.git', 'node_modules'].includes(dir.name)
     );
 
     let tasks: Promise<any>[] = [];

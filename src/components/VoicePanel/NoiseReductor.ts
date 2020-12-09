@@ -9,7 +9,7 @@ export class NoiseReductor extends Transform {
 
   constructor(
     private onSetSpeaking: (isSpeaking: boolean) => void,
-    private onLoudnessChanged?: (loudness: number) => void,
+    private onLoudnessChanged?: (loudness: number) => void
   ) {
     super();
   }

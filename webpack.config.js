@@ -122,7 +122,7 @@ module.exports = (_env, argv) => {
       new CopyPlugin({
         patterns: [
           { from: 'assets', to: 'assets' },
-          { from: 'locales', to: 'locales' },
+          { from: 'src/locales', to: 'locales' },
           { from: 'node_modules/opusscript/build/opusscript_native_wasm.wasm' },
           { from: 'node_modules/ffmpeg-static/ffmpeg', noErrorOnMissing: true },
           { from: 'node_modules/ffmpeg-static/ffmpeg.exe', noErrorOnMissing: true }

@@ -43,7 +43,7 @@ for (const object of consts) {
             trace(
               `Method ${String(prop)} was called of a dereferenced object of type ${
                 target.constructor.name
-              }`,
+              }`
             );
 
             return noop;
@@ -73,7 +73,7 @@ const processDelete = function processDelete(this: any) {
 
 const processPress = function processPress(this: any) {
   if (app.window?.shiftKeyPressed) {
-    console.log(this);
+    debug(this);
   }
 };
 

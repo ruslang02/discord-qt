@@ -32,7 +32,7 @@ export class OverlayWindow extends QWidget {
         WindowType.NoDropShadowWindowHint |
         WindowType.WindowSystemMenuHint |
         WindowType.WindowMinimizeButtonHint,
-      true,
+      true
     );
 
     this.initWindow();

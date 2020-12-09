@@ -1,12 +1,12 @@
 import { QLabel, QPixmap, QSize, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
 import { Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel } from 'discord.js';
-import { __ } from 'i18n';
 import open from 'open';
 import path from 'path';
 import { app } from '../..';
 import { ConfigManager } from '../../utilities/ConfigManager';
 import { Events as AppEvents } from '../../utilities/Events';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
+import { __ } from '../../utilities/StringProvider';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
@@ -34,7 +34,7 @@ export class MainTitleBar extends DTitleBar {
     iconQSize: new QSize(24, 24),
     tooltipText: '',
     isCheckbox: true,
-    checked: true
+    checked: true,
   });
 
   private pinBtn = new DIconButton({
@@ -95,7 +95,7 @@ export class MainTitleBar extends DTitleBar {
 
     app.on(AppEvents.TOGGLE_DRAWER, (value) => {
       this.drawerBtn.setChecked(value);
-    })
+    });
   }
 
   private handleConfigUpdate(config: ConfigManager) {
@@ -123,7 +123,7 @@ export class MainTitleBar extends DTitleBar {
 
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
       app.emit(AppEvents.TOGGLE_DRAWER, false);
-    })
+    });
 
     controls.setSpacing(6);
     controls.setContentsMargins(16, 12, 16, 12);
@@ -170,7 +170,7 @@ export class MainTitleBar extends DTitleBar {
     if (channel instanceof DMChannel) {
       statusLabel.setText('●');
       statusLabel.setInlineStyle(
-        `color: ${PresenceStatusColor.get(channel.recipient.presence.status || 'offline')}`,
+        `color: ${PresenceStatusColor.get(channel.recipient.presence.status || 'offline')}`
       );
     }
   }

@@ -13,15 +13,16 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Client, Constants, DQConstants } from 'discord.js';
-import { __ } from 'i18n';
 import { join } from 'path';
 import { app, MAX_QSIZE } from '../..';
+import { createLogger } from '../../utilities/Console';
 import { CustomStatus } from '../../utilities/CustomStatus';
 import { Events as AppEvents } from '../../utilities/Events';
-import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
-import { createLogger } from '../../utilities/Console';
+import { PhraseID } from '../../utilities/PhraseID';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from '../../utilities/StringProvider';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { UserPanelMenu } from './UserPanelMenu';
 
@@ -117,7 +118,7 @@ export class UserPanel extends QWidget {
     this.copiedAmount += 1;
     clipboard.setText(app.client.user?.tag || '', QClipboardMode.Clipboard);
     [discLabel, statusText].forEach((w) =>
-      w.setText(__(`ACCOUNT_USERNAME_COPY_SUCCESS_${Math.min(this.copiedAmount, 11)}`)),
+      w.setText(__(`ACCOUNT_USERNAME_COPY_SUCCESS_${Math.min(this.copiedAmount, 11)}` as PhraseID))
     );
 
     this.copiedTimer = setTimeout(() => {
@@ -249,7 +250,7 @@ export class UserPanel extends QWidget {
 
     try {
       const path = await pictureWorker.loadImage(
-        client.user.displayAvatarURL({ format: 'png', size: 256 }),
+        client.user.displayAvatarURL({ format: 'png', size: 256 })
       );
 
       avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));

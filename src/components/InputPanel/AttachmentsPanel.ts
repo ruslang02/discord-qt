@@ -9,12 +9,12 @@ import {
   QWidget,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { __ } from 'i18n';
 import { basename, extname, join } from 'path';
 import { pathToFileURL } from 'url';
 import { PIXMAP_EXTS } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { __ } from '../../utilities/StringProvider';
 
 const { error } = createLogger('AttachmentsPanel');
 

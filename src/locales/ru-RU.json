@@ -27,6 +27,7 @@
   "CLEAR_CACHE_MOTIVATIONAL_MESSAGE": "Ура! Больше места на диске!",
   "EMOJI_PICKER_PRO_TIP_BODY": "Вставляйте эмодзи как картинки при помощи <code>Ctrl</code>.",
   "OPTIMIZE_FOR_MOBILE": "Оптимизировать интерфейс под мобильные устройства",
+  "PLATFORM_NOT_SUPPORTED": "Данная функция недоступна для данной платформы.",
 
   "SEARCH_FOR_EMOJI": "Найдите идеальный эмодзи",
   "CONNECTION_STATUS_CONNECTING": "Подключение",
@@ -152,5 +153,6 @@
   "OPEN": "Открыть",
   "QUIT": "Закрыть",
   "MEMBER_LIST": "Список участников",
-  "ACCESSIBILITY_ZOOM_LEVEL_LABEL": "Уровень масштабирования"
+  "ACCESSIBILITY_ZOOM_LEVEL_LABEL": "Уровень масштабирования",
+  "INVITE_BUTTON_INVALID": "Приглашение недействительно"
 }

@@ -7,7 +7,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';

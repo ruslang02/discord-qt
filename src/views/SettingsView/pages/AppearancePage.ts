@@ -1,7 +1,8 @@
 import { QLabel, QVariant } from '@nodegui/nodegui';
 import { existsSync, promises } from 'fs';
-import { getLocale, setLocale, __ } from 'i18n';
+import { getLocale, setLocale } from 'i18n';
 import { basename, join } from 'path';
+import { __ } from '../../../utilities/StringProvider';
 import { app } from '../../..';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
 import { Events } from '../../../utilities/Events';
@@ -43,7 +44,19 @@ export class AppearancePage extends Page {
   }
 
   private async initPage() {
-    const { title, header, enavcx, rdavcx, ismbcx, prmdcx, dbgcx, themeSel, langSel, zoomSel, layout } = this;
+    const {
+      title,
+      header,
+      enavcx,
+      rdavcx,
+      ismbcx,
+      prmdcx,
+      dbgcx,
+      themeSel,
+      langSel,
+      zoomSel,
+      layout,
+    } = this;
 
     header.setObjectName('Header2');
     header.setText(title);
@@ -143,7 +156,7 @@ export class AppearancePage extends Page {
 
           try {
             const file = JSON.parse(
-              (await readFile(join('./dist/locales/', locale.name))).toString(),
+              (await readFile(join('./dist/locales/', locale.name))).toString()
             );
 
             this.langSel.addItem(undefined, file['locale.name'], new QVariant(localeName));
@@ -152,7 +165,7 @@ export class AppearancePage extends Page {
           }
 
           return localeName;
-        }),
+        })
       );
     } catch (e) {
       error("Couldn't load languages.", e);
@@ -173,7 +186,7 @@ export class AppearancePage extends Page {
       themeSel.setCurrentText(theme);
     }
 
-    zoomSel.setCurrentText(app.config.get('zoomLevel'))
+    zoomSel.setCurrentText(app.config.get('zoomLevel'));
 
     langSel.setCurrentIndex(this.langs.indexOf(getLocale()));
   }

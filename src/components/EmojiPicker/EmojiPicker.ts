@@ -29,7 +29,7 @@ import {
 import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
 import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
@@ -293,8 +293,8 @@ export class EmojiPicker extends QMenu {
     emojiView.clear();
     emojiView.setCurrentRow(0);
 
-    if (emojiName === __('SEARCH_FOR_EMOJI') && config.recentEmojis) {
-      const recents = config.recentEmojis.sort((a, b) => a[1] - b[1]);
+    if (emojiName === __('SEARCH_FOR_EMOJI') && config.get('recentEmojis')) {
+      const recents = config.get('recentEmojis').sort((a, b) => a[1] - b[1]);
 
       for (const item of recents) {
         const emoji = client.emojis.resolve(item[0]);
@@ -309,7 +309,7 @@ export class EmojiPicker extends QMenu {
 
     const result = client.emojis.cache
       .filter((emoji) =>
-        emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase()),
+        emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase())
       )
       .partition((v) => v.guild.id === app.currentGuildId);
 
@@ -332,7 +332,7 @@ export class EmojiPicker extends QMenu {
 
       this.insertEmoji(
         i < thisGuild.length ? thisGuild[i] : otherGuilds[i - thisGuild.length],
-        this.token,
+        this.token
       );
     }
 

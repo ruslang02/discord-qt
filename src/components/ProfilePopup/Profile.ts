@@ -93,7 +93,7 @@ export class Profile extends QWidget {
       username.setText(user.tag);
     } else {
       nickname.setText(
-        `<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`,
+        `<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`
       );
 
       username.hide();

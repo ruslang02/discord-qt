@@ -1,6 +1,6 @@
 import { QAction, QMenu, QSystemTrayIcon, QSystemTrayIconActivationReason } from '@nodegui/nodegui';
 import { Constants } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from './utilities/StringProvider';
 import { app } from '.';
 import { Events as AppEvents } from './utilities/Events';
 

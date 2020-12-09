@@ -37,7 +37,7 @@ export class GuildPanel extends QWidget {
     24,
     24,
     1,
-    1,
+    1
   );
 
   private guildow = new QLabel(this);
@@ -95,7 +95,7 @@ export class GuildPanel extends QWidget {
         if (event?.button() === MouseButton.LeftButton) {
           actionsMenu.popup(this.channelsList.mapToGlobal(new QPoint(0, 0)));
         }
-      },
+      }
     );
 
     controls.setSpacing(0);

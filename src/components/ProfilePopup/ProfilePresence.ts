@@ -1,10 +1,11 @@
 import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { ActivityType, Client, Presence } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app, MAX_QSIZE } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { PhraseID } from '../../utilities/PhraseID';
 
 const { error } = createLogger('ProfilePresence');
 
@@ -12,7 +13,7 @@ const { error } = createLogger('ProfilePresence');
  * Represents currently playing section in the profile popup.
  */
 export class ProfilePresence extends QWidget {
-  private static ActivityTypeText: Map<ActivityType, string> = new Map([
+  private static ActivityTypeText: Map<ActivityType, PhraseID> = new Map([
     ['LISTENING', 'USER_ACTIVITY_HEADER_LISTENING'],
     ['PLAYING', 'USER_ACTIVITY_HEADER_PLAYING'],
     ['WATCHING', 'USER_ACTIVITY_HEADER_WATCHING'],
@@ -107,10 +108,10 @@ export class ProfilePresence extends QWidget {
     }
 
     header.setText(
-      __(ProfilePresence.ActivityTypeText.get(activity.type) || '', {
+      __(ProfilePresence.ActivityTypeText.get(activity.type) as PhraseID, {
         name: activity.name,
         platform: activity.name,
-      }),
+      })
     );
 
     switch (activity.type) {

@@ -57,7 +57,7 @@ export class ChannelMembers extends QListWidget {
           ubtn.setStyleSheet(
             speaking.bitfield === 1
               ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }'
-              : '',
+              : ''
           );
         }
       });

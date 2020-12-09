@@ -9,8 +9,8 @@ import {
   QWidget,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { __ } from 'i18n';
 import { join } from 'path';
+import { __ } from '../utilities/StringProvider';
 import { DIconButton } from '../components/DIconButton/DIconButton';
 import { MainWindow } from '../windows/MainWindow/MainWindow';
 
@@ -60,7 +60,7 @@ export class Dialog extends QWidget {
   protected initEvents() {
     (this.nodeParent as MainWindow).addEventListener(
       WidgetEventTypes.Resize,
-      this.resizeToWindow.bind(this),
+      this.resizeToWindow.bind(this)
     );
 
     this.resizeToWindow();

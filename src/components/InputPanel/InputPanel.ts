@@ -28,15 +28,16 @@ import {
   Permissions,
   TextChannel,
 } from 'discord.js';
-import { __ } from 'i18n';
 import { join } from 'path';
 import { fileURLToPath, URL } from 'url';
 import { app, MAX_QSIZE } from '../..';
+import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { paths } from '../../utilities/Paths';
-import { createLogger } from '../../utilities/Console';
+import { PhraseID } from '../../utilities/PhraseID';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { getEmojiURL } from '../../utilities/ResolveEmoji';
+import { __ } from '../../utilities/StringProvider';
 import { ViewOptions } from '../../views/ViewOptions';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { EmojiPicker } from '../EmojiPicker/EmojiPicker';
@@ -129,7 +130,7 @@ export class InputPanel extends QWidget {
           channel.type === 'dm'
             ? `@${(<DMChannel>channel).recipient.username}`
             : `#${(<TextChannel>channel).name}`,
-      }),
+      })
     );
 
     input.setFocus(FocusReason.TabFocusReason);
@@ -159,7 +160,7 @@ export class InputPanel extends QWidget {
     }
 
     this.prevTypers = typers;
-    let i18nString;
+    let i18nString: PhraseID;
 
     switch (typers.length) {
       case 0:
@@ -190,7 +191,7 @@ export class InputPanel extends QWidget {
     const { input } = this;
 
     input.insertPlainText(
-      `> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`,
+      `> ${message.cleanContent.replace(/\n/g, '\n> ')}\n${message.author.toString()}`
     );
 
     input.setFocus(FocusReason.TabFocusReason);
@@ -245,7 +246,7 @@ export class InputPanel extends QWidget {
               emoji_id: emoji.id || undefined,
               emoji_name: emoji.name,
             },
-            emoji.animated ? 'gif' : 'png',
+            emoji.animated ? 'gif' : 'png'
           );
 
           url += '?size=128';

@@ -40,7 +40,7 @@ TextBasedChannel.applyToClass = (structure: any, full = false, ignore: string[] 
       Object.defineProperty(
         structure.prototype,
         prop,
-        Object.getOwnPropertyDescriptor(TextBasedChannel.prototype, prop) as PropertyDescriptor,
+        Object.getOwnPropertyDescriptor(TextBasedChannel.prototype, prop) as PropertyDescriptor
       );
     }
   }

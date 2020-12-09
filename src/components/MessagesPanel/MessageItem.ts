@@ -17,7 +17,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Message, Snowflake } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
@@ -32,6 +32,7 @@ import {
   processMarkdown,
   processMentions,
 } from './MessageUtilities';
+import { PhraseID } from '../../utilities/PhraseID';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 const { error } = createLogger('MessageItem');
@@ -147,7 +148,7 @@ export class MessageItem extends QWidget {
       app.emit(
         Events.OPEN_USER_MENU,
         this.message.member || this.message.author,
-        avatar.mapToGlobal(new QPoint(x, y)),
+        avatar.mapToGlobal(new QPoint(x, y))
       );
     });
 
@@ -220,7 +221,11 @@ export class MessageItem extends QWidget {
 
     if (this.contentNoEmojis) {
       processEmojis(this.contentNoEmojis)
-        .then((content) => !this.contentLabel.native.destroyed && this.contentLabel.setText(content))
+        .then(
+          (content) =>
+            !this.contentLabel.native.destroyed &&
+            this.contentLabel.setText(content.replace(/\n/g, '<br />'))
+        )
         .catch(error.bind(error, "Couldn't load emoji."));
     }
 
@@ -234,7 +239,7 @@ export class MessageItem extends QWidget {
   async loadAvatar() {
     const { message, avatar } = this;
 
-    if (!message || avatar.native.destroyed) {
+    if (!message || this.native.destroyed || avatar.native.destroyed) {
       return;
     }
 
@@ -248,10 +253,10 @@ export class MessageItem extends QWidget {
 
     try {
       const image = await pictureWorker.loadImage(
-        message.author.displayAvatarURL({ format: 'png', size: 256 }),
+        message.author.displayAvatarURL({ format: 'png', size: 256 })
       );
 
-      if (avatar.native.destroyed) {
+      if (this.native.destroyed || avatar.native.destroyed) {
         return;
       }
 
@@ -293,7 +298,7 @@ export class MessageItem extends QWidget {
         return this;
       }
 
-      contentLabel.setText(content);
+      contentLabel.setText(content.replace(/\n/g, '<br />'));
     }
 
     [
@@ -310,7 +315,7 @@ export class MessageItem extends QWidget {
    * @param message Message to process.
    */
   private loadSystemMessage(message: Message) {
-    const content = __(`MESSAGE_${message.type}`) || message.type;
+    const content = __(`MESSAGE_${message.type}` as PhraseID) || message.type;
 
     this.dateLabel.hide();
     this.contentLabel.setPlainText(`<i>&nbsp;</i>${content}`);

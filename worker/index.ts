@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import envPaths from 'env-paths';
 import { existsSync, promises } from 'fs';
 import { dirname, join } from 'path';

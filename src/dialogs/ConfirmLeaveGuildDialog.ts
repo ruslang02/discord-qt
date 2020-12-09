@@ -1,10 +1,10 @@
 import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
-import { __ } from 'i18n';
 import { app } from '..';
 import { DColorButton } from '../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
 import { Events } from '../utilities/Events';
+import { __ } from '../utilities/StringProvider';
 import { Dialog } from './Dialog';
 
 export class ConfirmLeaveGuildDialog extends Dialog {

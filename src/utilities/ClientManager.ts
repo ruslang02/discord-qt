@@ -1,6 +1,6 @@
 import { Client, Constants, HTTPError } from 'discord.js';
-import { __ } from 'i18n';
 import { notify } from 'node-notifier';
+import { __ } from './StringProvider';
 import { app } from '..';
 import { Account } from './Account';
 import { clientOptions } from './ClientOptions';
@@ -79,7 +79,7 @@ export class ClientManager {
         type: 'error',
         icon: await pictureWorker.loadImage(
           message.author.displayAvatarURL({ size: 64, format: 'png' }),
-          { roundify: false },
+          { roundify: false }
         ),
         category: 'im',
         hint: 'string:desktop-entry:discord',

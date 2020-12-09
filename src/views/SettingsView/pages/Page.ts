@@ -1,5 +1,5 @@
 import { Direction, QBoxLayout, QLabel, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
-import { __ } from 'i18n';
+import { __ } from '../../../utilities/StringProvider';
 import { app, MAX_QSIZE } from '../../..';
 import { createLogger } from '../../../utilities/Console';
 import { IConfig } from '../../../utilities/IConfig';

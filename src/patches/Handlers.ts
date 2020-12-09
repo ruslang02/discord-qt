@@ -25,7 +25,7 @@ Object.assign(handlers, {
       for (const settings of data.user_guild_settings) {
         client.user.guildSettings.set(
           settings.guild_id,
-          new ClientUserGuildSettings(settings, client),
+          new ClientUserGuildSettings(settings, client)
         );
       }
     }
@@ -61,13 +61,13 @@ Object.assign(handlers, {
     } else {
       client.user.guildSettings.set(
         packet.d.guild_id,
-        new ClientUserGuildSettings(packet.d, client),
+        new ClientUserGuildSettings(packet.d, client)
       );
     }
 
     client.emit(
       ((Constants as unknown) as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE,
-      client.user.guildSettings.get(packet.d.guild_id),
+      client.user.guildSettings.get(packet.d.guild_id)
     );
   },
 

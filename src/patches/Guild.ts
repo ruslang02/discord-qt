@@ -9,7 +9,7 @@ Object.defineProperty(Guild.prototype, 'acknowledged', {
         (channel: any) =>
           ['news', 'text'].includes(channel.type) &&
           channel.can(Permissions.FLAGS.VIEW_CHANNEL) &&
-          !channel.muted,
+          !channel.muted
       )
       .every((channel: any) => channel.acknowledged);
   },

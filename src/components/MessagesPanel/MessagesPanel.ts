@@ -73,7 +73,7 @@ export class MessagesPanel extends QScrollArea {
               !lowest?.native.destroyed &&
               this.isBottom(lowest) &&
               this.ensureVisible(0, MAX_QSIZE),
-            100,
+            100
           );
 
           this.initAckTimer();
@@ -87,7 +87,8 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initRoot() {
-    this.root = new QWidget(this);
+    this.takeWidget();
+    this.root = new QWidget();
     this.root.setObjectName('MessagesContainer');
     this.root.addEventListener(WidgetEventTypes.Move, this.handleWheel.bind(this, false));
     this.rootControls = new QBoxLayout(Direction.BottomToTop);
@@ -154,10 +155,12 @@ export class MessagesPanel extends QScrollArea {
       return;
     }
 
-    const messages = (await channel.messages.fetch({
-      before: before.message?.id,
-      limit,
-    }))
+    const messages = (
+      await channel.messages.fetch({
+        before: before.message?.id,
+        limit,
+      })
+    )
       .array()
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .reverse();

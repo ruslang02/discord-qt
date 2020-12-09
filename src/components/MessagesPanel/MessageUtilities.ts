@@ -13,7 +13,6 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { GuildChannel, Message, MessageEmbedImage, MessageMentions } from 'discord.js';
-import { __ } from 'i18n';
 import markdownIt from 'markdown-it';
 import open from 'open';
 import { extname, join } from 'path';
@@ -22,6 +21,7 @@ import { app, MAX_QSIZE, PIXMAP_EXTS } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from '../../utilities/StringProvider';
 import { DLabel } from '../DLabel/DLabel';
 import { MessageItem } from './MessageItem';
 
@@ -100,13 +100,11 @@ export async function processMentions(content: string, message: Message) {
       if (message.guild) {
         const member = message.guild.members.resolve(id);
         const memberName =
-          member?.displayName ||
-          app.client.users.resolve(id)?.username ||
-          'unknown-user';
+          member?.displayName || app.client.users.resolve(id)?.username || 'unknown-user';
 
         newContent = newContent.replace(
           escape(match),
-          `<a href='dq-user://${id}'>@${memberName}</a>`,
+          `<a href='dq-user://${id}'>@${memberName}</a>`
         );
       } else {
         let userName: string;
@@ -121,7 +119,7 @@ export async function processMentions(content: string, message: Message) {
 
         newContent = newContent.replace(
           escape(match),
-          `<a href='dq-user://${id}'>@${userName}</a>`,
+          `<a href='dq-user://${id}'>@${userName}</a>`
         );
       }
     }),
@@ -132,7 +130,7 @@ export async function processMentions(content: string, message: Message) {
       if (role) {
         newContent = newContent.replace(
           escape(match),
-          `<span style='color: ${role.hexColor}'>@${role.name}</span>`,
+          `<span style='color: ${role.hexColor}'>@${role.name}</span>`
         );
       }
     }),
@@ -143,7 +141,7 @@ export async function processMentions(content: string, message: Message) {
 
       newContent = newContent.replace(
         escape(match),
-        `<a href='dq-channel://${id}'>#${channelName}</a>`,
+        `<a href='dq-channel://${id}'>#${channelName}</a>`
       );
     }),
   ]);
@@ -187,7 +185,7 @@ export async function processEmojiPlaceholders(content: string): Promise<string>
   for (const emo of emoIds) {
     newContent = newContent.replace(
       escape(emo),
-      `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`,
+      `<img width="${size}" height="${size}" src="${pathToFileURL(EMOJI_PLACEHOLDER)}" />`
     );
   }
 
@@ -226,7 +224,7 @@ export async function processEmojis(content: string): Promise<string> {
 
         newContent = newContent.replace(
           escape(emo),
-          `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`,
+          `<a href='${uri.href}'><img ${larger}=${size} src='${pathToFileURL(emojiPath)}'></a>`
         );
       })
       .catch(() => {
@@ -280,7 +278,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
         pictureWorker
           .loadImage(embed.author.proxyIconURL)
           .then(
-            (path) => !item.native.destroyed && auimage.setPixmap(new QPixmap(path).scaled(24, 24)),
+            (path) => !item.native.destroyed && auimage.setPixmap(new QPixmap(path).scaled(24, 24))
           )
           .catch(() => {
             error(`Couldn't load avatar picture of embed ${embed.title}.`);
@@ -295,7 +293,7 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
 
       if (embed.author.url) {
         auname.setText(
-          `<a style='color: white;' href='${embed.author.url}'>${embed.author.name}</a>`,
+          `<a style='color: white;' href='${embed.author.url}'>${embed.author.name}</a>`
         );
       } else {
         auname.setText(embed.author.name || '');
@@ -491,7 +489,10 @@ export async function processInvites(message: Message, msgItem: MessageItem): Pr
           }
         };
       })
-      .catch(error.bind("Couldn't load the invite."));
+      .catch(() => {
+        helperText.setText(__('INVITE_BUTTON_INVALID'));
+        avatar.setText(':-(');
+      });
   }
 
   return widgets;
@@ -519,7 +520,7 @@ export function processAttachments(message: Message, item: MessageItem): QLabel[
       `${attach.name || attach.url}<br />
     Size: ${attach.size} bytes
     ${attach.width && attach.height ? `<br />Resolution: ${attach.width}x${attach.height}` : ''}
-    `,
+    `
     );
 
     qimage.addEventListener(WidgetEventTypes.MouseButtonPress, () => {

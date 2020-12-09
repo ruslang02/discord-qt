@@ -14,9 +14,10 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { GuildMember, User } from 'discord.js';
-import { __ } from 'i18n';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
+import { PhraseID } from '../../utilities/PhraseID';
+import { __ } from '../../utilities/StringProvider';
 
 export class UserMenu extends QMenu {
   private someone?: GuildMember | User;
@@ -48,7 +49,7 @@ export class UserMenu extends QMenu {
    * @param id Translation ID, also used in this.items
    * @param callback Callback
    */
-  private addSimpleItem(id: string, callback: () => void) {
+  private addSimpleItem(id: PhraseID, callback: () => void) {
     const item = new QAction();
 
     item.setText(__(id));
@@ -92,7 +93,8 @@ export class UserMenu extends QMenu {
 
     this.items.set('VOLUME_SEPARATOR', this.addSeparator());
 
-    { // User volume slider
+    {
+      // User volume slider
       const item = new QAction();
 
       item.setText('');

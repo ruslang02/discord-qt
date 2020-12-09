@@ -1,8 +1,9 @@
 import { QAction, QMenu, QPoint, WidgetAttribute, WidgetEventTypes } from '@nodegui/nodegui';
 import { Guild } from 'discord.js';
-import { __ } from 'i18n';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
+import { PhraseID } from '../../utilities/PhraseID';
+import { __ } from '../../utilities/StringProvider';
 import { ViewOptions } from '../../views/ViewOptions';
 
 export class GuildActionsMenu extends QMenu {
@@ -35,7 +36,7 @@ export class GuildActionsMenu extends QMenu {
     this.addEventListener(WidgetEventTypes.Hide, () => this.updateComponents());
   }
 
-  private addComponent(textId: string, callback: () => Promise<void>) {
+  private addComponent(textId: PhraseID, callback: () => Promise<void>) {
     const item = new QAction();
 
     item.setText(__(textId));
@@ -115,7 +116,7 @@ export class GuildActionsMenu extends QMenu {
       .get('CHANGE_NICKNAME')
       ?.setProperty(
         'visible',
-        member.hasPermission('CHANGE_NICKNAME') || member.hasPermission('MANAGE_NICKNAMES'),
+        member.hasPermission('CHANGE_NICKNAME') || member.hasPermission('MANAGE_NICKNAMES')
       );
   }
 

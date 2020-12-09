@@ -10,7 +10,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { GuildMemberRoleManager } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { MAX_QSIZE } from '../..';
 
 export class RolesSection extends QWidget {

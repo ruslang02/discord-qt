@@ -1,11 +1,11 @@
 import { Direction, QBoxLayout, QLabel, QWidget } from '@nodegui/nodegui';
-import { __ } from 'i18n';
 import { URL } from 'url';
 import { app } from '..';
 import { DColorButton } from '../components/DColorButton/DColorButton';
 import { DColorButtonColor } from '../components/DColorButton/DColorButtonColor';
 import { DErrorMessage } from '../components/DErrorMessage/DErrorMessage';
 import { DTextEdit } from '../components/DTextEdit/DTextEdit';
+import { __ } from '../utilities/StringProvider';
 import { Dialog } from './Dialog';
 
 export class AcceptInviteDialog extends Dialog {

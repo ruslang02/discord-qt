@@ -14,18 +14,18 @@ import {
   ScrollBarPolicy,
   Shape,
 } from '@nodegui/nodegui';
-import { __ } from 'i18n';
 import { join } from 'path';
 import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../utilities/Events';
+import { __ } from '../../utilities/StringProvider';
 import { CategoryHeader } from './CategoryHeader';
 import { Divider } from './Divider';
 import { Footer } from './Footer';
 import { AccountsPage } from './pages/AccountsPage';
 import { AppearancePage } from './pages/AppearancePage';
 import { MyAccountPage } from './pages/MyAccountPage';
-import { SystemPage } from './pages/SystemPage';
 import { Page } from './pages/Page';
+import { SystemPage } from './pages/SystemPage';
 import { VoicePage } from './pages/VoicePage';
 import { SectionList } from './SectionList';
 
