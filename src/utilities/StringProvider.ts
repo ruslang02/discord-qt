@@ -1,6 +1,6 @@
-import { __ as _i } from 'i18n';
+import { __ } from 'i18n';
 import { PhraseID } from './PhraseID';
 
-export function __(id: PhraseID, ...args: any[]) {
-  return _i(id, ...args);
-}
+const translate = (id: PhraseID, ...args: any[]) => __(id, ...args);
+
+export { translate as __ };
