@@ -125,13 +125,18 @@ export async function processMentions(content: string, message: Message) {
     }),
     ...roleMatches.map(async (match) => {
       const id = match.replace(/<@&/g, '').replace(/>/g, '');
-      const role = await message.guild?.roles.fetch(id);
 
-      if (role) {
-        newContent = newContent.replace(
-          escape(match),
-          `<span style='color: ${role.hexColor}'>@${role.name}</span>`
-        );
+      try {
+        const role = message.guild?.roles.resolve(id) || (await message.guild?.roles.fetch(id));
+
+        if (role) {
+          newContent = newContent.replace(
+            escape(match),
+            `<span style='color: ${role.hexColor}'>@${role.name}</span>`
+          );
+        }
+      } catch (e) {
+        error(e);
       }
     }),
     ...channelMatches.map(async (match) => {

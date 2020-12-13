@@ -68,12 +68,12 @@ export class Application extends ApplicationEventEmitter {
   }
 
   public async start() {
-    this.tray = new Tray();
-
     await this.loadFonts();
     await this.config.load();
 
     i18n.setLocale(this.config.get('locale') || 'en-US');
+
+    this.tray = new Tray();
 
     this.window = new MainWindow();
     this.window.show();
