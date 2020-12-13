@@ -1,9 +1,17 @@
 #OverlayWindow {
-  height: '100%';
-  width: '100%';
+  height: "100%";
+  width: "100%";
   font-size: 14px;
 
   #Member {
-
+    background: transparentize($background-primary, 0.2);
+    #Avatar {
+      background-color: $background-primary;
+    }
+    #Name {
+      color: white;
+      padding: 1px;
+      border-radius: 3px;
+    }
   }
 }

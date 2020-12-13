@@ -78,7 +78,7 @@ export class Application extends ApplicationEventEmitter {
     this.window = new MainWindow();
     this.window.show();
 
-    // this.overlay = new OverlayWindow();
+    this.overlay = new OverlayWindow();
 
     void this.pluginManager.reload();
 
