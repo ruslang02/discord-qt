@@ -38,21 +38,22 @@ export class ConfigManager {
 
     this.config = {
       accounts: config.accounts ?? [],
-      roundifyAvatars: config.roundifyAvatars ?? true,
-      fastLaunch: config.fastLaunch ?? false,
       debug: config.debug ?? false,
       enableAvatars: config.enableAvatars ?? true,
-      isMobile: config.isMobile ?? false,
-      zoomLevel: config.zoomLevel ?? '1.0',
+      fastLaunch: config.fastLaunch ?? false,
       hideMembersList: config.hideMembersList ?? false,
-      minimizeToTray: config.minimizeToTray ?? true,
-      processMarkDown: config.processMarkDown ?? true,
-      theme: config.theme ?? 'dark',
+      isMobile: config.isMobile ?? false,
       locale: config.locale ?? 'en-US',
+      minimizeToTray: config.minimizeToTray ?? true,
+      overlaySettings: config.overlaySettings ?? {},
+      processMarkDown: config.processMarkDown ?? true,
       recentEmojis: config.recentEmojis ?? [],
+      roundifyAvatars: config.roundifyAvatars ?? true,
+      theme: config.theme ?? 'dark',
       userVolumeSettings: config.userVolumeSettings ?? {},
       userLocalGuildSettings: config.userLocalGuildSettings ?? {},
       voiceSettings: config.voiceSettings ?? {},
+      zoomLevel: config.zoomLevel ?? '1.0',
     };
 
     if (config.debug === true) {

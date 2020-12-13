@@ -28,6 +28,11 @@
   "EMOJI_PICKER_PRO_TIP_BODY": "Pressing <code>Ctrl</code> key adds the emoji as a file!",
   "OPTIMIZE_FOR_MOBILE": "Make the user interface more mobile-friendly",
   "PLATFORM_NOT_SUPPORTED": "This feature is not supported on this platform.",
+  "SWITCH_TO": "Switch to...",
+  "NOT_LOGGED_IN": "Not logged in",
+  "LOGGED_IN_AS": "Logged in as {{name}}",
+  "SETTINGS_GAMES_OVERLAY_X_LABEL": "Horizontal position (in pixels)",
+  "SETTINGS_GAMES_OVERLAY_Y_LABEL": "Vertical position (in pixels)",
 
   "SEARCH_FOR_EMOJI": "Find the perfect emoji",
   "CONNECTION_STATUS_CONNECTING": "Connecting",
@@ -156,5 +161,9 @@
   "QUIT": "Quit",
   "MEMBER_LIST": "Member List",
   "ACCESSIBILITY_ZOOM_LEVEL_LABEL": "Zoom level",
-  "INVITE_BUTTON_INVALID": "Invalid Invite"
+  "INVITE_BUTTON_INVALID": "Invalid Invite",
+  "KEYBIND_TOGGLE_OVERLAY": "Toggle Overlay",
+  "OVERLAY": "Overlay",
+  "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Enable Overlay",
+  "SETTINGS_GAMES_OVERLAY": "Overlay"
 }

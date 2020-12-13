@@ -4,14 +4,14 @@
   font-size: 14px;
 
   #Member {
-    background: transparentize($background-primary, 0.2);
     #Avatar {
-      background-color: $background-primary;
+      border-radius: 18px;
     }
     #Name {
       color: white;
-      padding: 1px;
-      border-radius: 3px;
+      padding: 2px 3px;
+      border-radius: 5px;
+      background-color: $background-floating;
     }
   }
 }

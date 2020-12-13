@@ -1,5 +1,6 @@
 import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { GuildMember } from 'discord.js';
+import { MAX_QSIZE } from '../..';
 import { pictureWorker } from '../../utilities/PictureWorker';
 
 export class OverlayMember extends QWidget {
@@ -20,15 +21,23 @@ export class OverlayMember extends QWidget {
   private initComponent() {
     const { avatar, layout, name, setLayout } = this;
 
-    avatar.setFixedSize(24, 24);
+    avatar.setFixedSize(36, 36);
     avatar.setObjectName('Avatar');
     avatar.setAlignment(AlignmentFlag.AlignCenter);
     name.setObjectName('Name');
+    name.setMaximumSize(150, MAX_QSIZE);
+
+    const nameLayout = new QBoxLayout(Direction.TopToBottom);
+
+    nameLayout.addStretch(1);
+    nameLayout.addWidget(name);
+    nameLayout.addStretch(1);
 
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(10);
     layout.addWidget(avatar, 0);
-    layout.addWidget(name, 1);
+    layout.addLayout(nameLayout, 0);
+    layout.addStretch(1);
 
     setLayout.call(this, layout);
   }
@@ -43,9 +52,9 @@ export class OverlayMember extends QWidget {
         format: 'png',
         size: 256,
       }),
-      { roundify: false }
+      { roundify: true }
     );
 
-    avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1));
+    avatar.setPixmap(new QPixmap(path).scaled(36, 36, 1, 1));
   }
 }

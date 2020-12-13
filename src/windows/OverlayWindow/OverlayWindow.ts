@@ -1,4 +1,12 @@
-import { Direction, QBoxLayout, QWidget, WidgetAttribute, WindowType } from '@nodegui/nodegui';
+import {
+  Direction,
+  QBoxLayout,
+  QColor,
+  QGraphicsDropShadowEffect,
+  QWidget,
+  WidgetAttribute,
+  WindowType,
+} from '@nodegui/nodegui';
 import {
   Client,
   Constants,
@@ -11,12 +19,13 @@ import {
 import { existsSync, promises } from 'fs';
 import { join } from 'path';
 import { app } from '../..';
+import { ConfigManager } from '../../utilities/ConfigManager';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { OverlayMember } from './OverlayMember';
 
 const { readFile } = promises;
-const { error, log } = createLogger('OverlayWindow');
+const { error } = createLogger('OverlayWindow');
 const stylePath = join(__dirname, 'themes', 'dark.theme.css');
 
 export class OverlayWindow extends QWidget {
@@ -24,7 +33,11 @@ export class OverlayWindow extends QWidget {
 
   private members = new Map<Snowflake, OverlayMember>();
 
+  private shadow = new QGraphicsDropShadowEffect();
+
   private connection?: VoiceConnection;
+
+  private enabled = false;
 
   layout = new QBoxLayout(Direction.TopToBottom);
 
@@ -49,6 +62,7 @@ export class OverlayWindow extends QWidget {
     this.initWindow();
 
     app.on(AppEvents.NEW_CLIENT, this.bindEvents.bind(this));
+    app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
   }
 
   private bindEvents(client: Client) {
@@ -58,17 +72,21 @@ export class OverlayWindow extends QWidget {
     client.on(Events.VOICE_STATE_UPDATE, handleVoiceStateUpdate.bind(this));
   }
 
+  private handleConfigUpdate(config: ConfigManager) {
+    const { enable, x, y } = config.get('overlaySettings');
+
+    this.enabled = !!enable;
+    this.move(x ?? 0, y ?? 0);
+
+    if (!this.enabled) {
+      this.hide();
+    } else if (this.channel) {
+      this.show();
+    }
+  }
+
   private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
     const { members, hide, show, initChannel, addMember, removeMember } = this;
-
-    log({
-      ochannel: o.channel,
-      oconn: o.connection,
-      om: o.member,
-      nchannel: n.channel,
-      nconn: n.connection,
-      nm: n.member,
-    });
 
     if (n.connection && n.connection !== this.connection) {
       this.connection = n.connection;
@@ -76,9 +94,7 @@ export class OverlayWindow extends QWidget {
       n.connection.on('speaking', (user, speaking) => {
         const ubtn = members.get(user.id);
 
-        ubtn?.setStyleSheet(
-          speaking.bitfield === 1 ? '#Avatar { border: 2px solid #43b581; }' : ''
-        );
+        ubtn?.setStyleSheet(speaking.bitfield === 1 ? '#Name { background-color: #2b7653; }' : '');
       });
     }
 
@@ -89,7 +105,10 @@ export class OverlayWindow extends QWidget {
     if (n.connection && n.channel !== this.channel) {
       this.channel = n.channel || undefined;
       initChannel.call(this);
-      show.call(this);
+
+      if (this.enabled) {
+        show.call(this);
+      }
 
       return;
     }
@@ -113,11 +132,18 @@ export class OverlayWindow extends QWidget {
   }
 
   private initWindow() {
-    const { layout } = this;
+    const { layout, shadow } = this;
+
+    shadow.setBlurRadius(3);
+    shadow.setYOffset(1);
+    shadow.setXOffset(0);
+    shadow.setColor(new QColor(0, 0, 0, 0.5));
 
     this.setLayout(layout);
+    this.setWindowOpacity(0.8);
+    this.setGraphicsEffect(shadow);
 
-    layout.setContentsMargins(10, 10, 10, 10);
+    layout.setContentsMargins(20, 20, 20, 20);
     layout.setSpacing(5);
     layout.addStretch(1);
 

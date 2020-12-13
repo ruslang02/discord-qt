@@ -4,6 +4,7 @@ import { app, MAX_QSIZE } from '../../..';
 import { createLogger } from '../../../utilities/Console';
 import { IConfig } from '../../../utilities/IConfig';
 import { SettingsCheckBox } from '../SettingsCheckBox';
+import { PhraseID } from '../../../utilities/PhraseID';
 
 const { debug } = createLogger('[SettingsView]');
 
@@ -58,5 +59,14 @@ export abstract class Page extends QWidget {
     restartNotice.setInlineStyle('color: #f04747');
 
     return restartNotice;
+  }
+
+  protected createSubheader(id: PhraseID) {
+    const label = new QLabel(this);
+
+    label.setObjectName('Header3');
+    label.setText(__(id));
+
+    return label;
   }
 }

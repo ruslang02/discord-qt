@@ -47,8 +47,7 @@ export class Tray extends QSystemTrayIcon {
     app.window.raise();
   }
 
-  private addItem(text: string, callback: () => void) {
-    const { menu } = this;
+  private static addItem(menu: QMenu, text: string, callback: () => void) {
     const item = new QAction(menu);
 
     item.setText(text);
@@ -59,7 +58,7 @@ export class Tray extends QSystemTrayIcon {
   private initTrayMenu() {
     const { menu, accMenu, tagAction } = this;
 
-    tagAction.setText('Not logged in');
+    tagAction.setText(__('NOT_LOGGED_IN'));
     tagAction.setEnabled(false);
     tagAction.setIcon(app.icon);
     menu.addAction(tagAction);
@@ -67,15 +66,36 @@ export class Tray extends QSystemTrayIcon {
     {
       const item = new QAction(menu);
 
-      item.setText('Switch to...');
+      item.setText(__('SWITCH_TO'));
       item.setMenu(accMenu);
       menu.addAction(item);
     }
 
     menu.addSeparator();
 
-    this.addItem(__('OPEN'), Tray.handleShowApp.bind(this, undefined));
-    this.addItem(__('QUIT'), () => app.application.exit(0));
+    {
+      const item = new QAction(menu);
+      const overlayMenu = new QMenu(menu);
+
+      Tray.addItem(overlayMenu, __('KEYBIND_TOGGLE_OVERLAY'), () => {
+        const { enable, x, y } = app.config.get('overlaySettings');
+
+        app.config.set('overlaySettings', {
+          enable: !enable,
+          x: x ?? 0,
+          y: y ?? 0,
+        });
+
+        void app.config.save();
+      });
+
+      item.setText(__('OVERLAY'));
+      item.setMenu(overlayMenu);
+      menu.addAction(item);
+    }
+
+    Tray.addItem(menu, __('OPEN'), Tray.handleShowApp.bind(this, undefined));
+    Tray.addItem(menu, __('QUIT'), () => app.application.exit(0));
   }
 
   private update() {
@@ -97,6 +117,6 @@ export class Tray extends QSystemTrayIcon {
 
     const tag = app.client?.user?.tag;
 
-    this.tagAction.setText(tag ? `Logged in as ${tag}` : 'Not logged in');
+    this.tagAction.setText(tag ? __('LOGGED_IN_AS', { name: tag }) : __('NOT_LOGGED_IN'));
   }
 }

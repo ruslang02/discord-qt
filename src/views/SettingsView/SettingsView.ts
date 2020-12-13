@@ -24,6 +24,7 @@ import { Footer } from './Footer';
 import { AccountsPage } from './pages/AccountsPage';
 import { AppearancePage } from './pages/AppearancePage';
 import { MyAccountPage } from './pages/MyAccountPage';
+import { OverlayPage } from './pages/OverlayPage';
 import { Page } from './pages/Page';
 import { SystemPage } from './pages/SystemPage';
 import { VoicePage } from './pages/VoicePage';
@@ -40,6 +41,7 @@ export class SettingsView extends QWidget {
     new Divider(),
     new CategoryHeader(__('APP_SETTINGS')),
     new AppearancePage(),
+    new OverlayPage(),
     new VoicePage(),
     new Divider(),
     new SystemPage(),

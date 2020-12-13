@@ -16,7 +16,6 @@ import { NoiseReductor } from '../../../components/VoicePanel/NoiseReductor';
 import { ConfigManager } from '../../../utilities/ConfigManager';
 import { createLogger } from '../../../utilities/Console';
 import { Events } from '../../../utilities/Events';
-import { PhraseID } from '../../../utilities/PhraseID';
 import { __ } from '../../../utilities/StringProvider';
 import { createRecordStream } from '../../../utilities/VoiceStreams';
 import { Divider } from '../Divider';
@@ -51,15 +50,6 @@ export class VoicePage extends Page {
     this.layout.setSpacing(5);
 
     app.on(Events.CONFIG_UPDATE, this.loadConfig.bind(this));
-  }
-
-  private createHeader(id: PhraseID) {
-    const label = new QLabel(this);
-
-    label.setObjectName('Header3');
-    label.setText(__(id));
-
-    return label;
   }
 
   onOpened() {
@@ -159,7 +149,7 @@ export class VoicePage extends Page {
 
   private initPage() {
     const {
-      createHeader,
+      createSubheader: createHeader,
       saveConfig,
       title,
       header,

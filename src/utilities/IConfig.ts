@@ -22,6 +22,12 @@ export type VoiceSettings = {
   inputSensitivity?: number;
 };
 
+export type OverlaySettings = {
+  enable?: boolean;
+  x?: number;
+  y?: number;
+};
+
 export interface IConfig {
   accounts: Account[];
 
@@ -54,4 +60,6 @@ export interface IConfig {
   userLocalGuildSettings: Record<Snowflake, LocalGuildSettings | undefined>;
 
   voiceSettings: VoiceSettings;
+
+  overlaySettings: OverlaySettings;
 }

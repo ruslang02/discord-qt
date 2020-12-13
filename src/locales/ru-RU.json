@@ -28,6 +28,11 @@
   "EMOJI_PICKER_PRO_TIP_BODY": "Вставляйте эмодзи как картинки при помощи <code>Ctrl</code>.",
   "OPTIMIZE_FOR_MOBILE": "Оптимизировать интерфейс под мобильные устройства",
   "PLATFORM_NOT_SUPPORTED": "Данная функция недоступна для данной платформы.",
+  "SWITCH_TO": "Войти с...",
+  "NOT_LOGGED_IN": "Нет аккаунта",
+  "LOGGED_IN_AS": "Произведен вход с {{name}}",
+  "SETTINGS_GAMES_OVERLAY_X_LABEL": "Позиция по горизонтали (в пикселях)",
+  "SETTINGS_GAMES_OVERLAY_Y_LABEL": "Позиция по вертикали (в пикселях)",
 
   "SEARCH_FOR_EMOJI": "Найдите идеальный эмодзи",
   "CONNECTION_STATUS_CONNECTING": "Подключение",
@@ -147,12 +152,17 @@
   "FORM_LABEL_OUTPUT_DEVICE": "Устройство вывода",
   "FORM_LABEL_INPUT_VOLUME": "Громкость микрофона",
   "FORM_LABEL_OUTPUT_VOLUME": "Громкость звука",
+  "FORM_LABEL_INPUT_SENSITIVTY": "Чувствительность ввода",
   "VOICE": "Голос",
   "MINIMIZE_TO_TRAY": "Минимизация окна в системный трей при закрытии",
   "SYSTEM": "Система",
   "OPEN": "Открыть",
-  "QUIT": "Закрыть",
+  "QUIT": "Выйти",
   "MEMBER_LIST": "Список участников",
   "ACCESSIBILITY_ZOOM_LEVEL_LABEL": "Уровень масштабирования",
-  "INVITE_BUTTON_INVALID": "Приглашение недействительно"
+  "INVITE_BUTTON_INVALID": "Приглашение недействительно",
+  "KEYBIND_TOGGLE_OVERLAY": "Вкл./выкл. оверлей",
+  "OVERLAY": "Оверлей",
+  "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Включить оверлей",
+  "SETTINGS_GAMES_OVERLAY": "Оверлей"
 }
