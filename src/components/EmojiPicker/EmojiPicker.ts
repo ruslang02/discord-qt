@@ -352,7 +352,7 @@ export class EmojiPicker extends QMenu {
 
     resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name })
       .then((path) => {
-        if (!cancel.cancelled) {
+        if (!cancel.cancelled || this.native.destroyed) {
           item.setIcon(new QIcon(path));
         }
       })

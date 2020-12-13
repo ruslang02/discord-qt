@@ -196,7 +196,7 @@ export async function processEmojiPlaceholders(content: string): Promise<string>
  * Replaces emoji strings with actual emoji images.
  * @param content String to process.
  */
-export async function processEmojis(content: string): Promise<string> {
+export async function processEmojis(content: string, message: MessageItem): Promise<string> {
   let newContent = content;
   const uContent = unescape(content);
   const emoIds = uContent.match(EMOJI_REGEX) || [];
@@ -220,6 +220,11 @@ export async function processEmojis(content: string): Promise<string> {
         uri.searchParams.append('emoji_name', name);
 
         const pix = new QPixmap(emojiPath);
+
+        if (message.native.destroyed) {
+          return;
+        }
+
         const larger = pix.width() > pix.height() ? 'width' : 'height';
 
         newContent = newContent.replace(

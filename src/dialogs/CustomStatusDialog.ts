@@ -85,6 +85,10 @@ export class CustomStatusDialog extends Dialog {
         emoji_name: emoji.name,
       });
 
+      if (this.native.destroyed) {
+        return;
+      }
+
       this.emoji = emoji;
       this.emojiInput.setPixmap(new QPixmap(emojiFile).scaled(32, 32, 1, 1));
     } catch (e) {

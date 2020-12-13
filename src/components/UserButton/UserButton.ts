@@ -130,6 +130,10 @@ export class UserButton extends DChannelButton {
       app.emit(AppEvents.OPEN_USER_MENU, someone, button.mapToGlobal(new QPoint(x, y)));
     });
 
+    button.addEventListener(WidgetEventTypes.DeferredDelete, () => {
+      UserButton.buttons.delete(someone);
+    });
+
     button.addEventListener('clicked', async () => {
       if (someone instanceof GuildMember) {
         const map = button.mapToGlobal(p0);
@@ -257,6 +261,10 @@ export class UserButton extends DChannelButton {
    * @param presence User's presence.
    */
   async loadStatusEmoji(presence: Presence) {
+    if (this.native.destroyed) {
+      return;
+    }
+
     this.statusIcon.hide();
     const activity = presence.activities.find((a) => !!a.emoji);
 
@@ -269,6 +277,10 @@ export class UserButton extends DChannelButton {
         emoji_id: activity.emoji.id || undefined,
         emoji_name: activity.emoji.name,
       });
+
+      if (this.native.destroyed) {
+        return;
+      }
 
       const pix = new QPixmap(emojiPath);
 

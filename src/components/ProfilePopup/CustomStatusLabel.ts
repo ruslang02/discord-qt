@@ -94,6 +94,11 @@ export class CustomStatusLabel extends QWidget {
 
     try {
       const emojiPath = await resolveEmoji(status);
+
+      if (this.native.destroyed) {
+        return;
+      }
+
       const pix = new QPixmap(emojiPath);
       const size = statusText ? 24 : 48;
 

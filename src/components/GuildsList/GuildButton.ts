@@ -103,7 +103,9 @@ export class GuildButton extends QLabel {
     if (url) {
       pictureWorker
         .loadImage(url)
-        .then((path) => this.setPixmap(new QPixmap(path).scaled(48, 48, 1, 1)))
+        .then(
+          (path) => !this.native.destroyed && this.setPixmap(new QPixmap(path).scaled(48, 48, 1, 1))
+        )
         .catch(() => {
           this.hasPixmap = false;
         });

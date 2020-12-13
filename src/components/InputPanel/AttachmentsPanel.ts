@@ -90,6 +90,10 @@ export class AttachmentsPanel extends QWidget {
         pictureWorker
           .loadImage(url.href, { roundify: false })
           .then((path) => {
+            if (this.native.destroyed) {
+              return;
+            }
+
             const pix = new QPixmap(path);
 
             if (pix.width() < 1) {

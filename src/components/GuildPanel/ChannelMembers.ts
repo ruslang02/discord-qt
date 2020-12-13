@@ -53,11 +53,9 @@ export class ChannelMembers extends QListWidget {
       n.connection.on('speaking', (user, speaking) => {
         const ubtn = this.buttons.get(user.id);
 
-        if (ubtn) {
+        if (ubtn && !this.native.destroyed) {
           ubtn.setStyleSheet(
-            speaking.bitfield === 1
-              ? '#Avatar { border: 2px solid #43b581; padding: 3px; border-radius: 12px; }'
-              : ''
+            speaking.bitfield === 1 ? '#Avatar { border: 2px solid #43b581; }' : ''
           );
         }
       });
@@ -72,7 +70,7 @@ export class ChannelMembers extends QListWidget {
       this.takeItem(this.row(item));
 
       if (o.member.user.id === app.client.user?.id) {
-        this.buttons.forEach((btn) => btn.setStyleSheet(''));
+        this.buttons.forEach((btn) => !btn.native.destroyed && btn.setStyleSheet(''));
       }
     }
 
@@ -111,7 +109,6 @@ export class ChannelMembers extends QListWidget {
     avatar.setFixedSize(24, 24);
     avatar.setObjectName('Avatar');
     avatar.setAlignment(AlignmentFlag.AlignCenter);
-
     btn.layout.setSpacing(8);
     btn.setFixedSize(200, 30);
     btn.addEventListener('clicked', () => {
@@ -138,8 +135,12 @@ export class ChannelMembers extends QListWidget {
     btn.layout.addWidget(memberName, 1);
 
     pictureWorker
-      .loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }))
-      .then((path) => avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1)))
+      .loadImage(member.user.displayAvatarURL({ format: 'png', size: 256 }), { roundify: false })
+      .then((path) => {
+        if (!this.native.destroyed) {
+          avatar.setPixmap(new QPixmap(path).scaled(24, 24, 1, 1));
+        }
+      })
       .catch(error.bind(console, "Couldn't load avatar."));
 
     return btn;
@@ -151,6 +152,12 @@ export class ChannelMembers extends QListWidget {
    * @returns Whether the widget should be shown.
    */
   loadChannel(channel: VoiceChannel) {
+    this.buttons.forEach((w) => {
+      const o = w;
+
+      o.native.destroyed = true;
+    });
+
     this.buttons.clear();
 
     for (const member of channel.members.values()) {

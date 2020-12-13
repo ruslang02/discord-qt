@@ -220,7 +220,7 @@ export class MessageItem extends QWidget {
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());
 
     if (this.contentNoEmojis) {
-      processEmojis(this.contentNoEmojis)
+      processEmojis(this.contentNoEmojis, this)
         .then(
           (content) =>
             !this.contentLabel.native.destroyed &&
