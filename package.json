@@ -44,7 +44,6 @@
     "webpack.config.js"
   ],
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
     "@nodegui/nodegui": "^0.26.0",
     "audio-mixer": "^2.1.4",
     "discord.js": "^12.5.1",
@@ -55,6 +54,7 @@
     "merge-stream": "^2.0.0",
     "node-notifier": "^8.0.0",
     "open": "^7.3.0",
+    "opusscript": "0.0.7",
     "pngjs": "^5.0.0",
     "prism-media": "^1.2.3",
     "tweetnacl": "^1.0.3",
