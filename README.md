@@ -1,5 +1,4 @@
 # DiscordQt
-[![npm](https://img.shields.io/npm/v/discord-qt)](https://www.npmjs.com/package/discord-qt)
 ![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg)
 ![David](https://img.shields.io/david/ruslang02/discord-qt)
 
@@ -11,17 +10,6 @@ It offers a significantly less resource-consuming experience comparing to the of
 ### **[Download](https://github.com/ruslang02/discord-qt/releases/latest) for Windows, Linux and macOS**
 
 ![Screenshot](screenshot.png)
-
-## Installing from npm
-Windows (macOS should work as well, however not tested):
-```bash
-npm i -g discord-qt
-```
-
-Linux:
-```
-# npm i -g discord-qt --unsafe-perm --allow-root
-```
 
 ## Building from sources
 

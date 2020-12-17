@@ -1,6 +1,6 @@
 {
   "name": "discord-qt",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "main": "launch.js",
   "author": "Ruslan Garifullin <ruslan.g2002@gmail.com>",
   "keywords": [
@@ -57,6 +57,7 @@
     "opusscript": "0.0.7",
     "pngjs": "^5.0.0",
     "prism-media": "^1.2.3",
+    "source-sans-pro": "^3.6.0",
     "tweetnacl": "^1.0.3",
     "twemoji": "^13.0.1",
     "whatwg-fetch": "^3.5.0"
