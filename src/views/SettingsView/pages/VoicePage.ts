@@ -174,6 +174,8 @@ export class VoicePage extends Page {
       layout.addWidget(pnsLabel);
       layout.addStretch(1);
 
+      [inDevice, inVolume, outDevice, outVolume, sensVal, sensCheck].forEach((w) => w.hide());
+
       return;
     }
 
