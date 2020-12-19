@@ -38,7 +38,7 @@ Object.assign(handlers, {
       for (const user of Object.keys(data.notes)) {
         let note = data.notes[user];
 
-        if (!note.length) {
+        if (!note?.length) {
           note = null;
         }
 
