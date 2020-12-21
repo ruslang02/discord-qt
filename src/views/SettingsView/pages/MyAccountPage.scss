@@ -1,11 +1,10 @@
-
-
 #MyAccountCard {
   border-width: 1px;
   border-style: solid;
   border-color: $background-tertiary;
   border-radius: 5px;
   background-color: $deprecated-card-bg;
+
   #Bold {
     color: darken($channels-default, 2%);
     font-weight: 300;
@@ -13,6 +12,7 @@
     line-height: 16px;
     text-transform: uppercase;
   }
+
   #Normal {
     color: $header-secondary;
     font-size: 14px;

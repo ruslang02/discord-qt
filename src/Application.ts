@@ -1,10 +1,6 @@
 /* eslint-disable class-methods-use-this */
-import {
-  QApplication, QFontDatabase, QIcon,
-} from '@nodegui/nodegui';
-import {
-  Client, Snowflake,
-} from 'discord.js';
+import { QApplication, QFontDatabase, QIcon } from '@nodegui/nodegui';
+import { Client, Snowflake } from 'discord.js';
 import { existsSync, promises } from 'fs';
 import i18n from 'i18n';
 import { join } from 'path';
@@ -16,7 +12,8 @@ import { createLogger } from './utilities/Console';
 import { Events as AppEvents } from './utilities/Events';
 import { paths } from './utilities/Paths';
 import { PluginManager } from './utilities/PluginManager';
-import { RootWindow } from './windows/RootWindow';
+import { MainWindow } from './windows/MainWindow/MainWindow';
+import { OverlayWindow } from './windows/OverlayWindow/OverlayWindow';
 
 const { readdir } = promises;
 
@@ -37,7 +34,7 @@ export class Application extends ApplicationEventEmitter {
 
   pluginManager = new PluginManager();
 
-  configManager = new ConfigManager(CONFIG_PATH);
+  config = new ConfigManager(CONFIG_PATH);
 
   application = QApplication.instance();
 
@@ -58,47 +55,71 @@ export class Application extends ApplicationEventEmitter {
         case 'dm':
           this.currentGuildId = undefined;
           break;
+
         case 'guild':
           this.currentGuildId = options?.channel?.guild.id || options?.guild?.id;
           break;
+
         default:
       }
     });
+
     (global as any).config = this.config;
   }
 
   public async start() {
-    this.tray = new Tray();
     await this.loadFonts();
-    this.configManager = new ConfigManager(CONFIG_PATH);
-    await this.configManager.load();
-    i18n.setLocale(this.config.locale || 'en-US');
-    this.window = new RootWindow();
+    await this.config.load();
+
+    i18n.setLocale(this.config.get('locale') || 'en-US');
+
+    this.tray = new Tray();
+
+    this.window = new MainWindow();
     this.window.show();
+
+    this.overlay = new OverlayWindow();
+
     void this.pluginManager.reload();
+
     this.emit(AppEvents.READY);
   }
 
   public quit() {
     log('Bye.');
     this.tray?.hide();
-    if (this.client) this.client.destroy();
+
+    if (this.client) {
+      this.client.destroy();
+    }
+
     this.application.quit();
   }
 
   private async loadFonts() {
-    if (!existsSync(FONTS_PATH)) return;
+    if (!existsSync(FONTS_PATH)) {
+      return;
+    }
+
     for (const file of await readdir(FONTS_PATH)) {
       QFontDatabase.addApplicationFont(join(FONTS_PATH, file));
     }
   }
 
-  public get window(): RootWindow {
+  public get window(): MainWindow {
     return (global as any).win;
   }
 
-  public set window(v: RootWindow) {
+  public set window(v: MainWindow) {
     (global as any).win = v;
+  }
+
+  public get overlay(): OverlayWindow {
+    return (global as any).overlay;
+  }
+
+  public set overlay(v: OverlayWindow) {
+    (global as any).overlay = v;
   }
 
   public get client(): Client {
@@ -107,9 +128,5 @@ export class Application extends ApplicationEventEmitter {
 
   public get plugins() {
     return this.pluginManager.plugins;
-  }
-
-  public get config() {
-    return this.configManager.config;
   }
 }

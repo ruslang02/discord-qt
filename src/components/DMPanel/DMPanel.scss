@@ -1,17 +1,17 @@
-
-
 #MainView #DMPanel {
-  #DTitleBar, #UsersContainer {
-    background-color: $background-secondary;
-  }
+  #DTitleBar,
   #UsersContainer {
-    &::item {
-      background-color: $background-secondary;
-      border: none;
-      padding: 8px;
-      color: transparent;
-    }
+    background-color: $background-secondary;
+    border-bottom: 1px solid $background-secondary-alt;
   }
+
+  #UsersContainer::item {
+    background-color: $background-secondary;
+    border: none;
+    padding: 8px;
+    color: transparent;
+  }
+
   #DMLabel {
     font-weight: bold;
     font-size: 12px;

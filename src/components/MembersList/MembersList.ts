@@ -16,8 +16,17 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from '../UserButton/UserButton';
 
 const { debug } = createLogger('MembersList');
+
 export class MembersList extends QListWidget {
   private channel?: TextChannel | NewsChannel;
+
+  private configHidden = false;
+
+  private viewHidden = false;
+
+  private get isShown() {
+    return !this.configHidden && !this.viewHidden;
+  }
 
   constructor() {
     super();
@@ -30,25 +39,43 @@ export class MembersList extends QListWidget {
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
       if (view === 'dm' || (view === 'guild' && !options?.channel)) {
-        this.hide();
-        return;
+        this.viewHidden = true;
+      } else if (view === 'guild' && options?.channel) {
+        if (this.isShown && options.channel !== this.channel) {
+          this.loadList(options.channel);
+        }
+
+        this.channel = options.channel as TextChannel;
+        this.viewHidden = false;
       }
-      if (view === 'guild' && options?.channel) {
-        if (options.channel !== this.channel) this.loadList(options.channel);
-        this.show();
-      }
+
+      this.updateVisibility();
     });
+
+    app.on(Events.CONFIG_UPDATE, (config) => {
+      this.configHidden = config.get('hideMembersList');
+      this.updateVisibility();
+    })
   }
 
-  private ratelimit = false;
+  private updateVisibility() {
+    if (this.isShown) {
+      this.show();
 
-  private rateTimer?: any;
+      if (this.channel) {
+        this.loadList(this.channel);
+      }
+    } else {
+      this.hide();
+    }
+  }
 
   private loadList(channel: GuildChannel) {
     this.channel = channel as TextChannel | NewsChannel;
-    if (this.ratelimit || !['text', 'news'].includes(channel.type)) return;
-    this.ratelimit = true;
-    if (this.rateTimer) clearTimeout(this.rateTimer);
+
+    if (!['text', 'news'].includes(channel.type)) {
+      return;
+    }
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
 
@@ -57,17 +84,15 @@ export class MembersList extends QListWidget {
     for (const member of channel.members.values()) {
       const btn = UserButton.createInstance(this, member);
       const item = new QListWidgetItem();
+
       item.setSizeHint(new QSize(224, 44));
       item.setFlags(0);
       item.setBackground(new QBrush(new QColor('transparent'), BrushStyle.NoBrush));
       this.addItem(item);
       this.setItemWidget(item, btn);
-      btn.loadAvatar();
+      void btn.loadAvatar();
     }
+
     debug('Finished loading members list.');
-    this.rateTimer = setTimeout(() => {
-      this.ratelimit = false;
-      if (channel !== this.channel && this.channel) this.loadList(this.channel);
-    }, 500);
   }
 }

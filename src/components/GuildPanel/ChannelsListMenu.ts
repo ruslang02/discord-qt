@@ -1,6 +1,4 @@
-import {
-  QAction, QClipboardMode, QMenu, WidgetAttribute,
-} from '@nodegui/nodegui';
+import { QAction, QClipboardMode, QMenu, WidgetAttribute } from '@nodegui/nodegui';
 import { GuildChannel } from 'discord.js';
 import { __ } from 'i18n';
 import { app } from '../..';
@@ -18,10 +16,13 @@ export class ChannelsListMenu extends QMenu {
 
   private initMenu() {
     const copyId = new QAction();
+
     copyId.setText(__('COPY_ID'));
+
     copyId.addEventListener('triggered', () => {
       app.clipboard.setText(this.channel?.id || '', QClipboardMode.Clipboard);
     });
+
     this.addAction(copyId);
   }
 

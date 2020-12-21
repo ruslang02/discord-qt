@@ -1,5 +1,10 @@
 import {
-  CursorShape, QCursor, QIcon, QPushButton, QSize, WidgetEventTypes,
+  CursorShape,
+  QCursor,
+  QIcon,
+  QPushButton,
+  QSize,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 
 export class DIconButton extends QPushButton {
@@ -7,19 +12,36 @@ export class DIconButton extends QPushButton {
 
   qiconOff = new QIcon();
 
-  constructor(options: {
-    iconPath: string,
-    tooltipText: string,
-    iconQSize: QSize
+  constructor({
+    iconPath,
+    tooltipText,
+    iconQSize,
+    isCheckbox,
+    checked,
+  }: {
+    iconPath: string;
+    tooltipText: string;
+    iconQSize: QSize;
+    isCheckbox?: boolean;
+    checked?: boolean
   }) {
     super();
-    const { iconPath, tooltipText, iconQSize } = options;
 
     this.setObjectName('DIconButton');
     this.setCursor(new QCursor(CursorShape.PointingHandCursor));
     this.setIconSize(iconQSize);
-    this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setIcon(this.qiconOn));
-    this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setIcon(this.qiconOff));
+
+    if (isCheckbox) {
+      this.setCheckable(true);
+      this.addEventListener('clicked', (value) => {
+        this.setIcon(value ? this.qiconOn : this.qiconOff);
+      });
+
+      this.setIcon(checked ? this.qiconOn : this.qiconOff);
+    } else {
+      this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setIcon(this.qiconOn));
+      this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setIcon(this.qiconOff));
+    }
 
     this.setIconPath(iconPath);
     this.setToolTip(tooltipText);

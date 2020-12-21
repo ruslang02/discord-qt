@@ -1,38 +1,41 @@
 #MainView #GuildPanel {
   background-color: $background-secondary;
+
   #DTitleBar,
   #ChannelsList {
     background-color: $background-secondary;
   }
-  #ChannelsList {
-    &::item {
-      padding: 0;
-      padding-top: 8px;
-      color: transparent;
-      background: $background-secondary;
-      border: none;
-      outline: none;
-    }
+
+  #ChannelsList::item {
+    padding: 0;
+    padding-top: 8px;
+    color: transparent;
+    background: $background-secondary;
+    border: none;
+    outline: none;
   }
-  #ChannelMembers {
-    &::item {
-      padding: 0 6px;
-      color: transparent;
-      background: $background-secondary;
-      border: none;
-      outline: none;
-    }
+
+  #ChannelMembers::item {
+    padding: 0 6px;
+    color: transparent;
+    background: $background-secondary;
+    border: none;
+    outline: none;
   }
+
   #DChannelButton {
     margin-left: 8px;
   }
+
   #UnreadIndicator {
     border-radius: 4px;
     background: $header-primary;
   }
+
   #DTitleBar:hover {
     background-color: lighten($background-secondary, 2%);
   }
+
   #CategoryHeader {
     text-transform: uppercase;
     font-size: 12px;
@@ -42,21 +45,25 @@
     padding-right: 6px;
     padding-bottom: 4px;
     color: $channels-default;
+
     &:hover {
       color: $interactive-hover;
     }
   }
+
   #GuildLabel {
     font-weight: 500;
     font-size: 16px;
     line-height: 20px;
     color: $header-primary;
   }
+
   #ChannelMembers {
     margin-left: 24px;
     margin-bottom: 8px;
     padding: 0;
     background-color: transparent;
+
     #DChannelButton {
       margin-left: 0;
     }

@@ -6,13 +6,27 @@ export type RecentEmoji = [Snowflake, number];
 export type UserVolume = {
   volume?: number;
   muted?: boolean;
-}
+};
 
 export type LocalGuildSettings = {
   hideMutedChannels?: boolean;
   collapsedCategories?: Snowflake[];
   lastViewedChannel?: Snowflake;
-}
+};
+
+export type VoiceSettings = {
+  inputDevice?: string;
+  outputDevice?: string;
+  inputVolume?: number;
+  outputVolume?: number;
+  inputSensitivity?: number;
+};
+
+export type OverlaySettings = {
+  enable?: boolean;
+  x?: number;
+  y?: number;
+};
 
 export interface IConfig {
   accounts: Account[];
@@ -25,9 +39,17 @@ export interface IConfig {
 
   locale: string;
 
+  minimizeToTray: boolean;
+
   processMarkDown: boolean;
 
   enableAvatars: boolean;
+
+  isMobile: boolean;
+
+  zoomLevel: string;
+
+  hideMembersList: boolean;
 
   theme: string;
 
@@ -36,4 +58,8 @@ export interface IConfig {
   userVolumeSettings: Record<Snowflake, UserVolume | undefined>;
 
   userLocalGuildSettings: Record<Snowflake, LocalGuildSettings | undefined>;
+
+  voiceSettings: VoiceSettings;
+
+  overlaySettings: OverlaySettings;
 }

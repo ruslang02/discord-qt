@@ -22,14 +22,14 @@ export class MainPanel extends QWidget {
   }
 
   private initComponent() {
-    const {
-      channelLayout, layout, messages, inputPanel, membersList,
-    } = this;
+    const { channelLayout, layout, messages, inputPanel, membersList } = this;
+
     layout.setContentsMargins(0, 0, 0, 0);
     layout.setSpacing(0);
     channelLayout.setContentsMargins(0, 0, 0, 0);
     channelLayout.setSpacing(0);
     const widget = new QWidget(this);
+
     widget.setLayout(new QBoxLayout(Direction.TopToBottom));
     widget.layout?.setContentsMargins(0, 0, 0, 0);
     widget.layout?.addWidget(messages, 1);

@@ -1,11 +1,13 @@
 #DComboBox {
   color: $text-normal;
+  selection-background-color: $background-modifier-active;
+
   &::drop-down {
     width: 36px;
     border: none;
     color: $text-normal;
   }
-  selection-background-color: $background-modifier-active;
+
   QAbstractItemView {
     border-radius: 3px;
     background-color: $background-primary;
@@ -13,8 +15,13 @@
     selection-background-color: $background-modifier-active;
     color: $text-normal;
   }
+
   &::item {
     color: $text-normal;
     height: 30px;
+  }
+
+  &::down-arrow {
+    image: url(assets/icons/menu-down.png);
   }
 }

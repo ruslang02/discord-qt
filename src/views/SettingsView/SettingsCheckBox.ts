@@ -9,6 +9,8 @@ import {
   QWidget,
 } from '@nodegui/nodegui';
 import { join } from 'path';
+import { app } from '../..';
+import { IConfig } from '../../utilities/IConfig';
 
 export class SettingsCheckBox extends QWidget {
   layout = new QBoxLayout(Direction.LeftToRight);
@@ -27,7 +29,9 @@ export class SettingsCheckBox extends QWidget {
     this.setChecked(false);
   }
 
-  text() { return this.label.text(); }
+  text() {
+    return this.label.text();
+  }
 
   setText(text: string) {
     this.label.setText(text);
@@ -35,15 +39,24 @@ export class SettingsCheckBox extends QWidget {
 
   private _checked = false;
 
-  isChecked() { return this._checked; }
+  isChecked() {
+    return this._checked;
+  }
 
-  setChecked(checked: boolean) {
+  /**
+   * Set check status
+   * @param value Boolean, or name of the config
+   */
+  setChecked(value: boolean | keyof IConfig) {
+    const checked = typeof value === 'string' ? (app.config.get(value) as boolean) : value;
+
     this.checkbox.setPixmap(checked ? this.ch : this.unch);
     this._checked = checked;
   }
 
   private initComponent() {
     const { layout, label, checkbox } = this;
+
     this.setObjectName('SCheckBox');
     this.setLayout(layout);
     this.setCursor(CursorShape.PointingHandCursor);
@@ -51,6 +64,7 @@ export class SettingsCheckBox extends QWidget {
     label.setAlignment(AlignmentFlag.AlignVCenter);
     checkbox.setObjectName('CheckBox');
     const effect = new QGraphicsDropShadowEffect();
+
     effect.setBlurRadius(5);
     effect.setXOffset(0);
     effect.setYOffset(0);

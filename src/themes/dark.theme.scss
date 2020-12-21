@@ -4,6 +4,8 @@ $dark: #2c2f33;
 $black: #23272a;
 $red: #f04747;
 
+$theme-name: dark;
+
 $header-primary: #fff;
 $header-secondary: #b9bbbe;
 $text-normal: #dcddde;
@@ -53,7 +55,7 @@ $deprecated-text-input-border-hover: #040405;
 $deprecated-text-input-border-disabled: #202225;
 $deprecated-text-input-prefix: #dcddde;
 
-@import "../components/**/*.scss";
-@import "../dialogs/**/*.scss";
-@import "../views/**/*.scss";
-@import "../windows/**/*.scss";
+@import '../components/**/*.scss';
+@import '../dialogs/**/*.scss';
+@import '../views/**/*.scss';
+@import '../windows/**/*.scss';

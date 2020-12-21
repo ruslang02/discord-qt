@@ -7,33 +7,37 @@ const { DefinePlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const globImporter = require('node-sass-glob-importer');
+
 const { readdirSync } = fs;
 
 let __BUILDNUM__;
+
 try {
   __BUILDNUM__ = childProcess.execSync('git rev-list HEAD --count').toString()
 } catch (e) {
   __BUILDNUM__ = 0;
 }
+
 module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
-  const themes = Object.fromEntries(readdirSync('./src/themes').map(value => [
+  const themes = Object.fromEntries(readdirSync('./src/themes').map((value) => [
     value.replace('.scss', ''),
-    './src/themes/' + value
+    `./src/themes/${value}`,
   ]));
+
   return {
     mode: isDev ? 'development' : 'production',
     entry: {
       'index.js': './src',
       'worker.js': './worker',
-      ...themes
+      ...themes,
     },
     optimization: {
       minimize: !isDev,
       minimizer: [new TerserPlugin({
         terserOptions: {
-          keep_classnames: true
-        }
+          keep_classnames: true,
+        },
       })],
     },
     target: 'node',
@@ -61,9 +65,9 @@ module.exports = (_env, argv) => {
                 transpileOnly: true,
                 happyPackMode: true,
                 experimentalWatchApi: true,
-              }
-            }
-          ]
+              },
+            },
+          ],
         },
         {
           test: /\.(png|jpe?g|gif|svg)$/i,
@@ -80,14 +84,14 @@ module.exports = (_env, argv) => {
             {
               loader: MiniCssExtractPlugin.loader,
             },
-            'css-loader',
+            'css-loader?url=false',
             {
               loader: 'sass-loader',
               options: {
                 sassOptions: {
                   importer: globImporter(),
-                }
-              }
+                },
+              },
             },
           ],
         },
@@ -107,7 +111,7 @@ module.exports = (_env, argv) => {
       mainFields: ['main'],
       alias: {
         'fetch': path.join(__dirname, '../node_modules', 'whatwg-fetch', 'fetch.js'),
-      }
+      },
     },
     plugins: [
       new CleanWebpackPlugin(),
@@ -118,12 +122,13 @@ module.exports = (_env, argv) => {
       new CopyPlugin({
         patterns: [
           { from: 'assets', to: 'assets' },
-          { from: 'locales', to: 'locales' },
+          { from: 'src/locales', to: 'locales' },
           { from: 'node_modules/opusscript/build/opusscript_native_wasm.wasm' },
+          { from: 'node_modules/source-sans-pro/TTF/*', to: 'assets/fonts', flatten: true },
           { from: 'node_modules/ffmpeg-static/ffmpeg', noErrorOnMissing: true },
-          { from: 'node_modules/ffmpeg-static/ffmpeg.exe', noErrorOnMissing: true }
-        ]
-      })
+          { from: 'node_modules/ffmpeg-static/ffmpeg.exe', noErrorOnMissing: true },
+        ],
+      }),
     ],
   }
 };

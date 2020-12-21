@@ -1,6 +1,4 @@
-import {
-  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget,
-} from '@nodegui/nodegui';
+import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { User } from 'discord.js';
 import { app } from '../..';
 import { CustomStatus } from '../../utilities/CustomStatus';
@@ -28,6 +26,7 @@ export class CustomStatusLabel extends QWidget {
 
   private initComponent() {
     const { layout, statusIcon, statusLabel } = this;
+
     this.setLayout(layout);
     layout.setContentsMargins(0, 12, 0, 0);
     layout.setSpacing(12);
@@ -52,35 +51,62 @@ export class CustomStatusLabel extends QWidget {
     let emojiId: string;
     let emojiName: string;
     let statusText: string;
+
     if (user === app.client.user && app.client.user.customStatus) {
       const { emoji_id: eId, emoji_name: eName, text } = app.client.user.customStatus;
+
       emojiId = eId || '';
       emojiName = eName || '';
       statusText = text || '';
     } else {
       const activity = user.presence.activities.find((p) => p.type === 'CUSTOM_STATUS');
+
       emojiId = activity?.emoji?.id || '';
       emojiName = activity?.emoji?.name || '';
       statusText = activity?.state || '';
     }
+
     if (!statusText && !emojiName) {
       this.hide();
+
       return;
     }
-    if (!statusText) statusLabel.hide(); else statusLabel.show();
-    if (!emojiName) statusIcon.hide(); else statusIcon.show();
+
+    if (!statusText) {
+      statusLabel.hide();
+    } else {
+      statusLabel.show();
+    }
+
+    if (!emojiName) {
+      statusIcon.hide();
+    } else {
+      statusIcon.show();
+    }
+
     statusLabel.setText(statusText);
-    if (!emojiId && !emojiName) return;
+
+    if (!emojiId && !emojiName) {
+      return;
+    }
 
     const status = { emoji_id: emojiId, emoji_name: emojiName } as CustomStatus;
+
     try {
       const emojiPath = await resolveEmoji(status);
+
+      if (this.native.destroyed) {
+        return;
+      }
+
       const pix = new QPixmap(emojiPath);
       const size = statusText ? 24 : 48;
+
       statusIcon.setPixmap(pix.scaled(size, size, 1, 1));
     } catch (e) {
       error(`Couldn't retrieve emoji ${emojiName}#${emojiId}`);
     }
+
     statusIcon.setProperty('toolTip', `:${emojiName}:`);
     statusIcon.show();
     this.show();
