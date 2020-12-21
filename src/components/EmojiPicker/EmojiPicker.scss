@@ -1,5 +1,3 @@
-
-
 #EmojiPicker {
   background-color: $background-primary;
   border-radius: 5px;
@@ -25,17 +23,21 @@
     background-color: transparent;
     border: none;
     padding: 8px 0px 8px 8px;
+
     QScrollBar {
       border-color: $background-primary;
       margin-right: 1px;
     }
+
     &::item {
       border-radius: 3px;
       outline: 0;
       padding: 3px;
       font-size: 0;
     }
-    &::item:hover, &::item:selected {
+
+    &::item:hover,
+    &::item:selected {
       background-color: $background-accent;
     }
   }

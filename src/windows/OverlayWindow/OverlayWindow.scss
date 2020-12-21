@@ -1,0 +1,17 @@
+#OverlayWindow {
+  height: "100%";
+  width: "100%";
+  font-size: 14px;
+
+  #Member {
+    #Avatar {
+      border-radius: 18px;
+    }
+    #Name {
+      color: white;
+      padding: 2px 3px;
+      border-radius: 5px;
+      background-color: $background-floating;
+    }
+  }
+}

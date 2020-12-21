@@ -1,28 +1,37 @@
-
-
 #SettingsView {
   width: '100%';
   height: '100%';
   background-color: $background-primary;
+
   #SettingsContainer {
     background-color: $background-primary;
     border: none;
+
+    QScrollBar:vertical {
+      border-color: $background-primary;
+    }
   }
-  #LeftSpacer, #SectionList {
+
+  #LeftSpacer,
+  #SectionList {
     background-color: $background-secondary;
+
     #Divider {
       margin: 8px 10px;
       height: 1px;
       background-color: $background-modifier-accent;
     }
   }
+
   #CloseButton {
     border-radius: 18px;
     border: 2px solid $text-muted;
+
     &:hover {
-      background-color: rgba(114,118,125,.3);
+      background-color: rgba(114, 118, 125, 0.3);
     }
   }
+
   #CloseKeybind {
     margin-top: 2px;
     font-weight: 600;
@@ -30,6 +39,7 @@
     text-align: center;
     color: $text-muted;
   }
+
   #CategoryHeader {
     font-size: 12px;
     font-weight: 700;
@@ -38,12 +48,14 @@
     color: $channels-default;
     padding: 6px 10px;
   }
+
   #Footer {
     color: $text-muted;
     font-size: 12px;
     line-height: 16px;
     padding-top: 5px;
   }
+
   #PageButton {
     padding: 6px 10px;
     margin-bottom: 2px;
@@ -52,26 +64,27 @@
     font-size: 16px;
     line-height: 20px;
     color: $interactive-normal;
+
     &:hover {
       background-color: $background-modifier-hover;
       color: $interactive-hover;
     }
-    /*&:active {
-      background-color: $background-modifier-active;
-      color: $interactive-active;
-    }*/
-    &[active=true] {
+
+    &[active='true'] {
       background-color: $background-modifier-selected;
       color: $interactive-active;
     }
   }
+
   #SCheckBox {
     border: none;
     background: none;
+
     QLabel {
       font-size: 16px;
       color: $header-primary;
     }
+
     #CheckBox {
       border: none;
     }

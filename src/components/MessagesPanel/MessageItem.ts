@@ -17,7 +17,7 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Message, Snowflake } from 'discord.js';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
@@ -32,6 +32,7 @@ import {
   processMarkdown,
   processMentions,
 } from './MessageUtilities';
+import { PhraseID } from '../../utilities/PhraseID';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 const { error } = createLogger('MessageItem');
@@ -70,55 +71,58 @@ export class MessageItem extends QWidget {
   }
 
   /**
+   * Add an entry to the context menu
+   */
+  private addMenuEntry(text: string, callback: () => void) {
+    const { menu } = this;
+    const action = new QAction(menu);
+
+    action.setText(text);
+    action.addEventListener('triggered', callback);
+    menu.addAction(action);
+  }
+
+  /**
    * Initializes the context menu of the message.
    */
   private initMenu() {
     const { menu } = this;
+
     menu.setCursor(CursorShape.PointingHandCursor);
-    {
-      const action = new QAction(menu);
-      action.setText(__('QUOTE'));
-      action.addEventListener('triggered', () => {
-        if (this.message) app.emit(Events.QUOTE_MESSAGE, this.message);
-      });
-      menu.addAction(action);
-    }
+
+    this.addMenuEntry(__('QUOTE'), () => {
+      if (this.message) {
+        app.emit(Events.QUOTE_MESSAGE, this.message);
+      }
+    });
+
     menu.addSeparator();
-    {
-      const action = new QAction(menu);
-      action.setText(__('COPY_TEXT'));
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(`${__('COPY_TEXT')} (source)`);
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(__('COPY_MESSAGE_LINK'));
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(`https://discord.com/channels/${this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id}/${this.message?.channel.id}/${this.message?.id}`, QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
-    {
-      const action = new QAction(menu);
-      action.setText(__('COPY_ID'));
-      action.addEventListener('triggered', () => {
-        app.clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
-      });
-      menu.addAction(action);
-    }
+
+    this.addMenuEntry(__('COPY_TEXT'), () => {
+      app.clipboard.setText(this.message?.cleanContent || '', QClipboardMode.Clipboard);
+    });
+
+    this.addMenuEntry(`${__('COPY_TEXT')} (source)`, () => {
+      app.clipboard.setText(this.message?.content || '', QClipboardMode.Clipboard);
+    });
+
+    this.addMenuEntry(__('COPY_MESSAGE_LINK'), () => {
+      const channelType =
+        this.message?.channel.type === 'dm' ? '@me' : this.message?.channel.guild.id;
+
+      const txt = `https://discord.com/channels/${channelType}/${this.message?.channel.id}/${this.message?.id}`;
+
+      app.clipboard.setText(txt, QClipboardMode.Clipboard);
+    });
+
+    this.addMenuEntry(__('COPY_ID'), () => {
+      app.clipboard.setText(this.message?.id || '', QClipboardMode.Clipboard);
+    });
+
     this.contentLabel.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     this.contentLabel.addEventListener('customContextMenuRequested', ({ x, y }) => {
       const map = this.contentLabel.mapToGlobal(this.p0);
+
       menu.popup(new QPoint(map.x() + x, map.y() + y));
     });
   }
@@ -126,9 +130,8 @@ export class MessageItem extends QWidget {
   private p0 = new QPoint(0, 0);
 
   private initComponent() {
-    const {
-      controls, avatar, unameLabel, dateLabel, contentLabel, msgLayout, infoLayout,
-    } = this;
+    const { controls, avatar, unameLabel, dateLabel, contentLabel, msgLayout, infoLayout } = this;
+
     controls.setContentsMargins(16, 4, 16, 4);
     controls.setSpacing(10);
 
@@ -138,16 +141,28 @@ export class MessageItem extends QWidget {
     avatar.setAlignment(AlignmentFlag.AlignTop);
     avatar.setCursor(CursorShape.PointingHandCursor);
     avatar.addEventListener('customContextMenuRequested', ({ x, y }) => {
-      if (!this.message) return;
-      app.emit(Events.OPEN_USER_MENU,
+      if (!this.message) {
+        return;
+      }
+
+      app.emit(
+        Events.OPEN_USER_MENU,
         this.message.member || this.message.author,
-        avatar.mapToGlobal(new QPoint(x, y)));
+        avatar.mapToGlobal(new QPoint(x, y))
+      );
     });
+
     avatar.addEventListener(WidgetEventTypes.MouseButtonPress, (e) => {
       const ev = new QMouseEvent(e as NativeElement);
-      if (ev.button() === MouseButton.LeftButton) this.handleUserClick();
+
+      if (ev.button() === MouseButton.LeftButton) {
+        this.handleUserClick();
+      }
     });
-    if (!app.config.enableAvatars) avatar.hide();
+
+    if (!app.config.get('enableAvatars')) {
+      avatar.hide();
+    }
 
     infoLayout.setSpacing(8);
     infoLayout.setContentsMargins(0, 0, 0, 0);
@@ -178,9 +193,13 @@ export class MessageItem extends QWidget {
    * Handles user clicking the avatar or username link.
    */
   private handleUserClick() {
-    if (!this.message) return;
+    if (!this.message) {
+      return;
+    }
+
     const { avatar } = this;
     const map = avatar.mapToGlobal(this.p0);
+
     map.setX(map.x() + avatar.size().width());
     app.emit(Events.OPEN_USER_PROFILE, this.message.author.id, this.message.guild?.id, map);
   }
@@ -191,61 +210,104 @@ export class MessageItem extends QWidget {
    * Loads all images in the message.
    */
   renderImages() {
-    const { message, avatar } = this;
-    if (!message || this.alreadyRendered) return;
-    void (async () => {
-      const cachePixmap = avatarCache.get(message.author.id);
-      if (cachePixmap) {
-        avatar.setPixmap(cachePixmap);
-        return;
-      }
-      try {
-        const image = await pictureWorker.loadImage(
-          message.author.displayAvatarURL({ format: 'png', size: 256 }),
-        );
-        const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
-        avatar.setPixmap(pixmap);
-        avatarCache.set(message.author.id, pixmap);
-      } catch (e) {
-        error(`Couldn't load avatar image for user ${message.author.tag}`);
-      }
-    })();
+    const { message } = this;
+
+    if (!message || this.alreadyRendered) {
+      return;
+    }
+
     // @ts-ignore
     this.msgLayout.nodeChildren.forEach((w) => w.loadImages && w.loadImages());
+
     if (this.contentNoEmojis) {
-      processEmojis(this.contentNoEmojis)
-        .then((content) => this.contentLabel.setText(content))
+      processEmojis(this.contentNoEmojis, this)
+        .then(
+          (content) =>
+            !this.contentLabel.native.destroyed &&
+            this.contentLabel.setText(content.replace(/\n/g, '<br />'))
+        )
         .catch(error.bind(error, "Couldn't load emoji."));
     }
+
     this.alreadyRendered = true;
+    void this.loadAvatar();
+  }
+
+  /**
+   * Loads user avatar asynchronously.
+   */
+  async loadAvatar() {
+    const { message, avatar } = this;
+
+    if (!message || this.native.destroyed || avatar.native.destroyed) {
+      return;
+    }
+
+    const cachePixmap = avatarCache.get(message.author.id);
+
+    if (cachePixmap) {
+      avatar.setPixmap(cachePixmap);
+
+      return;
+    }
+
+    try {
+      const image = await pictureWorker.loadImage(
+        message.author.displayAvatarURL({ format: 'png', size: 256 })
+      );
+
+      if (this.native.destroyed || avatar.native.destroyed) {
+        return;
+      }
+
+      const pixmap = new QPixmap(image).scaled(40, 40, 1, 1);
+
+      avatar.setPixmap(pixmap);
+      avatarCache.set(message.author.id, pixmap);
+    } catch (e) {
+      error(`Couldn't load avatar image for user ${message.author.tag}`);
+    }
   }
 
   /**
    * Populates the message widget with message data.
    * @param message Message to process.
    */
-  async loadMessage(message: Message): Promise<void> {
+  async loadMessage(message: Message): Promise<MessageItem> {
     const { unameLabel: userNameLabel, dateLabel, contentLabel } = this;
     const user = message.author;
     const member = message.guild?.members.cache.get(user.id);
+
     this.message = message;
     userNameLabel.setText(member?.nickname || user.username);
     dateLabel.setText(message.createdAt.toLocaleString());
-    if (message.system) this.loadSystemMessage(message);
-    else if (message.content.trim() === '') contentLabel.hide();
-    else {
+
+    if (message.system && message.type !== undefined) {
+      this.loadSystemMessage(message);
+    } else if (message.content.trim() === '') {
+      contentLabel.hide();
+    } else {
       let { content } = message;
+
       content = await processMarkdown(content);
       content = await processMentions(content, message);
       this.contentNoEmojis = content;
       content = await processEmojiPlaceholders(content);
-      contentLabel.setText(content);
+
+      if (this.native.destroyed) {
+        return this;
+      }
+
+      contentLabel.setText(content.replace(/\n/g, '<br />'));
     }
+
     [
-      ...processAttachments(message),
+      ...processAttachments(message, this),
       ...processEmbeds(message, this),
-      ...await processInvites(message),
+      ...(await processInvites(message, this)),
     ].forEach((w) => !this.native.destroyed && this.msgLayout.addWidget(w));
+
+    return this;
   }
 
   /**
@@ -253,9 +315,15 @@ export class MessageItem extends QWidget {
    * @param message Message to process.
    */
   private loadSystemMessage(message: Message) {
-    const content = __(`MESSAGE_${message.type}`) || message.type;
+    const content = __(`MESSAGE_${message.type}` as PhraseID) || message.type;
+
     this.dateLabel.hide();
     this.contentLabel.setPlainText(`<i>&nbsp;</i>${content}`);
     this.msgLayout.setDirection(Direction.LeftToRight);
+  }
+
+  destroy() {
+    this.native.destroyed = true;
+    this.contentLabel.native.destroyed = true;
   }
 }

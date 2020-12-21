@@ -11,7 +11,6 @@ import {
   LayoutMode,
   ListViewMode,
   Movement,
-  NativeElement,
   QBoxLayout,
   QIcon,
   QKeyEvent,
@@ -27,9 +26,10 @@ import {
   WidgetAttribute,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
+import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
 import { Emoji } from 'discord.js';
 import { EventEmitter } from 'events';
-import { __ } from 'i18n';
+import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
@@ -37,14 +37,7 @@ import { resolveEmoji } from '../../utilities/ResolveEmoji';
 
 const { error } = createLogger('EmojiPicker');
 
-const mod = (a: number, x: number) => {
-  if (Math.abs(a) === x) return 0;
-  if (a >= 0) return a % x;
-  return x - (-a % x);
-};
-
 const EMOJI_REGEX = /\w+/g;
-
 const MAX_EMOJIS = 54;
 
 /**
@@ -63,17 +56,24 @@ export class EmojiPicker extends QMenu {
 
   private controlPressed = false;
 
+  private token?: CancelToken;
+
   constructor(parent?: any, dir = Direction.TopToBottom) {
     super(parent);
-    this.controls = new QBoxLayout(dir);
+
     this.setInlineStyle('background: transparent;');
     this.setFixedSize(377, 335);
     this.setLayout(new QBoxLayout(Direction.TopToBottom));
-    (this.layout as QBoxLayout).addWidget(this.root, 1);
-    (this.layout as QBoxLayout).setContentsMargins(0, 0, 0, 0);
+
+    this.controls = new QBoxLayout(dir);
+    this.layout?.addWidget(this.root, 1);
+    this.layout?.setContentsMargins(0, 0, 0, 0);
+
     this.initComponent();
+
     this.setAttribute(WidgetAttribute.WA_TranslucentBackground, true);
     this.addEventListener(WidgetEventTypes.Hide, this.clear.bind(this));
+
     this.addEventListener(WidgetEventTypes.Show, () => {
       this.clear();
       this.textInput.setFocus(FocusReason.PopupFocusReason);
@@ -83,36 +83,44 @@ export class EmojiPicker extends QMenu {
   clear() {
     this.textInput.clear();
     this.textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
-    this.updateView();
+
+    void this.updateView();
   }
 
   hide() {
     super.hide();
+
     this.textInput.setReadOnly(false);
     this.controlPressed = false;
     this.clear();
   }
 
   private initComponent() {
-    const {
-      controls, root, emojiView, textInput,
-    } = this;
+    const { controls, root, emojiView, textInput } = this;
+
     root.setLayout(controls);
     root.setObjectName('EmojiPicker');
     root.setFixedSize(377, 335);
+
     controls.setSpacing(0);
     controls.setContentsMargins(0, 0, 0, 12);
+
     const textLayout = new QBoxLayout(Direction.LeftToRight);
+
     textLayout.setContentsMargins(12, 0, 12, 0);
+
     textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
     textInput.setReadOnly(false);
     textInput.setCursor(CursorShape.IBeamCursor);
     textInput.setEchoMode(EchoMode.NoEcho);
+
     textInput.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
-    textInput.addEventListener(WidgetEventTypes.InputMethodQuery, () => textInput.clear());
     textInput.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyRelease.bind(this));
+    textInput.addEventListener(WidgetEventTypes.InputMethodQuery, () => textInput.clear());
+
     textLayout.addWidget(textInput);
     controls.addLayout(textLayout);
+
     emojiView.setObjectName('EmojiView');
     emojiView.setGridSize(new QSize(40, 40));
     emojiView.setUniformItemSizes(true);
@@ -125,11 +133,15 @@ export class EmojiPicker extends QMenu {
     emojiView.setIconSize(new QSize(32, 32));
     emojiView.setItemAlignment(AlignmentFlag.AlignCenter);
     emojiView.addEventListener('itemClicked', this.handleItemClicked.bind(this));
+
     controls.addWidget(emojiView, 1);
+
     const proTip = new QLabel(this);
+
     proTip.setObjectName('ProTip');
     proTip.setAlignment(AlignmentFlag.AlignCenter);
     proTip.setText(`<b>${__('PINNED_MESSAGES_PRO_TIP')}</b> ${__('EMOJI_PICKER_PRO_TIP_BODY')}`);
+
     if (controls.direction() === Direction.TopToBottom) {
       controls.addSpacing(12);
       controls.addWidget(proTip);
@@ -139,94 +151,129 @@ export class EmojiPicker extends QMenu {
     }
   }
 
-  private handleControlPressed(event: any) {
-    const e = new QKeyEvent(event as NativeElement) as QKeyEvent & { ignore: () => void };
-    this.controlPressed = (e.modifiers() & KeyboardModifier.ControlModifier)
-      === KeyboardModifier.ControlModifier;
+  private handleControlPressed(event: QKeyEvent) {
+    // @TODO: Verify if it works
+    // const e = new QKeyEvent(event as NativeElement) as QKeyEvent & { ignore: () => void };
+
+    this.controlPressed =
+      (event.modifiers() & KeyboardModifier.ControlModifier) === KeyboardModifier.ControlModifier;
+
     this.textInput.clear();
   }
 
-  private handleKeyPress(event: any) {
+  private handleKeyPress(event?: NativeRawPointer<'QEvent'>) {
+    if (!event) {
+      return;
+    }
+
     const { emojiView, textInput } = this;
-    this.handleControlPressed(event);
-    const e = new QKeyEvent(event as NativeElement);
+
+    const e = new QKeyEvent(event);
+
+    this.handleControlPressed(e);
+
     let text = textInput.placeholderText();
-    if (text.includes(' ')) text = '';
-    const input = e.text();
+
+    if (text.includes(' ')) {
+      text = '';
+    }
+
     switch (e.key()) {
       case Key.Key_Up:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() - 9, emojiView.count()),
-        );
+        emojiView.setCurrentRow((emojiView.currentRow() - 9) % emojiView.count());
         break;
+
       case Key.Key_Left:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() - 1, emojiView.count()),
-        );
+        emojiView.setCurrentRow((emojiView.currentRow() - 1) % emojiView.count());
         break;
+
       case Key.Key_Down:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() + 9, emojiView.count()),
-        );
+        emojiView.setCurrentRow((emojiView.currentRow() + 9) % emojiView.count());
         break;
+
       case Key.Key_Right:
-        emojiView.setCurrentRow(
-          mod(emojiView.currentRow() + 1, emojiView.count()),
-        );
+        emojiView.setCurrentRow((emojiView.currentRow() + 1) % emojiView.count());
         break;
+
       case Key.Key_Return:
+
       case Key.Key_Space:
         break;
+
       case Key.Key_Delete:
+
       case Key.Key_Backspace:
         textInput.setPlaceholderText(text.slice(0, -1));
-        this.updateView();
+        void this.updateView();
         break;
+
       default: {
-        const newText = (text + input).trim();
+        const newText = (text + e.text()).trim();
         const check = newText.match(EMOJI_REGEX);
-        if (!check || !check.length || check[0] !== newText) break;
-        textInput.setPlaceholderText(newText);
-        this.updateView();
+
+        if (check && check.length && check[0] === newText) {
+          textInput.setPlaceholderText(newText);
+          void this.updateView();
+        }
       }
     }
-    const newValue = textInput.placeholderText();
-    if (!newValue) textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
+
+    if (!textInput.placeholderText()) {
+      textInput.setPlaceholderText(__('SEARCH_FOR_EMOJI'));
+    }
   }
 
-  private handleKeyRelease(event: any) {
+  private handleKeyRelease(event?: NativeRawPointer<'QEvent'>) {
+    if (!event) {
+      return;
+    }
+
     const { emojiView } = this;
-    this.handleControlPressed(event);
-    const e = new QKeyEvent(event as NativeElement);
-    switch (e.key()) {
-      case Key.Key_Return:
-        this.handleItemClicked(emojiView.currentItem());
-        break;
-      default:
+
+    const e = new QKeyEvent(event);
+
+    this.handleControlPressed(e);
+
+    if (e.key() === Key.Key_Return) {
+      this.handleItemClicked(emojiView.currentItem());
     }
   }
 
   private handleItemClicked(item: QListWidgetItem) {
     const emojiId = item.data(256).toString();
     const emoji = app.client.emojis.resolve(emojiId);
-    if (!emoji) return;
-    if (app.config.recentEmojis) {
+
+    if (!emoji) {
+      return;
+    }
+
+    const recentEmojis = app.config.get('recentEmojis');
+
+    if (recentEmojis) {
       let add = true;
-      app.config.recentEmojis = app.config.recentEmojis.map((obj) => {
+
+      const newEmojis = recentEmojis.map((obj) => {
         const o = obj;
+
         if (o[0] === emojiId) {
           o[1] += 1;
           add = false;
         }
+
         return obj;
       });
-      if (add) app.config.recentEmojis.push([emojiId, 1]);
-      app.configManager.save();
+
+      if (add) {
+        newEmojis.push([emojiId, 1]);
+      }
+
+      app.config.set('recentEmojis', newEmojis);
+
+      void app.config.save();
     }
+
     this.events.emit('emoji', emoji, this.controlPressed);
   }
-
-  private token?: CancelToken;
 
   /**
    * Updates emojis displayed on the screen according to the search input.
@@ -235,38 +282,60 @@ export class EmojiPicker extends QMenu {
     const { emojiView, textInput } = this;
     const { client, config } = app;
     const emojiName = textInput.placeholderText().trim();
-    if (!client) return;
-    this.token?.cancel();
-    this.token = new CancelToken();
-    emojiView.clear();
-    emojiView.setCurrentRow(0);
-    if (emojiName === __('SEARCH_FOR_EMOJI') && config.recentEmojis) {
-      const recents = config.recentEmojis.sort((a, b) => a[1] - b[1]);
-      for (const item of recents) {
-        const emoji = client.emojis.resolve(item[0]);
-        if (emoji) this.insertEmoji(emoji, this.token);
-      }
+
+    if (!client) {
       return;
     }
+
+    this.token?.cancel();
+    this.token = new CancelToken();
+
+    emojiView.clear();
+    emojiView.setCurrentRow(0);
+
+    if (emojiName === __('SEARCH_FOR_EMOJI') && config.get('recentEmojis')) {
+      const recents = config.get('recentEmojis').sort((a, b) => a[1] - b[1]);
+
+      for (const item of recents) {
+        const emoji = client.emojis.resolve(item[0]);
+
+        if (emoji) {
+          this.insertEmoji(emoji, this.token);
+        }
+      }
+
+      return;
+    }
+
     const result = client.emojis.cache
-      .filter((emoji) => emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase()))
+      .filter((emoji) =>
+        emoji.name.toLowerCase().includes(emojiName.replace(/ /g, '').toLowerCase())
+      )
       .partition((v) => v.guild.id === app.currentGuildId);
+
     const thisGuild = result[0].first(MAX_EMOJIS);
     const otherGuilds = result[1].first(MAX_EMOJIS - thisGuild.length);
+
     let max = Math.min(MAX_EMOJIS, thisGuild.length + otherGuilds.length);
+
     for (let i = 0; i < max; i += 1) {
-      if (thisGuild.length !== 0 && i === thisGuild.length) {
+      if (thisGuild.length === 1) {
         const item = new QListWidgetItem();
+
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setText('●');
+
         this.emojiView.addItem(item);
+
         max -= 1;
       }
-      // // eslint-disable-next-line no-await-in-loop
-      this.insertEmoji(i < thisGuild.length
-        ? thisGuild[i]
-        : otherGuilds[i - thisGuild.length], this.token);
+
+      this.insertEmoji(
+        i < thisGuild.length ? thisGuild[i] : otherGuilds[i - thisGuild.length],
+        this.token
+      );
     }
+
     emojiView.setCurrentRow(0);
   }
 
@@ -276,16 +345,24 @@ export class EmojiPicker extends QMenu {
    */
   private insertEmoji(emoji: Emoji, cancel: CancelToken) {
     const item = new QListWidgetItem();
+
     item.setToolTip(`:${emoji.name}:`);
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
+
     resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name })
-      .then((path) => !cancel.cancelled && item.setIcon(new QIcon(path)))
+      .then((path) => {
+        if (!cancel.cancelled || this.native.destroyed) {
+          item.setIcon(new QIcon(path));
+        }
+      })
       .catch((e) => {
-        if (cancel.cancelled) return;
-        item.setText(emoji.name);
-        error(`Couldn't retrieve emoji ${emoji}`, e);
+        if (!cancel.cancelled) {
+          item.setText(emoji.name);
+          error(`Couldn't retrieve emoji ${emoji}`, e);
+        }
       });
+
     this.emojiView.addItem(item);
   }
 }

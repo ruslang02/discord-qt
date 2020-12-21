@@ -11,8 +11,7 @@ const { log, error } = createLogger('Config');
 export class ConfigManager {
   isLoaded = false;
 
-  // @ts-ignore
-  config: IConfig = {};
+  private config = {} as IConfig;
 
   constructor(private file: string) {
     mkdirSync(dirname(file), { recursive: true });
@@ -20,36 +19,62 @@ export class ConfigManager {
 
   async load() {
     const { file } = this;
+
     this.isLoaded = false;
-    // @ts-ignore
-    let config: IConfig = {};
+
+    let config = {} as IConfig;
+
     try {
       config = JSON.parse(await readFile(file, 'utf8'));
     } catch (err) {
-      if (!existsSync(file)) writeFile(file, '{}', 'utf8').catch((e) => error('Missing permissions on the config file.', e));
-      else error('Config file could not be used, returning to default values...');
+      if (!existsSync(file)) {
+        writeFile(file, '{}', 'utf8').catch((e) => {
+          error('Missing permissions on the config file.', e);
+        });
+      } else {
+        error('Config file could not be used, returning to default values...');
+      }
     }
+
     this.config = {
       accounts: config.accounts ?? [],
-      roundifyAvatars: config.roundifyAvatars ?? true,
-      fastLaunch: config.fastLaunch ?? false,
       debug: config.debug ?? false,
       enableAvatars: config.enableAvatars ?? true,
-      processMarkDown: config.processMarkDown ?? true,
-      theme: config.theme ?? 'dark',
+      fastLaunch: config.fastLaunch ?? false,
+      hideMembersList: config.hideMembersList ?? false,
+      isMobile: config.isMobile ?? false,
       locale: config.locale ?? 'en-US',
+      minimizeToTray: config.minimizeToTray ?? true,
+      overlaySettings: config.overlaySettings ?? {},
+      processMarkDown: config.processMarkDown ?? true,
       recentEmojis: config.recentEmojis ?? [],
+      roundifyAvatars: config.roundifyAvatars ?? true,
+      theme: config.theme ?? 'dark',
       userVolumeSettings: config.userVolumeSettings ?? {},
       userLocalGuildSettings: config.userLocalGuildSettings ?? {},
+      voiceSettings: config.voiceSettings ?? {},
+      zoomLevel: config.zoomLevel ?? '1.0',
     };
-    if (config.debug === true) log('Loaded config:', config);
+
+    if (config.debug === true) {
+      log('Loaded config:', config);
+    }
+
     this.isLoaded = true;
+  }
+
+  get<T extends keyof IConfig>(id: T): IConfig[T] {
+    return this.config[id];
+  }
+
+  set<T extends keyof IConfig>(id: T, value: IConfig[T]) {
+    this.config[id] = value;
   }
 
   async save() {
     try {
       await writeFile(join(this.file), JSON.stringify(this.config));
-      app.emit(Events.CONFIG_UPDATE, this.config);
+      app.emit(Events.CONFIG_UPDATE, this);
     } catch (e) {
       error(e);
     }

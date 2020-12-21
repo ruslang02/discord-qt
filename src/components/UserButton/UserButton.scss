@@ -1,23 +1,23 @@
-#DChannelButton[type="user"] {
+#DChannelButton[type='user'] {
   #UserNameLabel {
     font-size: 16px;
   }
+
   #StatusLabel {
     font-size: 12px;
     line-height: 16px;
   }
+
   #StatusIndicator {
     border: 3px solid $background-secondary;
     border-radius: 8px;
   }
-  &[hover="true"] {
-    #StatusIndicator {
-      border-color: mix($background-secondary, $background-modifier-hover);
-    }
+
+  &[hover='true'] #StatusIndicator {
+    border-color: mix($background-secondary, $background-modifier-hover);
   }
-  &[active="true"] {
-    #StatusIndicator {
-      border-color: mix($background-secondary, $background-modifier-selected);
-    }
+
+  &[active='true'] #StatusIndicator {
+    border-color: mix($background-secondary, $background-modifier-selected);
   }
 }

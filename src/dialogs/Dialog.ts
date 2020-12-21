@@ -9,10 +9,10 @@ import {
   QWidget,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { __ } from 'i18n';
 import { join } from 'path';
+import { __ } from '../utilities/StringProvider';
 import { DIconButton } from '../components/DIconButton/DIconButton';
-import { RootWindow } from '../windows/RootWindow';
+import { MainWindow } from '../windows/MainWindow/MainWindow';
 
 export class Dialog extends QWidget {
   protected window = new QWidget(this);
@@ -38,10 +38,15 @@ export class Dialog extends QWidget {
       const event = new QMouseEvent(e as NativeElement);
       const pos = this.window.mapToParent(this.p0);
       const size = this.window.size();
+
       if (
-        event.x() < pos.x() || event.x() > pos.x() + size.width()
-        || event.y() < pos.y() || event.y() > pos.y() + size.height()
-      ) this.hide();
+        event.x() < pos.x() ||
+        event.x() > pos.x() + size.width() ||
+        event.y() < pos.y() ||
+        event.y() > pos.y() + size.height()
+      ) {
+        this.hide();
+      }
     });
 
     this.initEvents();
@@ -53,28 +58,30 @@ export class Dialog extends QWidget {
   }
 
   protected initEvents() {
-    (this.nodeParent as RootWindow).addEventListener(
+    (this.nodeParent as MainWindow).addEventListener(
       WidgetEventTypes.Resize,
-      this.resizeToWindow.bind(this),
+      this.resizeToWindow.bind(this)
     );
+
     this.resizeToWindow();
   }
 
   protected resizeToWindow() {
-    const size = (this.nodeParent as RootWindow).size();
+    const size = (this.nodeParent as MainWindow).size();
+
     this.setGeometry(0, 0, size.width(), size.height());
   }
 
   protected initDialog() {
-    const {
-      window, header, closeBtn, controls,
-    } = this;
+    const { window, header, closeBtn, controls } = this;
 
     controls.setContentsMargins(0, 0, 0, 0);
 
     const hLayout = new QBoxLayout(Direction.LeftToRight);
+
     hLayout.addStretch(1);
     const vLayout = new QBoxLayout(Direction.TopToBottom);
+
     vLayout.addStretch(1);
     vLayout.addWidget(window);
     vLayout.addStretch(1);
@@ -88,6 +95,7 @@ export class Dialog extends QWidget {
     closeBtn.addEventListener('clicked', () => this.hide());
 
     const headLayout = new QBoxLayout(Direction.LeftToRight);
+
     headLayout.setContentsMargins(16, 16, 16, 16);
     headLayout.addWidget(header, 1);
     headLayout.addWidget(closeBtn);

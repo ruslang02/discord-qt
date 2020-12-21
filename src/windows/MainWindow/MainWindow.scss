@@ -1,10 +1,11 @@
 * {
-  font-family: "Source Sans Pro"; // Default font
+  font-family: 'Source Sans Pro'; // Default font
   //font-family: Whitney;           // Discord's font
 }
+
 #RootWindow {
-  height: "100%";
-  width: "100%";
+  height: '100%';
+  width: '100%';
   background-color: $background-primary;
   color: $text-normal;
   font-size: 14px;
@@ -46,14 +47,17 @@ QMenu {
   padding: 8px;
   border: none;
   color: $interactive-normal;
+
   #UserVolumeLabel {
     color: $interactive-normal;
   }
+
   &::separator {
     height: 1px;
     background: $background-modifier-accent;
     margin: 4px;
   }
+
   &::item {
     color: $interactive-normal;
     background-color: $background-floating;
@@ -64,16 +68,20 @@ QMenu {
     min-width: 120px;
     max-width: 240px;
   }
+
   &::item:selected {
     background-color: #5c6fb1;
     color: white;
   }
+
   &::item:disabled {
     color: $interactive-muted;
   }
+
   &::icon {
     left: 7px;
   }
+
   &::icon:checked {
     position: absolute;
     right: 7px;
@@ -83,9 +91,10 @@ QMenu {
     subcontrol-origin: padding;
     subcontrol-position: right center;
   }
+
   &::indicator {
-      width: 13px;
-      height: 13px;
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -97,23 +106,28 @@ QScrollBar {
     height: 8px;
     border: 2px solid $background-secondary;
   }
+
   &:vertical {
     width: 8px;
     border: 2px solid $background-secondary;
   }
+
   &::handle {
     background-color: $scrollbar-thin-thumb;
     border-radius: 2px;
   }
+
   &::add-line,
   &::sub-line {
     height: 0px;
   }
+
   &::add-page,
   &::sub-page {
     background-color: transparent;
   }
 }
+
 QSlider {
   &::groove:horizontal {
     background-color: $background-accent;
@@ -133,13 +147,34 @@ QSlider {
     border-radius: 6px;
   }
 
+  &[type='sensivity'] {
+    &::add-page:horizontal {
+      background-color: rgb(105, 196, 154);
+    }
+
+    &::sub-page:horizontal {
+      background-color: rgb(251, 184, 72);
+    }
+  }
+
   &::add-page:horizontal {
-    background: $interactive-muted;
+    background-color: $interactive-muted;
     border-radius: 3px;
   }
 
   &::sub-page:horizontal {
-    background: $blurple;
+    background-color: $blurple;
+    border-radius: 3px;
+  }
+}
+
+QProgressBar {
+  border: none;
+  border-radius: 3px;
+  background-color: $interactive-muted;
+
+  &::chunk {
+    background-color: $blurple;
     border-radius: 3px;
   }
 }

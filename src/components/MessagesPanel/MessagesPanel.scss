@@ -1,94 +1,116 @@
-
-
 #MessagesPanel,
 #MessagesContainer {
   background-color: $background-primary;
   border: none;
+
   QScrollBar {
     background-color: $background-secondary;
     border-radius: 8px;
+
     &:horizontal {
       height: 16px;
       border: 4px solid $background-primary;
     }
+
     &:vertical {
       width: 16px;
       border: 4px solid $background-primary;
     }
+
     &::handle {
       border-radius: 4px;
     }
   }
 }
+
 #MessageItem {
   background-color: $background-primary;
+
   &:hover {
     background-color: $background-message-hover;
   }
-  QLabel, QLabel:selected, QLabel:active {
+
+  QLabel,
+  QLabel:selected,
+  QLabel:active {
     background-color: transparent;
     border: none;
     outline: none;
   }
+
   #UserNameLabel {
     font-size: 16px;
     color: $header-primary;
     font-weight: 500;
   }
+
   #DateLabel {
     font-size: 12px;
     color: $text-muted;
   }
+
   #Content {
     color: $text-normal;
     font-size: 16px;
+
     blockquote {
       background-color: $text-normal;
     }
   }
+
   #Avatar {
     margin-top: 2px;
   }
+
   #InviteContainer {
     background-color: $background-secondary;
     border-radius: 4px;
+
     #Helper {
       font-weight: 700;
       color: $interactive-normal;
       text-transform: uppercase;
     }
+
     #Name {
       font-weight: 600;
       font-size: 14px;
       color: $text-normal;
     }
+
     #Icon {
       background: $background-primary;
       border-radius: 15px;
     }
   }
+
   #EmbedBody {
     background-color: $background-secondary;
     border-radius: 4px;
+
     #EmbedAuthorName {
       color: $header-primary;
       font-size: 14px;
       font-weight: 600;
     }
+
     #EmbedTitle {
       color: $header-primary;
       font-size: 16px;
       font-weight: 600;
     }
+
     #EmbedDescription {
       color: $text-normal;
       font-size: 14px;
     }
+
     #EmbedFieldTitle {
       color: $header-primary;
       font-size: 14px;
       font-weight: 600;
     }
+
     #EmbedFieldValue {
       color: $text-normal;
       font-size: 14px;

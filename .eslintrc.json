@@ -1,0 +1,109 @@
+{
+  "env": {
+    "es2020": true,
+    "node": true
+  },
+  "extends": ["airbnb-base", "prettier", "prettier/@typescript-eslint"],
+  "globals": {
+    "__BUILDNUM__": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module",
+    "project": "tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/no-floating-promises": ["warn"],
+    "@typescript-eslint/no-shadow": ["error"],
+    "@typescript-eslint/no-unused-expressions": ["error"],
+    "@typescript-eslint/no-unused-vars": ["error"],
+    "arrow-parens": ["error", "always"],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "never"
+      }
+    ],
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "ts": "never"
+      }
+    ],
+    "import/prefer-default-export": "off",
+    "no-bitwise": "off",
+    "no-empty": "off",
+    "no-fallthrough": "off",
+    "no-multiple-empty-lines": "error",
+    "no-restricted-syntax": "off",
+    "no-shadow": "off", // Prevent conflicts with @typescript-eslint/no-shadow
+    "no-underscore-dangle": "off",
+    "no-unused-expressions": "off", // @typescript-eslint/no-unused-expressions used instead
+    "no-void": [
+      "error",
+      {
+        "allowAsStatement": true
+      }
+    ],
+    "padding-line-between-statements": [
+      // See docs
+      "warn",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "return"
+      }, // return
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "class"
+      }, // class
+      {
+        "blankLine": "always",
+        "prev": ["const", "let", "var"],
+        "next": "*"
+      }, // Variable declaration
+      {
+        "blankLine": "any",
+        "prev": ["const", "let", "var"],
+        "next": ["const", "let", "var"]
+      },
+      {
+        "blankLine": "always",
+        "prev": ["case", "default"],
+        "next": "*"
+      }, // case in switch
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": ["try", "switch", "for", "block-like"]
+      }, // blocks (try, switch, if, while, for, {})
+      {
+        "blankLine": "always",
+        "prev": ["try", "switch", "for", "block-like"],
+        "next": "*"
+      },
+      {
+        // Multiline
+        "blankLine": "always",
+        "prev": ["multiline-const", "multiline-expression", "multiline-let"],
+        "next": "*"
+      }
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "paths": ["src", "worker", "node_modules"],
+        "extensions": [".js", ".json", ".ts"]
+      }
+    }
+  }
+}

@@ -1,6 +1,4 @@
-import {
-  AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget,
-} from '@nodegui/nodegui';
+import { AlignmentFlag, Direction, QBoxLayout, QLabel, QPixmap, QWidget } from '@nodegui/nodegui';
 import { GuildMember, User } from 'discord.js';
 import { createLogger } from '../../utilities/Console';
 import { pictureWorker } from '../../utilities/PictureWorker';
@@ -31,9 +29,7 @@ export class Profile extends QWidget {
   }
 
   private initComponent() {
-    const {
-      layout, avatar, nickname, username, custom, unreadInd,
-    } = this;
+    const { layout, avatar, nickname, username, custom, unreadInd } = this;
 
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(0);
@@ -74,27 +70,35 @@ export class Profile extends QWidget {
    * @param someone User or member to process.
    */
   async loadProfile(someone: User | GuildMember) {
-    const {
-      avatar, username, nickname, custom, unreadInd,
-    } = this;
+    const { avatar, username, nickname, custom, unreadInd } = this;
     const user = someone instanceof GuildMember ? someone.user : someone;
     const member = someone instanceof GuildMember ? someone : null;
-    if (!user) return;
+
+    if (!user) {
+      return;
+    }
+
     this.setMinimumSize(250, 0);
     unreadInd.setProperty('color', user.presence.status);
     unreadInd.repolish();
     avatar.clear();
-    pictureWorker.loadImage(user.displayAvatarURL({ format: 'png', size: 256 }))
+    pictureWorker
+      .loadImage(user.displayAvatarURL({ format: 'png', size: 256 }))
       .then((path) => avatar.setPixmap(new QPixmap(path).scaled(80, 80, 1, 1)))
       .catch(() => error(`Profile image for ${user.tag} could not be loaded.`));
+
     if (member?.nickname) {
       username.show();
       nickname.setText(`<span style='font-weight:600'>${member.nickname}</span>`);
       username.setText(user.tag);
     } else {
-      nickname.setText(`<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`);
+      nickname.setText(
+        `<span style='font-weight:600'>${user.username}</span>#${user.discriminator}`
+      );
+
       username.hide();
     }
+
     this.repolish();
     void custom.loadStatus(user);
   }

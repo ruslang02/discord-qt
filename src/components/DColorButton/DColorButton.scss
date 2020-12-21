@@ -7,47 +7,55 @@
   line-height: 16px;
   padding: 2px 16px;
 
-  &[color="0"] {
+  &[color='0'] {
     background-color: $blurple;
+
     &:hover {
       background-color: darken($blurple, 3%);
     }
+
     &:disabled {
       background-color: darken($blurple, 9%);
       color: $text-normal;
     }
   }
 
-  &[color="1"] {
+  &[color='1'] {
     background-color: $red;
+
     &:hover {
       background-color: darken($red, 3%);
     }
+
     &:disabled {
       background-color: darken($red, 9%);
       color: $text-muted;
     }
   }
 
-  &[color="2"] {
+  &[color='2'] {
     background-color: transparent;
     color: $red;
+
     &:hover {
       background-color: $red;
       color: white;
     }
+
     &:disabled {
       background-color: transparent;
       color: $text-muted;
     }
   }
 
-  &[color="3"] {
+  &[color='3'] {
     background-color: transparent;
     color: white;
+
     &:hover {
       text-decoration: underline;
     }
+
     &:disabled {
       background-color: transparent;
       color: $text-muted;

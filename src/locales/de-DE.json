@@ -138,5 +138,9 @@
   "HIDE_MUTED_CHANNELS": "Verstecke stumme Channel",
   "SHOW_MUTED_CHANNELS": "Zeige stumme Channel",
   "LEAVE_SERVER_TITLE": "Verlasse '{{name}}'",
-  "LEAVE_SERVER_BODY": "Bist Du sicher, dass Du <b>{{name}}</b> verlassen möchtest? Ohne neue Einladung kannst Du dem Server nicht wieder beitreten."
+  "LEAVE_SERVER_BODY": "Bist Du sicher, dass Du <b>{{name}}</b> verlassen möchtest? Ohne neue Einladung kannst Du dem Server nicht wieder beitreten.",
+  "MINIMIZE_TO_TRAY": "Fenster beim Schließen in Tray minimieren",
+  "SYSTEM": "System",
+  "OPEN": "Öffnen",
+  "QUIT": "Verlassen"
 }

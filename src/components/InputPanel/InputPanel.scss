@@ -1,14 +1,15 @@
-
-
 #InputContainer {
-  #TypingLabel, #StatusLabel {
+  #TypingLabel,
+  #StatusLabel {
     color: $text-normal;
     font-size: 14px;
     line-height: 24px;
   }
+
   #InputPanel {
     background: $channeltextarea-background;
     border-radius: 8px;
+
     #Input {
       background: $channeltextarea-background;
       border: none;
@@ -18,10 +19,12 @@
       padding-bottom: 5px;
     }
   }
+
   #AttachmentPanel QLabel {
     background-color: $background-secondary;
     border-radius: 8px;
   }
+
   QScrollBar {
     border-color: $channeltextarea-background;
   }
