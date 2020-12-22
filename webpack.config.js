@@ -39,12 +39,20 @@ module.exports = (_env, argv) => {
           keep_classnames: true,
         },
       })],
+      removeEmptyChunks: true,
+      splitChunks: {
+        cacheGroups: {
+          styles: {
+            type: 'css/mini-extract',
+            chunks: 'all',
+          },
+        },
+      },
     },
     target: 'node',
     node: {
       __dirname: false,
       __filename: false,
-      fs: 'empty',
     },
     output: {
       filename: '[name]',
@@ -83,6 +91,9 @@ module.exports = (_env, argv) => {
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
+              options: {
+                esModule: false,
+              },
             },
             'css-loader?url=false',
             {
@@ -107,11 +118,9 @@ module.exports = (_env, argv) => {
       ],
     },
     resolve: {
+      exportsFields: [],
       extensions: ['.tsx', '.ts', '.js', '.jsx', '.json', '.wasm'],
       mainFields: ['main'],
-      alias: {
-        'fetch': path.join(__dirname, '../node_modules', 'whatwg-fetch', 'fetch.js'),
-      },
     },
     plugins: [
       new CleanWebpackPlugin(),
@@ -124,7 +133,7 @@ module.exports = (_env, argv) => {
           { from: 'assets', to: 'assets' },
           { from: 'src/locales', to: 'locales' },
           { from: 'node_modules/opusscript/build/opusscript_native_wasm.wasm' },
-          { from: 'node_modules/source-sans-pro/TTF/*', to: 'assets/fonts', flatten: true },
+          { from: 'node_modules/source-sans-pro/TTF/*', to: 'assets/fonts/*' },
           { from: 'node_modules/ffmpeg-static/ffmpeg', noErrorOnMissing: true },
           { from: 'node_modules/ffmpeg-static/ffmpeg.exe', noErrorOnMissing: true },
         ],
