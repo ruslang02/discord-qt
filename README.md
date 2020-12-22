@@ -13,7 +13,7 @@ It offers a significantly less resource-consuming experience comparing to the of
 
 ## Building from sources
 
-Node.JS v12+ is required to build.
+[Node.JS v10+](https://github.com/nodejs/node) is required to build.
 
 ```bash
 git clone https://github.com/ruslang02/discord-qt

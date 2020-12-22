@@ -20,10 +20,15 @@ try {
 
 module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
-  const themes = Object.fromEntries(readdirSync('./src/themes').map((value) => [
-    value.replace('.scss', ''),
-    `./src/themes/${value}`,
-  ]));
+  let themes = {};
+
+  readdirSync('./src/themes')
+    .forEach((value) => {
+      themes = {
+        ...themes,
+        [value.replace('.scss', '')]: `./src/themes/${value}`,
+      };
+    });
 
   return {
     mode: isDev ? 'development' : 'production',
@@ -39,15 +44,6 @@ module.exports = (_env, argv) => {
           keep_classnames: true,
         },
       })],
-      removeEmptyChunks: true,
-      splitChunks: {
-        cacheGroups: {
-          styles: {
-            type: 'css/mini-extract',
-            chunks: 'all',
-          },
-        },
-      },
     },
     target: 'node',
     node: {
@@ -91,9 +87,6 @@ module.exports = (_env, argv) => {
           use: [
             {
               loader: MiniCssExtractPlugin.loader,
-              options: {
-                esModule: false,
-              },
             },
             'css-loader?url=false',
             {
