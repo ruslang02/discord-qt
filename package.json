@@ -52,7 +52,7 @@
     "i18n": "^0.13.2",
     "markdown-it": "^11.0.1",
     "merge-stream": "^2.0.0",
-    "node-notifier": "^8.0.0",
+    "node-notifier": "^8.0.1",
     "open": "^7.3.0",
     "opusscript": "0.0.7",
     "pngjs": "^5.0.0",
