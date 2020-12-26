@@ -55,7 +55,7 @@ export class MembersList extends QListWidget {
     app.on(Events.CONFIG_UPDATE, (config) => {
       this.configHidden = config.get('hideMembersList');
       this.updateVisibility();
-    })
+    });
   }
 
   private updateVisibility() {

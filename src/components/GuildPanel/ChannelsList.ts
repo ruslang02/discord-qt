@@ -67,7 +67,7 @@ export class ChannelsList extends QListWidget {
   }
 
   private handleEvents(client: Client) {
-    const { Events } = (Constants as unknown) as DQConstants;
+    const { Events } = Constants as DQConstants;
 
     client.on(Events.MESSAGE_ACK, (channel) => {
       const button = this.buttons.get(channel.id);

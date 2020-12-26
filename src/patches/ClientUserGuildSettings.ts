@@ -1,4 +1,11 @@
-import { Client, Collection, Constants, DQConstants, Snowflake } from 'discord.js';
+import {
+  Client,
+  Collection,
+  Constants,
+  DQConstants,
+  MessageNotificationType,
+  Snowflake,
+} from 'discord.js';
 import { ClientUserChannelOverride } from './ClientUserChannelOverride';
 
 /**
@@ -9,6 +16,18 @@ export class ClientUserGuildSettings {
 
   channelOverrides: Collection<Snowflake, ClientUserChannelOverride>;
 
+  acknowledged?: boolean;
+
+  position?: number;
+
+  muted?: boolean;
+
+  messageNotifications?: MessageNotificationType;
+
+  mobilePush?: boolean;
+
+  suppressEveryone?: boolean;
+
   constructor(data: any, public client: Client) {
     this.guildID = data.guild_id;
     this.channelOverrides = new Collection();
@@ -16,9 +35,9 @@ export class ClientUserGuildSettings {
   }
 
   patch(data: any) {
-    for (const key of Object.keys(((Constants as unknown) as DQConstants).UserGuildSettingsMap)) {
-      const value = ((Constants as unknown) as DQConstants).UserGuildSettingsMap[key];
+    const { UserGuildSettingsMap } = Constants as DQConstants;
 
+    for (const [key, value] of Object.entries(UserGuildSettingsMap)) {
       if (data.hasOwnProperty.call(key)) {
         if (key === 'channel_overrides') {
           for (const channel of data[key]) {
@@ -36,7 +55,8 @@ export class ClientUserGuildSettings {
   }
 
   update(name: string, value: any) {
-    // @ts-ignore
-    return this.client.rest.methods.patchClientUserGuildSettings(this.guildID, { [name]: value });
+    return (this.client as any).rest.methods.patchClientUserGuildSettings(this.guildID, {
+      [name]: value,
+    });
   }
 }

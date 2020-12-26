@@ -17,7 +17,7 @@ type FriendsSources = { all: boolean; mutualGuilds: boolean; mutualFriends: bool
 export class ClientUserSettings {
   public convertEmoticons: boolean = false;
 
-  public customStatus: CustomStatus | null = null;
+  public customStatus?: CustomStatus;
 
   public defaultGuildsRestricted: boolean = false;
 
@@ -68,9 +68,7 @@ export class ClientUserSettings {
    * @private
    */
   _patch(data: any) {
-    for (const key of Object.keys(((Constants as unknown) as DQConstants).UserSettingsMap)) {
-      const value = ((Constants as unknown) as DQConstants).UserSettingsMap[key];
-
+    for (const [key, value] of Object.entries((Constants as DQConstants).UserSettingsMap)) {
       if (key in data && typeof value === 'function') {
         // @ts-ignore
         this[value.name] = value(data[key]);

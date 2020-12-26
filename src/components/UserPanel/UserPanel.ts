@@ -71,7 +71,7 @@ export class UserPanel extends QWidget {
    * @param client discord.js Client to bind into.
    */
   private bindEvents(client: Client) {
-    const { Events } = (Constants as unknown) as DQConstants;
+    const { Events } = Constants as DQConstants;
 
     this.nameLabel.setText(__('CONNECTION_STATUS_CONNECTING'));
     this.discLabel.setText('#0000');

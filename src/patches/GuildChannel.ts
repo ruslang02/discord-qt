@@ -1,38 +1,48 @@
-import { Constants, DQConstants, User } from 'discord.js';
+import { Client, Constants, DQConstants, Guild, Snowflake, User } from 'discord.js';
+import { patchClass } from '../utilities/Patcher';
 
 const GuildChannel = require('discord.js/src/structures/GuildChannel');
 
-GuildChannel.prototype.can = function can(flags: number, _who?: User) {
-  const who = _who || this.client.user;
+const proto = GuildChannel.prototype;
 
-  return this.permissionsFor(who)?.has(flags) ?? false;
-};
+class GuildChannelPatch {
+  client?: Client;
 
-Object.defineProperty(GuildChannel.prototype, 'muted', {
-  get() {
-    if (this.client.user.bot) {
+  guild?: Guild;
+
+  id: Snowflake = '0';
+
+  get messageNotifications() {
+    if (!this.guild || !this.client?.user || this.client.user.bot) {
       return null;
     }
 
     try {
-      return this.client.user.guildSettings.get(this.guild.id).channelOverrides.get(this.id).muted;
+      return this.client.user.guildSettings.get(this.guild.id)?.channelOverrides.get(this.id)
+        ?.messageNotifications;
+    } catch (err) {
+      return (Constants as DQConstants).MessageNotificationTypes.INHERIT;
+    }
+  }
+
+  get muted() {
+    if (!this.guild || !this.client?.user || this.client.user.bot) {
+      return null;
+    }
+
+    try {
+      return this.client.user.guildSettings.get(this.guild.id)?.channelOverrides.get(this.id)
+        ?.muted;
     } catch (err) {
       return false;
     }
-  },
-});
+  }
 
-Object.defineProperty(GuildChannel.prototype, 'messageNotifications', {
-  get() {
-    if (this.client.user.bot) {
-      return null;
-    }
+  can(this: typeof GuildChannel, flags: number, _who?: User) {
+    const who = _who || this.client?.user;
 
-    try {
-      return this.client.user.guildSettings.get(this.guild.id).channelOverrides.get(this.id)
-        .messageNotifications;
-    } catch (err) {
-      return ((Constants as unknown) as DQConstants).MessageNotificationTypes[3];
-    }
-  },
-});
+    return this.permissionsFor(who)?.has(flags) ?? false;
+  }
+}
+
+patchClass(proto, GuildChannelPatch);

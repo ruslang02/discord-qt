@@ -17,8 +17,9 @@ Object.assign(handlers, {
     READY.apply(this, [client, packet, { checkReady: () => {} }]);
 
     if (data.user_settings) {
-      // eslint-disable-next-line no-param-reassign
-      client.user.settings = new ClientUserSettings(client.user, data.user_settings);
+      const { user } = client;
+
+      user.settings = new ClientUserSettings(client.user, data.user_settings);
     }
 
     if (data.user_guild_settings) {
@@ -66,7 +67,7 @@ Object.assign(handlers, {
     }
 
     client.emit(
-      ((Constants as unknown) as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE,
+      (Constants as DQConstants).Events.USER_GUILD_SETTINGS_UPDATE,
       client.user.guildSettings.get(packet.d.guild_id)
     );
   },

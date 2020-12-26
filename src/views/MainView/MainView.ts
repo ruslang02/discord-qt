@@ -49,7 +49,7 @@ export class MainView extends QWidget {
         this.guildsList.hide();
         this.leftPanel.hide();
       }
-    })
+    });
   }
 
   private initView() {

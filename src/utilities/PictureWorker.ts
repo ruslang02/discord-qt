@@ -114,6 +114,7 @@ class PictureWorker {
     return cb.resolve(path);
   }
 }
+
 export const pictureWorker = new PictureWorker();
 // @ts-ignore
 global.pictureWorker = pictureWorker;
