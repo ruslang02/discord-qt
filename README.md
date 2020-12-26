@@ -7,7 +7,9 @@
 A Discord desktop client powered by Node.JS and [NodeGui](https://github.com/nodegui).
 It offers a significantly less resource-consuming experience comparing to the official Electron-based desktop client thanks to native UI rendering instead of a Chromium rendering engine.
 
-### **[Download](https://github.com/ruslang02/discord-qt/releases/latest) for Windows, Linux and macOS**
+### **[Download](https://github.com/ruslang02/discord-qt/releases/latest) for Windows, Linux and ~~macOS~~**
+
+**Currently macOS builds are broken. Looking for Windows and macOS maintainers to configure builds and implement features.**
 
 ![Screenshot](screenshot.png)
 
