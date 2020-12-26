@@ -1,8 +1,8 @@
-import { ClientOptions } from 'discord.js';
+import { DQClientOptions } from 'discord.js';
 
 const { version } = require('../../package.json');
 
-export const clientOptions: ClientOptions = {
+export const clientOptions: DQClientOptions = {
   http: {
     version: 8,
   },

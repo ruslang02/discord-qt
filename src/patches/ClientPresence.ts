@@ -1,32 +1,37 @@
 import { Activity } from 'discord.js';
+import { patchAfter, patchClass } from '../utilities/Patcher';
 
 const ClientPresence = require('discord.js/src/structures/ClientPresence');
 
-const _superParse = ClientPresence.prototype._parse;
+const proto = ClientPresence.prototype;
 let custom: Activity;
 
-ClientPresence.prototype._parse = async function _parse(data: any, ...args: any[]) {
-  const packet = (await _superParse.apply(this, [data, ...args])) as any;
+class ClientPresencePatch {
+  _parse = patchAfter(proto._parse, async function afterParse(ret: Promise<any>, data: any) {
+    const packet = await ret;
 
-  if (data.customStatus) {
-    custom = data.customStatus;
-  }
+    if (data.customStatus) {
+      custom = data.customStatus;
+    }
 
-  packet.activities = [];
+    packet.activities = [];
 
-  if (custom) {
-    packet.activities.push(custom);
-  }
+    if (custom) {
+      packet.activities.push(custom);
+    }
 
-  if (packet.game) {
-    packet.activities.push(packet.game);
-  }
+    if (packet.game) {
+      packet.activities.push(packet.game);
+    }
 
-  delete packet.game;
-  const prev = { ...this };
+    delete packet.game;
+    const prev = { ...this };
 
-  this.patch(packet);
-  this.client.emit('presenceUpdate', prev, this);
+    this.patch(packet);
+    this.client.emit('presenceUpdate', prev, this);
 
-  return packet;
-};
+    return packet;
+  });
+}
+
+patchClass(proto, ClientPresencePatch);

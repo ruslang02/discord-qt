@@ -1,16 +1,46 @@
+import { clientOptions } from '../utilities/ClientOptions';
+
 const Constants = require('discord.js/src/util/Constants');
-
-export const UserEventsMap = {
-  MESSAGE_ACK: 'messageAck',
-  USER_GUILD_SETTINGS_UPDATE: 'userGuildSettingsUpdate',
-  USER_NOTE_UPDATE: 'userNoteUpdate',
-  USER_SETTINGS_UPDATE: 'userSettingsUpdate',
-} as const;
-
-export const MessageNotificationTypes = ['EVERYTHING', 'MENTIONS', 'NOTHING', 'INHERIT'] as const;
 
 const DQConstants = {
   ExplicitContentFilterTypes: ['DISABLED', 'NON_FRIENDS', 'FRIENDS_AND_NON_FRIENDS'],
+
+  Events: {
+    ...Constants.Events,
+
+    MESSAGE_ACK: 'messageAck',
+    USER_GUILD_SETTINGS_UPDATE: 'userGuildSettingsUpdate',
+    USER_NOTE_UPDATE: 'userNoteUpdate',
+    USER_SETTINGS_UPDATE: 'userSettingsUpdate',
+  },
+
+  MessageNotificationTypes: ['EVERYTHING', 'MENTIONS', 'NOTHING', 'INHERIT'],
+
+  ShardEvents: {
+    ...Constants.ShardEvents,
+
+    ALL_READY: 'allReady',
+  },
+
+  UserChannelOverrideMap: {
+    muted: 'muted',
+
+    message_notifications(type: number) {
+      return DQConstants.MessageNotificationTypes[type];
+    },
+  },
+
+  UserGuildSettingsMap: {
+    mobile_push: 'mobilePush',
+    muted: 'muted',
+    suppress_everyone: 'suppressEveryone',
+    channel_overrides: 'channelOverrides',
+
+    message_notifications(type: number) {
+      return DQConstants.MessageNotificationTypes[type];
+    },
+  },
+
   UserSettingsMap: {
     convert_emoticons: 'convertEmoticons',
     custom_status: 'customStatus',
@@ -30,11 +60,11 @@ const DQConstants = {
     guild_positions: 'guildPositions',
     restricted_guilds: 'restrictedGuilds',
 
-    explicit_content_filter: function explicitContentFilter(type: any) {
+    explicit_content_filter(type: number) {
       return DQConstants.ExplicitContentFilterTypes[type];
     },
 
-    friend_source_flags: function friendsSources(flags: any) {
+    friend_source_flags(flags: any) {
       return {
         all: flags.all || false,
         mutualGuilds: flags.all ? true : flags.mutual_guilds || false,
@@ -43,29 +73,7 @@ const DQConstants = {
     },
   },
 
-  Events: { ...Constants.Events, ...UserEventsMap },
-
-  UserChannelOverrideMap: {
-    message_notifications: function messageNotifications(type: number) {
-      return DQConstants.MessageNotificationTypes[type];
-    },
-    muted: 'muted',
-  },
-
-  UserGuildSettingsMap: {
-    message_notifications: function messageNotifications(type: number) {
-      return DQConstants.MessageNotificationTypes[type];
-    },
-    mobile_push: 'mobilePush',
-    muted: 'muted',
-    suppress_everyone: 'suppressEveryone',
-    channel_overrides: 'channelOverrides',
-  },
-
-  MessageNotificationTypes,
-
-  UserAgent:
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/0.5.0 Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36',
+  UserAgent: `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) discord-qt/${clientOptions.ws.properties.client_version} Chrome/78.0.3904.130 Electron/7.3.2 Safari/537.36`,
 };
 
 Object.assign(Constants, DQConstants);

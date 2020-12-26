@@ -23,7 +23,7 @@ export class DIconButton extends QPushButton {
     tooltipText: string;
     iconQSize: QSize;
     isCheckbox?: boolean;
-    checked?: boolean
+    checked?: boolean;
   }) {
     super();
 

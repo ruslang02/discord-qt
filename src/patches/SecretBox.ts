@@ -4,5 +4,5 @@ const tweetnacl = require('tweetnacl');
 secretbox.methods = {
   open: tweetnacl.secretbox.open,
   close: tweetnacl.secretbox,
-  random: (n: any) => tweetnacl.randomBytes(n),
+  random: (n: number) => tweetnacl.randomBytes(n),
 };

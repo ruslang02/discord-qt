@@ -1,17 +1,19 @@
-import { Constants, DQConstants } from 'discord.js';
+import { Constants, DQConstants, MessageNotificationType } from 'discord.js';
 
 /**
  * A wrapper around the ClientUser's channel overrides.
  */
 export class ClientUserChannelOverride {
+  muted?: boolean;
+
+  messageNotifications?: MessageNotificationType;
+
   constructor(data: any) {
     this.patch(data);
   }
 
   patch(data: any) {
-    for (const key of Object.keys(((Constants as unknown) as DQConstants).UserChannelOverrideMap)) {
-      const value = ((Constants as unknown) as DQConstants).UserChannelOverrideMap[key];
-
+    for (const [key, value] of Object.entries((Constants as DQConstants).UserChannelOverrideMap)) {
       if (data.hasOwnProperty.call(key)) {
         if (typeof value === 'function') {
           // @ts-ignore

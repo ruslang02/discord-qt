@@ -1,103 +1,97 @@
-import { Permissions } from 'discord.js';
+import { ChannelManager, Snowflake, Client, Permissions } from 'discord.js';
+import { patchAfter, patchClass } from '../utilities/Patcher';
+import { ClientUserGuildSettings } from './ClientUserGuildSettings';
 
 const Guild = require('discord.js/src/structures/Guild');
 
-Object.defineProperty(Guild.prototype, 'acknowledged', {
-  get() {
-    return this.channels.cache
-      .filter(
-        (channel: any) =>
-          ['news', 'text'].includes(channel.type) &&
-          channel.can(Permissions.FLAGS.VIEW_CHANNEL) &&
-          !channel.muted
-      )
-      .every((channel: any) => channel.acknowledged);
-  },
-});
+const proto = Guild.prototype;
 
-Object.defineProperty(Guild.prototype, 'position', {
-  get() {
-    if (this.client.user.bot) {
+class GuildPatch {
+  channels?: ChannelManager;
+
+  client?: Client;
+
+  id?: Snowflake;
+
+  shardID: number = 0;
+
+  /**
+   * Get a guild setting
+   * @param setting Name of the setting to get
+   * @return Null if there's an error
+   */
+  private getGuildSetting<T extends keyof ClientUserGuildSettings>(
+    setting: T
+  ): ClientUserGuildSettings[T] | null {
+    if (!this.client?.user || this.client.user.bot || !this.id) {
       return null;
     }
 
-    if (!this.client.user.settings.guildPositions) {
+    try {
+      const guildSettings = this.client.user.guildSettings.get(this.id);
+
+      if (!guildSettings) {
+        return null;
+      }
+
+      return guildSettings[setting];
+    } catch (err) {
+      return null;
+    }
+  }
+
+  get acknowledged() {
+    return this.channels?.cache
+      .filter((channel: any) => {
+        if (['text', 'news'].includes(channel.type)) {
+          return channel.can(Permissions.FLAGS.VIEW_CHANNEL) && !channel.muted;
+        }
+
+        return false;
+      })
+      .every((channel: any) => channel.acknowledged);
+  }
+
+  get position() {
+    if (!this.client?.user || this.client.user.bot || !this.id) {
+      return null;
+    }
+
+    if (!this.client.user.settings?.guildPositions) {
       return null;
     }
 
     return this.client.user.settings.guildPositions.indexOf(this.id);
-  },
-});
+  }
 
-Object.defineProperty(Guild.prototype, 'muted', {
-  get() {
-    if (this.client.user.bot) {
-      return null;
-    }
+  get muted() {
+    return this.getGuildSetting('muted');
+  }
 
-    try {
-      return this.client.user.guildSettings.get(this.id).muted;
-    } catch (err) {
-      return false;
-    }
-  },
-});
+  get messageNotifications() {
+    return this.getGuildSetting('messageNotifications');
+  }
 
-Object.defineProperty(Guild.prototype, 'messageNotifications', {
-  get() {
-    if (this.client.user.bot) {
-      return null;
-    }
+  get mobilePush() {
+    return this.getGuildSetting('mobilePush');
+  }
 
-    try {
-      return this.client.user.guildSettings.get(this.id).messageNotifications;
-    } catch (err) {
-      return null;
-    }
-  },
-});
+  get suppressEveryone() {
+    return this.getGuildSetting('suppressEveryone');
+  }
 
-Object.defineProperty(Guild.prototype, 'mobilePush', {
-  get() {
-    if (this.client.user.bot) {
-      return null;
-    }
-
-    try {
-      return this.client.user.guildSettings.get(this.id).mobilePush;
-    } catch (err) {
-      return null;
-    }
-  },
-});
-
-Object.defineProperty(Guild.prototype, 'suppressEveryone', {
-  get() {
-    if (this.client.user.bot) {
-      return null;
-    }
-
-    try {
-      return this.client.user.guildSettings.get(this.id).suppressEveryone;
-    } catch (err) {
-      return null;
-    }
-  },
-});
-
-const _superPatch = Guild.prototype._patch;
-
-Guild.prototype._patch = function _patch(...args: any[]) {
-  _superPatch.apply(this, args);
-
-  setTimeout(() => {
-    this.shardID = 0;
-  }, 0);
-};
-
-Guild.prototype.subscribeToTypingEvent = function subscribeToTypingEvent() {
-  this.client.shard?.send({
-    op: 14,
-    d: { guild_id: this.id, typing: true, activities: true },
+  _patch = patchAfter(proto._patch, () => {
+    setTimeout(() => {
+      this.shardID = 0;
+    }, 0);
   });
-};
+
+  subscribeToTypingEvent() {
+    void this.client?.shard?.send({
+      op: 14,
+      d: { guild_id: this.id, typing: true, activities: true },
+    });
+  }
+}
+
+patchClass(proto, GuildPatch);

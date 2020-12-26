@@ -40,7 +40,7 @@ export class GuildsList extends QListWidget {
     this.addEventListener(WidgetEventTypes.Paint, this.loadAvatars.bind(this));
 
     app.on(AppEvents.NEW_CLIENT, (client: Client) => {
-      const { Events } = (Constants as unknown) as DQConstants;
+      const { Events } = Constants as DQConstants;
 
       client.on(Events.CLIENT_READY, async () => {
         await this.loadGuilds();

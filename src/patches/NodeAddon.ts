@@ -1,19 +1,16 @@
 /* eslint-disable no-proto */
-import { WidgetEventTypes } from '@nodegui/nodegui';
-import { app } from '..';
 import { createLogger } from '../utilities/Console';
 
-const { NodeWidget } = require('@nodegui/nodegui/dist/lib/QtWidgets/QWidget');
 const addon = require('@nodegui/nodegui/dist/lib/utils/addon');
 
 const consts = Object.getOwnPropertyNames(addon.default);
+const { trace } = createLogger('Qt');
 
 const noop = () => {};
 
-const { debug, trace } = createLogger('Qt');
-
-for (const object of consts) {
-  addon.default[object] = new Proxy(addon.default[object], {
+// Prevent crashes when a function call something from a destroyed Qt element
+for (const obj of consts) {
+  addon.default[obj] = new Proxy(addon.default[obj], {
     construct(Target, args) {
       const newArgs = [...args].map((a) => (a.__isProxy ? a.__proto__ : a));
 
@@ -65,30 +62,3 @@ for (const object of consts) {
     },
   });
 }
-
-const processDelete = function processDelete(this: any) {
-  this.native.destroyed = true;
-  debug('destroyed', this.constructor.name);
-};
-
-const processPress = function processPress(this: any) {
-  if (app.window?.shiftKeyPressed) {
-    debug(this);
-  }
-};
-
-const no = ['Component', 'EventWidget', 'YogaWidget', 'NodeObject', 'QObject'];
-const _setNodeParent = NodeWidget.prototype.setNodeParent;
-
-NodeWidget.prototype.setNodeParent = function patchWidget(...args: any[]) {
-  if (this.native && !this._processed) {
-    this._processed = true;
-
-    if (!no.includes(this.constructor.name)) {
-      this.addEventListener(WidgetEventTypes.DeferredDelete, processDelete.bind(this));
-      this.addEventListener(WidgetEventTypes.MouseButtonPress, processPress.bind(this));
-    }
-  }
-
-  return _setNodeParent.call(this, ...args);
-};
