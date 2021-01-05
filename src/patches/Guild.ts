@@ -1,5 +1,6 @@
+/* eslint-disable class-methods-use-this */
 import { ChannelManager, Snowflake, Client, Permissions } from 'discord.js';
-import { patchAfter, patchClass } from '../utilities/Patcher';
+import { patchClass } from '../utilities/Patcher';
 import { ClientUserGuildSettings } from './ClientUserGuildSettings';
 
 const Guild = require('discord.js/src/structures/Guild');
@@ -13,7 +14,13 @@ class GuildPatch {
 
   id?: Snowflake;
 
-  shardID: number = 0;
+  get shardID() {
+    return 0;
+  }
+
+  set shardID(_value) {
+    /**/
+  }
 
   /**
    * Get a guild setting
@@ -79,12 +86,6 @@ class GuildPatch {
   get suppressEveryone() {
     return this.getGuildSetting('suppressEveryone');
   }
-
-  _patch = patchAfter(proto._patch, () => {
-    setTimeout(() => {
-      this.shardID = 0;
-    }, 0);
-  });
 
   subscribeToTypingEvent() {
     void this.client?.shard?.send({
