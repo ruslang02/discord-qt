@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     "target": "es2019",
-    "lib": [
-      "es6"
-    ],
+    "lib": ["es6"],
     "module": "commonjs",
     "allowJs": false,
     "checkJs": false,
@@ -20,11 +18,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": [
-      "./src/types/"
-    ]
+    "typeRoots": ["./src/types/"]
   },
-  "exclude": [
-    "node_modules/**/*.ts"
-  ]
+  "exclude": ["node_modules/**/*.ts"]
 }
