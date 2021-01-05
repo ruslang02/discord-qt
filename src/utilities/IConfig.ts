@@ -20,6 +20,8 @@ export type VoiceSettings = {
   inputVolume?: number;
   outputVolume?: number;
   inputSensitivity?: number;
+  playbackOptions?: string;
+  recordOptions?: string;
 };
 
 export type OverlaySettings = {

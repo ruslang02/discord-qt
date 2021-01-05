@@ -7,21 +7,17 @@ import {
   QProgressBar,
   QSlider,
 } from '@nodegui/nodegui';
-import { ChildProcessWithoutNullStreams, execSync } from 'child_process';
-import { basename } from 'path';
 import { app, MAX_QSIZE } from '../../..';
 import { DComboBox } from '../../../components/DComboBox/DComboBox';
 import { DLabel } from '../../../components/DLabel/DLabel';
 import { NoiseReductor } from '../../../components/VoicePanel/NoiseReductor';
 import { ConfigManager } from '../../../utilities/ConfigManager';
-import { createLogger } from '../../../utilities/Console';
 import { Events } from '../../../utilities/Events';
 import { __ } from '../../../utilities/StringProvider';
-import { createRecordStream } from '../../../utilities/VoiceStreams';
+import { RecordStream } from '../../../utilities/voice/RecordStream';
+import { voiceProvider as vp } from '../../../utilities/voice/VoiceProviderManager';
 import { Divider } from '../Divider';
 import { Page } from './Page';
-
-const { error } = createLogger(basename(__filename, '.ts'));
 
 export class VoicePage extends Page {
   title = __('VOICE');
@@ -40,7 +36,7 @@ export class VoicePage extends Page {
 
   private sensCheck = new QProgressBar(this);
 
-  private recordTester?: ChildProcessWithoutNullStreams;
+  private recordTester?: RecordStream;
 
   private recordTimer: any;
 
@@ -60,7 +56,8 @@ export class VoicePage extends Page {
 
   private openRecorder() {
     this.onClosed();
-    this.recordTester = createRecordStream({ device: this.inDevice.currentText() });
+    if (!vp) return;
+    this.recordTester = vp.createRecordStream({ device: this.inDevice.currentText() });
     const noiseReductor = new NoiseReductor(
       () => {},
       (loudness) => {
@@ -70,7 +67,7 @@ export class VoicePage extends Page {
       }
     );
 
-    const tester = this.recordTester.stdout.pipe(noiseReductor);
+    const tester = this.recordTester.stream.pipe(noiseReductor);
 
     this.recordTimer = setInterval(() => {
       tester.read();
@@ -79,7 +76,7 @@ export class VoicePage extends Page {
 
   onClosed() {
     clearInterval(this.recordTimer);
-    this.recordTester?.kill();
+    this.recordTester?.end();
     this.recordTester = undefined;
   }
 
@@ -116,7 +113,7 @@ export class VoicePage extends Page {
   private updateSinks() {
     const { inDevice, outDevice } = this;
 
-    if (process.platform !== 'linux') {
+    if (!vp) {
       return;
     }
 
@@ -124,25 +121,8 @@ export class VoicePage extends Page {
     inDevice.clear();
     outDevice.clear();
 
-    try {
-      const sourcesOut = execSync('pactl list sources short').toString();
-      const sources = sourcesOut
-        .split('\n')
-        .map((value) => value.split('\t')[1])
-        .filter((value) => value);
-
-      inDevice.addItems(sources);
-
-      const sinksOut = execSync('pactl list sinks short').toString();
-      const sinks = sinksOut
-        .split('\n')
-        .map((value) => value.split('\t')[1])
-        .filter((value) => value);
-
-      outDevice.addItems(sinks);
-    } catch (e) {
-      error('Could not update PulseAudio sinks.', e);
-    }
+    inDevice.addItems(vp.getInputDevices());
+    outDevice.addItems(vp.getOutputDevices());
 
     this.loadingConfig = false;
   }
@@ -166,7 +146,7 @@ export class VoicePage extends Page {
     header.setText(title);
     layout.addWidget(header);
 
-    if (process.platform !== 'linux') {
+    if (!vp) {
       const pnsLabel = new DLabel(this);
 
       pnsLabel.setText(__('PLATFORM_NOT_SUPPORTED'));
@@ -191,7 +171,10 @@ export class VoicePage extends Page {
 
     inDevice.addEventListener('currentIndexChanged', () => {
       saveConfig.call(this);
-      this.openRecorder();
+
+      if (this.recordTester?.device !== inDevice.currentText()) {
+        this.openRecorder();
+      }
     });
 
     inVolume.setOrientation(Orientation.Horizontal);

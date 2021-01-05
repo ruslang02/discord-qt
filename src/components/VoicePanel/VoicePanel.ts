@@ -9,7 +9,6 @@ import {
   QWidget,
 } from '@nodegui/nodegui';
 import { Input, Mixer } from 'audio-mixer';
-import { ChildProcessWithoutNullStreams } from 'child_process';
 import {
   Client,
   Constants,
@@ -28,7 +27,9 @@ import { ConfigManager } from '../../utilities/ConfigManager';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { __ } from '../../utilities/StringProvider';
-import { createPlaybackStream, createRecordStream } from '../../utilities/VoiceStreams';
+import { PlaybackStream } from '../../utilities/voice/PlaybackStream';
+import { RecordStream } from '../../utilities/voice/RecordStream';
+import { voiceProvider as vp } from '../../utilities/voice/VoiceProviderManager';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { NoiseReductor } from './NoiseReductor';
 import { Silence } from './Silence';
@@ -58,13 +59,13 @@ export class VoicePanel extends QWidget {
 
   private currentPlaybackDevice?: string;
 
-  private playbackStream?: ChildProcessWithoutNullStreams;
+  private playbackStream?: PlaybackStream;
 
   private playbackVolumeTransformer?: VolumeTransformer;
 
   private currentRecordDevice?: string;
 
-  private recordStream?: ChildProcessWithoutNullStreams;
+  private recordStream?: RecordStream;
 
   private recordVolumeTransformer?: VolumeTransformer;
 
@@ -157,8 +158,8 @@ export class VoicePanel extends QWidget {
   private handleDisconnectButton() {
     this.statusLabel.setText("<font color='#f04747'>Disconnecting</font>");
     this.connection?.disconnect();
-    this.recordStream?.kill();
-    this.playbackStream?.kill();
+    this.recordStream?.end();
+    this.playbackStream?.end();
     this.mixer?.close();
     this.streams.clear();
     this.hide();
@@ -230,14 +231,14 @@ export class VoicePanel extends QWidget {
   }
 
   private initPlayback() {
-    if (!this.connection || !this.channel) {
+    if (!this.connection || !this.channel || !vp) {
       return;
     }
 
     const { channel } = this;
 
     this.mixer?.close();
-    this.playbackStream?.kill();
+    this.playbackStream?.end();
     this.streams.clear();
 
     pipeline(
@@ -245,7 +246,7 @@ export class VoicePanel extends QWidget {
       ((this.playbackVolumeTransformer = new VolumeTransformer({
         type: 's16le',
       })) as unknown) as Transform, // Change the volume
-      (this.playbackStream = createPlaybackStream()).stdin, // Output to a playback stream
+      (this.playbackStream = vp.createPlaybackStream()).stream, // Output to a playback stream
       (err) => err && debug("Couldn't finish playback pipeline.", err)
     );
 
@@ -255,14 +256,14 @@ export class VoicePanel extends QWidget {
   }
 
   private initRecord() {
-    if (!this.connection) {
+    if (!this.connection || !vp) {
       return;
     }
 
     this.connection.dispatcher.end();
 
     const recorder = pipeline(
-      (this.recordStream = createRecordStream()).stdout, // Open a recording stream
+      (this.recordStream = vp.createRecordStream()).stream, // Open a recording stream
       ((this.recordVolumeTransformer = new VolumeTransformer({
         type: 's16le',
       })) as unknown) as Transform,
@@ -277,7 +278,7 @@ export class VoicePanel extends QWidget {
   private async joinChannel(channel: VoiceChannel) {
     const { infoLabel, statusLabel, createConnection, initPlayback, initRecord } = this;
 
-    if (process.platform !== 'linux') {
+    if (!vp) {
       VoicePanel.openVoiceNotSupportedDialog(channel);
 
       return;

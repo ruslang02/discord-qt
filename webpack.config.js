@@ -7,6 +7,7 @@ const { DefinePlugin } = require('webpack');
 const CopyPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const globImporter = require('node-sass-glob-importer');
+const { platform, arch } = require('os');
 
 const { readdirSync } = fs;
 
@@ -129,6 +130,8 @@ module.exports = (_env, argv) => {
           { from: 'node_modules/source-sans-pro/TTF/*', to: 'assets/fonts/[name].[ext]' },
           { from: 'node_modules/ffmpeg-static/ffmpeg', noErrorOnMissing: true },
           { from: 'node_modules/ffmpeg-static/ffmpeg.exe', noErrorOnMissing: true },
+          { from: `node_modules/ffplay-static/bin/${platform()}/${arch()}/ffplay`, noErrorOnMissing: true },
+          { from: `node_modules/ffplay-static/bin/${platform()}/${arch()}/ffplay.exe`, noErrorOnMissing: true },
         ],
       }),
     ],
