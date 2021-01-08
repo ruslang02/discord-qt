@@ -29,11 +29,12 @@ export abstract class VoiceProvider {
     const { args, device } = processArgs(this, options, PLAYBACK_OPTIONS);
 
     debug(`Starting the playback stream, args: ${args.join(' ')}`);
-    const { kill, stdin: stream, stderr } = spawn(FFplay, args);
+    const proc = spawn(FFplay, args);
 
-    stderr.on('data', (chunk) => debug(chunk.toString()));
+    proc.on('exit', (code) => debug(`Playback stream closed with code ${code}.`));
+    proc.stderr.on('data', (chunk) => debug(chunk.toString()));
 
-    return { device, stream, end: () => kill('SIGKILL') };
+    return { device, stream: proc.stdin, end: () => proc.kill() };
   };
 
   protected createFFmpegPlaybackStream = (options: VoiceOptions = {}) => {
@@ -41,11 +42,12 @@ export abstract class VoiceProvider {
     const { args, device } = processArgs(this, options, PLAYBACK_OPTIONS);
 
     debug(`Starting the playback stream, args: ${args.join(' ')}`);
-    const { kill, stdin: stream, stderr } = spawn(FFmpeg, args);
+    const proc = spawn(FFmpeg, args);
 
-    stderr.on('data', (chunk) => debug(chunk.toString()));
+    proc.on('exit', (code) => debug(`Playback stream closed with code ${code}.`));
+    proc.stderr.on('data', (chunk) => debug(chunk.toString()));
 
-    return { device, stream, end: () => kill('SIGKILL') };
+    return { device, stream: proc.stdin, end: () => proc.kill() };
   };
 
   protected createFFmpegRecordStream = (options: VoiceOptions = {}) => {
@@ -53,11 +55,12 @@ export abstract class VoiceProvider {
     const { args, device } = processArgs(this, options, RECORD_OPTIONS);
 
     debug(`Starting the record stream, args: ${args.join(' ')}`);
-    const { kill, stdout: stream, stderr } = spawn(FFmpeg, args);
+    const proc = spawn(FFmpeg, args);
 
-    stderr.on('data', (chunk) => debug(chunk.toString()));
+    proc.on('exit', (code) => debug(`Record stream closed with code ${code}.`));
+    proc.stderr.on('data', (chunk) => debug(chunk.toString()));
 
-    return { device, stream, end: () => kill('SIGKILL') };
+    return { device, stream: proc.stdout, end: () => proc.kill() };
   };
 
   /**

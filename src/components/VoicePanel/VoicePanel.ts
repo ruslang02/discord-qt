@@ -49,6 +49,12 @@ export class VoicePanel extends QWidget {
 
   private infoLabel = new QLabel(this);
 
+  private voiceBtn = new DIconButton({
+    iconPath: join(__dirname, 'assets/icons/microphone-settings.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: 'Voice Settings',
+  });
+
   private discntBtn = new DIconButton({
     iconPath: join(__dirname, 'assets/icons/phone-remove.png'),
     iconQSize: new QSize(24, 24),
@@ -123,17 +129,17 @@ export class VoicePanel extends QWidget {
       return;
     }
 
-    if (o.channel === this.channel && n.channel !== this.channel) {
+    if (o.channel !== this.channel && n.channel === this.channel) {
       this.connectToMixer(n.member);
     }
 
-    if (o.channel !== this.channel && n.channel === this.channel) {
+    if (o.channel === this.channel && n.channel !== this.channel) {
       this.disconnectFromMixer(n.member);
     }
   }
 
   private initComponent() {
-    const { layout, infoLabel, statusLabel, discntBtn } = this;
+    const { layout, infoLabel, statusLabel, discntBtn, voiceBtn } = this;
 
     layout.setContentsMargins(8, 8, 8, 8);
     layout.setSpacing(8);
@@ -148,16 +154,22 @@ export class VoicePanel extends QWidget {
     infoLayout.addWidget(infoLabel);
     infoLayout.setSpacing(0);
     voiceLayout.addLayout(infoLayout, 1);
+    voiceLayout.addWidget(voiceBtn, 0);
     voiceLayout.addWidget(discntBtn, 0);
     layout.addLayout(voiceLayout);
-    discntBtn.addEventListener('clicked', this.handleDisconnectButton.bind(this));
+    discntBtn.addEventListener('clicked', () => this.connection?.disconnect());
     discntBtn.setFixedSize(32, 32);
+    voiceBtn.setFixedSize(32, 32);
+    voiceBtn.addEventListener('clicked', () => {
+      app.emit(AppEvents.SWITCH_VIEW, 'settings');
+      app.emit(AppEvents.OPEN_SETTINGS_PAGE, __('VOICE'));
+    });
+
     this.setLayout(layout);
   }
 
-  private handleDisconnectButton() {
+  private handleDisconnect = () => {
     this.statusLabel.setText("<font color='#f04747'>Disconnecting</font>");
-    this.connection?.disconnect();
     this.recordStream?.end();
     this.playbackStream?.end();
     this.mixer?.close();
@@ -165,7 +177,7 @@ export class VoicePanel extends QWidget {
     this.hide();
     this.channel = undefined;
     this.connection = undefined;
-  }
+  };
 
   private static openVoiceNotSupportedDialog(channel: VoiceChannel) {
     const msgBox = new QMessageBox();
@@ -210,6 +222,7 @@ export class VoicePanel extends QWidget {
       this.streams.set(member, input);
       this.mixer.addInput(input);
       stream.pipe(input);
+      debug(`Connected member ${member}.`);
     } else {
       error(`Couldn't connect member ${member} to the voice channel ${this.channel?.name}.`);
     }
@@ -230,7 +243,7 @@ export class VoicePanel extends QWidget {
     }
   }
 
-  private initPlayback() {
+  private initPlayback = () => {
     if (!this.connection || !this.channel || !vp) {
       return;
     }
@@ -253,9 +266,9 @@ export class VoicePanel extends QWidget {
     for (const member of channel.members.filter((m) => m.user !== app.client.user).values()) {
       this.connectToMixer(member);
     }
-  }
+  };
 
-  private initRecord() {
+  private initRecord = () => {
     if (!this.connection || !vp) {
       return;
     }
@@ -273,10 +286,17 @@ export class VoicePanel extends QWidget {
     );
 
     this.connection.play(recorder, { bitrate: 256, type: 'converted', highWaterMark: 0 });
-  }
+  };
 
   private async joinChannel(channel: VoiceChannel) {
-    const { infoLabel, statusLabel, createConnection, initPlayback, initRecord } = this;
+    const {
+      infoLabel,
+      statusLabel,
+      handleDisconnect,
+      createConnection,
+      initPlayback,
+      initRecord,
+    } = this;
 
     if (!vp) {
       VoicePanel.openVoiceNotSupportedDialog(channel);
@@ -284,19 +304,30 @@ export class VoicePanel extends QWidget {
       return;
     }
 
-    this.handleDisconnectButton();
+    handleDisconnect();
     statusLabel.setText("<font color='#faa61a'>Joining Voice Channel</font>");
     this.show();
     this.channel = channel;
     infoLabel.setText(channel.name);
 
     try {
-      this.connection = await createConnection.call(this, channel);
+      this.connection = await createConnection(channel);
+      this.connection.on('disconnect', handleDisconnect);
+      this.connection.on('error', error);
+      this.connection.on('warn', warn);
+      this.connection.on('reconnecting', () => {
+        statusLabel.setText("<font color='#faa61a'>Reconnecting...</font>");
+      });
+
+      this.connection.on('ready', () => {
+        statusLabel.setText("<font color='#43b581'>Voice Connected</font>");
+      });
+
       statusLabel.setText("<font color='#faa61a'>Connecting Devices</font>");
       this.connection.play(new Silence(), { type: 'opus' }); // To receive audio we need to send something.
 
-      initPlayback.call(this);
-      initRecord.call(this);
+      initPlayback();
+      initRecord();
 
       this.handleConfigUpdate(app.config);
       statusLabel.setText("<font color='#43b581'>Voice Connected</font>");
@@ -311,11 +342,11 @@ export class VoicePanel extends QWidget {
       return;
     }
 
-    this.connection.setSpeaking(value ? 1 : 4);
+    this.connection.setSpeaking(value ? 1 : 0);
     this.connection.emit('speaking', app.client.user, this.connection.speaking);
   }
 
-  private async createConnection(channel: VoiceChannel) {
+  private createConnection = async (channel: VoiceChannel) => {
     const connection = await channel.join();
 
     connection.on('warn', warn.bind(this, '[djs]'));
@@ -323,5 +354,5 @@ export class VoicePanel extends QWidget {
     connection.on('failed', error.bind(this, '[djs]'));
 
     return connection;
-  }
+  };
 }
