@@ -48,7 +48,13 @@ export class GuildsList extends QListWidget {
       });
 
       client.on(Events.GUILD_DELETE, (guild) => {
-        // this.guilds.get(guild)?.hide();
+        const button = this.guilds.get(guild);
+
+        if (button) {
+          button.hide();
+          button.native.destroyed = true;
+        }
+
         const search = this.findItems(guild.id, MatchFlag.MatchExactly);
 
         if (search && search.length) {

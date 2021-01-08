@@ -59,6 +59,8 @@ export class MembersList extends QListWidget {
   }
 
   private updateVisibility() {
+    if (this.isShown === this.isVisible()) return;
+
     if (this.isShown) {
       this.show();
 

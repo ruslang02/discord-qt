@@ -14,6 +14,7 @@ import {
   QPixmap,
   QPoint,
   QWidget,
+  WidgetAttribute,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Message, Snowflake } from 'discord.js';
@@ -33,6 +34,7 @@ import {
   processMentions,
 } from './MessageUtilities';
 import { PhraseID } from '../../utilities/PhraseID';
+import { recursiveDestroy } from '../../utilities/RecursiveDestroy';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 const { error } = createLogger('MessageItem');
@@ -64,6 +66,7 @@ export class MessageItem extends QWidget {
   constructor(parent?: any) {
     super(parent);
 
+    this.setAttribute(WidgetAttribute.WA_DeleteOnClose, true);
     this.setObjectName('MessageItem');
     this.setLayout(this.controls);
     this.initComponent();
@@ -322,8 +325,10 @@ export class MessageItem extends QWidget {
     this.msgLayout.setDirection(Direction.LeftToRight);
   }
 
-  destroy() {
-    this.native.destroyed = true;
-    this.contentLabel.native.destroyed = true;
+  close() {
+    super.close();
+    recursiveDestroy(this);
+
+    return true;
   }
 }

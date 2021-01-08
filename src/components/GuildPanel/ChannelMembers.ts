@@ -9,6 +9,7 @@ import {
   QListWidgetItem,
   QPixmap,
   QPoint,
+  WidgetAttribute,
 } from '@nodegui/nodegui';
 import { GuildMember, Snowflake, VoiceChannel, VoiceConnection, VoiceState } from 'discord.js';
 import { app } from '../..';
@@ -33,6 +34,7 @@ export class ChannelMembers extends QListWidget {
   constructor(private channel: VoiceChannel) {
     super();
 
+    this.setAttribute(WidgetAttribute.WA_DeleteOnClose, true);
     this.setMinimumSize(240, 0);
     this.setUniformItemSizes(true);
     this.setFrameShape(0);

@@ -48,7 +48,7 @@ export class MainTitleBar extends DTitleBar {
     iconQSize: new QSize(24, 24),
     tooltipText: __('MEMBER_LIST'),
     isCheckbox: true,
-    checked: true,
+    checked: false,
   });
 
   private helpBtn = new DIconButton({
@@ -65,14 +65,18 @@ export class MainTitleBar extends DTitleBar {
         return;
       }
 
+      if (view === 'dm') {
+        this.membersBtn.hide();
+      } else {
+        this.membersBtn.show();
+      }
+
       if (view === 'dm' && options?.dm) {
         this.handleDMOpen(options.dm);
         app.emit(AppEvents.TOGGLE_DRAWER, false);
-        this.membersBtn.hide();
       } else if (view === 'guild' && options?.channel) {
         this.handleGuildOpen(options.channel);
         app.emit(AppEvents.TOGGLE_DRAWER, false);
-        this.membersBtn.show();
       } else {
         this.channel = undefined;
         this.handleClear();
@@ -106,6 +110,8 @@ export class MainTitleBar extends DTitleBar {
       this.helpBtn.show();
       this.drawerBtn.hide();
     }
+
+    this.membersBtn.setChecked(!config.get('hideMembersList'));
   }
 
   private initComponent() {
@@ -146,10 +152,14 @@ export class MainTitleBar extends DTitleBar {
 
     pinBtn.hide();
 
-    membersBtn.addEventListener('clicked', (value) => {
-      app.config.set('hideMembersList', value);
+    membersBtn.addEventListener('clicked', () => {
+      const checked = !app.config.get('hideMembersList');
+
+      app.config.set('hideMembersList', checked);
       void app.config.save();
     });
+
+    membersBtn.hide();
 
     helpBtn.addEventListener('clicked', () => open(repository.url));
 

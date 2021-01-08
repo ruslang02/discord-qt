@@ -78,7 +78,7 @@ export class MainWindow extends QMainWindow {
             settings.lastViewedChannel = options.channel.id;
 
             void app.config.save();
-          } else {
+          } else if (!app.config.get('isMobile')) {
             const lastViewedChannelId = settings.lastViewedChannel || '';
             const firstChannel =
               (app.client.channels.resolve(lastViewedChannelId) as GuildChannel) ||

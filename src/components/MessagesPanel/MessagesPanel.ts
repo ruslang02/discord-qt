@@ -51,6 +51,10 @@ export class MessagesPanel extends QScrollArea {
       const channel = options ? options.dm || options.channel : undefined;
 
       if (!options || !channel) {
+        if (view === 'dm') {
+          this.clear();
+        }
+
         return;
       }
 
@@ -87,7 +91,6 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private initRoot() {
-    this.takeWidget();
     this.root = new QWidget();
     this.root.setObjectName('MessagesContainer');
     this.root.addEventListener(WidgetEventTypes.Move, this.handleWheel.bind(this, false));
@@ -250,6 +253,22 @@ export class MessagesPanel extends QScrollArea {
     }, 500);
   }
 
+  private loadMessage = (message: Message, i: number, arr: Message[]) => {
+    const widget = new MessageItem(this.root);
+
+    if (i === arr.length - 1) {
+      this.highestWidget = widget;
+    }
+
+    if (i === 0) {
+      this.lowestWidget = widget;
+    }
+
+    (this.root.layout as QBoxLayout).addWidget(widget);
+
+    return widget.loadMessage(message);
+  };
+
   private async handleChannelOpen(channel: DMChannel | GuildChannel) {
     const { loadMessageCount: limit } = this;
 
@@ -273,12 +292,7 @@ export class MessagesPanel extends QScrollArea {
 
     debug(`Opening channel ${channel.id}...`);
 
-    for (const item of this.items) {
-      item.destroy();
-    }
-
-    this.items = [];
-    this.initRoot();
+    this.clear();
 
     try {
       if (this.channel.messages.cache.size < limit) {
@@ -297,21 +311,7 @@ export class MessagesPanel extends QScrollArea {
 
     messages.length = Math.min(messages.length, limit);
     const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
-    const promises = messages.map((message, i) => {
-      const widget = new MessageItem(this.root);
-
-      if (i === messages.length - 1) {
-        this.highestWidget = widget;
-      }
-
-      if (i === 0) {
-        this.lowestWidget = widget;
-      }
-
-      (this.root.layout as QBoxLayout).addWidget(widget);
-
-      return widget.loadMessage(message);
-    });
+    const promises = messages.map(this.loadMessage);
 
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
     this.items = await Promise.all(promises);
@@ -323,5 +323,11 @@ export class MessagesPanel extends QScrollArea {
     }, 500);
 
     this.initAckTimer();
+  }
+
+  private clear() {
+    this.items.forEach((item) => item.close());
+    this.items = [];
+    this.rootControls.nodeChildren.clear();
   }
 }

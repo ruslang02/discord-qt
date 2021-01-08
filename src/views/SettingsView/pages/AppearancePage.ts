@@ -173,8 +173,9 @@ export class AppearancePage extends Page {
   }
 
   private loadConfig() {
-    const { enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, zoomSel } = this;
+    const { ismbcx, enavcx, rdavcx, prmdcx, dbgcx, themeSel, langSel, zoomSel } = this;
 
+    ismbcx.setChecked('isMobile');
     enavcx.setChecked('enableAvatars');
     rdavcx.setChecked('roundifyAvatars');
     prmdcx.setChecked('processMarkDown');

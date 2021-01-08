@@ -39,15 +39,19 @@ export class MainView extends QWidget {
 
     app.on(Events.TOGGLE_DRAWER, (value) => {
       if (!app.config.get('isMobile')) {
+        this.main.show();
+
         return;
       }
 
       if (value) {
         this.guildsList.show();
         this.leftPanel.show();
+        this.main.hide();
       } else {
         this.guildsList.hide();
         this.leftPanel.hide();
+        this.main.show();
       }
     });
   }
@@ -56,6 +60,7 @@ export class MainView extends QWidget {
     this.mainLayout.addWidget(this.titlebar);
     this.mainLayout.addWidget(this.mainPanel, 1);
     [this.guildsList, this.leftPanel].forEach((w) => this.controls.addWidget(w));
-    this.controls.addWidget(this.main, 1);
+    this.controls.addWidget(this.main, 1000);
+    this.controls.addStretch();
   }
 }

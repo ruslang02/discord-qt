@@ -20,12 +20,13 @@ import {
   GuildChannel,
   Permissions,
   Snowflake,
-  //  VoiceChannel,
+  VoiceChannel,
   VoiceState,
 } from 'discord.js';
 import { app } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
+import { recursiveDestroy } from '../../utilities/RecursiveDestroy';
 import { ViewOptions } from '../../views/ViewOptions';
 import { ChannelButton } from './ChannelButton';
 import { ChannelMembers } from './ChannelMembers';
@@ -198,9 +199,8 @@ export class ChannelsList extends QListWidget {
     this.buttons.clear();
     this.items.clear();
     this.vcMembers.forEach((w) => {
-      const o = w;
-
-      o.native.destroyed = true;
+      w.close();
+      recursiveDestroy(w);
     });
 
     this.vcMembers.clear();
@@ -274,7 +274,7 @@ export class ChannelsList extends QListWidget {
 
       this.buttons.set(channel.id, btn);
       btn.addEventListener(WidgetEventTypes.DeferredDelete, () => this.buttons.delete(channel.id));
-      /* Causes crashes due to GC
+
       if (channel.type === 'voice') {
         const members = new ChannelMembers(channel as VoiceChannel);
 
@@ -287,7 +287,6 @@ export class ChannelsList extends QListWidget {
         this.setItemWidget(memitem, members);
         members.setItem(memitem);
       }
-      */
     }
 
     this.updateState();

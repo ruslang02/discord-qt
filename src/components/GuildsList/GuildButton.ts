@@ -68,7 +68,7 @@ export class GuildButton extends QLabel {
 
     this._unread = val;
 
-    if (this._active === true) {
+    if (this._active === true || this.native.destroyed) {
       return;
     }
 
@@ -79,6 +79,10 @@ export class GuildButton extends QLabel {
 
   setActive(value: boolean) {
     this._active = value;
+
+    if (this.native.destroyed) {
+      return;
+    }
 
     if (value === true) {
       this.unreadInd.move(-4, 4);

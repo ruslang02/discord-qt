@@ -199,6 +199,11 @@ export class UserMenu extends QMenu {
   private updateVisibility() {
     this.items.get('MENTION')?.setProperty('visible', this.someone instanceof GuildMember);
     this.items.get('PROFILE')?.setProperty('visible', this.someone instanceof User);
+    this.items.get('MESSAGE')?.setProperty('visible', this.someone !== app.client.user);
+    this.items.get('INVITE_TO_SERVER')?.setProperty('visible', this.someone !== app.client.user);
+    this.items.get('MUTE')?.setProperty('visible', this.someone !== app.client.user);
+    this.items.get('USER_VOLUME')?.setProperty('visible', this.someone !== app.client.user);
+    this.userVol.setProperty('visible', this.someone !== app.client.user);
 
     let canChangeNickname: boolean = false;
 
