@@ -27,13 +27,13 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { NativeRawPointer } from '@nodegui/nodegui/dist/lib/core/Component';
-import { Emoji } from 'discord.js';
+import { Emoji, GuildEmoji } from 'discord.js';
 import { EventEmitter } from 'events';
-import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
 import { CancelToken } from '../../utilities/CancelToken';
 import { createLogger } from '../../utilities/Console';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
+import { __ } from '../../utilities/StringProvider';
 
 const { error } = createLogger('EmojiPicker');
 
@@ -316,24 +316,23 @@ export class EmojiPicker extends QMenu {
     const thisGuild = result[0].first(MAX_EMOJIS);
     const otherGuilds = result[1].first(MAX_EMOJIS - thisGuild.length);
 
-    let max = Math.min(MAX_EMOJIS, thisGuild.length + otherGuilds.length);
+    const max = Math.min(MAX_EMOJIS, thisGuild.length + otherGuilds.length);
+
+    const index = Math.min(max, thisGuild.length);
 
     for (let i = 0; i < max; i += 1) {
-      if (thisGuild.length === 1) {
+      if (i < index) {
+        this.insertEmoji(thisGuild[i], this.token);
+      } else if (i === index && index !== 0) {
         const item = new QListWidgetItem();
 
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setText('●');
 
         this.emojiView.addItem(item);
-
-        max -= 1;
+      } else {
+        this.insertEmoji(otherGuilds[i - (index || -1) - 1], this.token);
       }
-
-      this.insertEmoji(
-        i < thisGuild.length ? thisGuild[i] : otherGuilds[i - thisGuild.length],
-        this.token
-      );
     }
 
     emojiView.setCurrentRow(0);
@@ -346,18 +345,23 @@ export class EmojiPicker extends QMenu {
   private insertEmoji(emoji: Emoji, cancel: CancelToken) {
     const item = new QListWidgetItem();
 
-    item.setToolTip(`:${emoji.name}:`);
+    item.setToolTip(
+      `<b>:${emoji.name}:</b><br />${
+        emoji instanceof GuildEmoji ? emoji.guild.name : 'Default emoji'
+      }`
+    );
+
     item.setData(256, new QVariant(emoji.id || ''));
     item.setSizeHint(new QSize(40, 40));
 
     resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name })
       .then((path) => {
-        if (!cancel.cancelled || this.native.destroyed) {
+        if (!cancel.cancelled && !item.native.destroyed) {
           item.setIcon(new QIcon(path));
         }
       })
       .catch((e) => {
-        if (!cancel.cancelled) {
+        if (!cancel.cancelled && !item.native.destroyed) {
           item.setText(emoji.name);
           error(`Couldn't retrieve emoji ${emoji}`, e);
         }
