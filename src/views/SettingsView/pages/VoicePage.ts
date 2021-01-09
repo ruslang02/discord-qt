@@ -94,7 +94,7 @@ export class VoicePage extends Page {
 
   private loadingConfig = false;
 
-  private saveConfig() {
+  private saveConfig = () => {
     if (!app.config.isLoaded || this.loadingConfig) {
       return;
     }
@@ -108,7 +108,7 @@ export class VoicePage extends Page {
     settings.inputSensitivity = this.sensVal.value() / 10;
 
     void app.config.save();
-  }
+  };
 
   private updateSinks() {
     const { inDevice, outDevice } = this;
@@ -129,7 +129,7 @@ export class VoicePage extends Page {
 
   private initPage() {
     const {
-      createSubheader: createHeader,
+      createSubheader,
       saveConfig,
       title,
       header,
@@ -170,7 +170,7 @@ export class VoicePage extends Page {
     });
 
     inDevice.addEventListener('currentIndexChanged', () => {
-      saveConfig.call(this);
+      saveConfig();
 
       if (this.recordTester?.device !== inDevice.currentText()) {
         this.openRecorder();
@@ -178,21 +178,21 @@ export class VoicePage extends Page {
     });
 
     inVolume.setOrientation(Orientation.Horizontal);
-    inVolume.addEventListener('valueChanged', saveConfig.bind(this));
+    inVolume.addEventListener('valueChanged', saveConfig);
     outVolume.setOrientation(Orientation.Horizontal);
-    outVolume.addEventListener('valueChanged', saveConfig.bind(this));
-    outDevice.addEventListener('currentIndexChanged', saveConfig.bind(this));
+    outVolume.addEventListener('valueChanged', saveConfig);
+    outDevice.addEventListener('currentIndexChanged', saveConfig);
 
-    inLayout.addWidget(createHeader('FORM_LABEL_INPUT_DEVICE'));
+    inLayout.addWidget(createSubheader('FORM_LABEL_INPUT_DEVICE'));
     inLayout.addWidget(inDevice);
     inLayout.addSpacing(4);
-    inLayout.addWidget(createHeader('FORM_LABEL_INPUT_VOLUME'));
+    inLayout.addWidget(createSubheader('FORM_LABEL_INPUT_VOLUME'));
     inLayout.addWidget(inVolume);
 
-    outLayout.addWidget(createHeader('FORM_LABEL_OUTPUT_DEVICE'));
+    outLayout.addWidget(createSubheader('FORM_LABEL_OUTPUT_DEVICE'));
     outLayout.addWidget(outDevice);
     outLayout.addSpacing(4);
-    outLayout.addWidget(createHeader('FORM_LABEL_OUTPUT_VOLUME'));
+    outLayout.addWidget(createSubheader('FORM_LABEL_OUTPUT_VOLUME'));
     outLayout.addWidget(outVolume);
 
     devLayout.addLayout(inLayout, 1);
@@ -201,13 +201,13 @@ export class VoicePage extends Page {
     sensVal.setOrientation(Orientation.Horizontal);
     sensVal.setMaximum(160);
     sensVal.setProperty('type', 'sensivity');
-    sensVal.addEventListener('valueChanged', saveConfig.bind(this));
+    sensVal.addEventListener('valueChanged', saveConfig);
 
     sensCheck.setMaximum(160);
     sensCheck.setTextVisible(false);
     sensCheck.setMaximumSize(MAX_QSIZE, 6);
 
-    sensLayout.addWidget(createHeader('FORM_LABEL_INPUT_SENSITIVTY'));
+    sensLayout.addWidget(createSubheader('FORM_LABEL_INPUT_SENSITIVTY'));
     sensLayout.addWidget(sensVal);
     sensLayout.addWidget(sensCheck);
 

@@ -19,7 +19,7 @@ export class OverlayMember extends QWidget {
   }
 
   private initComponent() {
-    const { avatar, layout, name, setLayout } = this;
+    const { avatar, layout, name } = this;
 
     avatar.setFixedSize(36, 36);
     avatar.setObjectName('Avatar');
@@ -39,7 +39,7 @@ export class OverlayMember extends QWidget {
     layout.addLayout(nameLayout, 0);
     layout.addStretch(1);
 
-    setLayout.call(this, layout);
+    this.setLayout(layout);
   }
 
   private async loadMember(member: GuildMember) {

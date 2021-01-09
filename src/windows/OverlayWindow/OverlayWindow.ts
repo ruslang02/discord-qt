@@ -61,18 +61,17 @@ export class OverlayWindow extends QWidget {
 
     this.initWindow();
 
-    app.on(AppEvents.NEW_CLIENT, this.bindEvents.bind(this));
-    app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate.bind(this));
+    app.on(AppEvents.NEW_CLIENT, this.bindEvents);
+    app.on(AppEvents.CONFIG_UPDATE, this.handleConfigUpdate);
   }
 
-  private bindEvents(client: Client) {
+  private bindEvents = (client: Client) => {
     const { Events } = Constants;
-    const { handleVoiceStateUpdate } = this;
 
-    client.on(Events.VOICE_STATE_UPDATE, handleVoiceStateUpdate.bind(this));
-  }
+    client.on(Events.VOICE_STATE_UPDATE, this.handleVoiceStateUpdate);
+  };
 
-  private handleConfigUpdate(config: ConfigManager) {
+  private handleConfigUpdate = (config: ConfigManager) => {
     const { enable, x, y } = config.get('overlaySettings');
 
     this.enabled = !!enable;
@@ -83,10 +82,10 @@ export class OverlayWindow extends QWidget {
     } else if (this.channel) {
       this.show();
     }
-  }
+  };
 
-  private handleVoiceStateUpdate(o: VoiceState, n: VoiceState) {
-    const { members, hide, show, initChannel, addMember, removeMember } = this;
+  private handleVoiceStateUpdate = (o: VoiceState, n: VoiceState) => {
+    const { members, initChannel, addMember, removeMember } = this;
 
     if (n.connection && n.connection !== this.connection) {
       this.connection = n.connection;
@@ -107,7 +106,7 @@ export class OverlayWindow extends QWidget {
       initChannel.call(this);
 
       if (this.enabled) {
-        show.call(this);
+        this.show();
       }
 
       return;
@@ -121,7 +120,7 @@ export class OverlayWindow extends QWidget {
 
     if (o.member?.user === app.client.user && !n.channel) {
       this.channel = undefined;
-      hide.call(this);
+      this.hide();
 
       return;
     }
@@ -129,7 +128,7 @@ export class OverlayWindow extends QWidget {
     if (o.channel === this.channel && n.channel !== this.channel) {
       removeMember.call(this, n.member);
     }
-  }
+  };
 
   private initWindow() {
     const { layout, shadow } = this;
@@ -158,7 +157,7 @@ export class OverlayWindow extends QWidget {
       .catch(error);
   }
 
-  private addMember(member: GuildMember) {
+  private addMember = (member: GuildMember) => {
     const { layout, members } = this;
     const widget = new OverlayMember(member);
 
@@ -167,9 +166,9 @@ export class OverlayWindow extends QWidget {
     layout.insertWidget(0, widget, 0);
 
     return widget;
-  }
+  };
 
-  private removeMember(member: GuildMember) {
+  private removeMember = (member: GuildMember) => {
     const { layout, members } = this;
 
     const widget = members.get(member.id);
@@ -178,9 +177,9 @@ export class OverlayWindow extends QWidget {
       widget.close();
       layout.removeWidget(widget);
     }
-  }
+  };
 
-  private initChannel() {
+  private initChannel = () => {
     const { addMember, channel, layout, members } = this;
 
     if (!channel) {
@@ -193,5 +192,5 @@ export class OverlayWindow extends QWidget {
     }
 
     this.members = channel.members.mapValues(addMember.bind(this));
-  }
+  };
 }

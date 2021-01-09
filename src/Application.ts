@@ -63,8 +63,6 @@ export class Application extends ApplicationEventEmitter {
         default:
       }
     });
-
-    (global as any).config = this.config;
   }
 
   public async start() {

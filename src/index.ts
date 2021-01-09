@@ -2,6 +2,7 @@
 import './utilities/PreLaunchConfigManager';
 import './patches';
 import 'opusscript';
+import * as Qt from '@nodegui/nodegui';
 import i18n from 'i18n';
 import { join } from 'path';
 import { Application } from './Application';
@@ -48,3 +49,6 @@ process.on('exit', () => app.quit());
 
 // @ts-ignore
 global.app = app;
+
+// @ts-ignore
+global.Qt = Qt;

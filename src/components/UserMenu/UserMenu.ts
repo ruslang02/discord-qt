@@ -113,8 +113,8 @@ export class UserMenu extends QMenu {
       this.userVolSlider.setOrientation(Orientation.Horizontal);
       this.userVolSlider.setCursor(CursorShape.SizeHorCursor);
       this.userVolSlider.setMaximum(150);
-      this.userVolSlider.addEventListener('valueChanged', updateUserVolume.bind(this));
-      this.userVolSlider.addEventListener('sliderMoved', updateUserVolume.bind(this));
+      this.userVolSlider.addEventListener('valueChanged', updateUserVolume);
+      this.userVolSlider.addEventListener('sliderMoved', updateUserVolume);
 
       layout.addWidget(userVolLabel);
       layout.addWidget(this.userVolSlider);
@@ -176,7 +176,7 @@ export class UserMenu extends QMenu {
     });
   }
 
-  private updateUserVolume() {
+  private updateUserVolume = () => {
     if (!this.someone) {
       return;
     }
@@ -194,7 +194,7 @@ export class UserMenu extends QMenu {
     }
 
     this.userVolSlider.setProperty('toolTip', `${this.userVolSlider.value()}%`);
-  }
+  };
 
   private updateVisibility() {
     this.items.get('MENTION')?.setProperty('visible', this.someone instanceof GuildMember);

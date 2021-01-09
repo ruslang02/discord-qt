@@ -61,12 +61,12 @@ export abstract class Page extends QWidget {
     return restartNotice;
   }
 
-  protected createSubheader(id: PhraseID) {
+  protected createSubheader = (id: PhraseID) => {
     const label = new QLabel(this);
 
     label.setObjectName('Header3');
     label.setText(__(id));
 
     return label;
-  }
+  };
 }

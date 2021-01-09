@@ -29,11 +29,11 @@
 }
 
 QToolTip {
-  background-color: #000;
+  background-color: $background-floating;
   color: $text-normal;
   font-size: 14px;
   border-radius: 4px;
-  border: 1px solid $deprecated-text-input-border;
+  border: 1px solid $deprecated-quickswitcher-input-placeholder;
   padding: 1px 2px;
 }
 
@@ -44,7 +44,7 @@ QLabel {
 QMenu {
   background: $background-floating;
   border-radius: 4px;
-  border: 1px solid $deprecated-text-input-border;
+  border: 1px solid $deprecated-quickswitcher-input-placeholder;
   padding: 8px;
   color: $interactive-normal;
 
