@@ -9,7 +9,8 @@ import {
   QListWidgetItem,
   QPixmap,
   QPoint,
-  WidgetAttribute,
+  QSize,
+  WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { GuildMember, Snowflake, VoiceChannel, VoiceConnection, VoiceState } from 'discord.js';
 import { app } from '../..';
@@ -18,29 +19,26 @@ import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
-const { error } = createLogger('ChannelMembers');
+const { debug, error } = createLogger('ChannelMembers');
 
 export class ChannelMembers extends QListWidget {
   layout = new QBoxLayout(Direction.TopToBottom);
 
   private buttons = new Map<Snowflake, DChannelButton>();
 
-  private asItem?: QListWidgetItem;
-
   private connection?: VoiceConnection;
 
   private p0 = new QPoint(0, 0);
 
-  constructor(private channel: VoiceChannel) {
+  constructor(private channel: VoiceChannel, private asItem: QListWidgetItem) {
     super();
 
-    this.setAttribute(WidgetAttribute.WA_DeleteOnClose, true);
+    this.addEventListener(WidgetEventTypes.Move, this.adjustSize);
     this.setMinimumSize(240, 0);
     this.setUniformItemSizes(true);
     this.setFrameShape(0);
     this.setHorizontalScrollBarPolicy(1);
     this.setObjectName('ChannelMembers');
-
     this.loadChannel(channel);
   }
 
@@ -95,14 +93,17 @@ export class ChannelMembers extends QListWidget {
     this.adjustSize();
   }
 
-  setItem(item: QListWidgetItem) {
-    this.asItem = item;
-  }
+  adjustSize = () => {
+    if (this.native.destroyed) {
+      return;
+    }
 
-  adjustSize() {
-    this.setFixedSize(240, this.buttons.size === 0 ? 0 : this.buttons.size * 30 + 8);
-    this.asItem?.setSizeHint(this.size());
-  }
+    const height = this.buttons.size === 0 ? 0 : this.buttons.size * 30 + 8;
+
+    debug(`Adjusting to ${height}...`);
+    this.asItem.setSizeHint(new QSize(240, height));
+    this.setFixedSize(240, height);
+  };
 
   private createButton(member: GuildMember) {
     const btn = new DChannelButton(this);
@@ -153,7 +154,7 @@ export class ChannelMembers extends QListWidget {
    * @param channel Voice channel to load members of.
    * @returns Whether the widget should be shown.
    */
-  loadChannel(channel: VoiceChannel) {
+  private loadChannel(channel: VoiceChannel) {
     this.buttons.forEach((w) => {
       const o = w;
 
@@ -161,6 +162,8 @@ export class ChannelMembers extends QListWidget {
     });
 
     this.buttons.clear();
+    this.layout.nodeChildren.clear();
+    this.nodeChildren.clear();
 
     for (const member of channel.members.values()) {
       const item = new QListWidgetItem();

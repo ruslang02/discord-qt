@@ -34,7 +34,6 @@ import {
   processMentions,
 } from './MessageUtilities';
 import { PhraseID } from '../../utilities/PhraseID';
-import { recursiveDestroy } from '../../utilities/RecursiveDestroy';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 const { error } = createLogger('MessageItem');
@@ -226,8 +225,7 @@ export class MessageItem extends QWidget {
       processEmojis(this.contentNoEmojis, this)
         .then(
           (content) =>
-            !this.contentLabel.native.destroyed &&
-            this.contentLabel.setText(content.replace(/\n/g, '<br />'))
+            !this.native.destroyed && this.contentLabel.setText(content.replace(/\n/g, '<br />'))
         )
         .catch(error.bind(error, "Couldn't load emoji."));
     }
@@ -326,8 +324,8 @@ export class MessageItem extends QWidget {
   }
 
   close() {
+    this.hide();
     super.close();
-    recursiveDestroy(this);
 
     return true;
   }

@@ -269,7 +269,6 @@ export function processEmbeds(message: Message, item: MessageItem): QWidget[] {
     layout.setSpacing(8);
     layout.setContentsMargins(16, 16, 16, 16);
     body.setObjectName('EmbedBody');
-    body.setFlexNodeSizeControlled(false);
     body.setMinimumSize(520, 0);
     body.setMaximumSize(520, MAX_QSIZE);
     body.setLayout(layout);

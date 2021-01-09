@@ -8,7 +8,15 @@ import {
   QPoint,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { ActivityType, Client, Constants, GuildMember, Presence, User } from 'discord.js';
+import {
+  ActivityType,
+  Client,
+  Constants,
+  DMChannel,
+  GuildMember,
+  Presence,
+  User,
+} from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
@@ -34,19 +42,19 @@ export class UserButton extends DChannelButton {
     ['STREAMING', 'STREAMING'],
   ]);
 
-  private static buttons = new WeakMap<User | GuildMember, UserButton>();
+  private static buttons = new Map<User | GuildMember, UserButton>();
 
-  private avatar = new QLabel(this);
+  private avatar = new QLabel();
 
-  private nameLabel = new QLabel(this);
+  private nameLabel = new QLabel();
 
   private statusInd = new QLabel(this.avatar);
 
   private nameLayout = new QBoxLayout(Direction.LeftToRight);
 
-  private statusIcon = new QLabel(this);
+  private statusIcon = new QLabel();
 
-  private statusLabel = new QLabel(this);
+  private statusLabel = new QLabel();
 
   private statusLayout = new QBoxLayout(Direction.LeftToRight);
 
@@ -62,8 +70,11 @@ export class UserButton extends DChannelButton {
     super(parent);
     this.setProperty('type', 'user');
     this.setFixedSize(224, 42);
-    this.setFlexNodeSizeControlled(false);
     this.initComponent();
+  }
+
+  static deleteInstance(someone: User | GuildMember) {
+    UserButton.buttons.delete(someone);
   }
 
   /**
@@ -119,31 +130,43 @@ export class UserButton extends DChannelButton {
         }
       });
     });
+
+    setInterval(() => {
+      for (const [user, button] of UserButton.buttons.entries()) {
+        if (button.native.destroyed) {
+          UserButton.buttons.delete(user);
+        }
+      }
+    }, 1000);
   }
 
   static createInstance(parent: any, someone: User | GuildMember) {
-    const button = new UserButton(app.window);
+    const button = new UserButton(parent);
 
-    button.loadUser(someone);
-    button.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
-    button.addEventListener('customContextMenuRequested', ({ x, y }) => {
+    function handleContextMenu({ x, y }: { x: number; y: number }) {
       app.emit(AppEvents.OPEN_USER_MENU, someone, button.mapToGlobal(new QPoint(x, y)));
-    });
+    }
 
-    button.addEventListener(WidgetEventTypes.DeferredDelete, () => {
-      UserButton.buttons.delete(someone);
-    });
-
-    button.addEventListener('clicked', async () => {
+    function handleClick() {
       if (someone instanceof GuildMember) {
         const map = button.mapToGlobal(p0);
 
         map.setX(map.x() - 250);
         app.emit(AppEvents.OPEN_USER_PROFILE, someone.id, someone.guild.id, map);
       } else {
-        app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm: await someone.createDM() });
+        app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm: someone.dmChannel as DMChannel });
       }
+    }
+
+    button.loadUser(someone);
+    button.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    button.addEventListener('customContextMenuRequested', handleContextMenu);
+
+    button.addEventListener(WidgetEventTypes.DeferredDelete, () => {
+      UserButton.buttons.delete(someone);
     });
+
+    button.addEventListener('clicked', handleClick);
 
     return button;
   }
@@ -171,7 +194,6 @@ export class UserButton extends DChannelButton {
     infoControls.setContentsMargins(0, 0, 0, 0);
     nameLabel.setObjectName('UserNameLabel');
     nameLabel.setMinimumSize(24, 0);
-    nameLabel.setFlexNodeSizeControlled(false);
     statusLabel.setAlignment(AlignmentFlag.AlignVCenter);
     statusLabel.setObjectName('StatusLabel');
     statusIcon.setMinimumSize(0, 0);
@@ -310,12 +332,19 @@ export class UserButton extends DChannelButton {
 
     this.nameLabel.setText(member?.nickname ?? user.username);
     void this.loadPresence(user.presence);
-    this.addEventListener(WidgetEventTypes.DeferredDelete, () => UserButton.buttons.delete(user));
 
     UserButton.buttons.set(user, this);
 
     if (member) {
       UserButton.buttons.set(member, this);
+    }
+  }
+
+  delete() {
+    if (this.member) {
+      UserButton.buttons.delete(this.member);
+    } else if (this.user) {
+      UserButton.buttons.delete(this.user);
     }
   }
 }

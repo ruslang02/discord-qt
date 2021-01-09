@@ -21,7 +21,6 @@ export class CustomStatusLabel extends QWidget {
     super();
     this.initComponent();
     this.setObjectName('CustomStatusLabel');
-    this.setFlexNodeSizeControlled(false);
   }
 
   private initComponent() {

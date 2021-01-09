@@ -44,7 +44,6 @@ export class LeftPanel extends QWidget {
     this.setObjectName('LeftPanel');
     this.setMinimumSize(240, 0);
     this.setMaximumSize(240, MAX_QSIZE);
-    this.setFlexNodeSizeControlled(false);
     container.addWidget(guildPanel);
     container.addWidget(dmPanel);
     container.setCurrentWidget(dmPanel);

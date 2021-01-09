@@ -12,6 +12,7 @@ import {
 } from '@nodegui/nodegui';
 import {
   CategoryChannel,
+  Channel,
   Client,
   Collection,
   Constants,
@@ -39,15 +40,15 @@ export class ChannelsList extends QListWidget {
 
   private active?: ChannelButton;
 
-  private buttons = new Map<string, ChannelButton>();
+  private buttons = new WeakMap<Channel, ChannelButton>();
 
-  private vcMembers = new Map<string, ChannelMembers>();
+  private vcMembers = new Map<Channel, ChannelMembers>();
 
-  private categories = new Map<string, QLabel>();
+  private categories = new WeakMap<Channel, QLabel>();
+
+  private realItems = new Map<Channel, QListWidgetItem>();
 
   private menu = new ChannelsListMenu(this);
-
-  private ratelimit = false;
 
   private rateTimer?: any;
 
@@ -71,7 +72,7 @@ export class ChannelsList extends QListWidget {
     const { Events } = Constants as DQConstants;
 
     client.on(Events.MESSAGE_ACK, (channel) => {
-      const button = this.buttons.get(channel.id);
+      const button = this.buttons.get(channel);
 
       if (button) {
         button.setUnread(false);
@@ -79,7 +80,7 @@ export class ChannelsList extends QListWidget {
     });
 
     client.on(Events.MESSAGE_CREATE, (message) => {
-      const button = this.buttons.get(message.channel.id);
+      const button = this.buttons.get(message.channel);
 
       if (button) {
         button.setUnread(true);
@@ -91,10 +92,12 @@ export class ChannelsList extends QListWidget {
 
   private handleVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     for (const state of [oldState, newState]) {
-      const component = this.vcMembers.get(state.channelID || '');
+      if (state.channel) {
+        const component = this.vcMembers.get(state.channel);
 
-      if (component && !component.native.destroyed) {
-        component.handleVoiceStateUpdate(oldState, newState);
+        if (component && !component.native.destroyed) {
+          component.handleVoiceStateUpdate(oldState, newState);
+        }
       }
     }
   }
@@ -119,7 +122,7 @@ export class ChannelsList extends QListWidget {
     }
 
     if (options.channel) {
-      const chan = this.buttons.get(options.channel.id);
+      const chan = this.buttons.get(options.channel);
 
       chan?.setActivated(true);
 
@@ -137,7 +140,7 @@ export class ChannelsList extends QListWidget {
 
     const settings = app.config.get('userLocalGuildSettings')[this.guild.id];
 
-    for (const item of <IterableIterator<QListWidgetItem>>this.items.values()) {
+    for (const item of <IterableIterator<QListWidgetItem>>this.realItems.values()) {
       const channel = app.client.channels.resolve(item.text());
 
       if (channel instanceof GuildChannel) {
@@ -154,9 +157,7 @@ export class ChannelsList extends QListWidget {
       if (channel instanceof CategoryChannel) {
         const arrow = settings?.collapsedCategories?.includes(channel.id) ? '►' : '▼';
 
-        this.categories
-          .get(channel.id)
-          ?.setText(`<html>${arrow}&nbsp;&nbsp;${channel.name}</html>`);
+        this.categories.get(channel)?.setText(`<html>${arrow}&nbsp;&nbsp;${channel.name}</html>`);
       }
     }
   }
@@ -182,28 +183,17 @@ export class ChannelsList extends QListWidget {
   private loadChannels(guild: Guild) {
     this.guild = guild;
 
-    if (this.ratelimit) {
-      return;
-    }
-
-    this.ratelimit = true;
-
-    if (this.rateTimer) {
-      clearTimeout(this.rateTimer);
-    }
+    clearTimeout(this.rateTimer);
 
     debug(`Loading channels of guild ${guild.name} (${guild.id})...`);
 
-    this.clear();
     this.nodeChildren.clear();
-    this.buttons.clear();
-    this.items.clear();
-    this.vcMembers.forEach((w) => {
-      w.close();
-      recursiveDestroy(w);
-    });
+    this.realItems.clear();
+    this.vcMembers.forEach(recursiveDestroy);
 
     this.vcMembers.clear();
+
+    this.clear();
 
     const [categories, channels] = guild.channels.cache
       .filter((c) => c.can(Permissions.FLAGS.VIEW_CHANNEL))
@@ -235,9 +225,10 @@ export class ChannelsList extends QListWidget {
       item.setSizeHint(label.size());
 
       this.addItem(item);
+      this.realItems.set(category, item);
       this.setItemWidget(item, label);
 
-      this.categories.set(category.id, label);
+      this.categories.set(category, label);
     }
 
     debug(`Loading ${channels.size} channels...`);
@@ -255,6 +246,7 @@ export class ChannelsList extends QListWidget {
       item.setSizeHint(this.minSize);
       item.setText(channel.id);
       this.insertItem(row, item);
+      this.realItems.set(channel, item);
 
       const btn = new ChannelButton(this);
 
@@ -272,28 +264,29 @@ export class ChannelsList extends QListWidget {
         this.menu.popup(btn.mapToGlobal(new QPoint(pos.x, pos.y)));
       });
 
-      this.buttons.set(channel.id, btn);
-      btn.addEventListener(WidgetEventTypes.DeferredDelete, () => this.buttons.delete(channel.id));
+      this.realItems.set(channel, item);
+      this.buttons.set(channel, btn);
+      btn.addEventListener(WidgetEventTypes.DeferredDelete, () => this.buttons.delete(channel));
 
       if (channel.type === 'voice') {
-        const members = new ChannelMembers(channel as VoiceChannel);
-
-        this.vcMembers.set(channel.id, members);
-
         const memitem = new QListWidgetItem();
+        const members = new ChannelMembers(channel as VoiceChannel, memitem);
+
+        this.vcMembers.set(channel, members);
 
         memitem.setText(channel.id);
         this.insertItem(row + 1, memitem);
         this.setItemWidget(memitem, members);
-        members.setItem(memitem);
       }
     }
 
+    debug(`Loaded channels.`);
+
     this.updateState();
 
-    this.rateTimer = setTimeout(() => {
-      this.ratelimit = false;
+    debug(`Updated state.`);
 
+    this.rateTimer = setTimeout(() => {
       if (guild !== this.guild && this.guild) {
         this.loadChannels(this.guild);
       }

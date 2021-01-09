@@ -73,14 +73,19 @@ export class MembersList extends QListWidget {
   }
 
   private loadList(channel: GuildChannel) {
-    this.channel = channel as TextChannel | NewsChannel;
-
     if (!['text', 'news'].includes(channel.type)) {
       return;
     }
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
 
+    this.channel?.members.forEach((member) => {
+      UserButton.deleteInstance(member);
+    });
+
+    this.channel = channel as TextChannel | NewsChannel;
+
+    this.nodeChildren.clear();
     this.clear();
 
     for (const member of channel.members.values()) {

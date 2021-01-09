@@ -14,6 +14,7 @@ import { app, MAX_QSIZE } from '../..';
 import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { MessageItem } from './MessageItem';
+import { recursiveDestroy } from '../../utilities/RecursiveDestroy';
 
 const { error, debug } = createLogger('MessagesPanel');
 
@@ -27,8 +28,6 @@ export class MessagesPanel extends QScrollArea {
   private lowestWidget?: MessageItem;
 
   private highestWidget?: MessageItem;
-
-  private items: MessageItem[] = [];
 
   private loadMessageCount = 30;
 
@@ -67,9 +66,8 @@ export class MessagesPanel extends QScrollArea {
           const lowest = this.lowestWidget;
           const widget = new MessageItem(this.root);
 
-          (this.root.layout as QBoxLayout).insertWidget(0, widget);
+          this.rootControls.insertWidget(0, widget);
           await widget.loadMessage(message);
-          this.items.push(widget);
           this.lowestWidget = widget;
           setTimeout(
             () =>
@@ -189,24 +187,18 @@ export class MessagesPanel extends QScrollArea {
         .catch((e) => error("Couldn't prefetch members list.", e));
     }
 
-    const promises = messages.map((message, i) => {
+    messages.forEach((message, i) => {
       const widget = new MessageItem(this.root);
 
       if (i === messages.length - 1) {
         this.highestWidget = widget;
       }
 
-      (this.root.layout as QBoxLayout).addWidget(widget);
+      this.rootControls.addWidget(widget);
 
       return widget.loadMessage(message);
     });
-
-    this.items = [...this.items, ...(await Promise.all(promises))];
   }
-
-  private ratelimit = false;
-
-  private rateTimer?: any;
 
   private ackTimer?: any;
 
@@ -264,7 +256,7 @@ export class MessagesPanel extends QScrollArea {
       this.lowestWidget = widget;
     }
 
-    (this.root.layout as QBoxLayout).addWidget(widget);
+    this.rootControls.addWidget(widget);
 
     return widget.loadMessage(message);
   };
@@ -274,17 +266,13 @@ export class MessagesPanel extends QScrollArea {
 
     this.channel = channel as TextChannel | NewsChannel | DMChannel;
 
-    if (this.ratelimit || this.isLoading || !['news', 'text', 'dm'].includes(channel.type)) {
+    if (this.isLoading || !['news', 'text', 'dm'].includes(channel.type)) {
       return;
     }
 
     this.lastLoad = new Date().getTime();
 
     this.isLoading = true;
-
-    if (this.rateTimer) {
-      clearTimeout(this.rateTimer);
-    }
 
     if (this.ackTimer) {
       clearTimeout(this.ackTimer);
@@ -314,7 +302,6 @@ export class MessagesPanel extends QScrollArea {
     const promises = messages.map(this.loadMessage);
 
     debug(`Waiting for ${promises.length} widgets to be loaded...`);
-    this.items = await Promise.all(promises);
     debug('Widgets finished loading.');
     setTimeout(() => {
       this.isLoading = false;
@@ -326,8 +313,18 @@ export class MessagesPanel extends QScrollArea {
   }
 
   private clear() {
-    this.items.forEach((item) => item.close());
-    this.items = [];
+    delete this.lowestWidget;
+    delete this.highestWidget;
+
+    this.rootControls.nodeChildren.forEach((item) => {
+      const widget = item as QWidget;
+
+      this.rootControls.removeWidget(widget);
+      widget.close();
+      recursiveDestroy(widget);
+    });
+
+    this.root.nodeChildren.clear();
     this.rootControls.nodeChildren.clear();
   }
 }
