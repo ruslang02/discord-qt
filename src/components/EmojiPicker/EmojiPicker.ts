@@ -132,7 +132,7 @@ export class EmojiPicker extends QMenu {
     emojiView.setLayoutMode(LayoutMode.Batched);
     emojiView.setIconSize(new QSize(32, 32));
     emojiView.setItemAlignment(AlignmentFlag.AlignCenter);
-    emojiView.addEventListener('itemClicked', this.handleItemClicked.bind(this));
+    // emojiView.addEventListener('itemClicked', this.handleItemClicked.bind(this));
 
     controls.addWidget(emojiView, 1);
 
@@ -235,11 +235,16 @@ export class EmojiPicker extends QMenu {
     this.handleControlPressed(e);
 
     if (e.key() === Key.Key_Return) {
-      this.handleItemClicked(emojiView.currentItem());
+      this.handleItemClicked(emojiView.currentRow());
     }
   }
 
-  private handleItemClicked(item: QListWidgetItem) {
+  private handleItemClicked(row: number) {
+    if (row === -1) {
+      return;
+    }
+
+    const item = this.emojiView.item(row);
     const emojiId = item.data(256).toString();
     const emoji = app.client.emojis.resolve(emojiId);
 
