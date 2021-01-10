@@ -75,8 +75,6 @@ export class InputPanel extends QWidget {
 
   private dialog = new QFileDialog(this, __('UPLOAD_A_MEDIA_FILE'));
 
-  private prevTypers: string[] = [];
-
   private addBtn = new DIconButton({
     iconPath: join(__dirname, './assets/icons/plus-circle.png'),
     iconQSize: new QSize(24, 24),
@@ -152,14 +150,9 @@ export class InputPanel extends QWidget {
     }
 
     const typers = [...channel._typing.values()]
-      .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.nickname || e.user.username)
+      .map((e) => (channel as TextChannel).guild?.member(e.user.id)?.displayName)
       .filter((m) => !!m) as string[];
 
-    if (typers.every((s) => this.prevTypers.includes(s))) {
-      return;
-    }
-
-    this.prevTypers = typers;
     let i18nString: PhraseID;
 
     switch (typers.length) {
@@ -228,42 +221,7 @@ export class InputPanel extends QWidget {
     });
 
     input.setObjectName('Input');
-    emojiPicker.events.on('emoji', async (emoji: GuildEmoji, special: boolean) => {
-      if (!this.channel) {
-        return;
-      }
-
-      if (
-        special ||
-        (app.client.user?.premium === false &&
-          ((this.channel.type !== 'dm' &&
-            emoji.guild.id !== (this.channel as TextChannel).guild.id) ||
-            this.channel.type === 'dm'))
-      ) {
-        try {
-          let url = await getEmojiURL(
-            {
-              emoji_id: emoji.id || undefined,
-              emoji_name: emoji.name,
-            },
-            emoji.animated ? 'gif' : 'png'
-          );
-
-          url += '?size=128';
-          const path = await pictureWorker.loadImage(url, { roundify: false });
-
-          this.attachments.addFiles([path]);
-        } catch (e) {
-          error(e);
-        }
-      } else {
-        input.insertPlainText(emoji.toString());
-      }
-
-      emojiPicker.close();
-      input.setFocus(FocusReason.TabFocusReason);
-    });
-
+    emojiPicker.events.on('emoji', this.handleEmojiSuccess.bind(this));
     emojiPicker.addEventListener(WidgetEventTypes.Hide, () => emojiBtn.setIcon(emojiBtn.qiconOff));
     emojiBtn.setFixedSize(38, 44);
     emojiBtn.addEventListener('clicked', this.handleEmojiOpen.bind(this));
@@ -288,6 +246,42 @@ export class InputPanel extends QWidget {
     this.layout?.addWidget(attachments);
     this.layout?.addWidget(root);
     (this.layout as QBoxLayout).addLayout(bottomLayout);
+  }
+
+  private async handleEmojiSuccess(emoji: GuildEmoji, special: boolean) {
+    if (!this.channel) {
+      return;
+    }
+
+    if (
+      special ||
+      (app.client.user?.premium === false &&
+        ((this.channel.type !== 'dm' &&
+          emoji.guild.id !== (this.channel as TextChannel).guild.id) ||
+          this.channel.type === 'dm'))
+    ) {
+      try {
+        let url = await getEmojiURL(
+          {
+            emoji_id: emoji.id || undefined,
+            emoji_name: emoji.name,
+          },
+          emoji.animated ? 'gif' : 'png'
+        );
+
+        url += '?size=128';
+        const path = await pictureWorker.loadImage(url, { roundify: false });
+
+        this.attachments.addFiles([path]);
+      } catch (e) {
+        error(e);
+      }
+    } else {
+      this.input.insertPlainText(emoji.toString());
+    }
+
+    this.emojiPicker.close();
+    this.input.setFocus(FocusReason.TabFocusReason);
   }
 
   private handleEmojiOpen() {
