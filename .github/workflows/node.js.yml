@@ -31,7 +31,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - name: Fast install dependencies and build
         env:
-          SKIP_BUILD: 1
+          SKIP_BUILD: ${{ runner.os != 'macOS' && 1 || 0 }}
         run: npm ci
       - name: Pack binaries
         run: npm run package
