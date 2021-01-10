@@ -8,7 +8,7 @@ import {
   WidgetAttribute,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { Guild, GuildChannel } from 'discord.js';
+import { Guild, GuildChannel, Permissions, TextChannel } from 'discord.js';
 import { existsSync, promises } from 'fs';
 import path from 'path';
 import { app } from '../..';
@@ -84,6 +84,7 @@ export class MainWindow extends QMainWindow {
               (app.client.channels.resolve(lastViewedChannelId) as GuildChannel) ||
               guild.channels.cache
                 .filter((a) => ['text', 'news'].includes(a.type))
+                .filter((a) => (a as TextChannel).can(Permissions.FLAGS.VIEW_CHANNEL))
                 .sort((a, b) => a.rawPosition - b.rawPosition)
                 .first();
 

@@ -15,6 +15,10 @@ export class ConfigManager {
 
   constructor(private file: string) {
     mkdirSync(dirname(file), { recursive: true });
+
+    setInterval(() => {
+      void this.save();
+    }, 1000);
   }
 
   async load() {
@@ -72,6 +76,8 @@ export class ConfigManager {
   }
 
   async save() {
+    if (!this.isLoaded) return;
+
     try {
       await writeFile(join(this.file), JSON.stringify(this.config));
       app.emit(Events.CONFIG_UPDATE, this);
