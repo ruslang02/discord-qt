@@ -144,7 +144,7 @@ export class DMUsersList extends QListWidget {
     this.clear();
 
     (app.client.channels.cache.array() as DMChannel[])
-      .filter((c) => ['dm', 'group'].includes && c.lastMessageID !== null)
+      .filter((c) => ['dm', 'group'].includes(c.type) && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
