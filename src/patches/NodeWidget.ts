@@ -29,7 +29,7 @@ class NodeWidgetPatch {
     }
   }
 
-  setNodeParent = patchBefore(proto.setNodeParent, function afterSetNodeParent() {
+  setNodeParent = patchBefore(proto.setNodeParent, function beforeSetNodeParent() {
     if (this.native && !this._processed) {
       this._processed = true;
 

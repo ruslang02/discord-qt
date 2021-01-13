@@ -3,6 +3,7 @@ import { Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel } 
 import open from 'open';
 import path from 'path';
 import { app } from '../..';
+import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { ConfigManager } from '../../utilities/ConfigManager';
 import { Events as AppEvents } from '../../utilities/Events';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
@@ -15,7 +16,7 @@ import { DTitleBar } from '../DTitleBar/DTitleBar';
 const { repository } = require('../../../package.json');
 
 export class MainTitleBar extends DTitleBar {
-  private channel?: TextChannel | NewsChannel | DMChannel;
+  private channel?: TextChannel | NewsChannel | DMChannel | GroupDMChannel;
 
   private userNameLabel = new QLabel();
 
@@ -28,6 +29,10 @@ export class MainTitleBar extends DTitleBar {
   private atPixmap = new QPixmap(path.join(__dirname, './assets/icons/at.png'));
 
   private poundPixmap = new QPixmap(path.join(__dirname, './assets/icons/pound.png'));
+
+  private accountPixmap = new QPixmap(
+    path.join(__dirname, './assets/icons/account-multiple.png')
+  ).scaled(24, 24, 1, 1);
 
   private drawerBtn = new DIconButton({
     iconPath: path.join(__dirname, './assets/icons/menu.png'),
@@ -65,14 +70,19 @@ export class MainTitleBar extends DTitleBar {
         return;
       }
 
-      if (view === 'dm') {
+      if (view === 'dm' && !(options?.dm instanceof GroupDMChannel)) {
         this.membersBtn.hide();
       } else {
         this.membersBtn.show();
       }
 
       if (view === 'dm' && options?.dm) {
-        this.handleDMOpen(options.dm);
+        if (options.dm instanceof DMChannel) {
+          this.handleDMOpen(options.dm);
+        } else {
+          this.handleGDMOpen(options.dm);
+        }
+
         app.emit(AppEvents.TOGGLE_DRAWER, false);
       } else if (view === 'guild' && options?.channel) {
         this.handleGuildOpen(options.channel);
@@ -87,7 +97,7 @@ export class MainTitleBar extends DTitleBar {
       const { Events } = Constants;
 
       client.on(Events.PRESENCE_UPDATE, (_o, presence) => {
-        if (this.channel?.type === 'dm' && this.channel.recipient.id === presence.userID) {
+        if (this.channel instanceof DMChannel && this.channel.recipient.id === presence.userID) {
           this.updateStatus();
         }
       });
@@ -201,6 +211,17 @@ export class MainTitleBar extends DTitleBar {
     iconLabel.show();
     userNameLabel.setText(channel.recipient.username);
     statusLabel.show();
+    this.updateStatus();
+  }
+
+  private handleGDMOpen(channel: GroupDMChannel) {
+    const { userNameLabel, statusLabel, iconLabel, accountPixmap } = this;
+
+    this.channel = channel;
+    iconLabel.setPixmap(accountPixmap);
+    iconLabel.show();
+    userNameLabel.setText(channel.getName());
+    statusLabel.hide();
     this.updateStatus();
   }
 

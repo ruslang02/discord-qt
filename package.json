@@ -22,7 +22,7 @@
     "start:debug": "qode --inspect=0.0.0.0:9229 ./dist/index.js",
     "lint": "eslint 'src/**/*.ts' 'worker/**/*.ts'",
     "lint:ts": "tsc -p .",
-    "lint:fix": "eslint --fix 'src/**/*.ts' 'worker/**/*.ts' && npm run prettier",
+    "lint:fix": "eslint --fix src/**/*.ts worker/**/*.ts && npm run prettier",
     "prettier": "prettier --write --loglevel warn src/**/*.ts worker/**/*.ts src/**/*.scss",
     "postinstall": "node ./downloadNodeGui.js && webpack --mode=production",
     "package": "nodegui-packer --pack ./dist",

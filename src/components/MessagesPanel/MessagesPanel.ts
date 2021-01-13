@@ -15,11 +15,12 @@ import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
 import { MessageItem } from './MessageItem';
 import { recursiveDestroy } from '../../utilities/RecursiveDestroy';
+import { GroupDMChannel } from '../../patches/GroupDMChannel';
 
 const { error, debug } = createLogger('MessagesPanel');
 
 export class MessagesPanel extends QScrollArea {
-  private channel?: DMChannel | TextChannel | NewsChannel;
+  private channel?: DMChannel | GroupDMChannel | TextChannel | NewsChannel;
 
   private rootControls = new QBoxLayout(Direction.BottomToTop);
 
@@ -178,8 +179,8 @@ export class MessagesPanel extends QScrollArea {
 
     setTimeout(() => clearInterval(scrollTimer), 200);
 
-    if (channel?.type !== 'dm') {
-      channel.guild.members
+    if (!['dm', 'group'].includes(channel?.type)) {
+      (channel as GuildChannel).guild.members
         .fetch({
           user: messages.map((m) => m.author.id),
           withPresences: true,
@@ -229,7 +230,10 @@ export class MessagesPanel extends QScrollArea {
 
       if (this.channel && !this.channel.acknowledged) {
         if (this.isBottom()) {
-          this.channel.acknowledge().catch((e) => error("Couldn't mark the channel as read.", e));
+          this.channel
+            .acknowledge()
+            .catch((e: any) => error("Couldn't mark the channel as read.", e));
+
           this.lastRead?.setInlineStyle('');
         } else {
           for (const widget of (<Set<MessageItem>>this.rootControls.nodeChildren).values()) {
@@ -261,12 +265,12 @@ export class MessagesPanel extends QScrollArea {
     return widget.loadMessage(message);
   };
 
-  private async handleChannelOpen(channel: DMChannel | GuildChannel) {
+  private async handleChannelOpen(channel: DMChannel | GroupDMChannel | GuildChannel) {
     const { loadMessageCount: limit } = this;
 
     this.channel = channel as TextChannel | NewsChannel | DMChannel;
 
-    if (this.isLoading || !['news', 'text', 'dm'].includes(channel.type)) {
+    if (this.isLoading || !['news', 'text', 'group', 'dm'].includes(channel.type)) {
       return;
     }
 

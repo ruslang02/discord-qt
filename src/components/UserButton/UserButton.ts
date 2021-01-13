@@ -1,5 +1,4 @@
 import {
-  AlignmentFlag,
   ContextMenuPolicy,
   Direction,
   QBoxLayout,
@@ -25,7 +24,7 @@ import { pictureWorker } from '../../utilities/PictureWorker';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { __ } from '../../utilities/StringProvider';
-import { DChannelButton } from '../DChannelButton/DChannelButton';
+import { DMButton } from '../DMButton/DMButton';
 
 const { error } = createLogger('UserButton');
 
@@ -34,7 +33,7 @@ const p0 = new QPoint(0, 0);
 /**
  * Represents a button with user's avatar, name and current status.
  */
-export class UserButton extends DChannelButton {
+export class UserButton extends DMButton {
   private static ActivityTypeText: Map<ActivityType, PhraseID> = new Map([
     ['LISTENING', 'LISTENING_TO'],
     ['PLAYING', 'PLAYING_GAME'],
@@ -44,21 +43,13 @@ export class UserButton extends DChannelButton {
 
   private static buttons = new Map<User | GuildMember, UserButton>();
 
-  private avatar = new QLabel();
-
-  private nameLabel = new QLabel();
+  private hasPixmap = false;
 
   private statusInd = new QLabel(this.avatar);
 
-  private nameLayout = new QBoxLayout(Direction.LeftToRight);
-
   private statusIcon = new QLabel();
 
-  private statusLabel = new QLabel();
-
   private statusLayout = new QBoxLayout(Direction.LeftToRight);
-
-  private infoControls = new QBoxLayout(Direction.TopToBottom);
 
   user?: User;
 
@@ -68,9 +59,8 @@ export class UserButton extends DChannelButton {
 
   constructor(parent?: any) {
     super(parent);
-    this.setProperty('type', 'user');
-    this.setFixedSize(224, 42);
-    this.initComponent();
+
+    this.initUserComponent();
   }
 
   static deleteInstance(someone: User | GuildMember) {
@@ -171,55 +161,28 @@ export class UserButton extends DChannelButton {
     return button;
   }
 
-  private initComponent() {
-    const {
-      avatar,
-      nameLabel,
-      nameLayout,
-      layout,
-      infoControls,
-      statusLayout,
-      statusLabel,
-      statusIcon,
-      statusInd,
-    } = this;
+  // initComponent is called by DMButton, we need a different name
+  private initUserComponent() {
+    const { infoControls, statusLabel, statusLayout, statusIcon, statusInd } = this;
 
-    if (!app.config.get('enableAvatars')) {
-      avatar.hide();
-    }
-
-    avatar.setFixedSize(32, 32);
-    avatar.setObjectName('Avatar');
-    infoControls.setSpacing(0);
-    infoControls.setContentsMargins(0, 0, 0, 0);
-    nameLabel.setObjectName('UserNameLabel');
-    nameLabel.setMinimumSize(24, 0);
-    statusLabel.setAlignment(AlignmentFlag.AlignVCenter);
-    statusLabel.setObjectName('StatusLabel');
     statusIcon.setMinimumSize(0, 0);
     statusInd.setObjectName('StatusIndicator');
     statusInd.setFixedSize(16, 16);
     statusInd.setProperty('tooltip', 'Offline');
     statusInd.move(19, 19);
-    nameLayout.setSpacing(6);
-    nameLayout.addWidget(nameLabel);
     statusLayout.setSpacing(4);
     statusLayout.addWidget(statusIcon);
     statusLayout.addWidget(statusLabel, 1);
 
-    infoControls.addLayout(nameLayout);
     infoControls.addLayout(statusLayout);
-
-    layout.setSpacing(10);
-    layout.addWidget(avatar, 0);
-    layout.addLayout(infoControls, 1);
-    this.labels = [nameLabel, statusLabel];
 
     this.addEventListener(WidgetEventTypes.HoverEnter, () => this.setHovered(true));
     this.addEventListener(WidgetEventTypes.HoverLeave, () => this.setHovered(false));
   }
 
-  private hasPixmap = false;
+  get name() {
+    return this.user?.username ?? '';
+  }
 
   /**
    * Loads the image in the avatar.
@@ -236,11 +199,7 @@ export class UserButton extends DChannelButton {
         this.user.displayAvatarURL({ format: 'png', size: 256 })
       );
 
-      if (this.native.destroyed) {
-        return;
-      }
-
-      this.avatar.setPixmap(new QPixmap(path).scaled(32, 32, 1, 1));
+      this.setAvatar(path);
     } catch (e) {
       this.hasPixmap = false;
       error(`Could not load avatar of user ${this.user.tag}`);
@@ -260,22 +219,23 @@ export class UserButton extends DChannelButton {
     this.statusInd.setInlineStyle(`background-color: ${PresenceStatusColor.get(presence.status)}`);
     void this.loadStatusEmoji(presence);
 
+    let status = '';
+
     if (presence.activities.length) {
       const { type, name, state } = presence.activities[0];
 
-      [this.statusLabel, this.statusIcon].forEach((w) => w.setMaximumSize(MAX_QSIZE, MAX_QSIZE));
-      let status = '';
+      this.statusIcon.setMaximumSize(MAX_QSIZE, MAX_QSIZE);
 
       if (type === 'CUSTOM_STATUS') {
         status = state || '';
       } else {
         status = __(UserButton.ActivityTypeText.get(type) as PhraseID, { name, game: name });
       }
-
-      this.statusLabel.setText(status);
     } else {
-      [this.statusLabel, this.statusIcon].forEach((w) => w.setMaximumSize(MAX_QSIZE, 0));
+      this.statusIcon.setMaximumSize(MAX_QSIZE, 0);
     }
+
+    this.setStatus(status);
   }
 
   /**
@@ -330,7 +290,7 @@ export class UserButton extends DChannelButton {
     this.user = user;
     this.member = member || undefined;
 
-    this.nameLabel.setText(member?.nickname ?? user.username);
+    this.setName(member?.nickname ?? user.username);
     void this.loadPresence(user.presence);
 
     UserButton.buttons.set(user, this);

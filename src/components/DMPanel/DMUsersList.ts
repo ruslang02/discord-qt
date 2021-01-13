@@ -11,14 +11,16 @@ import {
 } from '@nodegui/nodegui';
 import { Client, Constants, DMChannel, Message, SnowflakeUtil } from 'discord.js';
 import { app } from '../..';
+import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
+import { GDMButton } from '../DMButton/GDMButton';
 import { UserButton } from '../UserButton/UserButton';
 
 export class DMUsersList extends QListWidget {
-  channels = new Map<DMChannel, UserButton>();
+  channels = new Map<DMChannel | GroupDMChannel, UserButton | GDMButton>();
 
-  active?: UserButton;
+  active?: UserButton | GDMButton;
 
   private prevUpdate = new Date().getTime();
 
@@ -45,9 +47,9 @@ export class DMUsersList extends QListWidget {
   }
 
   private handleNewMessage(message: Message) {
-    const dm = message.channel;
+    const dm = message.channel as DMChannel | GroupDMChannel;
 
-    if (dm.type !== 'dm') {
+    if (['dm', 'group'].includes(dm.type)) {
       return;
     }
 
@@ -130,12 +132,10 @@ export class DMUsersList extends QListWidget {
     let i = 0;
 
     for (const btn of this.channels.values()) {
-      if (btn.user) {
-        const show = q === '' || btn.user.username.toLowerCase().replace(/ /g, '').includes(q);
+      const show = q === '' || btn.name.toLowerCase().replace(/ /g, '').includes(q);
 
-        this.setRowHidden(i, !show);
-        i += 1;
-      }
+      this.setRowHidden(i, !show);
+      i += 1;
     }
   }
 
@@ -144,7 +144,7 @@ export class DMUsersList extends QListWidget {
     this.clear();
 
     (app.client.channels.cache.array() as DMChannel[])
-      .filter((c) => c.type === 'dm' && c.lastMessageID !== null)
+      .filter((c) => ['dm', 'group'].includes && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
@@ -152,7 +152,14 @@ export class DMUsersList extends QListWidget {
         return snB.date.getTime() - snA.date.getTime();
       })
       .forEach((dm) => {
-        const btn = UserButton.createInstance(this, dm.recipient);
+        let btn;
+
+        if (dm instanceof GroupDMChannel) {
+          btn = new GDMButton(dm, this);
+        } else {
+          btn = UserButton.createInstance(this, dm.recipient);
+        }
+
         const item = new QListWidgetItem();
 
         item.setSizeHint(new QSize(224, 44));

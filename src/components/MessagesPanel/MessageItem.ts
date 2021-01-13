@@ -316,7 +316,10 @@ export class MessageItem extends QWidget {
    * @param message Message to process.
    */
   private loadSystemMessage(message: Message) {
-    const content = __(`MESSAGE_${message.type}` as PhraseID) || message.type;
+    const content =
+      __(`MESSAGE_${message.type}` as PhraseID, {
+        content: message.content,
+      }) || message.type;
 
     this.dateLabel.hide();
     this.contentLabel.setPlainText(`<i>&nbsp;</i>${content}`);

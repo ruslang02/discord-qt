@@ -31,6 +31,7 @@ import {
 import { join } from 'path';
 import { fileURLToPath, URL } from 'url';
 import { app, MAX_QSIZE } from '../..';
+import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { paths } from '../../utilities/Paths';
@@ -49,7 +50,7 @@ const { error } = createLogger('InputPanel');
  * Message input widget.
  */
 export class InputPanel extends QWidget {
-  channel?: TextChannel | DMChannel | NewsChannel;
+  channel?: TextChannel | DMChannel | GroupDMChannel | NewsChannel;
 
   root = new QWidget(this);
 
@@ -116,18 +117,31 @@ export class InputPanel extends QWidget {
     this.channel = channel;
     this.attachments.clear();
 
-    if (channel.type === 'text') {
+    if (channel instanceof TextChannel) {
       this.addBtn.setEnabled(channel.can(Permissions.FLAGS.ATTACH_FILES));
     } else {
       this.addBtn.setEnabled(true);
     }
 
+    let placeholderText: string;
+
+    switch (channel.type) {
+      case 'dm':
+        placeholderText = `@${(<DMChannel>channel).recipient.username}`;
+        break;
+
+      case 'group':
+        placeholderText = `${(<GroupDMChannel>channel).getName()}`;
+        break;
+
+      default:
+        placeholderText = `#${(<TextChannel>channel).name}`;
+        break;
+    }
+
     input.setPlaceholderText(
       __('TEXTAREA_PLACEHOLDER', {
-        channel:
-          channel.type === 'dm'
-            ? `@${(<DMChannel>channel).recipient.username}`
-            : `#${(<TextChannel>channel).name}`,
+        channel: placeholderText,
       })
     );
 

@@ -40,13 +40,13 @@ class PictureWorker {
    * @param url Image URL to process.
    * @param options Extra options for further image processing.
    */
-  loadImage(url: string, options?: Options): Promise<string> {
+  async loadImage(url: string, options?: Options): Promise<string> {
     const { callbacks, worker } = this;
 
     if ((url || '').toString().trim() === '') {
       debug('An empty URL was requested.');
 
-      return Promise.reject(new Error('URL was empty or null.'));
+      throw new Error('URL was empty or null.');
     }
 
     const opts = { roundify: app.config.get('roundifyAvatars'), ...(options || {}) };
