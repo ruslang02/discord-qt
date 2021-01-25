@@ -1,7 +1,16 @@
-#DChannelButton[type='DMButton'] {
+#DChannelButton[type='BaseUserButton'] {
   #StatusIndicator {
     border: 3px solid $background-secondary;
     border-radius: 8px;
+  }
+
+  #NameLabel {
+    font-size: 16px;
+  }
+
+  #StatusLabel {
+    font-size: 12px;
+    line-height: 16px;
   }
 
   &[hover='true'] #StatusIndicator {

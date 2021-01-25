@@ -24,7 +24,8 @@ import { pictureWorker } from '../../utilities/PictureWorker';
 import { PresenceStatusColor } from '../../utilities/PresenceStatusColor';
 import { resolveEmoji } from '../../utilities/ResolveEmoji';
 import { __ } from '../../utilities/StringProvider';
-import { DMButton } from '../DMButton/DMButton';
+import { MembersList } from '../MembersList/MembersList';
+import { BaseUserButton } from './BaseUserButton';
 
 const { error } = createLogger('UserButton');
 
@@ -33,7 +34,7 @@ const p0 = new QPoint(0, 0);
 /**
  * Represents a button with user's avatar, name and current status.
  */
-export class UserButton extends DMButton {
+export class UserButton extends BaseUserButton {
   private static ActivityTypeText: Map<ActivityType, PhraseID> = new Map([
     ['LISTENING', 'LISTENING_TO'],
     ['PLAYING', 'PLAYING_GAME'],
@@ -138,11 +139,15 @@ export class UserButton extends DMButton {
     }
 
     function handleClick() {
-      if (someone instanceof GuildMember) {
+      if (someone instanceof GuildMember || parent instanceof MembersList) {
         const map = button.mapToGlobal(p0);
+        const guildID = (someone as GuildMember).guild
+          ? (someone as GuildMember).guild.id
+          : undefined;
 
         map.setX(map.x() - 250);
-        app.emit(AppEvents.OPEN_USER_PROFILE, someone.id, someone.guild.id, map);
+
+        app.emit(AppEvents.OPEN_USER_PROFILE, someone.id, guildID, map);
       } else {
         app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm: someone.dmChannel as DMChannel });
       }

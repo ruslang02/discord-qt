@@ -6,18 +6,14 @@ import {
   QPixmap,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { DMChannel } from 'discord.js';
 import { app, MAX_QSIZE } from '../..';
-import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { DChannelButton } from '../DChannelButton/DChannelButton';
 
 /**
- * Represents a button with an icon/avatar, a name and a status label.
+ * Represents a button with an avatar, a name and a status label.
  */
-export abstract class DMButton extends DChannelButton {
+export abstract class BaseUserButton extends DChannelButton {
   avatar = new QLabel();
-
-  channel: GroupDMChannel | DMChannel;
 
   protected infoControls = new QBoxLayout(Direction.TopToBottom);
 
@@ -31,12 +27,10 @@ export abstract class DMButton extends DChannelButton {
 
   abstract get name(): string;
 
-  constructor(channel: GroupDMChannel | DMChannel, parent?: any) {
+  constructor(parent?: any) {
     super(parent);
 
-    this.channel = channel;
-
-    this.setProperty('type', 'DMButton');
+    this.setProperty('type', 'BaseUserButton');
     this.setFixedSize(224, 42);
 
     this.initComponent();

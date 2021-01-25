@@ -4,20 +4,20 @@ import { createLogger } from '../../utilities/Console';
 import { Events as AppEvents } from '../../utilities/Events';
 import { pictureWorker } from '../../utilities/PictureWorker';
 import { __ } from '../../utilities/StringProvider';
-import { DMButton } from './DMButton';
+import { BaseUserButton } from '../UserButton/BaseUserButton';
 
 const { error } = createLogger('GDMButton');
 
 /**
  * Represents a button with user's avatar, name and current status.
  */
-export class GDMButton extends DMButton {
+export class GDMButton extends BaseUserButton {
   private hasPixmap = false;
 
   channel: GroupDMChannel;
 
   constructor(groupChannel: GroupDMChannel, parent?: any) {
-    super(groupChannel, parent);
+    super(parent);
 
     this.channel = groupChannel;
 

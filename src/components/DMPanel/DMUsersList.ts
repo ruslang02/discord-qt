@@ -14,7 +14,7 @@ import { app } from '../..';
 import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
-import { GDMButton } from '../DMButton/GDMButton';
+import { GDMButton } from '../GDMButton/GDMButton';
 import { UserButton } from '../UserButton/UserButton';
 
 export class DMUsersList extends QListWidget {
