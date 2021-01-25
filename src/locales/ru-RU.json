@@ -164,5 +164,8 @@
   "KEYBIND_TOGGLE_OVERLAY": "Вкл./выкл. оверлей",
   "OVERLAY": "Оверлей",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Включить оверлей",
-  "SETTINGS_GAMES_OVERLAY": "Оверлей"
+  "SETTINGS_GAMES_OVERLAY": "Оверлей",
+  "ONE_MEMBER": "1 член",
+  "NUMBER_MEMBERS": "{{num}} членов",
+  "MESSAGE_CHANNEL_NAME_CHANGE": "изменил название канала: <b>{{content}}</b>"
 }

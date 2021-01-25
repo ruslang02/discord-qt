@@ -165,5 +165,8 @@
   "KEYBIND_TOGGLE_OVERLAY": "Overlay umschalten",
   "OVERLAY": "Overlay",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Overlay aktivieren",
-  "SETTINGS_GAMES_OVERLAY": "Overlay"
+  "SETTINGS_GAMES_OVERLAY": "Overlay",
+  "ONE_MEMBER": "1 Mitglied",
+  "NUMBER_MEMBERS": "{{num}} Mitglieder",
+  "MESSAGE_CHANNEL_NAME_CHANGE": "hat den Kanalnamen geändert: <b>{{content}}</b>"
 }
