@@ -30,7 +30,7 @@ export class GDMButton extends DMButton {
   }
 
   get name() {
-    return this.channel.getName();
+    return this.channel.name;
   }
 
   /**
@@ -81,6 +81,6 @@ export class GDMButton extends DMButton {
    * Renders name of the group DM, either a custom one or the recipients' pseudos
    */
   async loadName() {
-    this.setName(this.channel.getName());
+    this.setName(this.channel.name);
   }
 }

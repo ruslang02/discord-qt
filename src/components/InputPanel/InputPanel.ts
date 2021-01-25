@@ -131,7 +131,7 @@ export class InputPanel extends QWidget {
         break;
 
       case 'group':
-        placeholderText = `${(<GroupDMChannel>channel).getName()}`;
+        placeholderText = `${(<GroupDMChannel>channel).name}`;
         break;
 
       default:

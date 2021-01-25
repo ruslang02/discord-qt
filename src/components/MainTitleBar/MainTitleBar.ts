@@ -220,7 +220,7 @@ export class MainTitleBar extends DTitleBar {
     this.channel = channel;
     iconLabel.setPixmap(accountPixmap);
     iconLabel.show();
-    userNameLabel.setText(channel.getName());
+    userNameLabel.setText(channel.name);
     statusLabel.hide();
     this.updateStatus();
   }

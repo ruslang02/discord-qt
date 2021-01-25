@@ -23,7 +23,7 @@ class GroupDMChannel extends Channel {
 
   messages: MessageManager;
 
-  private name?: string;
+  private _name?: string;
 
   private ownerID: Snowflake = '0';
 
@@ -38,6 +38,14 @@ class GroupDMChannel extends Channel {
     }
 
     this._patch(data);
+  }
+
+  get name() {
+    return this._name ?? '';
+  }
+
+  set name(name: string) {
+    void this.edit({ name });
   }
 
   get owner() {
@@ -74,9 +82,9 @@ class GroupDMChannel extends Channel {
     }
 
     if (data.name) {
-      this.name = data.name;
-    } else if (!this.name && data.recipients) {
-      this.name = data.recipients
+      this._name = data.name;
+    } else if (!this._name && data.recipients) {
+      this._name = data.recipients
         .reduce((acc: any, user: any) => `${acc}, ${user.username}`, '')
         .slice(2);
     }
@@ -99,14 +107,6 @@ class GroupDMChannel extends Channel {
     }
 
     return (this.client as any).rest.cdn.GDMIcon(this.id, this.icon, format, size);
-  }
-
-  getName() {
-    return this.name || '';
-  }
-
-  setName(name: string) {
-    return this.edit({ name });
   }
 
   static delete() {
