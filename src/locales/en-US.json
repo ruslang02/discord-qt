@@ -168,5 +168,10 @@
   "SETTINGS_GAMES_OVERLAY": "Overlay",
   "ONE_MEMBER": "1 Member",
   "NUMBER_MEMBERS": "{{num}} Members",
-  "MESSAGE_CHANNEL_NAME_CHANGE": "changed the channel name: <b>{{content}}</b>"
+  "MESSAGE_CHANNEL_NAME_CHANGE": "changed the channel name: <b>{{content}}</b>",
+  "ADD_RECIPIENT": "Add friends to DM",
+  "SELECT_FRIENDS": "SELECT FRIENDS",
+  "ADD_X_MORE_FRIENDS": "You can add {{num}} more friends.",
+  "TYPE_USERNAME_OF_FRIEND": "Type the username of a friend",
+  "ADD": "Add"
 }

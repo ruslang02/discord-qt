@@ -167,5 +167,6 @@
   "SETTINGS_GAMES_OVERLAY": "Оверлей",
   "ONE_MEMBER": "1 член",
   "NUMBER_MEMBERS": "{{num}} членов",
-  "MESSAGE_CHANNEL_NAME_CHANGE": "изменил название канала: <b>{{content}}</b>"
+  "MESSAGE_CHANNEL_NAME_CHANGE": "изменил название канала: <b>{{content}}</b>",
+  "ADD_RECIPIENT": "добавлять друзей в беседу"
 }

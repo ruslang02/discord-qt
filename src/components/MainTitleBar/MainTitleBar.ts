@@ -1,8 +1,16 @@
-import { QLabel, QPixmap, QSize, QWidget, WidgetEventTypes } from '@nodegui/nodegui';
+import {
+  QLabel,
+  QLineEdit,
+  QPixmap,
+  QPoint,
+  QSize,
+  QWidget,
+  WidgetEventTypes,
+} from '@nodegui/nodegui';
 import { Client, Constants, DMChannel, GuildChannel, NewsChannel, TextChannel } from 'discord.js';
 import open from 'open';
 import path from 'path';
-import { app } from '../..';
+import { app, MAX_QSIZE } from '../..';
 import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { ConfigManager } from '../../utilities/ConfigManager';
 import { Events as AppEvents } from '../../utilities/Events';
@@ -12,6 +20,7 @@ import { ViewOptions } from '../../views/ViewOptions';
 import { DIconButton } from '../DIconButton/DIconButton';
 import { DLineEdit } from '../DLineEdit/DLineEdit';
 import { DTitleBar } from '../DTitleBar/DTitleBar';
+import { RecipientPopup } from './RecipientPopup';
 
 const { repository } = require('../../../package.json');
 
@@ -20,15 +29,21 @@ export class MainTitleBar extends DTitleBar {
 
   private userNameLabel = new QLabel();
 
+  private userNameInput = new QLineEdit();
+
   private statusLabel = new QLabel();
 
   private nicknamesBar = new QWidget();
 
   private iconLabel = new QLabel();
 
+  private recipientPopup = new RecipientPopup(this);
+
   private atPixmap = new QPixmap(path.join(__dirname, './assets/icons/at.png'));
 
   private poundPixmap = new QPixmap(path.join(__dirname, './assets/icons/pound.png'));
+
+  private p24 = new QPoint(24, 24);
 
   private accountPixmap = new QPixmap(
     path.join(__dirname, './assets/icons/account-multiple.png')
@@ -62,6 +77,12 @@ export class MainTitleBar extends DTitleBar {
     tooltipText: __('HELP'),
   });
 
+  private recipientBtn = new DIconButton({
+    iconPath: path.join(__dirname, './assets/icons/account-plus.png'),
+    iconQSize: new QSize(24, 24),
+    tooltipText: __('ADD_RECIPIENT'),
+  });
+
   constructor() {
     super();
     this.initComponent();
@@ -70,10 +91,15 @@ export class MainTitleBar extends DTitleBar {
         return;
       }
 
-      if (view === 'dm' && !(options?.dm instanceof GroupDMChannel)) {
-        this.membersBtn.hide();
-      } else {
-        this.membersBtn.show();
+      this.membersBtn.show();
+      this.recipientBtn.hide();
+
+      if (view === 'dm') {
+        if (options?.dm instanceof GroupDMChannel) {
+          this.recipientBtn.show();
+        } else {
+          this.membersBtn.hide();
+        }
       }
 
       if (view === 'dm' && options?.dm) {
@@ -127,6 +153,7 @@ export class MainTitleBar extends DTitleBar {
   private initComponent() {
     const {
       userNameLabel,
+      userNameInput,
       statusLabel,
       nicknamesBar,
       controls,
@@ -135,6 +162,8 @@ export class MainTitleBar extends DTitleBar {
       pinBtn,
       membersBtn,
       helpBtn,
+      recipientBtn,
+      recipientPopup,
     } = this;
 
     this.addEventListener(WidgetEventTypes.MouseButtonPress, () => {
@@ -145,6 +174,11 @@ export class MainTitleBar extends DTitleBar {
     controls.setContentsMargins(16, 12, 16, 12);
 
     userNameLabel.setObjectName('UserNameLabel');
+
+    userNameInput.setObjectName('UserNameInput');
+    userNameInput.setMinimumSize(0, 30);
+    userNameInput.setMaximumSize(MAX_QSIZE, 30);
+
     statusLabel.setObjectName('StatusLabel');
     nicknamesBar.setObjectName('NicknamesBar');
 
@@ -162,6 +196,21 @@ export class MainTitleBar extends DTitleBar {
 
     pinBtn.hide();
 
+    recipientBtn.addEventListener('clicked', () => {
+      const map = recipientBtn.mapToGlobal(this.p24); // bottom right of icon
+
+      map.setX(map.x() - recipientPopup.size().width());
+
+      RecipientPopup.updateFriends();
+      recipientPopup.popup(map);
+    });
+
+    recipientPopup.addEventListener(WidgetEventTypes.Hide, () => {
+      recipientBtn.setIcon(recipientBtn.qiconOff); // Update icon when closing the popup
+    });
+
+    recipientBtn.hide();
+
     membersBtn.addEventListener('clicked', () => {
       const checked = !app.config.get('hideMembersList');
 
@@ -175,10 +224,12 @@ export class MainTitleBar extends DTitleBar {
 
     controls.addWidget(drawerBtn);
     controls.addWidget(iconLabel);
+    controls.addWidget(userNameInput);
     controls.addWidget(userNameLabel);
     controls.addWidget(statusLabel);
     controls.addWidget(nicknamesBar, 1);
     controls.addWidget(pinBtn);
+    controls.addWidget(recipientBtn);
     controls.addWidget(membersBtn);
     controls.addWidget(searchEdit);
     controls.addWidget(helpBtn);
@@ -195,48 +246,68 @@ export class MainTitleBar extends DTitleBar {
     }
   }
 
-  private handleClear() {
-    const { userNameLabel, statusLabel, iconLabel } = this;
+  private updateTitlebar(
+    userLabel: string,
+    readOnly?: boolean,
+    channel?: MainTitleBar['channel'],
+    pixmap?: QPixmap,
+    showStatus?: boolean
+  ) {
+    const { userNameLabel, userNameInput, statusLabel, iconLabel } = this;
 
-    iconLabel.hide();
-    userNameLabel.setText('');
-    statusLabel.hide();
+    // We need to wait for nodegui to implement QFontMetrics for a way to
+    // dynamically set userNameInput width
+    if (readOnly) {
+      userNameInput.hide();
+      userNameLabel.show();
+      userNameLabel.setText(userLabel);
+    } else {
+      userNameLabel.hide();
+      userNameInput.show();
+      userNameInput.setText(userLabel);
+    }
+
+    this.channel = channel;
+
+    if (pixmap) {
+      iconLabel.setPixmap(pixmap);
+      iconLabel.show();
+    } else {
+      iconLabel.hide();
+    }
+
+    if (showStatus) {
+      statusLabel.show();
+    } else {
+      statusLabel.hide();
+    }
+
+    this.updateStatus();
+  }
+
+  private handleClear() {
+    this.updateTitlebar('', true);
   }
 
   private handleDMOpen(channel: DMChannel) {
-    const { userNameLabel, statusLabel, iconLabel, atPixmap } = this;
+    const { atPixmap } = this;
 
-    this.channel = channel;
-    iconLabel.setPixmap(atPixmap);
-    iconLabel.show();
-    userNameLabel.setText(channel.recipient.username);
-    statusLabel.show();
-    this.updateStatus();
+    this.updateTitlebar(channel.recipient.username, true, channel, atPixmap, true);
   }
 
   private handleGDMOpen(channel: GroupDMChannel) {
-    const { userNameLabel, statusLabel, iconLabel, accountPixmap } = this;
+    const { accountPixmap } = this;
 
-    this.channel = channel;
-    iconLabel.setPixmap(accountPixmap);
-    iconLabel.show();
-    userNameLabel.setText(channel.name);
-    statusLabel.hide();
-    this.updateStatus();
+    this.updateTitlebar(channel.name, false, channel, accountPixmap);
   }
 
   private handleGuildOpen(channel: GuildChannel) {
-    const { userNameLabel, statusLabel, iconLabel, poundPixmap } = this;
+    const { poundPixmap } = this;
 
-    if (channel.type !== 'text' && channel.type !== 'news') {
+    if (!['text', 'news'].includes(channel.type)) {
       return;
     }
 
-    this.channel = channel as TextChannel | NewsChannel;
-    iconLabel.setPixmap(poundPixmap);
-    iconLabel.show();
-    userNameLabel.setText(channel.name);
-    statusLabel.hide();
-    this.updateStatus();
+    this.updateTitlebar(channel.name, true, channel as TextChannel | NewsChannel, poundPixmap);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  ChannelData,
   MessageManager,
   User,
   Snowflake,
@@ -96,25 +97,23 @@ class GroupDMChannel extends Channel {
     }
   }
 
-  async edit(data: any) {
+  async delete(reason?: string) {
+    this.deleted = true;
+
+    return (this.client as any).api.channels(this.id).delete({ reason });
+  }
+
+  async edit(data: ChannelData) {
     return (this.client as any).api.channels(this.id).patch({ data });
   }
 
   iconURL({ format, size }: { format?: string; size?: number } = {}) {
     if (!this.icon) {
-      // I haven't found how discord gets the default icon
+      // If you find how Discord gets the default GDM icon, please tell us
       return 'https://discord.com/assets/485a854d5171c8dc98088041626e6fea.png';
     }
 
     return (this.client as any).rest.cdn.GDMIcon(this.id, this.icon, format, size);
-  }
-
-  static delete() {
-    return Promise.reject(new Error('DELETE_GROUP_DM_CHANNEL'));
-  }
-
-  static fetch() {
-    return Promise.reject(new Error('FETCH_GROUP_DM_CHANNEL'));
   }
 
   /* eslint-disable class-methods-use-this */

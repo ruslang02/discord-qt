@@ -168,5 +168,6 @@
   "SETTINGS_GAMES_OVERLAY": "Overlay",
   "ONE_MEMBER": "1 Mitglied",
   "NUMBER_MEMBERS": "{{num}} Mitglieder",
-  "MESSAGE_CHANNEL_NAME_CHANGE": "hat den Kanalnamen geändert: <b>{{content}}</b>"
+  "MESSAGE_CHANNEL_NAME_CHANGE": "hat den Kanalnamen geändert: <b>{{content}}</b>",
+  "ADD_RECIPIENT": "Freunde zu Direktnachricht hinzufügen"
 }

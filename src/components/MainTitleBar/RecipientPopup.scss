@@ -1,0 +1,27 @@
+#RecipientPopup {
+  background-color: $background-primary;
+  border-radius: 5px;
+  border: 1px solid $deprecated-text-input-border;
+
+  #Header2 {
+    margin: 0;
+  }
+
+  #Label {
+    font-size: 11px;
+    line-height: 11px;
+    margin-bottom: 10px;
+    color: $header-secondary;
+  }
+
+  QListWidget {
+    outline: none;
+    background: $background-secondary;
+    border-radius: 3px;
+    padding: 6px;
+
+    QScrollBar {
+      border-color: $background-secondary;
+    }
+  }
+}
