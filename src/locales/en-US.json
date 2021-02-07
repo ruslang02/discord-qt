@@ -173,5 +173,7 @@
   "SELECT_FRIENDS": "SELECT FRIENDS",
   "ADD_X_MORE_FRIENDS": "You can add {{num}} more friends.",
   "TYPE_USERNAME_OF_FRIEND": "Type the username of a friend",
-  "ADD": "Add"
+  "ADD": "Add",
+  "LEAVE_GROUP": "Leave Conversation",
+  "LEAVE_GROUP_BODY": "Are you sure you want to leave <b>{{name}}</b>? You won't be able to rejoin this group unless you are re-invited."
 }

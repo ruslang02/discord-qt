@@ -1,3 +1,4 @@
+import { ContextMenuPolicy, QPoint } from '@nodegui/nodegui';
 import { app } from '../..';
 import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { createLogger } from '../../utilities/Console';
@@ -26,6 +27,11 @@ export class GDMButton extends BaseUserButton {
 
     this.addEventListener('clicked', () => {
       app.emit(AppEvents.SWITCH_VIEW, 'dm', { dm: this.channel });
+    });
+
+    this.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
+    this.addEventListener('customContextMenuRequested', ({ x, y }: { x: number; y: number }) => {
+      app.emit(AppEvents.OPEN_GDM_MENU, this.channel, this.mapToGlobal(new QPoint(x, y)));
     });
   }
 

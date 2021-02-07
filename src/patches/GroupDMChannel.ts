@@ -14,6 +14,8 @@ const TextBasedChannel = require('discord.js/src/structures/interfaces/TextBased
 class GroupDMChannel extends Channel {
   private _recipients = new Collection<Snowflake, User>();
 
+  private _muted = false;
+
   private _typing = new Map();
 
   private icon?: string;
@@ -47,6 +49,14 @@ class GroupDMChannel extends Channel {
 
   set name(name: string) {
     void this.edit({ name });
+  }
+
+  get muted() {
+    return this._muted;
+  }
+
+  set muted(mute: boolean) {
+    this._muted = mute;
   }
 
   get owner() {
@@ -97,6 +107,7 @@ class GroupDMChannel extends Channel {
     }
   }
 
+  // Leave group DM
   async delete(reason?: string) {
     this.deleted = true;
 

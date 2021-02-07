@@ -179,6 +179,12 @@ export class MainTitleBar extends DTitleBar {
     userNameInput.setMinimumSize(0, 30);
     userNameInput.setMaximumSize(MAX_QSIZE, 30);
 
+    userNameInput.addEventListener('editingFinished', () => {
+      if (this.channel instanceof GroupDMChannel) {
+        this.channel.name = userNameInput.text();
+      }
+    });
+
     statusLabel.setObjectName('StatusLabel');
     nicknamesBar.setObjectName('NicknamesBar');
 

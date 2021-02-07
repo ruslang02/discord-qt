@@ -1,6 +1,6 @@
 import { Direction, QBoxLayout, QWidget } from '@nodegui/nodegui';
 import { DMTitleBar } from './DMTitleBar';
-import { DMUsersList } from './DMUsersList';
+import { DMUsersList } from './DMList';
 
 export class DMPanel extends QWidget {
   private actionsMenu = new QWidget();
