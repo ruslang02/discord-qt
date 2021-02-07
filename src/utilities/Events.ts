@@ -1,5 +1,6 @@
 import { QPoint } from '@nodegui/nodegui';
 import { Client, GuildMember, Message, User, VoiceChannel } from 'discord.js';
+import { GroupDMChannel } from '../patches/GroupDMChannel';
 import { ViewOptions } from '../views/ViewOptions';
 import { ConfigManager } from './ConfigManager';
 
@@ -12,6 +13,7 @@ export const Events = {
   MENTION_USER: 'mentionUser',
   NEW_CLIENT: 'newClient',
   OPEN_SETTINGS_PAGE: 'openSettingsPage',
+  OPEN_GDM_MENU: 'openGDMMenu',
   OPEN_USER_MENU: 'openUserMenu',
   OPEN_USER_PROFILE: 'openUserProfile',
   QUOTE_MESSAGE: 'quoteMessage',
@@ -27,6 +29,7 @@ export interface EventArgs extends Record<ValueOf<typeof Events>, any[]> {
   mentionUser: [string];
   newClient: [Client];
   openSettingsPage: [string];
+  openGDMMenu: [GroupDMChannel, QPoint];
   openUserMenu: [GuildMember | User, QPoint];
   openUserProfile: [string, string | undefined, QPoint];
   quoteMessage: [Message];

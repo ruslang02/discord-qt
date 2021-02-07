@@ -1,11 +1,11 @@
 * {
-  font-family: "Source Sans Pro"; // Default font
-  //font-family: Whitney;           // Discord's font
+  font-family: 'Source Sans Pro'; // Default font
+  //font-family: Whitney;         // Discord's font
 }
 
 #RootWindow {
-  height: "100%";
-  width: "100%";
+  height: '100%';
+  width: '100%';
   background-color: $background-primary;
   color: $text-normal;
   font-size: 14px;
@@ -147,7 +147,7 @@ QSlider {
     border-radius: 6px;
   }
 
-  &[type="sensivity"] {
+  &[type='sensivity'] {
     &::add-page:horizontal {
       background-color: rgb(105, 196, 154);
     }

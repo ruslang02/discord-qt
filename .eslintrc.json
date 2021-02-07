@@ -49,9 +49,10 @@
     "no-fallthrough": "off",
     "no-multiple-empty-lines": "error",
     "no-restricted-syntax": "off",
-    "no-shadow": "off", // Prevent conflicts with @typescript-eslint/no-shadow
+    "no-shadow": "off", // Conflicts with @typescript-eslint
     "no-underscore-dangle": "off",
-    "no-unused-expressions": "off", // @typescript-eslint/no-unused-expressions used instead
+    "no-unused-expressions": "off", // Conflicts with @typescript-eslint
+    "no-unused-vars": "off", // Conflicts with @typescript-eslint
     "no-void": [
       "error",
       {

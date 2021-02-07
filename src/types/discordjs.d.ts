@@ -2,11 +2,14 @@
 import { ClientUserSettings } from '../patches/ClientUserSettings';
 import { CustomStatus } from '../utilities/CustomStatus';
 import { ClientUserGuildSettings } from '../patches/ClientUserGuildSettings';
-import { Snowflake } from 'discord.js';
 
 type ValueOf<T> = T[keyof T];
 
 declare module 'discord.js' {
+  export interface Channel {
+    _patch(data: any): void;
+  }
+
   export interface Client {
     presence: ClientPresence;
     read_state: { mention_count: number; last_message_id: string; id: string }[];
@@ -24,14 +27,18 @@ declare module 'discord.js' {
 
   export interface ClientUser extends User {
     email?: string;
+    friends: Collection<Snowflake, User>;
     notes: Collection<Snowflake, string>;
     premium?: boolean;
     settings?: ClientUserSettings;
     guildSettings: Collection<Snowflake, ClientUserGuildSettings>;
 
     customStatus?: CustomStatus;
-    setCustomStatus(status?: CustomStatus): Promise<ClientUserSettings | undefined>;
     acceptInvite(code: Invite | string): Promise<Guild>;
+    // @TODO: Add them
+    // addFriend(user: User): Promise<User>;
+    // removeFriend(user: User): Promise<User>;
+    setCustomStatus(status?: CustomStatus): Promise<ClientUserSettings | undefined>;
   }
 
   export interface DMChannel {

@@ -14,8 +14,10 @@ import path from 'path';
 import { app } from '../..';
 import { ProfilePopup } from '../../components/ProfilePopup/ProfilePopup';
 import { UserMenu } from '../../components/UserMenu/UserMenu';
+import { GDMContextMenu } from '../../components/DMPanel/GDMContextMenu';
 import { AcceptInviteDialog } from '../../dialogs/AcceptInviteDialog';
 import { ConfirmLeaveGuildDialog } from '../../dialogs/ConfirmLeaveGuildDialog';
+import { ConfirmLeaveGDMDialog } from '../../dialogs/ConfirmLeaveGDMDialog';
 import { CustomStatusDialog } from '../../dialogs/CustomStatusDialog';
 import { NicknameChangeDialog } from '../../dialogs/NicknameChangeDialog';
 import { createLogger } from '../../utilities/Console';
@@ -37,6 +39,7 @@ export class MainWindow extends QMainWindow {
   dialogs = {
     acceptInvite: new AcceptInviteDialog(this),
     confirmLeaveGuild: new ConfirmLeaveGuildDialog(this),
+    confirmLeaveGDM: new ConfirmLeaveGDMDialog(this),
     customStatus: new CustomStatusDialog(this),
     miniProfile: new ProfilePopup(this),
     nicknameChange: new NicknameChangeDialog(this),
@@ -47,6 +50,8 @@ export class MainWindow extends QMainWindow {
   private settingsView = new SettingsView();
 
   private userMenu = new UserMenu(this.root);
+
+  private gdmContextMenu = new GDMContextMenu(this.root);
 
   shiftKeyPressed = false;
 

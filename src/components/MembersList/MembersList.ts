@@ -8,8 +8,10 @@ import {
   ScrollBarPolicy,
   Shape,
 } from '@nodegui/nodegui';
-import { GuildChannel, NewsChannel, TextChannel } from 'discord.js';
+import { Collection, Snowflake, User, GuildMember, NewsChannel, TextChannel } from 'discord.js';
+
 import { app, MAX_QSIZE } from '../..';
+import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { createLogger } from '../../utilities/Console';
 import { Events } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
@@ -18,7 +20,7 @@ import { UserButton } from '../UserButton/UserButton';
 const { debug } = createLogger('MembersList');
 
 export class MembersList extends QListWidget {
-  private channel?: TextChannel | NewsChannel;
+  private channel?: GroupDMChannel | TextChannel | NewsChannel;
 
   private configHidden = false;
 
@@ -38,15 +40,22 @@ export class MembersList extends QListWidget {
     this.setMaximumSize(240, MAX_QSIZE);
 
     app.on(Events.SWITCH_VIEW, (view: string, options?: ViewOptions) => {
-      if (view === 'dm' || (view === 'guild' && !options?.channel)) {
-        this.viewHidden = true;
-      } else if (view === 'guild' && options?.channel) {
+      if (view === 'guild' && options?.channel) {
         if (this.isShown && options.channel !== this.channel) {
-          this.loadList(options.channel);
+          this.loadList(options.channel as TextChannel);
         }
 
         this.channel = options.channel as TextChannel;
         this.viewHidden = false;
+      } else if (view === 'dm' && options?.dm?.type === 'group') {
+        if (this.isShown && options.dm !== this.channel) {
+          this.loadList(options.dm);
+        }
+
+        this.channel = options.dm;
+        this.viewHidden = false;
+      } else {
+        this.viewHidden = true;
       }
 
       this.updateVisibility();
@@ -72,24 +81,40 @@ export class MembersList extends QListWidget {
     }
   }
 
-  private loadList(channel: GuildChannel) {
-    if (!['text', 'news'].includes(channel.type)) {
+  private loadList(channel: MembersList['channel']) {
+    if (!channel || !['group', 'text', 'news'].includes(channel.type)) {
       return;
     }
 
     debug(`Loading members list for #${channel.name} (${channel.id})...`);
 
-    this.channel?.members.forEach((member) => {
+    // GuildChannel uses members while GroupDMChannel uses recipients,
+    // So we merge them into one variable
+    let users = new Collection<Snowflake, User | GuildMember>();
+
+    if (this.channel instanceof GroupDMChannel) {
+      users = this.channel?.recipients;
+    } else if (this.channel?.members) {
+      users = this.channel?.members;
+    }
+
+    users.forEach((member) => {
       UserButton.deleteInstance(member);
     });
 
-    this.channel = channel as TextChannel | NewsChannel;
+    this.channel = channel;
 
     this.nodeChildren.clear();
     this.clear();
 
-    for (const member of channel.members.values()) {
-      const btn = UserButton.createInstance(this, member);
+    if (channel instanceof GroupDMChannel) {
+      users = channel?.recipients;
+    } else if (channel?.members) {
+      users = channel?.members;
+    }
+
+    for (const user of users.values()) {
+      const btn = UserButton.createInstance(this, user);
       const item = new QListWidgetItem();
 
       item.setSizeHint(new QSize(224, 44));

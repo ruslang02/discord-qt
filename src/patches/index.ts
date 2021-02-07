@@ -10,6 +10,8 @@ export const Patches = [
   require('./SecretBox'),
   require('./StreamDispatcher'),
   require('./TextBasedChannel'),
+  require('./Channel'),
+  require('./GroupDMChannel'),
   require('./ClientUser'),
   require('./ClientPresence'),
   require('./User'),

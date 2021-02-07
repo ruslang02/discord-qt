@@ -9,16 +9,18 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { Client, Constants, DMChannel, Message, SnowflakeUtil } from 'discord.js';
+import { Client, Constants, DMChannel, Message, SnowflakeUtil, Channel } from 'discord.js';
 import { app } from '../..';
+import { GroupDMChannel } from '../../patches/GroupDMChannel';
 import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
+import { GDMButton } from './GDMButton';
 import { UserButton } from '../UserButton/UserButton';
 
 export class DMUsersList extends QListWidget {
-  channels = new Map<DMChannel, UserButton>();
+  channels = new Map<DMChannel | GroupDMChannel, UserButton | GDMButton>();
 
-  active?: UserButton;
+  active?: UserButton | GDMButton;
 
   private prevUpdate = new Date().getTime();
 
@@ -39,15 +41,34 @@ export class DMUsersList extends QListWidget {
 
       client.on(Events.CLIENT_READY, this.loadDMs.bind(this));
       client.on(Events.MESSAGE_CREATE, this.handleNewMessage.bind(this));
+      client.on(Events.CHANNEL_DELETE, this.handleChannelDelete.bind(this));
+
+      client.on(Events.CHANNEL_CREATE, (channel) => {
+        if (channel instanceof GroupDMChannel) {
+          this.loadDM(channel);
+        }
+      });
     });
 
     app.on(AppEvents.SWITCH_VIEW, this.handleSwitchView.bind(this));
   }
 
-  private handleNewMessage(message: Message) {
-    const dm = message.channel;
+  private handleChannelDelete(dm: Channel) {
+    if (!(dm instanceof GroupDMChannel)) {
+      return;
+    }
 
-    if (dm.type !== 'dm') {
+    const item = this.findItems(dm.id, MatchFlag.MatchExactly)[0];
+
+    this.removeItemWidget(item);
+    this.takeItem(this.row(item));
+    this.channels.delete(dm);
+  }
+
+  private handleNewMessage(message: Message) {
+    const dm = message.channel as DMChannel | GroupDMChannel;
+
+    if (['dm', 'group'].includes(dm.type)) {
       return;
     }
 
@@ -91,6 +112,26 @@ export class DMUsersList extends QListWidget {
     }
   }
 
+  // Load DM at the top of the DMList
+  private loadDM(dm: DMChannel | GroupDMChannel) {
+    let btn;
+
+    if (dm instanceof GroupDMChannel) {
+      btn = new GDMButton(dm, this);
+    } else {
+      btn = UserButton.createInstance(this, dm.recipient);
+    }
+
+    const item = new QListWidgetItem();
+
+    item.setSizeHint(new QSize(224, 44));
+    item.setFlags(~ItemFlag.ItemIsEnabled);
+    item.setText(dm.id);
+    this.channels.set(dm, btn);
+    this.insertItem(0, item);
+    this.setItemWidget(item, btn);
+  }
+
   async loadAvatars() {
     if (this.isLoading || this.native.destroyed) {
       return;
@@ -130,12 +171,10 @@ export class DMUsersList extends QListWidget {
     let i = 0;
 
     for (const btn of this.channels.values()) {
-      if (btn.user) {
-        const show = q === '' || btn.user.username.toLowerCase().replace(/ /g, '').includes(q);
+      const show = q === '' || btn.name.toLowerCase().replace(/ /g, '').includes(q);
 
-        this.setRowHidden(i, !show);
-        i += 1;
-      }
+      this.setRowHidden(i, !show);
+      i += 1;
     }
   }
 
@@ -144,24 +183,14 @@ export class DMUsersList extends QListWidget {
     this.clear();
 
     (app.client.channels.cache.array() as DMChannel[])
-      .filter((c) => c.type === 'dm' && c.lastMessageID !== null)
+      .filter((c) => ['dm', 'group'].includes(c.type) && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
         const snB = SnowflakeUtil.deconstruct(b.lastMessageID || '0');
 
-        return snB.date.getTime() - snA.date.getTime();
+        return snA.date.getTime() - snB.date.getTime();
       })
-      .forEach((dm) => {
-        const btn = UserButton.createInstance(this, dm.recipient);
-        const item = new QListWidgetItem();
-
-        item.setSizeHint(new QSize(224, 44));
-        item.setFlags(~ItemFlag.ItemIsEnabled);
-        item.setText(dm.id);
-        this.channels.set(dm, btn);
-        this.addItem(item);
-        this.setItemWidget(item, btn);
-      });
+      .forEach(this.loadDM.bind(this));
 
     void this.loadAvatars();
   }

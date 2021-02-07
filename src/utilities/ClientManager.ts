@@ -66,7 +66,7 @@ export class ClientManager {
       }
 
       if (
-        message.channel.type !== 'dm' &&
+        !['dm', 'group'].includes(message.channel.type) &&
         (message.channel.muted || message.channel.messageNotifications !== 'EVERYTHING')
       ) {
         return;

@@ -165,5 +165,15 @@
   "KEYBIND_TOGGLE_OVERLAY": "Toggle Overlay",
   "OVERLAY": "Overlay",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Enable Overlay",
-  "SETTINGS_GAMES_OVERLAY": "Overlay"
+  "SETTINGS_GAMES_OVERLAY": "Overlay",
+  "ONE_MEMBER": "1 Member",
+  "NUMBER_MEMBERS": "{{num}} Members",
+  "MESSAGE_CHANNEL_NAME_CHANGE": "changed the channel name: <b>{{content}}</b>",
+  "ADD_RECIPIENT": "Add friends to DM",
+  "SELECT_FRIENDS": "SELECT FRIENDS",
+  "ADD_X_MORE_FRIENDS": "You can add {{num}} more friends.",
+  "TYPE_USERNAME_OF_FRIEND": "Type the username of a friend",
+  "ADD": "Add",
+  "LEAVE_GROUP": "Leave Conversation",
+  "LEAVE_GROUP_BODY": "Are you sure you want to leave <b>{{name}}</b>? You won't be able to rejoin this group unless you are re-invited."
 }

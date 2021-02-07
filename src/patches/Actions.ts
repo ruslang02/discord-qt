@@ -21,10 +21,15 @@ export class MessageAcknowledgedAction extends Action {
     const { client } = this;
 
     const channel = client.channels.resolve(data.channel_id) as TextChannel;
+
+    if (!channel) {
+      return undefined;
+    }
+
     const state = client.read_state.find((s: any) => s.id === data.channel_id);
     const message = channel.messages.resolve(data.message_id);
 
-    if (!state || !channel || !message) {
+    if (!state || !message) {
       return undefined;
     }
 
