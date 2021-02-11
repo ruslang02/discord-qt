@@ -82,6 +82,8 @@ export class MessageItem extends QWidget {
     action.setText(text);
     action.addEventListener('triggered', callback);
     menu.addAction(action);
+
+    return action;
   }
 
   /**
@@ -96,6 +98,11 @@ export class MessageItem extends QWidget {
       if (this.message) {
         app.emit(Events.QUOTE_MESSAGE, this.message);
       }
+    });
+
+    const deleteMessage = this.addMenuEntry(__('DELETE_MESSAGE'), async () => {
+      await this.message?.delete();
+      this.hide();
     });
 
     menu.addSeparator();
@@ -124,6 +131,8 @@ export class MessageItem extends QWidget {
     this.contentLabel.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     this.contentLabel.addEventListener('customContextMenuRequested', ({ x, y }) => {
       const map = this.contentLabel.mapToGlobal(this.p0);
+
+      deleteMessage.setProperty('visible', this.message?.deletable ?? false);
 
       menu.popup(new QPoint(map.x() + x, map.y() + y));
     });

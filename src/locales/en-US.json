@@ -165,5 +165,6 @@
   "KEYBIND_TOGGLE_OVERLAY": "Toggle Overlay",
   "OVERLAY": "Overlay",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Enable Overlay",
-  "SETTINGS_GAMES_OVERLAY": "Overlay"
+  "SETTINGS_GAMES_OVERLAY": "Overlay",
+  "DELETE_MESSAGE": "Delete Message"
 }
