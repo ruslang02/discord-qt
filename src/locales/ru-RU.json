@@ -164,5 +164,6 @@
   "KEYBIND_TOGGLE_OVERLAY": "Вкл./выкл. оверлей",
   "OVERLAY": "Оверлей",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Включить оверлей",
-  "SETTINGS_GAMES_OVERLAY": "Оверлей"
+  "SETTINGS_GAMES_OVERLAY": "Оверлей",
+  "DELETE_MESSAGE": "Удалить сообщение"
 }
