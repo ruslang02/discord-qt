@@ -166,5 +166,8 @@
   "OVERLAY": "Overlay",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Enable Overlay",
   "SETTINGS_GAMES_OVERLAY": "Overlay",
+  "EDIT_MESSAGE": "Edit Message",
+  "EDIT_TEXTAREA_HELP_CANCEL": "cancel",
+  "EDIT_TEXTAREA_HELP_SAVE": "save",
   "DELETE_MESSAGE": "Delete Message"
 }

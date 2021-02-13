@@ -3,11 +3,15 @@ import {
   ContextMenuPolicy,
   CursorShape,
   Direction,
+  FocusReason,
+  Key,
+  KeyboardModifier,
   MouseButton,
   NativeElement,
   QAction,
   QBoxLayout,
   QClipboardMode,
+  QKeyEvent,
   QLabel,
   QMenu,
   QMouseEvent,
@@ -18,12 +22,14 @@ import {
   WidgetEventTypes,
 } from '@nodegui/nodegui';
 import { Message, Snowflake } from 'discord.js';
-import { __ } from '../../utilities/StringProvider';
 import { app } from '../..';
-import { Events } from '../../utilities/Events';
 import { createLogger } from '../../utilities/Console';
+import { Events } from '../../utilities/Events';
+import { PhraseID } from '../../utilities/PhraseID';
 import { pictureWorker } from '../../utilities/PictureWorker';
+import { __ } from '../../utilities/StringProvider';
 import { DLabel } from '../DLabel/DLabel';
+import { DTextEditMultiline } from '../DTextEdit/DTextEditMultiline';
 import {
   processAttachments,
   processEmbeds,
@@ -33,7 +39,6 @@ import {
   processMarkdown,
   processMentions,
 } from './MessageUtilities';
-import { PhraseID } from '../../utilities/PhraseID';
 
 const avatarCache = new Map<Snowflake, QPixmap>();
 const { error } = createLogger('MessageItem');
@@ -94,6 +99,8 @@ export class MessageItem extends QWidget {
 
     menu.setCursor(CursorShape.PointingHandCursor);
 
+    const editMessage = this.addMenuEntry(__('EDIT_MESSAGE'), () => this.triggerEdit());
+
     this.addMenuEntry(__('QUOTE'), () => {
       if (this.message) {
         app.emit(Events.QUOTE_MESSAGE, this.message);
@@ -133,9 +140,74 @@ export class MessageItem extends QWidget {
       const map = this.contentLabel.mapToGlobal(this.p0);
 
       deleteMessage.setProperty('visible', this.message?.deletable ?? false);
-
+      editMessage.setProperty('visible', this.message?.editable ?? false);
       menu.popup(new QPoint(map.x() + x, map.y() + y));
     });
+  }
+
+  private triggerEdit() {
+    const editField = new DTextEditMultiline();
+    const cancelAction = new DLabel();
+    const saveAction = new DLabel();
+    const actionsLayout = new QBoxLayout(Direction.LeftToRight);
+
+    const hide = () => {
+      this.msgLayout.removeWidget(editField);
+      this.contentLabel.show();
+      editField.close();
+      cancelAction.close();
+      saveAction.close();
+    };
+
+    const edit = () => {
+      this.message
+        ?.edit(editField.toPlainText())
+        .then((msg) => {
+          void this.loadMessage(msg);
+        })
+        .catch(error.bind(this, 'Failed to edit the message.'));
+    };
+
+    actionsLayout.setSpacing(5);
+    this.contentLabel.hide();
+    editField.setText(this.message?.content || '');
+    editField.addEventListener(WidgetEventTypes.KeyPress, (e) => {
+      const event = new QKeyEvent(e as NativeElement);
+
+      if (event.key() === Key.Key_Escape) {
+        hide();
+      }
+
+      if (
+        event.key() === Key.Key_Return &&
+        (event.modifiers() & KeyboardModifier.ShiftModifier) === KeyboardModifier.ShiftModifier
+      ) {
+        edit();
+        hide();
+      }
+    });
+
+    cancelAction.setText(`<a href='#'>${__('EDIT_TEXTAREA_HELP_CANCEL')}</a> (escape)`);
+    saveAction.setText(` • <a href='#'>${__('EDIT_TEXTAREA_HELP_SAVE')}</a> (shift+enter)`);
+    cancelAction.addEventListener('linkActivated', () => {
+      hide();
+    });
+
+    saveAction.addEventListener('linkActivated', () => {
+      edit();
+      hide();
+    });
+
+    actionsLayout.addWidget(cancelAction);
+    actionsLayout.addWidget(saveAction);
+    actionsLayout.addStretch(1);
+    cancelAction.setWordWrap(false);
+    saveAction.setWordWrap(false);
+
+    this.msgLayout.addWidget(editField);
+    this.msgLayout.addLayout(actionsLayout);
+
+    editField.setFocus(FocusReason.TabFocusReason);
   }
 
   private p0 = new QPoint(0, 0);

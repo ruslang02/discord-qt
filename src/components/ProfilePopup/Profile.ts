@@ -34,11 +34,6 @@ export class Profile extends QWidget {
     layout.setContentsMargins(16, 16, 16, 16);
     layout.setSpacing(0);
 
-    layout.addWidget(avatar);
-    layout.addWidget(nickname);
-    layout.addWidget(username);
-    layout.addWidget(custom);
-
     unreadInd.setObjectName('StatusIndicator');
     unreadInd.setFixedSize(28, 28);
     unreadInd.setProperty('tooltip', 'Offline');
@@ -54,6 +49,11 @@ export class Profile extends QWidget {
     username.setObjectName('Username');
     username.setWordWrap(true);
 
+    layout.addWidget(avatar);
+    layout.addWidget(nickname);
+    layout.addWidget(username);
+    layout.addWidget(custom);
+
     this.setLayout(layout);
   }
 
@@ -63,6 +63,10 @@ export class Profile extends QWidget {
    */
   setPlaying(value: boolean) {
     this.setProperty('isPlaying', value ? 'true' : 'false');
+
+    this.nickname.repolish();
+    this.username.repolish();
+    this.custom.repolish();
   }
 
   /**

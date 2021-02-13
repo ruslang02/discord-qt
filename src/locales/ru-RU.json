@@ -165,5 +165,8 @@
   "OVERLAY": "Оверлей",
   "SETTINGS_GAMES_ENABLE_OVERLAY_LABEL": "Включить оверлей",
   "SETTINGS_GAMES_OVERLAY": "Оверлей",
+  "EDIT_MESSAGE": "Редактировать",
+  "EDIT_TEXTAREA_HELP_CANCEL": "отмена",
+  "EDIT_TEXTAREA_HELP_SAVE": "сохранить",
   "DELETE_MESSAGE": "Удалить сообщение"
 }

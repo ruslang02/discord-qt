@@ -60,11 +60,11 @@
 
       #StatusIndicator {
         border-color: $blurple;
-        background-color: white;
+        background-color: #FFFFFF;
       }
 
-      #Nickname {
-        color: white;
+      #Nickname, #Username, #Text {
+        color: #FFFFFF;
       }
     }
   }
@@ -76,13 +76,14 @@
 
     #Header {
       text-transform: uppercase;
-      color: $header-primary;
+      color: white;
       font-size: 12px;
       line-height: 16px;
       font-weight: 600;
     }
 
     #Label {
+      color: white;
       font-size: 14px;
     }
 
