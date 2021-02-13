@@ -280,6 +280,8 @@ export class MessagesPanel extends QScrollArea {
 
     debug(`Opening channel ${channel.id}...`);
 
+    this.hide();
+
     this.clear();
 
     try {
@@ -299,9 +301,11 @@ export class MessagesPanel extends QScrollArea {
 
     messages.length = Math.min(messages.length, limit);
     const scrollTimer = setInterval(() => this.ensureVisible(0, MAX_QSIZE), 10);
-    const promises = messages.map(this.loadMessage);
 
-    debug(`Waiting for ${promises.length} widgets to be loaded...`);
+    messages.forEach(this.loadMessage);
+
+    this.show();
+
     debug('Widgets finished loading.');
     setTimeout(() => {
       this.isLoading = false;

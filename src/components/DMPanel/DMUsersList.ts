@@ -9,20 +9,22 @@ import {
   Shape,
   WidgetEventTypes,
 } from '@nodegui/nodegui';
-import { Client, Constants, DMChannel, Message, SnowflakeUtil } from 'discord.js';
+import { Client, Collection, Constants, DMChannel, Message, SnowflakeUtil } from 'discord.js';
 import { app } from '../..';
 import { Events as AppEvents } from '../../utilities/Events';
 import { ViewOptions } from '../../views/ViewOptions';
 import { UserButton } from '../UserButton/UserButton';
 
 export class DMUsersList extends QListWidget {
-  channels = new Map<DMChannel, UserButton>();
+  channels = new WeakMap<DMChannel, UserButton>();
 
   active?: UserButton;
 
   private prevUpdate = new Date().getTime();
 
   private p0 = new QPoint(0, 0);
+
+  private btnSize = new QSize(224, 44);
 
   private isLoading = false;
 
@@ -65,7 +67,7 @@ export class DMUsersList extends QListWidget {
 
     const newItem = new QListWidgetItem();
 
-    newItem.setSizeHint(new QSize(224, 44));
+    newItem.setSizeHint(this.btnSize);
     newItem.setFlags(~ItemFlag.ItemIsEnabled);
     newItem.setText(dm.id);
     this.insertItem(0, newItem);
@@ -108,11 +110,13 @@ export class DMUsersList extends QListWidget {
     const height = this.size().height();
     const promises: Promise<void>[] = [];
 
-    for (const btn of this.channels.values()) {
-      const iy = btn.mapToParent(this.p0).y();
+    for (const btn of this.nodeChildren.values()) {
+      const button = btn as UserButton;
+      const iy = button.mapToParent(this.p0).y();
 
       if (iy >= y - 100 && iy <= y + height + 100) {
-        promises.push(btn.loadAvatar());
+        button.load();
+        promises.push(button.loadAvatar());
       }
     }
 
@@ -129,9 +133,11 @@ export class DMUsersList extends QListWidget {
     const q = (query || '').replace(/ /g, '').toLowerCase().trim();
     let i = 0;
 
-    for (const btn of this.channels.values()) {
-      if (btn.user) {
-        const show = q === '' || btn.user.username.toLowerCase().replace(/ /g, '').includes(q);
+    for (const btn of this.nodeChildren.values()) {
+      const button = btn as UserButton;
+
+      if (button.user) {
+        const show = q === '' || button.user.username.toLowerCase().replace(/ /g, '').includes(q);
 
         this.setRowHidden(i, !show);
         i += 1;
@@ -140,10 +146,12 @@ export class DMUsersList extends QListWidget {
   }
 
   async loadDMs() {
-    this.channels.clear();
+    this.nodeChildren.clear();
     this.clear();
 
-    (app.client.channels.cache.array() as DMChannel[])
+    this.hide();
+
+    (app.client.channels.cache as Collection<string, DMChannel>)
       .filter((c) => c.type === 'dm' && c.lastMessageID !== null)
       .sort((a, b) => {
         const snA = SnowflakeUtil.deconstruct(a.lastMessageID || '0');
@@ -155,7 +163,7 @@ export class DMUsersList extends QListWidget {
         const btn = UserButton.createInstance(this, dm.recipient);
         const item = new QListWidgetItem();
 
-        item.setSizeHint(new QSize(224, 44));
+        item.setSizeHint(this.btnSize);
         item.setFlags(~ItemFlag.ItemIsEnabled);
         item.setText(dm.id);
         this.channels.set(dm, btn);
@@ -164,5 +172,6 @@ export class DMUsersList extends QListWidget {
       });
 
     void this.loadAvatars();
+    this.show();
   }
 }

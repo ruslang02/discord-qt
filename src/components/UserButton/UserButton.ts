@@ -60,11 +60,36 @@ export class UserButton extends DChannelButton {
 
   private infoControls = new QBoxLayout(Direction.TopToBottom);
 
-  user?: User;
+  private isLoaded = false;
 
-  member?: GuildMember;
+  private _user?: User;
 
-  isGuildMember = false;
+  private _member?: GuildMember;
+
+  get user() {
+    return this._user;
+  }
+
+  get member() {
+    return this._member;
+  }
+
+  set user(value) {
+    if (!value) {
+      throw new Error('User was null.');
+    }
+
+    this._user = value;
+  }
+
+  set member(value) {
+    if (!value) {
+      throw new Error('Member was null.');
+    }
+
+    this._user = value.user;
+    this._member = value;
+  }
 
   constructor(parent?: any) {
     super(parent);
@@ -103,11 +128,7 @@ export class UserButton extends DChannelButton {
           return;
         }
 
-        if (btn.isGuildMember) {
-          btn.loadUser(member);
-        } else {
-          btn.loadUser(member.user);
-        }
+        btn.load();
 
         if (oldMember.user.avatar !== member.user.avatar) {
           void btn.loadAvatar();
@@ -119,11 +140,11 @@ export class UserButton extends DChannelButton {
         const user = u as User;
         const btn = UserButton.buttons.get(user);
 
-        if (!btn || btn.isGuildMember) {
+        if (!btn || btn.member) {
           return;
         }
 
-        btn.loadUser(user);
+        btn.load();
 
         if (oldUser.avatar !== user.avatar) {
           void btn.loadAvatar();
@@ -158,7 +179,8 @@ export class UserButton extends DChannelButton {
       }
     }
 
-    button.loadUser(someone);
+    button.user = someone instanceof GuildMember ? someone.user : someone;
+    if (someone instanceof GuildMember) button.member = someone;
     button.setContextMenuPolicy(ContextMenuPolicy.CustomContextMenu);
     button.addEventListener('customContextMenuRequested', handleContextMenu);
 
@@ -316,19 +338,17 @@ export class UserButton extends DChannelButton {
 
   /**
    * Loads user/member data into the button.
-   * @param someone User or member to render.
    */
-  loadUser(someone: User | GuildMember) {
-    const user = someone instanceof GuildMember ? someone.user : someone;
-    const member = someone instanceof GuildMember ? someone : null;
+  load() {
+    if (this.isLoaded) {
+      return;
+    }
+
+    const { member, user } = this;
 
     if (!user) {
       return;
     }
-
-    this.isGuildMember = !!member;
-    this.user = user;
-    this.member = member || undefined;
 
     this.nameLabel.setText(member?.nickname ?? user.username);
     void this.loadPresence(user.presence);
@@ -338,6 +358,8 @@ export class UserButton extends DChannelButton {
     if (member) {
       UserButton.buttons.set(member, this);
     }
+
+    this.isLoaded = true;
   }
 
   delete() {

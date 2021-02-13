@@ -295,6 +295,8 @@ export class EmojiPicker extends QMenu {
     this.token?.cancel();
     this.token = new CancelToken();
 
+    emojiView.hide();
+
     emojiView.clear();
     emojiView.setCurrentRow(0);
 
@@ -308,6 +310,8 @@ export class EmojiPicker extends QMenu {
           this.insertEmoji(emoji, this.token);
         }
       }
+
+      emojiView.show();
 
       return;
     }
@@ -341,7 +345,10 @@ export class EmojiPicker extends QMenu {
     }
 
     emojiView.setCurrentRow(0);
+    emojiView.show();
   }
+
+  private iconSizeHint = new QSize(40, 40);
 
   /**
    * Inserts emoji into the view.
@@ -357,7 +364,7 @@ export class EmojiPicker extends QMenu {
     );
 
     item.setData(256, new QVariant(emoji.id || ''));
-    item.setSizeHint(new QSize(40, 40));
+    item.setSizeHint(this.iconSizeHint);
 
     resolveEmoji({ emoji_id: emoji.id || undefined, emoji_name: emoji.name })
       .then((path) => {

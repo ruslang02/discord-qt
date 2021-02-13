@@ -161,6 +161,7 @@ export class GuildsList extends QListWidget {
   async loadGuilds() {
     const { client } = app;
 
+    this.hide();
     this.guilds.clear();
     this.clear();
     this.addMainPageButton();
@@ -180,6 +181,8 @@ export class GuildsList extends QListWidget {
         this.setItemWidget(item, btn);
         this.guilds.set(guild, btn);
       });
+
+    this.show();
 
     void this.loadAvatars();
   }
