@@ -9,7 +9,7 @@ import { Plugin } from './Plugin';
 
 const { readFile } = promises;
 
-const { log, error } = createLogger('PluginManager');
+const { log, error, warn } = createLogger('PluginManager');
 
 // @ts-ignore
 // eslint-disable-next-line
@@ -38,52 +38,58 @@ export class PluginManager {
   }
 
   recursiveSearch(root: string): Promise<any>[] {
-    mkdirSync(root, { recursive: true });
-    const dirs = readdirSync(root, { withFileTypes: true }).filter(
-      (dir) => !['.git', 'node_modules'].includes(dir.name)
-    );
+    try {
+      mkdirSync(root, { recursive: true });
+      const dirs = readdirSync(root, { withFileTypes: true }).filter(
+        (dir) => !['.git', 'node_modules'].includes(dir.name)
+      );
 
-    let tasks: Promise<any>[] = [];
+      let tasks: Promise<any>[] = [];
 
-    for (const dir of dirs) {
-      const path = join(root, dir.name);
+      for (const dir of dirs) {
+        const path = join(root, dir.name);
 
-      if (dir.isDirectory()) {
-        const searcher = this.recursiveSearch(path);
+        if (dir.isDirectory()) {
+          const searcher = this.recursiveSearch(path);
 
-        tasks = [...tasks, ...searcher];
-      } else if (dir.name === 'package.json' && dir.isFile()) {
-        const reader = readFile(path).then((contents) => {
-          const pkg = JSON.parse(contents.toString()) as { main: string; keywords: string[] };
+          tasks = [...tasks, ...searcher];
+        } else if (dir.name === 'package.json' && dir.isFile()) {
+          const reader = readFile(path).then((contents) => {
+            const pkg = JSON.parse(contents.toString()) as { main: string; keywords: string[] };
 
-          if (
-            pkg.keywords &&
-            Array.isArray(pkg.keywords) &&
-            PluginManager.keywords.every((word) => pkg.keywords.includes(word))
-          ) {
-            const mainPath = join(root, pkg.main);
+            if (
+              pkg.keywords &&
+              Array.isArray(pkg.keywords) &&
+              PluginManager.keywords.every((word) => pkg.keywords.includes(word))
+            ) {
+              const mainPath = join(root, pkg.main);
 
-            try {
-              const PluginClass = nodeRequire(mainPath);
-              const plugin = new PluginClass({
-                app,
-                Qt,
-                createLogger,
-                Discord,
-                module,
-              });
+              try {
+                const PluginClass = nodeRequire(mainPath);
+                const plugin = new PluginClass({
+                  app,
+                  Qt,
+                  createLogger,
+                  Discord,
+                  module,
+                });
 
-              this.plugins.set(mainPath, plugin);
-            } catch (e) {
-              error('Failed to load plugin', root, e);
+                this.plugins.set(mainPath, plugin);
+              } catch (e) {
+                error('Failed to load plugin', root, e);
+              }
             }
-          }
-        });
+          });
 
-        tasks = [...tasks, reader];
+          tasks = [...tasks, reader];
+        }
       }
-    }
 
-    return tasks;
+      return tasks;
+    } catch (e) {
+      warn('Could not load plugins.');
+
+      return [];
+    }
   }
 }

@@ -6,7 +6,7 @@ import { Events } from './Events';
 import { IConfig } from './IConfig';
 
 const { readFile, writeFile } = promises;
-const { log, error } = createLogger('Config');
+const { log, error, warn } = createLogger('Config');
 
 export class ConfigManager {
   isLoaded = false;
@@ -14,7 +14,11 @@ export class ConfigManager {
   private config = {} as IConfig;
 
   constructor(private file: string) {
-    mkdirSync(dirname(file), { recursive: true });
+    try {
+      mkdirSync(dirname(file), { recursive: true });
+    } catch (e) {
+      warn('Could not load config.');
+    }
 
     setInterval(() => {
       void this.save();
