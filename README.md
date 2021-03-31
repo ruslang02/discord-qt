@@ -1,6 +1,7 @@
 # DiscordQt
-![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg)
-![David](https://img.shields.io/david/ruslang02/discord-qt)
+[![AUR](https://img.shields.io/aur/version/discord-qt-appimage)](https://aur.archlinux.org/packages/discord-qt-appimage)
+[![DiscordQt CI](https://github.com/ruslang02/discord-qt/workflows/DiscordQt%20CI/badge.svg)](https://github.com/ruslang02/discord-qt/actions)
+[![David](https://img.shields.io/david/ruslang02/discord-qt)](https://github.com/ruslang02/discord-qt/blob/master/package.json)
 
 [![discord](https://img.shields.io/discord/765296053410857000?color=%237289da&label=discord&logo=discord&logoColor=white&style=for-the-badge)](https://discord.gg/tNNuUK4)
 
@@ -12,6 +13,10 @@ It offers a significantly less resource-consuming experience comparing to the of
 **Currently macOS builds are broken. Looking for Windows and macOS maintainers to configure builds and implement features.**
 
 ![Screenshot](screenshot.png)
+
+## Arch Linux and derivatives
+
+This application is also available in Arch User Repository (AUR): [discord-qt-appimage](https://aur.archlinux.org/packages/discord-qt-appimage/)
 
 ## Building from sources
 
