@@ -18,6 +18,7 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
+    "sourceMap": true,
     "typeRoots": ["./src/types/"]
   },
   "exclude": ["node_modules/**/*.ts"]

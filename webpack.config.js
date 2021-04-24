@@ -14,7 +14,7 @@ const { readdirSync } = fs;
 let __BUILDNUM__;
 
 try {
-  __BUILDNUM__ = childProcess.execSync('git rev-list HEAD --count').toString()
+  __BUILDNUM__ = childProcess.execSync('git rev-list HEAD --count').toString();
 } catch (e) {
   __BUILDNUM__ = 0;
 }
@@ -23,15 +23,15 @@ module.exports = (_env, argv) => {
   const isDev = argv.mode !== 'production';
   let themes = {};
 
-  readdirSync('./src/themes')
-    .forEach((value) => {
-      themes = {
-        ...themes,
-        [value.replace('.scss', '')]: `./src/themes/${value}`,
-      };
-    });
+  readdirSync('./src/themes').forEach((value) => {
+    themes = {
+      ...themes,
+      [value.replace('.scss', '')]: `./src/themes/${value}`,
+    };
+  });
 
   return {
+    devtool: 'eval-cheap-module-source-map',
     mode: isDev ? 'development' : 'production',
     entry: {
       'index.js': './src',
@@ -40,11 +40,13 @@ module.exports = (_env, argv) => {
     },
     optimization: {
       minimize: !isDev,
-      minimizer: [new TerserPlugin({
-        terserOptions: {
-          keep_classnames: true,
-        },
-      })],
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            keep_classnames: true,
+          },
+        }),
+      ],
     },
     target: 'node',
     node: {
@@ -130,10 +132,16 @@ module.exports = (_env, argv) => {
           { from: 'node_modules/source-sans-pro/TTF/*', to: 'assets/fonts/[name].[ext]' },
           { from: 'node_modules/ffmpeg-static/ffmpeg', noErrorOnMissing: true },
           { from: 'node_modules/ffmpeg-static/ffmpeg.exe', noErrorOnMissing: true },
-          { from: `node_modules/ffplay-static/bin/${platform()}/${arch()}/ffplay`, noErrorOnMissing: true },
-          { from: `node_modules/ffplay-static/bin/${platform()}/${arch()}/ffplay.exe`, noErrorOnMissing: true },
+          {
+            from: `node_modules/ffplay-static/bin/${platform()}/${arch()}/ffplay`,
+            noErrorOnMissing: true,
+          },
+          {
+            from: `node_modules/ffplay-static/bin/${platform()}/${arch()}/ffplay.exe`,
+            noErrorOnMissing: true,
+          },
         ],
       }),
     ],
-  }
+  };
 };
