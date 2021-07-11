@@ -232,6 +232,7 @@ export class InputPanel extends QWidget {
     input.addEventListener(WidgetEventTypes.DragEnter, this.handleDrag.bind(this));
     input.addEventListener(WidgetEventTypes.KeyPress, this.handleKeyPress.bind(this));
     input.addEventListener(WidgetEventTypes.KeyRelease, this.handleKeyRelease.bind(this));
+    input.addEventListener('textChanged', this.adjustInputSize.bind(this));
 
     rootLayout.addWidget(addBtn);
     rootLayout.addWidget(input, 1);
