@@ -50,7 +50,7 @@
     "ffmpeg-static": "^4.2.7",
     "ffplay-static": "^3.2.2",
     "i18n": "^0.13.2",
-    "markdown-it": "^12.0.4",
+    "markdown-it": "^12.3.2",
     "node-notifier": "^9.0.0",
     "open": "^7.3.1",
     "opusscript": "0.0.7",
